@@ -1,5 +1,5 @@
 """
-Canonical dataset-operation seam over concrete relation builders.
+Canonical dataset-operation layer over concrete relation builders.
 
 These helpers keep carrier-level operation names (`filter`, `join`, `group_by`, ...) distinct from the exact Substrait
 builder functions used underneath. Projection now flows through explicit input-column lists so carrier-level schema
@@ -28,7 +28,7 @@ pub def filter_ds(rel: Rel, predicate: ColumnExpr) -> Rel:
 
         Args:
             rel: Input relation to filter.
-            predicate: Boolean scalar expression for the current package slice.
+            predicate: Boolean scalar expression to apply.
 
     Returns:
         A relation shaped as a filter over the input relation.
@@ -48,7 +48,7 @@ pub def join_ds(left_rel: Rel, right_rel: Rel, on: bool) -> Rel:
     Args:
         left_rel: Left input relation.
         right_rel: Right input relation.
-        on: Placeholder join condition for the current package slice.
+        on: Boolean join condition accepted by the current join builder.
 
     Returns:
         A relation shaped as a join over the two input relations.

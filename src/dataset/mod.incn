@@ -92,6 +92,7 @@ pub trait DataSet[T with Clone]:
     def to_substrait_plan(self) -> Plan
     def try_to_substrait_plan(self) -> Result[Plan, SubstraitLoweringError]
     def filter(self, predicate: ColumnExpr) -> Self
+    # TODO(InQL RFC 004): Replace the Self-only join surface with heterogeneous join typing and an explicit output-schema contract.
     def join(self, other: Self, on: bool) -> Self
     def select(self) -> Self
     def with_column(self, name: str, expr: ColumnExpr) -> Self
@@ -130,7 +131,7 @@ pub class DataFrame[T with Clone] with BoundedDataSet:
         return str(self._materialization.preview_text)
 
     def materialized_payload(self) -> str:
-        """Compatibility wrapper returning the collected preview text for older callers."""
+        """Return the collected preview text through the payload-oriented helper name."""
         return self.preview_text()
 
     def row_count(self) -> int:
@@ -447,9 +448,3 @@ pub class DataStream[T with Clone] with UnboundedDataSet:
             _row_schema_marker=self._row_schema_marker.clone(),
             _substrait_rel=explode_ds(self._substrait_rel),
         )
-    # TODO(InQL RFC 004): Replace the temporary Self-only join surface with heterogeneous join typing plus an explicit output-schema contract.
-# ---- BoundedDataSet trait and concrete types ----
-    # Generic witness so runtime representation still carries T in the generated Rust type.
-    # Structured materialization produced by Session.collect(...).
-    # Preview text is display-oriented; resolved columns and row count are the canonical collected metadata.
-# ---- UnboundedDataSet trait and concrete types ----

@@ -5,10 +5,22 @@ This module owns builder-to-Substrait expression conversion for scalar expressio
 conversion helpers needed by proto fields along that path.
 """
 
+from rust::incan_stdlib::errors import raise_value_error
 from rust::std::boxed import Box
 from rust::std::primitive import i32 as RustI32, u32 as RustU32
-from filter_builders import FilterLiteral, FilterLiteralKind
-from projection_builders import ColumnExpr, ColumnExprKind, ProjectionAssignment
+from projection_builders import (
+    AddExpr,
+    BoolLiteralExpr,
+    ColumnExpr,
+    ColumnRefExpr,
+    EqExpr,
+    FloatLiteralExpr,
+    GtExpr,
+    IntLiteralExpr,
+    MultiplyExpr,
+    ProjectionAssignment,
+    StringLiteralExpr,
+)
 from rust::substrait::proto import Expression, FunctionArgument, ProjectRel
 from rust::substrait::proto::expression import FieldReference, Literal, ReferenceSegment, RexType, ScalarFunction
 from rust::substrait::proto::expression::field_reference import (
@@ -20,12 +32,7 @@ from rust::substrait::proto::expression::literal import LiteralType
 from rust::substrait::proto::expression::reference_segment import ReferenceType as SegmentReferenceType, StructField
 from rust::substrait::proto::function_argument import ArgType
 from rust::substrait::proto::rel_common import EmitKind
-from substrait.errors import (
-    SubstraitLoweringError,
-    invalid_scalar_expression,
-    unknown_scalar_column,
-    unsupported_scalar_expression,
-)
+from substrait.errors import SubstraitLoweringError, invalid_scalar_expression, unknown_scalar_column
 from substrait.extensions import (
     ADD_FUNCTION_ANCHOR,
     EQUAL_FUNCTION_ANCHOR,
@@ -109,14 +116,6 @@ pub def field_ref_expr(index: int) -> Expression:
     )
 
 
-pub def filter_literal_expr(literal: FilterLiteral) -> Expression:
-    """Build one literal expression from a filter literal builder value."""
-    match literal.kind:
-        FilterLiteralKind.Int => return i64_expr(literal.int_value)
-        FilterLiteralKind.String => return string_expr(literal.string_value)
-        FilterLiteralKind.Bool => return bool_expr(literal.bool_value)
-
-
 pub def scalar_function_expr(function_reference: u32, arguments: list[Expression]) -> Expression:
     """Build one scalar-function expression over positional value arguments."""
     lowered_arguments = [FunctionArgument(arg_type=Some(ArgType.Value(argument))) for argument in arguments]
@@ -192,35 +191,64 @@ def _resolved_projection_expr(
     expr: ColumnExpr,
 ) -> Result[Expression, SubstraitLoweringError]:
     """Lower one scalar expression against the current resolved binding set."""
-    if expr.kind == ColumnExprKind.Column:
-        binding_idx = _index_of_binding(bindings, expr.column_name)
-        if binding_idx >= 0:
-            return Ok(bindings[binding_idx].expr.clone())
-        return Err(unknown_scalar_column(expr.column_name))
-    if expr.kind == ColumnExprKind.IntLiteral:
-        return Ok(i64_expr(expr.int_value))
-    if expr.kind == ColumnExprKind.FloatLiteral:
-        return Ok(f64_expr(expr.float_value))
-    if expr.kind == ColumnExprKind.StringLiteral:
-        return Ok(string_expr(expr.string_value))
-    if expr.kind == ColumnExprKind.BoolLiteral:
-        return Ok(bool_expr(expr.bool_value))
-    mut argument_count = 0
-    for _argument in expr.arguments:
-        argument_count += 1
-    if argument_count < 2:
-        return Err(invalid_scalar_expression("binary scalar expression requires two arguments"))
-    left = _resolved_projection_expr(bindings, expr.arguments[0])?
-    right = _resolved_projection_expr(bindings, expr.arguments[1])?
-    if expr.kind == ColumnExprKind.Add:
-        return Ok(scalar_function_expr(ADD_FUNCTION_ANCHOR, [left, right]))
-    if expr.kind == ColumnExprKind.Multiply:
-        return Ok(scalar_function_expr(MULTIPLY_FUNCTION_ANCHOR, [left, right]))
-    if expr.kind == ColumnExprKind.Eq:
-        return Ok(scalar_function_expr(EQUAL_FUNCTION_ANCHOR, [left, right]))
-    if expr.kind == ColumnExprKind.Gt:
-        return Ok(scalar_function_expr(GT_FUNCTION_ANCHOR, [left, right]))
-    return Err(unsupported_scalar_expression("unsupported scalar expression kind"))
+    match expr:
+        ColumnRefExpr(column) =>
+            binding_idx = _index_of_binding(bindings, column.column_name)
+            if binding_idx >= 0:
+                return Ok(bindings[binding_idx].expr.clone())
+            return Err(unknown_scalar_column(column.column_name))
+        IntLiteralExpr(literal) => return Ok(i64_expr(literal.value))
+        FloatLiteralExpr(literal) => return Ok(f64_expr(literal.value))
+        StringLiteralExpr(literal) => return Ok(string_expr(literal.value))
+        BoolLiteralExpr(literal) => return Ok(bool_expr(literal.value))
+        AddExpr(add_expr) =>
+            if len(add_expr.arguments) != 2:
+                return Err(invalid_scalar_expression("binary scalar expression requires exactly two arguments"))
+            return _resolved_binary_scalar_function_expr(
+                bindings,
+                add_expr.arguments[0],
+                add_expr.arguments[1],
+                ADD_FUNCTION_ANCHOR,
+            )
+        MultiplyExpr(mul_expr) =>
+            if len(mul_expr.arguments) != 2:
+                return Err(invalid_scalar_expression("binary scalar expression requires exactly two arguments"))
+            return _resolved_binary_scalar_function_expr(
+                bindings,
+                mul_expr.arguments[0],
+                mul_expr.arguments[1],
+                MULTIPLY_FUNCTION_ANCHOR,
+            )
+        EqExpr(eq_expr) =>
+            if len(eq_expr.arguments) != 2:
+                return Err(invalid_scalar_expression("binary scalar expression requires exactly two arguments"))
+            return _resolved_binary_scalar_function_expr(
+                bindings,
+                eq_expr.arguments[0],
+                eq_expr.arguments[1],
+                EQUAL_FUNCTION_ANCHOR,
+            )
+        GtExpr(gt_expr) =>
+            if len(gt_expr.arguments) != 2:
+                return Err(invalid_scalar_expression("binary scalar expression requires exactly two arguments"))
+            return _resolved_binary_scalar_function_expr(
+                bindings,
+                gt_expr.arguments[0],
+                gt_expr.arguments[1],
+                GT_FUNCTION_ANCHOR,
+            )
+
+
+def _resolved_binary_scalar_function_expr(
+    bindings: list[ResolvedProjectionBinding],
+    left_expr: ColumnExpr,
+    right_expr: ColumnExpr,
+    function_anchor: u32,
+) -> Result[Expression, SubstraitLoweringError]:
+    """Lower one binary scalar-function expression against resolved bindings."""
+    left = _resolved_projection_expr(bindings, left_expr.clone())?
+    right = _resolved_projection_expr(bindings, right_expr.clone())?
+    return Ok(scalar_function_expr(function_anchor, [left, right]))
 
 
 def _apply_projection_assignments_to_bindings(
@@ -299,15 +327,24 @@ pub def filter_predicate_expr(
     input_columns: list[str],
     predicate: ColumnExpr,
 ) -> Result[Expression, SubstraitLoweringError]:
-    """Compatibility wrapper for lowering one filter scalar expression."""
+    """Lower one filter predicate through the shared scalar-expression path."""
     return scalar_expr(input_columns, predicate)
 
 
 pub def to_rust_i32(value: int) -> RustI32:
     """Convert one Incan `int` into Rust `i32` for proto fields that require 32-bit indices."""
-    match RustI32.try_from(value):
+    match try_to_rust_i32(value):
         Ok(converted) => return converted
-        Err(_) => return 0
+        Err(err) =>
+            message = err.error_message()
+            return raise_value_error(message)
+
+
+pub def try_to_rust_i32(value: int) -> Result[RustI32, SubstraitLoweringError]:
+    """Fallibly convert one Incan `int` into Rust `i32` for proto fields."""
+    match RustI32.try_from(value):
+        Ok(converted) => return Ok(converted)
+        Err(_) => return Err(invalid_scalar_expression(f"value {value} does not fit Rust i32"))
 
 
 pub def rust_i32_to_int(value: RustI32) -> int:
@@ -322,9 +359,18 @@ pub def rust_u32_to_int(value: RustU32) -> int:
 
 pub def to_rust_u32(value: int) -> RustU32:
     """Convert one non-negative Incan `int` into Rust `u32` for proto index vectors."""
-    match RustU32.try_from(value):
+    match try_to_rust_u32(value):
         Ok(converted) => return converted
-        Err(_) => return 0
+        Err(err) =>
+            message = err.error_message()
+            return raise_value_error(message)
+
+
+pub def try_to_rust_u32(value: int) -> Result[RustU32, SubstraitLoweringError]:
+    """Fallibly convert one non-negative Incan `int` into Rust `u32` for proto index vectors."""
+    match RustU32.try_from(value):
+        Ok(converted) => return Ok(converted)
+        Err(_) => return Err(invalid_scalar_expression(f"value {value} does not fit Rust u32"))
 
 
 pub def field_index_from_expression(expr: Expression) -> int:

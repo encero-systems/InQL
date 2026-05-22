@@ -4,7 +4,7 @@ from std.testing import assert_is_err, assert_is_ok, fail, parametrize
 from rust::std::path import Path
 from backends import DataFusion, csv_source, parquet_source
 from dataset import LazyFrame, lazy_frame_named_table
-from session import Session, SessionError
+from session import Session, SessionError, SessionErrorKind
 from substrait.inspect import read_kind_name, root_rel
 
 
@@ -156,7 +156,7 @@ def test_session__read_csv_rejects_duplicate_logical_names() -> None:
     err = assert_is_err(duplicate_result, "duplicate read_csv logical name should fail")
 
     # -- Assert --
-    assert err.kind == "duplicate_registration", "read_csv should surface duplicate-registration errors"
+    assert err.kind == SessionErrorKind.DuplicateRegistration, "read_csv should surface duplicate-registration errors"
 
 
 def test_session__read_parquet_registers_source_and_executes_named_table_plan() -> None:
@@ -257,7 +257,7 @@ def test_session__lazy_collect_fails_without_active_session() -> None:
     err = assert_is_err(lazy.collect(), "lazy.collect should fail without an active Session")
 
     # -- Assert --
-    assert err.kind == "no_active_session", "lazy.collect should fail with no_active_session when no session is active"
+    assert err.kind == SessionErrorKind.NoActiveSession, "lazy.collect should fail with no_active_session when no session is active"
 
 
 def test_session__activate_enables_lazy_collect_with_live_session() -> None:
@@ -295,7 +295,7 @@ def test_session__lazy_collect_uses_currently_active_session() -> None:
     err = assert_is_err(lazy.collect(), "lazy.collect should resolve against the currently active session")
 
     # -- Assert --
-    assert err.kind == "unknown_table", "active-session switching should route collect through the latest active session"
+    assert err.kind == SessionErrorKind.UnknownTable, "active-session switching should route collect through the latest active session"
 
 
 def test_session__clear_active_session_forces_no_active_session() -> None:
@@ -313,7 +313,7 @@ def test_session__clear_active_session_forces_no_active_session() -> None:
     err = assert_is_err(lazy.collect(), "clear_active_session should remove active-session binding")
 
     # -- Assert --
-    assert err.kind == "no_active_session", "clear_active_session should force no_active_session for lazy.collect"
+    assert err.kind == SessionErrorKind.NoActiveSession, "clear_active_session should force no_active_session for lazy.collect"
 
 
 def test_session__read_transform_collect_write_csv_end_to_end() -> None:
@@ -371,7 +371,7 @@ def test_session__write_rejects_empty_sink_uri() -> None:
     err = assert_is_err(session.write_csv(lazy, ""), "empty CSV sink URI should fail")
 
     # -- Assert --
-    assert err.kind == "invalid_sink", "write_csv should reject empty sink URIs"
+    assert err.kind == SessionErrorKind.InvalidSink, "write_csv should reject empty sink URIs"
 
 
 def test_session__register_rejects_duplicates_with_typed_error() -> None:
@@ -387,7 +387,7 @@ def test_session__register_rejects_duplicates_with_typed_error() -> None:
     err = assert_is_err(session.register("orders", csv_source(ORDERS_CSV_FIXTURE)), "duplicate registration should fail")
 
     # -- Assert --
-    assert err.kind == "duplicate_registration", "duplicate names should surface a typed registration error"
+    assert err.kind == SessionErrorKind.DuplicateRegistration, "duplicate names should surface a typed registration error"
 
 
 def test_session__table_reports_unknown_name_with_typed_error() -> None:
@@ -400,7 +400,7 @@ def test_session__table_reports_unknown_name_with_typed_error() -> None:
     err = assert_is_err(table_result, "unknown table lookup should fail")
 
     # -- Assert --
-    assert err.kind == "unknown_table", "unknown table lookup should surface a typed binding error"
+    assert err.kind == SessionErrorKind.UnknownTable, "unknown table lookup should surface a typed binding error"
 
 
 def test_session__empty_registration_input_is_rejected() -> None:
@@ -416,5 +416,5 @@ def test_session__empty_registration_input_is_rejected() -> None:
     empty_uri_err = assert_is_err(session.register("orders", csv_source("")), "empty source URI should fail")
 
     # -- Assert --
-    assert empty_name_err.kind == "invalid_registration", "empty logical names should be rejected"
-    assert empty_uri_err.kind == "invalid_registration", "empty source uris should be rejected"
+    assert empty_name_err.kind == SessionErrorKind.InvalidRegistration, "empty logical names should be rejected"
+    assert empty_uri_err.kind == SessionErrorKind.InvalidRegistration, "empty source uris should be rejected"

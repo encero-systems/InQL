@@ -63,7 +63,7 @@ def _lower_node(view: PrismOptimizedView, node_id: int) -> Rel:
 
 
 def _lowered_rel_or_raise(result: Result[Rel, SubstraitLoweringError]) -> Rel:
-    """Return one lowered relation or raise the structured lowering diagnostic in infallible compatibility paths."""
+    """Return one lowered relation or raise the structured lowering diagnostic for infallible call sites."""
     match result:
         Ok(rel) => return rel
         Err(err) =>

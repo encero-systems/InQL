@@ -3,8 +3,8 @@
 
 [incan]
 format = 1
-incan-version = "0.3.0-rc2"
-deps-fingerprint = "sha256:4fa2c8c76795bb493c487e4cc58afa348958f70c56df1ad68907e31c3e2224db"
+incan-version = "0.3.0-rc6"
+deps-fingerprint = "sha256:424fd53b12f0e810ffe3ba4188a82203bb011b5dd0769ad2b33ab1b854027487"
 cargo-features = []
 cargo-no-default-features = false
 cargo-all-features = false
@@ -1393,6 +1393,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "91622ff5e7162018101f2fea40d6ebf4a78bbe5a49736a2020649edf9693679e"
 
 [[package]]
+name = "encoding_rs"
+version = "0.8.35"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75030f3c4f45dafd7586dd6780965a8c7e8e285a5ecb86713e63a79c5b2766f3"
+dependencies = [
+ "cfg-if",
+]
+
+[[package]]
 name = "equivalent"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1815,14 +1824,14 @@ dependencies = [
 
 [[package]]
 name = "incan_core"
-version = "0.3.0-rc2"
+version = "0.3.0-rc6"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "incan_derive"
-version = "0.3.0-rc2"
+version = "0.3.0-rc6"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1831,7 +1840,7 @@ dependencies = [
 
 [[package]]
 name = "incan_stdlib"
-version = "0.3.0-rc2"
+version = "0.3.0-rc6"
 dependencies = [
  "incan_core",
  "incan_derive",
@@ -1853,14 +1862,17 @@ dependencies = [
 
 [[package]]
 name = "inql"
-version = "0.3.0-rc2"
+version = "0.3.0-rc6"
 dependencies = [
+ "byteorder",
  "datafusion",
  "datafusion-substrait",
+ "encoding_rs",
  "incan_derive",
  "incan_stdlib",
  "prost",
  "prost-types",
+ "rustix",
  "substrait 0.63.0",
 ]
 
@@ -2682,9 +2694,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.149"
+version = "1.0.150"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83fc039473c5595ace860d8c4fafa220ff474b3fc6bfdb4293327f1a37e94d86"
+checksum = "e8014e44b4736ed0538adeecded0fce2a272f22dc9578a7eb6b2d9993c74cfb9"
 dependencies = [
  "indexmap",
  "itoa",

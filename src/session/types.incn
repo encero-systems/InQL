@@ -17,13 +17,14 @@ from backends import (
     parquet_source,
 )
 from dataset import DataFrame, LazyFrame, lazy_frame_named_table
-pub from session.errors import SessionError, format_session_diagnostic, report_session_error
+pub from session.errors import SessionError, SessionErrorKind, format_session_diagnostic, report_session_error
 from session.errors import invalid_registration, invalid_sink
 from session.domain import LogicalName, SourceUri, SinkUri, SinkKind
 from session.csv_schema import infer_csv_schema_columns
 from session.active import (
     ActiveRegistration,
     ActiveSessionError,
+    ActiveSessionErrorKind,
     ActiveSessionState,
     clear_active_session_state,
     get_active_session_state,
@@ -31,6 +32,7 @@ from session.active import (
 )
 from session.datafusion_backend import (
     BackendError,
+    BackendErrorKind,
     BackendRegistration,
     datafusion_collect_materialization_async,
     datafusion_execute_async,
@@ -38,7 +40,7 @@ from session.datafusion_backend import (
     datafusion_write_parquet_async,
 )
 from substrait.schema import RowColumnSpec
-from substrait.errors import SubstraitLoweringError
+from substrait.errors import SubstraitLoweringError, SubstraitLoweringErrorKind
 from substrait.schema_registry import register_named_table_schema
 from substrait.inspect import root_rel, read_named_table_name
 
@@ -148,7 +150,7 @@ pub class Session:
         """Return one lazy named-table carrier for a previously registered logical name."""
         name = _logical_name_from_text(logical_name)?
         if _find_registration_index(self._registrations, name.0) < 0:
-            return Err(SessionError(kind="unknown_table", message=f"table '{name.0}' is not registered"))
+            return Err(SessionError(kind=SessionErrorKind.UnknownTable, message=f"table '{name.0}' is not registered"))
         return Ok(lazy_frame_named_table(name.0))
 
     def activate(self) -> None:
@@ -178,7 +180,7 @@ pub class Session:
                 match exec_result:
                     Ok(_) => return Ok(data)
                     Err(err) => return Err(_session_error_from_backend_error(err))
-            Err(err) => return Err(SessionError(kind="runtime_init_error", message=err.message()))
+            Err(err) => return Err(SessionError(kind=SessionErrorKind.RuntimeInitError, message=err.message()))
 
     def collect[T with Clone](self, data: LazyFrame[T]) -> Result[DataFrame[T], SessionError]:
         """Validate and execute one lazy plan, returning a structured materialized DataFrame."""
@@ -199,7 +201,7 @@ pub class Session:
                             ),
                         )
                     Err(err) => return Err(_session_error_from_backend_error(err))
-            Err(err) => return Err(SessionError(kind="runtime_init_error", message=err.message()))
+            Err(err) => return Err(SessionError(kind=SessionErrorKind.RuntimeInitError, message=err.message()))
 
     def write_csv[T with Clone](self, data: LazyFrame[T], uri: str) -> Result[None, SessionError]:
         """Execute one lazy plan and write result rows to a CSV sink URI."""
@@ -228,11 +230,11 @@ pub class Session:
             SinkKind.Csv =>
                 match block_on(datafusion_write_csv_async(registrations, plan, sink_uri.0)):
                     Ok(write_result) => return _write_result_from_backend_result(write_result)
-                    Err(err) => return Err(SessionError(kind="runtime_init_error", message=err.message()))
+                    Err(err) => return Err(SessionError(kind=SessionErrorKind.RuntimeInitError, message=err.message()))
             SinkKind.Parquet =>
                 match block_on(datafusion_write_parquet_async(registrations, plan, sink_uri.0)):
                     Ok(write_result) => return _write_result_from_backend_result(write_result)
-                    Err(err) => return Err(SessionError(kind="runtime_init_error", message=err.message()))
+                    Err(err) => return Err(SessionError(kind=SessionErrorKind.RuntimeInitError, message=err.message()))
 
 
 pub class SessionBuilder:
@@ -263,7 +265,9 @@ def _session_from_active_state(state: ActiveSessionState) -> Session:
 
 def _session_error_from_active_error(err: ActiveSessionError) -> SessionError:
     """Translate active-session errors into public SessionError values."""
-    return SessionError(kind=err.kind, message=err.message)
+    match err.kind:
+        ActiveSessionErrorKind.NoActiveSession =>
+            return SessionError(kind=SessionErrorKind.NoActiveSession, message=err.message)
 
 
 def _to_backend_registrations(registrations: list[SessionRegistration]) -> list[BackendRegistration]:
@@ -273,17 +277,34 @@ def _to_backend_registrations(registrations: list[SessionRegistration]) -> list[
 
 def _session_error_from_backend_error(err: BackendError) -> SessionError:
     """Translate backend errors into public SessionError values."""
-    return SessionError(kind=err.kind, message=err.message)
+    match err.kind:
+        BackendErrorKind.BackendPlanningError =>
+            return SessionError(kind=SessionErrorKind.BackendPlanningError, message=err.message)
+        BackendErrorKind.BackendExecutionError =>
+            return SessionError(kind=SessionErrorKind.BackendExecutionError, message=err.message)
+        BackendErrorKind.BackendSinkError =>
+            return SessionError(kind=SessionErrorKind.BackendSinkError, message=err.message)
+        BackendErrorKind.BackendRegistrationError =>
+            return SessionError(kind=SessionErrorKind.BackendRegistrationError, message=err.message)
 
 
 def _session_error_from_lowering_error(err: SubstraitLoweringError) -> SessionError:
     """Translate Substrait lowering errors into public SessionError values."""
-    return SessionError(kind=err.kind, message=err.message)
+    match err.kind:
+        SubstraitLoweringErrorKind.InvalidScalarExpression =>
+            return SessionError(kind=SessionErrorKind.InvalidScalarExpression, message=err.message)
+        SubstraitLoweringErrorKind.UnknownScalarColumn =>
+            return SessionError(kind=SessionErrorKind.UnknownScalarColumn, message=err.message)
+        SubstraitLoweringErrorKind.UnsupportedScalarExpression =>
+            return SessionError(kind=SessionErrorKind.UnsupportedScalarExpression, message=err.message)
 
 
 def _duplicate_registration_error(logical_name: str) -> SessionError:
     """Build the stable duplicate-registration error for one logical name."""
-    return SessionError(kind="duplicate_registration", message=f"table '{logical_name}' is already registered")
+    return SessionError(
+        kind=SessionErrorKind.DuplicateRegistration,
+        message=f"table '{logical_name}' is already registered",
+    )
 
 
 def _ensure_registration_available(
@@ -354,7 +375,10 @@ def _ensure_datafusion_backend(selection: BackendSelection) -> Result[None, Sess
     if selection.kind == BackendKind.DataFusionEngine:
         return Ok(None)
     return Err(
-        SessionError(kind="unsupported_backend", message=f"backend '{backend_kind_name(selection)}' is not implemented"),
+        SessionError(
+            kind=SessionErrorKind.UnsupportedBackend,
+            message=f"backend '{backend_kind_name(selection)}' is not implemented",
+        ),
     )
 
 
@@ -375,7 +399,7 @@ def _validate_named_table_binding(registrations: list[SessionRegistration], plan
     if len(table_name) == 0:
         return Ok(None)
     if _find_registration_index(registrations, table_name) < 0:
-        return Err(SessionError(kind="unknown_table", message=f"table '{table_name}' is not registered"))
+        return Err(SessionError(kind=SessionErrorKind.UnknownTable, message=f"table '{table_name}' is not registered"))
     return Ok(None)
 
 

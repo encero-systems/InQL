@@ -54,7 +54,7 @@ from substrait.expr_lowering import (
     scalar_expr,
     string_expr,
 )
-from substrait.errors import SubstraitLoweringError
+from substrait.errors import SubstraitLoweringError, invalid_scalar_expression
 from substrait.extensions import COUNT_FUNCTION_ANCHOR, SUM_FUNCTION_ANCHOR
 from substrait.inspect import relation_output_columns
 from substrait.schema_registry import named_table_base_schema, unknown_named_struct
@@ -178,15 +178,17 @@ pub def set_op_from_kind(operation: SubstraitSetOperation) -> RustI32:
         SubstraitSetOperation.UnionAll => return SetOp.UnionAll.into()
 
 
-def _set_operation_from_name(operation: str) -> SubstraitSetOperation:
+def _set_operation_from_name(operation: str) -> Result[SubstraitSetOperation, SubstraitLoweringError]:
     """Map string set-operation names to typed Substrait set-operation enums."""
     if operation == "Union":
-        return SubstraitSetOperation.UnionDistinct
+        return Ok(SubstraitSetOperation.UnionDistinct)
     elif operation == "UnionAll":
-        return SubstraitSetOperation.UnionAll
+        return Ok(SubstraitSetOperation.UnionAll)
     elif operation == "Intersect":
-        return SubstraitSetOperation.IntersectPrimary
-    return SubstraitSetOperation.MinusPrimary
+        return Ok(SubstraitSetOperation.IntersectPrimary)
+    elif operation == "Minus":
+        return Ok(SubstraitSetOperation.MinusPrimary)
+    return Err(invalid_scalar_expression(f"unknown set operation '{operation}'"))
 
 
 def _resolved_measure_to_substrait(measure: ResolvedAggregateMeasure) -> Measure:
@@ -235,7 +237,7 @@ def _resolved_measures(
 
 
 def _lowered_rel_or_raise(result: Result[Rel, SubstraitLoweringError]) -> Rel:
-    """Return one lowered relation or raise the structured lowering diagnostic in infallible compatibility paths."""
+    """Return one lowered relation or raise the structured lowering diagnostic for infallible call sites."""
     match result:
         Ok(rel) => return rel
         Err(err) =>
@@ -279,7 +281,7 @@ pub def read_local_parquet_rel(uri: str) -> Rel:
 
 
 pub def read_local_files_rel(uri: str) -> Rel:
-    """Compatibility wrapper for the current Parquet-backed `LocalFiles` read helper."""
+    """Construct a logical `ReadRel(LocalFiles)` through the current Parquet-backed helper."""
     return read_local_parquet_rel(uri)
 
 
@@ -485,8 +487,13 @@ pub def fetch_rel(input: Rel, offset: int, count: int) -> Rel:
 
 
 pub def set_rel(left: Rel, right: Rel, operation: str) -> Rel:
-    """Compatibility wrapper for `SetRel` using a string-based operation name."""
-    return set_rel_of_kind(left, right, _set_operation_from_name(operation))
+    """Wrap two child relations in `SetRel` using a string operation name."""
+    return _lowered_rel_or_raise(try_set_rel(left, right, operation))
+
+
+pub def try_set_rel(left: Rel, right: Rel, operation: str) -> Result[Rel, SubstraitLoweringError]:
+    """Fallibly wrap two child relations in `SetRel` using a string operation name."""
+    return Ok(set_rel_of_kind(left, right, _set_operation_from_name(operation)?))
 
 
 pub def set_rel_of_kind(left: Rel, right: Rel, operation: SubstraitSetOperation) -> Rel:

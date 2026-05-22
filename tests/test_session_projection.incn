@@ -2,7 +2,7 @@
 
 from functions import add, col, lit, mul
 from dataset import LazyFrame
-from session import Session
+from session import Session, SessionErrorKind
 from std.testing import assert_is_err, assert_is_ok
 from substrait.inspect import root_names
 
@@ -115,7 +115,7 @@ def test_session_projection__collect_unknown_projection_column_returns_planning_
     err = assert_is_err(session.collect(projected), "expected unknown projection input column to fail during planning")
 
     # -- Assert --
-    assert err.kind == "unknown_scalar_column", err.error_message()
+    assert err.kind == SessionErrorKind.UnknownScalarColumn, err.error_message()
     assert err.message.contains("missing_amount"), err.error_message()
 
 

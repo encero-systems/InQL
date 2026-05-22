@@ -45,7 +45,7 @@ from substrait.relations import (
     set_rel_of_kind,
     sort_rel,
 )
-from substrait.schema_registry import register_named_table_schema
+from substrait.schema_registry import named_table_columns, register_named_table_schema
 from substrait.schema import RowColumnSpec, SubstraitPrimitiveKind
 from substrait.conformance import (
     ConformanceCapabilityTags,
@@ -122,6 +122,25 @@ def _register_fixture_schema(table_name: str) -> None:
     )
 
 
+def test_plan__named_table_schema_registry_prefers_latest_registration() -> None:
+    # -- Arrange --
+    table_name = "__schema_replace_probe__"
+    register_named_table_schema(
+        table_name,
+        [RowColumnSpec(name="old_id", kind=SubstraitPrimitiveKind.I64, nullable=false)],
+    )
+    register_named_table_schema(
+        table_name,
+        [RowColumnSpec(name="new_id", kind=SubstraitPrimitiveKind.I64, nullable=false)],
+    )
+
+    # -- Act --
+    columns = named_table_columns(table_name)
+
+    # -- Assert --
+    assert columns == ["new_id"], "named-table schema lookup should use the latest registered shape"
+
+
 def test_plan__named_table_root_kind() -> None:
     # -- Arrange --
     plan = plan_from_named_table("orders")
@@ -157,25 +176,25 @@ def test_plan__read_root_kinds_are_distinguished() -> None:
 def test_plan__local_files_helpers_are_explicitly_parquet_backed() -> None:
     # -- Arrange --
     uri = "fixture://orders.parquet"
-    rel_via_compat = read_local_files_rel(uri)
+    rel_via_default = read_local_files_rel(uri)
     rel_via_parquet = read_local_parquet_rel(uri)
-    plan_via_compat = plan_from_local_files(uri)
+    plan_via_default = plan_from_local_files(uri)
     plan_via_parquet = plan_from_local_parquet(uri)
 
     # -- Act --
-    compat_kind = relation_kind_name(rel_via_compat)
-    compat_read_kind = read_kind_name(rel_via_compat)
+    default_kind = relation_kind_name(rel_via_default)
+    default_read_kind = read_kind_name(rel_via_default)
     parquet_kind = relation_kind_name(rel_via_parquet)
     parquet_read_kind = read_kind_name(rel_via_parquet)
-    compat_encoded = plan_encoded_len(plan_via_compat)
+    default_encoded = plan_encoded_len(plan_via_default)
     parquet_encoded = plan_encoded_len(plan_via_parquet)
 
     # -- Assert --
-    assert compat_kind == "ReadRel", "compat local-files helper should still emit ReadRel"
-    assert compat_read_kind == "LocalFiles", "compat local-files helper should still emit LocalFiles read kind"
+    assert default_kind == "ReadRel", "default local-files helper should emit ReadRel"
+    assert default_read_kind == "LocalFiles", "default local-files helper should emit LocalFiles read kind"
     assert parquet_kind == "ReadRel", "explicit parquet local-files helper should emit ReadRel"
     assert parquet_read_kind == "LocalFiles", "explicit parquet local-files helper should emit LocalFiles read kind"
-    assert compat_encoded == parquet_encoded, "compat and explicit parquet plan helpers should remain equivalent"
+    assert default_encoded == parquet_encoded, "default and explicit parquet plan helpers should remain equivalent"
 
 
 def test_plan__combinators_compose_deterministically() -> None:

@@ -14,7 +14,7 @@ The implementation is split into focused owner modules:
 
 from rust::prost import Message
 from rust::substrait::proto import Plan
-pub from substrait.errors import SubstraitLoweringError
+pub from substrait.errors import SubstraitLoweringError, SubstraitLoweringErrorKind
 pub from substrait.schema_registry import named_table_columns, register_named_table_schema
 pub from substrait.relations import (
     SubstraitJoinKind,

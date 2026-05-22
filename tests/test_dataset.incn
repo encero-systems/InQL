@@ -20,7 +20,7 @@ from functions import (
     str_lit,
     sum,
 )
-from projection_builders import ColumnExprKind
+from projection_builders import ColumnExprKind, column_expr_kind, column_expr_name
 from substrait.extensions import explode_extension_uri
 from substrait.inspect import plan_contains_relation_kind, plan_has_extension_urn, relation_kind_name, root_rel
 from substrait.plans import plan_encoded_len, plan_from_named_table, plan_from_root_relation
@@ -54,12 +54,12 @@ def _column_expr_kind_name(kind: ColumnExprKind) -> str:
 
 def _literal_helper_kind_name(helper_name: str) -> str:
     match helper_name:
-        "int_expr" => return _column_expr_kind_name(int_expr(2).kind)
-        "float_expr" => return _column_expr_kind_name(float_expr(2.5).kind)
-        "str_expr" => return _column_expr_kind_name(str_expr("open").kind)
-        "int_lit" => return _column_expr_kind_name(int_lit(3).kind)
-        "str_lit" => return _column_expr_kind_name(str_lit("closed").kind)
-        "bool_lit" => return _column_expr_kind_name(bool_lit(true).kind)
+        "int_expr" => return _column_expr_kind_name(column_expr_kind(int_expr(2)))
+        "float_expr" => return _column_expr_kind_name(column_expr_kind(float_expr(2.5)))
+        "str_expr" => return _column_expr_kind_name(column_expr_kind(str_expr("open")))
+        "int_lit" => return _column_expr_kind_name(column_expr_kind(int_lit(3)))
+        "str_lit" => return _column_expr_kind_name(column_expr_kind(str_lit("closed")))
+        "bool_lit" => return _column_expr_kind_name(column_expr_kind(bool_lit(true)))
         _ => return fail_t(f"unknown literal helper: {helper_name}")
 
 
@@ -149,13 +149,13 @@ def test_smoke__dataset_types_are_published() -> None:
     count_result = count()
 
     # -- Assert --
-    assert sum_result.expr.column_name == "amount", "sum should preserve the selected input column expression"
-    assert count_result.expr.column_name == "", "count should remain a zero-argument aggregate helper"
+    assert column_expr_name(sum_result.expr) == "amount", "sum should preserve the selected input column expression"
+    assert column_expr_name(count_result.expr) == "", "count should remain a zero-argument aggregate helper"
 
 
 @parametrize("helper_name, expected_kind", [("int_expr", "IntLiteral"), ("float_expr", "FloatLiteral"), ("str_expr", "StringLiteral"), ("int_lit", "IntLiteral"), ("str_lit", "StringLiteral"), ("bool_lit", "BoolLiteral")])
-def test_scalar_literals__compatibility_helpers_share_column_expr_model(helper_name: str, expected_kind: str) -> None:
-    """Typed literal compatibility helpers should still build canonical column expressions."""
+def test_scalar_literals__filter_helper_aliases_share_column_expr_model(helper_name: str, expected_kind: str) -> None:
+    """Typed filter literal helper aliases should build canonical column expressions."""
     # -- Arrange --
 
     # -- Act --

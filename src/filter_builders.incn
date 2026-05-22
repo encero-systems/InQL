@@ -1,63 +1,25 @@
 """
-Compatibility filter builder surface for the current InQL scalar-expression slice.
+Filter-oriented builder surface for the current InQL scalar-expression slice.
 
-These names preserve the older predicate-oriented public surface while lowering into the canonical scalar-expression
-model used by filters, projections, grouping keys, and aggregate inputs.
+These names provide predicate-friendly helper spellings over the same scalar-expression model used by filters,
+projections, grouping keys, and aggregate inputs.
 """
 
 from projection_builders import ColumnExpr, bool_expr, eq as scalar_eq, gt as scalar_gt, int_expr, str_expr
 
 
-@derive(Clone)
-pub enum FilterLiteralKind(str):
-    """Supported literal kinds for the current filter-builder surface."""
-
-    Int = "int"
-    String = "string"
-    Bool = "bool"
-
-
-@derive(Clone)
-pub model FilterLiteral:
-    """Literal value captured by one filter predicate."""
-
-    pub kind: FilterLiteralKind
-    pub int_value: int
-    pub string_value: str
-    pub bool_value: bool
-
-
-@derive(Clone)
-pub enum FilterPredicateKind(str):
-    """Supported predicate kinds for the current filter-builder surface."""
-
-    AlwaysTrue = "always_true"
-    AlwaysFalse = "always_false"
-    Eq = "eq"
-    Gt = "gt"
-
-
-@derive(Clone)
-pub model FilterPredicate:
-    """Filter predicate description carried through dataset, Prism, and Substrait boundaries."""
-
-    pub kind: FilterPredicateKind
-    pub column_name: str
-    pub literal: FilterLiteral
-
-
 pub def int_lit(value: int) -> ColumnExpr:
-    """Build one integer scalar literal for compatibility with older filter examples."""
+    """Build one integer scalar literal through the filter-helper naming style."""
     return int_expr(value)
 
 
 pub def str_lit(value: str) -> ColumnExpr:
-    """Build one string scalar literal for compatibility with older filter examples."""
+    """Build one string scalar literal through the filter-helper naming style."""
     return str_expr(value)
 
 
 pub def bool_lit(value: bool) -> ColumnExpr:
-    """Build one boolean scalar literal for compatibility with older filter examples."""
+    """Build one boolean scalar literal through the filter-helper naming style."""
     return bool_expr(value)
 
 

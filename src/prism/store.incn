@@ -1,7 +1,19 @@
 """Append-only Prism store allocation, storage, reachability, and cross-store adoption."""
 
 from aggregate_builders import AggregateMeasure
-from projection_builders import ColumnExpr, ProjectionAssignment
+from projection_builders import (
+    AddExpr,
+    BoolLiteralExpr,
+    ColumnExpr,
+    ColumnRefExpr,
+    EqExpr,
+    FloatLiteralExpr,
+    GtExpr,
+    IntLiteralExpr,
+    MultiplyExpr,
+    ProjectionAssignment,
+    StringLiteralExpr,
+)
 from prism.types import PrismNode, PrismNodeKind, PrismStoreAdoption, PrismStoreId
 
 
@@ -90,7 +102,7 @@ pub def adopt_cursor_subgraph(
         # Inputs are remapped first so structural equality is evaluated in the target store's id space.
         remapped_input_ids = remap_input_ids(source_node.input_ids, id_map)
 
-        # Dedup is intentionally local to this adoption pass; older target-store nodes are out of scope for this slice.
+        # Dedup is intentionally local to the nodes adopted during this pass.
         reused_adopted_id = _find_existing_adopted_node_id(
             target_store_nodes,
             source_node,
@@ -258,24 +270,63 @@ def _column_expr_lists_structurally_equal(left: list[ColumnExpr], right: list[Co
 
 def _column_exprs_structurally_equal(left: ColumnExpr, right: ColumnExpr) -> bool:
     """Return whether two projection expressions are structurally equivalent."""
-    if left.kind != right.kind:
-        return false
-    if left.column_name != right.column_name:
-        return false
-    if left.int_value != right.int_value:
-        return false
-    if left.float_value != right.float_value:
-        return false
-    if left.string_value != right.string_value:
-        return false
-    if left.bool_value != right.bool_value:
-        return false
-    if len(left.arguments) != len(right.arguments):
-        return false
-    for idx in range(len(left.arguments)):
-        if not _column_exprs_structurally_equal(left.arguments[idx], right.arguments[idx]):
-            return false
-    return true
+    match left:
+        ColumnRefExpr(left_column) =>
+            match right:
+                ColumnRefExpr(right_column) => return left_column.column_name == right_column.column_name
+                _ => return false
+        IntLiteralExpr(left_literal) =>
+            match right:
+                IntLiteralExpr(right_literal) => return left_literal.value == right_literal.value
+                _ => return false
+        FloatLiteralExpr(left_literal) =>
+            match right:
+                FloatLiteralExpr(right_literal) => return left_literal.value == right_literal.value
+                _ => return false
+        StringLiteralExpr(left_literal) =>
+            match right:
+                StringLiteralExpr(right_literal) => return left_literal.value == right_literal.value
+                _ => return false
+        BoolLiteralExpr(left_literal) =>
+            match right:
+                BoolLiteralExpr(right_literal) => return left_literal.value == right_literal.value
+                _ => return false
+        AddExpr(left_add) =>
+            match right:
+                AddExpr(right_add) =>
+                    if len(left_add.arguments) != 2 or len(right_add.arguments) != 2:
+                        return false
+                    if not _column_exprs_structurally_equal(left_add.arguments[0], right_add.arguments[0]):
+                        return false
+                    return _column_exprs_structurally_equal(left_add.arguments[1], right_add.arguments[1])
+                _ => return false
+        MultiplyExpr(left_multiply) =>
+            match right:
+                MultiplyExpr(right_multiply) =>
+                    if len(left_multiply.arguments) != 2 or len(right_multiply.arguments) != 2:
+                        return false
+                    if not _column_exprs_structurally_equal(left_multiply.arguments[0], right_multiply.arguments[0]):
+                        return false
+                    return _column_exprs_structurally_equal(left_multiply.arguments[1], right_multiply.arguments[1])
+                _ => return false
+        EqExpr(left_eq) =>
+            match right:
+                EqExpr(right_eq) =>
+                    if len(left_eq.arguments) != 2 or len(right_eq.arguments) != 2:
+                        return false
+                    if not _column_exprs_structurally_equal(left_eq.arguments[0], right_eq.arguments[0]):
+                        return false
+                    return _column_exprs_structurally_equal(left_eq.arguments[1], right_eq.arguments[1])
+                _ => return false
+        GtExpr(left_gt) =>
+            match right:
+                GtExpr(right_gt) =>
+                    if len(left_gt.arguments) != 2 or len(right_gt.arguments) != 2:
+                        return false
+                    if not _column_exprs_structurally_equal(left_gt.arguments[0], right_gt.arguments[0]):
+                        return false
+                    return _column_exprs_structurally_equal(left_gt.arguments[1], right_gt.arguments[1])
+                _ => return false
 
 
 def _latest_store_next_node_id(store_id: PrismStoreId) -> int:
