@@ -225,17 +225,6 @@ def _resolved_measure(
     return Ok(ResolvedAggregateMeasure(kind=measure.kind, expr=scalar_expr(input_columns, measure.expr)?))
 
 
-def _resolved_measures(
-    input_columns: list[str],
-    measures: list[AggregateMeasure],
-) -> Result[list[ResolvedAggregateMeasure], SubstraitLoweringError]:
-    """Resolve all aggregate measures before lowering them into Substrait measure payloads."""
-    mut resolved: list[ResolvedAggregateMeasure] = []
-    for measure in measures:
-        resolved.append(_resolved_measure(measure, input_columns)?)
-    return Ok(resolved)
-
-
 def _lowered_rel_or_raise(result: Result[Rel, SubstraitLoweringError]) -> Rel:
     """Return one lowered relation or raise the structured lowering diagnostic for infallible call sites."""
     match result:
@@ -446,7 +435,10 @@ pub def try_aggregate_rel_of_columns(
         grouping_expressions=grouping_expr_copies,
         expression_references=grouping_reference_indexes(len(grouping_exprs)),
     )]
-    resolved_measures = _resolved_measures(input_columns, measures)?
+    mut resolved_measures: list[ResolvedAggregateMeasure] = []
+    # TODO(incan#633): Replace this loop with a fallible list comprehension once `?` lowers correctly there.
+    for measure in measures:
+        resolved_measures.append(_resolved_measure(measure, input_columns)?)
     lowered_measures = [_resolved_measure_to_substrait(measure) for measure in resolved_measures]
     return Ok(
         _rel_aggregate(
