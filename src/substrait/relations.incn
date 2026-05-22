@@ -435,11 +435,7 @@ pub def try_aggregate_rel_of_columns(
         grouping_expressions=grouping_expr_copies,
         expression_references=grouping_reference_indexes(len(grouping_exprs)),
     )]
-    mut resolved_measures: list[ResolvedAggregateMeasure] = []
-    # TODO(incan#633): Replace this loop with a fallible list comprehension once `?` lowers correctly there.
-    for measure in measures:
-        resolved_measures.append(_resolved_measure(measure, input_columns)?)
-    lowered_measures = [_resolved_measure_to_substrait(measure) for measure in resolved_measures]
+    lowered_measures = [_resolved_measure_to_substrait(_resolved_measure(measure, input_columns)?) for measure in measures]
     return Ok(
         _rel_aggregate(
             AggregateRel(
