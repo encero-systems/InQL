@@ -1,0 +1,37 @@
+"""
+Array flattening helper.
+
+`array_flatten` is scalar: it flattens an array value in one input row and does not produce more rows.
+"""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.nested.common import nested_application
+from functions.registry import function_registry
+from projection_builders import ColumnExpr
+from substrait.function_extensions import ARRAY_FLATTEN_FUNCTION_ANCHOR
+
+
+@function_registry.add("array_flatten", deterministic_spec(
+    FunctionClass.Scalar,
+    FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    FunctionNullBehavior.DependsOnInputs,
+    extension_mapping("flatten", ARRAY_FLATTEN_FUNCTION_ANCHOR),
+))
+pub def array_flatten(array_expr: ColumnExpr) -> ColumnExpr:
+    """
+    Flatten an array-of-arrays into one row-level array value.
+
+    Examples:
+        flattened = array_flatten(col("nested_tags"))
+
+    Parameters:
+        array_expr: Array expression to flatten.
+    """
+    return nested_application("array_flatten", [array_expr])

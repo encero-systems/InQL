@@ -1,0 +1,34 @@
+"""Array element access helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.nested.common import nested_application
+from functions.registry import function_registry
+from projection_builders import ColumnExpr
+from substrait.function_extensions import ARRAY_ELEMENT_FUNCTION_ANCHOR
+
+
+@function_registry.add("element_at", deterministic_spec(
+    FunctionClass.Scalar,
+    FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    FunctionNullBehavior.DependsOnInputs,
+    extension_mapping("array_element", ARRAY_ELEMENT_FUNCTION_ANCHOR),
+))
+pub def element_at(array_expr: ColumnExpr, index: ColumnExpr) -> ColumnExpr:
+    """
+    Return an array element by one-based index.
+
+    Examples:
+        first_tag = element_at(col("tags"), int_lit(1))
+
+    Parameters:
+        array_expr: Array expression to access.
+        index: One-based element index. Negative indexes count from the end where supported by the backend adapter.
+    """
+    return nested_application("element_at", [array_expr, index])

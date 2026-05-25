@@ -1,0 +1,34 @@
+"""Array first-position helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.nested.common import nested_application
+from functions.registry import function_registry
+from projection_builders import ColumnExpr
+from substrait.function_extensions import ARRAY_POSITION_FUNCTION_ANCHOR
+
+
+@function_registry.add("array_position", deterministic_spec(
+    FunctionClass.Scalar,
+    FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    FunctionNullBehavior.DependsOnInputs,
+    extension_mapping("array_position", ARRAY_POSITION_FUNCTION_ANCHOR),
+))
+pub def array_position(array_expr: ColumnExpr, value: ColumnExpr) -> ColumnExpr:
+    """
+    Return the one-based first position of a value in an array, or null when absent.
+
+    Examples:
+        first_paid = array_position(col("tags"), str_lit("paid"))
+
+    Parameters:
+        array_expr: Array expression to search.
+        value: Value expression to find.
+    """
+    return nested_application("array_position", [array_expr, value])

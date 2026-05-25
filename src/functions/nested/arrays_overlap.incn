@@ -1,0 +1,34 @@
+"""Array overlap predicate helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.nested.common import nested_application
+from functions.registry import function_registry
+from projection_builders import ColumnExpr
+from substrait.function_extensions import ARRAY_HAS_ANY_FUNCTION_ANCHOR
+
+
+@function_registry.add("arrays_overlap", deterministic_spec(
+    FunctionClass.Scalar,
+    FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    FunctionNullBehavior.DependsOnInputs,
+    extension_mapping("array_has_any", ARRAY_HAS_ANY_FUNCTION_ANCHOR),
+))
+pub def arrays_overlap(left: ColumnExpr, right: ColumnExpr) -> ColumnExpr:
+    """
+    Return whether two arrays have any elements in common.
+
+    Examples:
+        has_shared_tag = arrays_overlap(col("tags"), array([str_lit("paid")]))
+
+    Parameters:
+        left: First array expression.
+        right: Second array expression.
+    """
+    return nested_application("arrays_overlap", [left, right])
