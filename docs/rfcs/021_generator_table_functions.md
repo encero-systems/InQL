@@ -1,6 +1,6 @@
 # InQL RFC 021: Generator and table-valued functions
 
-- **Status:** Draft
+- **Status:** In Progress
 - **Created:** 2026-04-27
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -42,14 +42,15 @@ InQL already has an unnest/explode design direction through its Substrait work. 
 
 ## Guide-level explanation (how authors think about it)
 
-Authors should use generators when one input row may become multiple output rows:
+Authors should use generators when one input row may become multiple output rows. In the current builder surface,
+generators are constructed as explicit applications and then applied to a relation:
 
 ```incan
-from pub::inql.functions import col
+from pub::inql.functions import col, explode
 
 items = (
     orders
-        .explode(col("line_items"), as_="line_item")
+        .generate(explode(col("line_items"), "line_item"))
         .select(["order_id", "line_item"])
 )
 ```
@@ -64,13 +65,13 @@ Generator functions must be registry entries with function class `generator` or 
 
 `explode_outer(array_expr)` must preserve the input row when the input array is null or empty and must produce a null generated value according to its output schema.
 
-`posexplode(array_expr)` and `posexplode_outer(array_expr)` must include a positional output column in addition to the generated element. The position origin must be specified before this RFC reaches Planned status.
+`posexplode(array_expr)` and `posexplode_outer(array_expr)` must include a positional output column in addition to the generated element. Positional output is zero-based because `posexplode` follows the Spark-compatible naming convention rather than InQL's one-based scalar collection indexing rule.
 
 `inline(array_of_struct_expr)` must expand each struct element into output columns. `inline_outer` must preserve outer rows for null or empty input according to the outer generator rule.
 
 `stack` must construct multiple output rows from explicit expressions according to a declared row count and output schema.
 
-`flatten` must be treated as a table-valued/generator operation when supported. Its exact input type, recursive behavior, path behavior, and output columns must be specified before it reaches Planned status.
+`flatten` must be treated as a table-valued/generator operation when supported. Portable InQL does not yet define Snowflake-style recursive/path flattening; scalar `array_flatten(...)` remains part of RFC 020 and does not change row cardinality.
 
 Every generator must define output column names, output types, nullability, interaction with existing columns, and aliasing requirements. Name collisions must be diagnosed unless an explicit overwrite or qualification rule applies.
 
@@ -78,11 +79,11 @@ Every generator must define output column names, output types, nullability, inte
 
 ### Syntax
 
-Generators may appear as dataframe relation methods, query-block clauses, or table-valued function forms. Regardless of syntax, they must lower to relation-shaping operations.
+Generators may appear as dataframe relation methods, query-block clauses, or table-valued function forms. Regardless of syntax, they must lower to relation-shaping operations. The initial builder API uses `generate(generator)` to avoid overloading the existing zero-argument compatibility `explode()` method.
 
 ### Semantics
 
-Generator output schema is part of the relation schema after the generator operation. Generators may preserve input columns, replace a nested column with generated columns, or produce a new relation depending on the function and syntax, but the behavior must be explicit.
+Generator output schema is part of the relation schema after the generator operation. The initial portable generator applications preserve all input columns and append generated output columns in declaration order. Generated aliases are required, must be non-empty, and must not collide with existing columns.
 
 ### Interaction with other InQL surfaces
 
@@ -112,11 +113,16 @@ Existing unnest/explode behavior should align with this RFC. If current behavior
 - **Execution / interchange** — Prism and Substrait lowering must represent cardinality changes and output schemas faithfully.
 - **Documentation** — generator docs should explain cardinality and schema effects before listing helper names.
 
-## Unresolved questions
+## Design Decisions
 
-- Should positional generators use zero-based or one-based positions?
-- Should `.explode(...)` preserve all input columns by default?
-- What aliasing syntax should be required for generated output columns?
-- What subset of Snowflake-style `flatten` behavior belongs in portable InQL versus a warehouse compatibility extension?
+### Resolved
 
-<!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->
+- Positional generators use zero-based positions for compatibility with the `posexplode` naming convention.
+- Explicit generator applications preserve all input columns by default and append generated output columns.
+- Generated aliases are required at builder construction time.
+- Snowflake-style recursive/path `flatten` remains outside the portable core until its output schema and compatibility category are specified separately.
+
+### Remaining
+
+- `inline`, `inline_outer`, `stack`, and portable table-valued `flatten` need separate helper slices on top of the generator application model.
+- Query-block generator syntax still needs compiler/query-surface work.

@@ -26,6 +26,8 @@ pub from substrait.relations import (
     fetch_rel,
     filter_rel,
     filter_rel_of_columns,
+    generator_rel,
+    generator_rel_of_columns,
     join_rel,
     join_rel_of_kind,
     project_rel,
@@ -58,6 +60,8 @@ pub from substrait.inspect import (
     aggregate_measure_invocation_names,
     aggregate_measure_output_names,
     aggregate_measure_sort_counts,
+    plan_extension_urn_anchor_at,
+    plan_extension_urn_count,
     plan_contains_relation_kind,
     plan_has_extension_urn,
     read_kind_name,
@@ -76,6 +80,9 @@ pub from substrait.inspect import (
 )
 pub from substrait.function_extensions import (
     explode_extension_uri,
+    explode_outer_extension_uri,
     function_extension_uri,
+    posexplode_extension_uri,
+    posexplode_outer_extension_uri,
     registered_substrait_extension_uris,
 )

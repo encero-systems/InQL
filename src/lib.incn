@@ -6,8 +6,24 @@ Consumers depend on this package via `[dependencies]` and import with `from pub:
 """
 
 pub from dataset import BoundedDataSet, DataFrame, DataSet, DataStream, LazyFrame, UnboundedDataSet
-pub from dataset.ops import agg_ds, explode_ds, filter_ds, group_by_ds, join_ds, limit_ds, order_by_ds, select_ds
+pub from dataset.ops import (
+    agg_ds,
+    explode_ds,
+    filter_ds,
+    generate_ds,
+    group_by_ds,
+    join_ds,
+    limit_ds,
+    order_by_ds,
+    select_ds,
+)
 pub from aggregate_builders import AggregateKind, AggregateMeasure
+pub from generator_builders import (
+    GeneratorApplication,
+    GeneratorKind,
+    generator_output_columns,
+    generator_primary_output_column,
+)
 pub from projection_builders import (
     BoolLiteralExpr,
     ColumnExpr,
@@ -80,6 +96,10 @@ pub from functions.nested.map_from_arrays import map_from_arrays
 pub from functions.nested.map_keys import map_keys
 pub from functions.nested.map_values import map_values
 pub from functions.nested.named_struct import named_struct
+pub from functions.generators.explode import explode
+pub from functions.generators.explode_outer import explode_outer
+pub from functions.generators.posexplode import posexplode
+pub from functions.generators.posexplode_outer import posexplode_outer
 pub from functions.operators.add import add
 pub from functions.operators.and_ import and_
 pub from functions.operators.div import div
@@ -143,6 +163,7 @@ pub from function_registry import (
     function_ref_for,
     namespaced_function_ref,
     rejected_function_policy,
+    relation_extension_mapping,
     rewrite_mapping,
     sort_field_mapping,
     structural_mapping,
@@ -185,6 +206,8 @@ pub from substrait.relations import (
     extension_single_rel,
     fetch_rel,
     filter_rel,
+    generator_rel,
+    generator_rel_of_columns,
     join_rel,
     join_rel_of_kind,
     project_rel,
@@ -212,6 +235,8 @@ pub from substrait.inspect import (
     aggregate_measure_function_names,
     aggregate_measure_invocation_names,
     aggregate_measure_sort_counts,
+    plan_extension_urn_anchor_at,
+    plan_extension_urn_count,
     plan_contains_relation_kind,
     plan_has_extension_urn,
     read_kind_name,
@@ -223,7 +248,10 @@ pub from substrait.inspect import (
 )
 pub from substrait.function_extensions import (
     explode_extension_uri,
+    explode_outer_extension_uri,
     function_extension_uri,
+    posexplode_extension_uri,
+    posexplode_outer_extension_uri,
     registered_substrait_extension_uris,
 )
 pub from substrait.conformance_catalog import (

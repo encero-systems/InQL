@@ -59,6 +59,10 @@ pub from functions.nested.map_from_arrays import map_from_arrays
 pub from functions.nested.map_keys import map_keys
 pub from functions.nested.map_values import map_values
 pub from functions.nested.named_struct import named_struct
+pub from functions.generators.explode import explode
+pub from functions.generators.explode_outer import explode_outer
+pub from functions.generators.posexplode import posexplode
+pub from functions.generators.posexplode_outer import posexplode_outer
 pub from functions.operators.add import add
 pub from functions.operators.and_ import and_
 pub from functions.operators.div import div

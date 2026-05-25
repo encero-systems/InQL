@@ -76,6 +76,7 @@ pub enum SubstraitMappingKind(str):
 
     CoreFunction = "core_function"
     ExtensionFunction = "extension_function"
+    RelationExtension = "relation_extension"
     Rewrite = "rewrite"
     StructuralFunction = "structural_function"
 
@@ -295,6 +296,18 @@ pub def extension_mapping(function_name: str, anchor: u32) -> SubstraitMapping:
         anchor=anchor,
         rewrite="",
         detail="",
+    )
+
+
+pub def relation_extension_mapping(function_name: str, uri: str) -> SubstraitMapping:
+    """Build one registered Substrait relation-extension mapping."""
+    return SubstraitMapping(
+        kind=SubstraitMappingKind.RelationExtension,
+        uri=uri,
+        function_name=function_name,
+        anchor=0,
+        rewrite="",
+        detail="extension_single",
     )
 
 

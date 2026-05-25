@@ -16,6 +16,8 @@ from functions import (
     count_distinct,
     count_if,
     eq,
+    explode,
+    explode_outer,
     float_expr,
     int_expr,
     int_lit,
@@ -23,12 +25,19 @@ from functions import (
     max,
     min,
     mul,
+    posexplode,
+    posexplode_outer,
     str_expr,
     str_lit,
     sum,
 )
 from projection_builders import ColumnExprKind, column_expr_kind, column_expr_name
-from substrait.function_extensions import explode_extension_uri
+from substrait.function_extensions import (
+    explode_extension_uri,
+    explode_outer_extension_uri,
+    posexplode_extension_uri,
+    posexplode_outer_extension_uri,
+)
 from substrait.inspect import plan_contains_relation_kind, plan_has_extension_urn, relation_kind_name, root_rel
 from substrait.plans import plan_encoded_len, plan_from_named_table, plan_from_root_relation
 from substrait.relations import read_named_table_rel
@@ -421,6 +430,14 @@ def test_lazy_frame__independent_roots_can_join_and_lower() -> None:
 def test_lazy_frame__native_prism_ops_preserve_current_boundary_shapes() -> None:
     # -- Arrange --
     _register_order_schema("orders")
+    register_named_table_schema(
+        "orders_generator_dataset",
+        [RowColumnSpec(name="id", kind=SubstraitPrimitiveKind.I64, nullable=false), RowColumnSpec(
+            name="line_items",
+            kind=SubstraitPrimitiveKind.String,
+            nullable=true,
+        )],
+    )
     projected: LazyFrame[Order] = lazy_frame_named_table("orders").select()
     grouped: LazyFrame[Order] = lazy_frame_named_table("orders").group_by([col("id")])
 
@@ -429,6 +446,18 @@ def test_lazy_frame__native_prism_ops_preserve_current_boundary_shapes() -> None
     ordered: LazyFrame[Order] = lazy_frame_named_table("orders").order_by([col("id")])
     limited: LazyFrame[Order] = lazy_frame_named_table("orders").limit(10)
     exploded: LazyFrame[Order] = lazy_frame_named_table("orders").explode()
+    generated: LazyFrame[Order] = lazy_frame_named_table("orders_generator_dataset").generate(
+        explode(col("line_items"), "line_item"),
+    )
+    generated_outer: LazyFrame[Order] = lazy_frame_named_table("orders_generator_dataset").generate(
+        explode_outer(col("line_items"), "line_item"),
+    )
+    generated_positional: LazyFrame[Order] = lazy_frame_named_table("orders_generator_dataset").generate(
+        posexplode(col("line_items"), "position", "line_item"),
+    )
+    generated_positional_outer: LazyFrame[Order] = lazy_frame_named_table("orders_generator_dataset").generate(
+        posexplode_outer(col("line_items"), "position", "line_item"),
+    )
 
     # -- Assert --
     assert relation_kind_name(root_rel(projected.to_substrait_plan())) == "ProjectRel", "select should lower through the project boundary shape"
@@ -437,6 +466,11 @@ def test_lazy_frame__native_prism_ops_preserve_current_boundary_shapes() -> None
     assert relation_kind_name(root_rel(ordered.to_substrait_plan())) == "SortRel", "order_by should lower to SortRel"
     assert relation_kind_name(root_rel(limited.to_substrait_plan())) == "FetchRel", "limit should lower to FetchRel"
     assert plan_has_extension_urn(exploded.to_substrait_plan(), explode_extension_uri()), "explode should keep emitting the registered extension boundary"
+    assert relation_kind_name(root_rel(generated.to_substrait_plan())) == "ExtensionSingleRel", "generate should lower through the relation extension boundary"
+    assert generated.planned_columns() == ["id", "line_items", "line_item"], "generate should append declared output aliases"
+    assert plan_has_extension_urn(generated_outer.to_substrait_plan(), explode_outer_extension_uri()), "outer explode should use its relation extension URI"
+    assert plan_has_extension_urn(generated_positional.to_substrait_plan(), posexplode_extension_uri()), "posexplode should use its relation extension URI"
+    assert plan_has_extension_urn(generated_positional_outer.to_substrait_plan(), posexplode_outer_extension_uri()), "posexplode_outer should use its relation extension URI"
 
 
 def test_lazy_frame__deeper_independent_roots_still_lower_with_stable_shapes() -> None:

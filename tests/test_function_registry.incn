@@ -45,6 +45,8 @@ from functions import (
     eq,
     equal_null,
     element_at,
+    explode,
+    explode_outer,
     floor,
     float_expr,
     function_registry_canonical_names,
@@ -81,6 +83,8 @@ from functions import (
     not_,
     nullif,
     or_,
+    posexplode,
+    posexplode_outer,
     registered_substrait_mapped_function_refs,
     round,
     str_expr,
@@ -164,7 +168,11 @@ from substrait.function_extensions import (
     ROUND_FUNCTION_ANCHOR,
     SUBTRACT_FUNCTION_ANCHOR,
     SUM_FUNCTION_ANCHOR,
+    explode_extension_uri,
+    explode_outer_extension_uri,
     function_extension_uri,
+    posexplode_extension_uri,
+    posexplode_outer_extension_uri,
 )
 
 
@@ -223,7 +231,7 @@ def _local_entry_by_namespace_and_name_or_fail(
 
 def _expected_registry_names() -> list[str]:
     """Return the expected registered public helper names."""
-    return ["col", "lit", "sum", "count", "count_expr", "count_distinct", "count_if", "avg", "min", "max", "int_expr", "float_expr", "str_expr", "bool_expr", "add", "mul", "int_lit", "str_lit", "bool_lit", "always_true", "always_false", "eq", "gt", "cast", "try_cast", "ne", "lt", "lte", "gte", "equal_null", "and_", "or_", "not_", "is_null", "is_not_null", "is_nan", "is_not_nan", "sub", "div", "mod", "neg", "coalesce", "nullif", "case_when", "in_", "between", "asc", "desc", "asc_nulls_first", "asc_nulls_last", "desc_nulls_first", "desc_nulls_last", "abs", "ceil", "floor", "round", "array", "array_contains", "array_distinct", "array_except", "array_flatten", "array_intersect", "array_join", "array_position", "array_reverse", "array_slice", "array_sort", "array_union", "arrays_overlap", "cardinality", "element_at", "map_contains_key", "map_entries", "map_extract", "map_from_arrays", "map_keys", "map_values", "named_struct"]
+    return ["col", "lit", "sum", "count", "count_expr", "count_distinct", "count_if", "avg", "min", "max", "int_expr", "float_expr", "str_expr", "bool_expr", "add", "mul", "int_lit", "str_lit", "bool_lit", "always_true", "always_false", "eq", "gt", "cast", "try_cast", "ne", "lt", "lte", "gte", "equal_null", "and_", "or_", "not_", "is_null", "is_not_null", "is_nan", "is_not_nan", "sub", "div", "mod", "neg", "coalesce", "nullif", "case_when", "in_", "between", "asc", "desc", "asc_nulls_first", "asc_nulls_last", "desc_nulls_first", "desc_nulls_last", "abs", "ceil", "floor", "round", "array", "array_contains", "array_distinct", "array_except", "array_flatten", "array_intersect", "array_join", "array_position", "array_reverse", "array_slice", "array_sort", "array_union", "arrays_overlap", "cardinality", "element_at", "map_contains_key", "map_entries", "map_extract", "map_from_arrays", "map_keys", "map_values", "named_struct", "explode", "explode_outer", "posexplode", "posexplode_outer"]
 
 
 def _expected_substrait_mapped_names() -> list[str]:
@@ -314,6 +322,10 @@ def _exercise_current_public_helpers() -> None:
     map_keys(attr_map)
     map_values(attr_map)
     named_struct(["status", "amount"], [status, amount])
+    explode(tags, "tag")
+    explode_outer(tags, "tag")
+    posexplode(tags, "position", "tag")
+    posexplode_outer(tags, "position", "tag")
     return
 
 
@@ -345,6 +357,15 @@ def _assert_extension_mapping(canonical_name: str, function_name: str, anchor: u
     assert entry.substrait.uri == function_extension_uri(), f"{canonical_name} should use the shared function extension URI"
     assert entry.substrait.function_name == function_name, f"{canonical_name} should use the registered extension name"
     assert entry.substrait.anchor == anchor, f"{canonical_name} should carry the stable Substrait anchor"
+
+
+def _assert_relation_extension_mapping(canonical_name: str, function_name: str, extension_uri: str) -> None:
+    """Assert one generator helper declares a relation-extension mapping."""
+    entry = _entry_or_fail(function_ref_for(canonical_name))
+    assert entry.function_class == FunctionClass.Generator, f"{canonical_name} should be classified as a generator"
+    assert entry.substrait.kind == SubstraitMappingKind.RelationExtension, f"{canonical_name} should use a relation extension"
+    assert entry.substrait.uri == extension_uri, f"{canonical_name} should carry the registered relation extension URI"
+    assert entry.substrait.function_name == function_name, f"{canonical_name} should use the registered extension name"
 
 
 def _assert_core_mapping(canonical_name: str, function_name: str) -> None:
@@ -614,6 +635,18 @@ def test_function_registry__substrait_extension_mappings_are_structured() -> Non
     _assert_extension_mapping("map_keys", "map_keys", MAP_KEYS_FUNCTION_ANCHOR)
     _assert_extension_mapping("map_values", "map_values", MAP_VALUES_FUNCTION_ANCHOR)
     _assert_extension_mapping("named_struct", "named_struct", NAMED_STRUCT_FUNCTION_ANCHOR)
+
+
+def test_function_registry__generator_helpers_are_relation_extensions() -> None:
+    """Assert generator helpers are registry entries without scalar or aggregate extension anchors."""
+    # -- Arrange --
+    _exercise_current_public_helpers()
+
+    # -- Act / Assert --
+    _assert_relation_extension_mapping("explode", "explode", explode_extension_uri())
+    _assert_relation_extension_mapping("explode_outer", "explode_outer", explode_outer_extension_uri())
+    _assert_relation_extension_mapping("posexplode", "posexplode", posexplode_extension_uri())
+    _assert_relation_extension_mapping("posexplode_outer", "posexplode_outer", posexplode_outer_extension_uri())
 
 
 def test_function_registry__ordering_helpers_are_contextual_sort_fields() -> None:

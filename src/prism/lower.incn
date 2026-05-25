@@ -10,6 +10,7 @@ from substrait.relations import (
     fetch_rel,
     join_rel,
     read_named_table_rel,
+    try_generator_rel_of_columns,
     sort_rel_of_columns,
     try_aggregate_rel_of_columns,
     try_filter_rel_of_columns,
@@ -117,6 +118,12 @@ def _try_lower_node(view: PrismOptimizedView, node_id: int) -> Result[Rel, Subst
                 rewritten_output_columns(view, node.input_ids[0]),
                 [],
                 node.aggregate_measures,
+            )
+        PrismNodeKind.Generate =>
+            return try_generator_rel_of_columns(
+                _try_lower_node(view, node.input_ids[0])?,
+                rewritten_output_columns(view, node.input_ids[0]),
+                node.generator_applications[0],
             )
         PrismNodeKind.OrderBy =>
             return Ok(

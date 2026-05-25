@@ -77,6 +77,9 @@ pub const ARRAY_HAS_ANY_FUNCTION_ANCHOR: u32 = 50
 pub const ARRAY_FLATTEN_FUNCTION_ANCHOR: u32 = 51
 const FUNCTION_EXTENSION_URI: str = "https://inql.io/extensions/v0.1/functions.yaml"
 const EXPLODE_EXTENSION_URI: str = "https://inql.io/extensions/v0.1/unnest.yaml#explode"
+const EXPLODE_OUTER_EXTENSION_URI: str = "https://inql.io/extensions/v0.1/unnest.yaml#explode_outer"
+const POSEXPLODE_EXTENSION_URI: str = "https://inql.io/extensions/v0.1/unnest.yaml#posexplode"
+const POSEXPLODE_OUTER_EXTENSION_URI: str = "https://inql.io/extensions/v0.1/unnest.yaml#posexplode_outer"
 
 
 pub def function_extension_uri() -> str:
@@ -89,6 +92,21 @@ pub def explode_extension_uri() -> str:
     return EXPLODE_EXTENSION_URI
 
 
+pub def explode_outer_extension_uri() -> str:
+    """Return the registered extension URI used for outer EXPLODE gap encoding."""
+    return EXPLODE_OUTER_EXTENSION_URI
+
+
+pub def posexplode_extension_uri() -> str:
+    """Return the registered extension URI used for positional EXPLODE gap encoding."""
+    return POSEXPLODE_EXTENSION_URI
+
+
+pub def posexplode_outer_extension_uri() -> str:
+    """Return the registered extension URI used for outer positional EXPLODE gap encoding."""
+    return POSEXPLODE_OUTER_EXTENSION_URI
+
+
 pub def registered_substrait_extension_uris() -> list[str]:
     """Return the registered extension URIs used by current package-level Substrait lowering."""
-    return [FUNCTION_EXTENSION_URI, EXPLODE_EXTENSION_URI]
+    return [FUNCTION_EXTENSION_URI, EXPLODE_EXTENSION_URI, EXPLODE_OUTER_EXTENSION_URI, POSEXPLODE_EXTENSION_URI, POSEXPLODE_OUTER_EXTENSION_URI]
