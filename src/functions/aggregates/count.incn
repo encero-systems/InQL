@@ -19,12 +19,12 @@ from function_registry import (
     extension_mapping,
     v0_1,
 )
-from functions.registry import function_registry
+from functions.registry import register_function
 from projection_builders import ColumnExpr, column_expr_name
 from substrait.function_extensions import COUNT_FUNCTION_ANCHOR
 
 
-@function_registry.add("count", deterministic_spec(
+@register_function(deterministic_spec(
     function_class=FunctionClass.Aggregate,
     lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
     null_behavior=FunctionNullBehavior.NullSkippingAggregate,
@@ -40,7 +40,7 @@ pub def count() -> AggregateMeasure:
     return count_builder()
 
 
-@function_registry.add("count_expr", compatibility_alias_spec(
+@register_function(compatibility_alias_spec(
     namespace=CORE_FUNCTION_NAMESPACE,
     function_class=FunctionClass.Aggregate,
     aliases=["count"],

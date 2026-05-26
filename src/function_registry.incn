@@ -1,10 +1,9 @@
 """
 Package-owned function registry metadata for the current public InQL function surface.
 
-Public helpers register themselves by calling `function_registry.add(...)` as their decorator. The decorator method owns
-non-derivable machine metadata and records one runtime entry while returning the helper unchanged. Function signatures
-come from checked API metadata; the canonical name is still explicit until Incan exposes decorated-helper identity to
-ordinary decorator callables.
+Public helpers register themselves with declaration-side registry decorators. The decorator owns non-derivable machine
+metadata and records one runtime entry while returning the helper unchanged. Function signatures and canonical names
+come from checked public helper metadata.
 """
 
 from substrait.function_extensions import function_extension_uri
@@ -186,11 +185,6 @@ pub class FunctionRegistry:
         """Return an empty function registry."""
         return FunctionRegistry(entries=[])
 
-    def add[F](mut self, canonical_name: str, spec: FunctionSpec) -> (F) -> F:
-        """Register one public helper and return the helper unchanged."""
-        self._add_entry(canonical_name, spec)
-        return (func) => func
-
     def _add_entry(mut self, canonical_name: str, spec: FunctionSpec) -> None:
         """Record one registry entry or fail fast on invalid duplicate metadata."""
         assert _valid_canonical_name(canonical_name), (f"function canonical name must be one non-empty identifier segment, found `{canonical_name}`")
@@ -326,98 +320,21 @@ pub def sort_field_mapping(direction: str) -> SubstraitMapping:
     )
 
 
-pub def deterministic_spec(
-    function_class: FunctionClass,
-    lifecycle: FunctionLifecycle,
-    null_behavior: FunctionNullBehavior,
-    substrait: SubstraitMapping,
-) -> FunctionSpec:
-    """Build one deterministic core-import function spec."""
-    return FunctionSpec(
-        namespace=CORE_FUNCTION_NAMESPACE,
-        policy_category=FunctionPolicyCategory.PortableCore,
-        function_class=function_class,
-        aliases=[],
-        alias_policy=FunctionAliasPolicy.CoreImport,
-        lifecycle=lifecycle,
-        determinism=FunctionDeterminism.Deterministic,
-        null_behavior=null_behavior,
-        error_behavior=FunctionErrorBehavior.Typechecked,
-        substrait=substrait,
-    )
+"""Build one deterministic core-import function spec."""
 
+pub deterministic_spec = partial FunctionSpec(namespace=CORE_FUNCTION_NAMESPACE, policy_category=FunctionPolicyCategory.PortableCore, aliases=[], alias_policy=FunctionAliasPolicy.CoreImport, determinism=FunctionDeterminism.Deterministic, error_behavior=FunctionErrorBehavior.Typechecked)
 
-pub def extension_only_spec(
-    namespace: str,
-    function_class: FunctionClass,
-    lifecycle: FunctionLifecycle,
-    determinism: FunctionDeterminism,
-    null_behavior: FunctionNullBehavior,
-    error_behavior: FunctionErrorBehavior,
-    substrait: SubstraitMapping,
-) -> FunctionSpec:
-    """Build one explicitly namespaced extension-only function spec."""
-    return FunctionSpec(
-        namespace=namespace,
-        policy_category=FunctionPolicyCategory.ExtensionOnly,
-        function_class=function_class,
-        aliases=[],
-        alias_policy=FunctionAliasPolicy.OptInCompatibility,
-        lifecycle=lifecycle,
-        determinism=determinism,
-        null_behavior=null_behavior,
-        error_behavior=error_behavior,
-        substrait=substrait,
-    )
+"""Build one explicitly namespaced extension-only function spec."""
 
+pub extension_only_spec = partial FunctionSpec(policy_category=FunctionPolicyCategory.ExtensionOnly, aliases=[], alias_policy=FunctionAliasPolicy.OptInCompatibility)
 
-pub def compatibility_alias_spec(
-    namespace: str,
-    function_class: FunctionClass,
-    aliases: list[str],
-    lifecycle: FunctionLifecycle,
-    determinism: FunctionDeterminism,
-    null_behavior: FunctionNullBehavior,
-    error_behavior: FunctionErrorBehavior,
-    substrait: SubstraitMapping,
-) -> FunctionSpec:
-    """Build one opt-in compatibility alias spec for semantics that remain typeable by InQL."""
-    return FunctionSpec(
-        namespace=namespace,
-        policy_category=FunctionPolicyCategory.CompatibilityAlias,
-        function_class=function_class,
-        aliases=aliases,
-        alias_policy=FunctionAliasPolicy.OptInCompatibility,
-        lifecycle=lifecycle,
-        determinism=determinism,
-        null_behavior=null_behavior,
-        error_behavior=error_behavior,
-        substrait=substrait,
-    )
+"""Build one opt-in compatibility alias spec for semantics that remain typeable by InQL."""
 
+pub compatibility_alias_spec = partial FunctionSpec(policy_category=FunctionPolicyCategory.CompatibilityAlias, alias_policy=FunctionAliasPolicy.OptInCompatibility)
 
-pub def engine_specific_spec(
-    namespace: str,
-    function_class: FunctionClass,
-    lifecycle: FunctionLifecycle,
-    determinism: FunctionDeterminism,
-    null_behavior: FunctionNullBehavior,
-    error_behavior: FunctionErrorBehavior,
-    substrait: SubstraitMapping,
-) -> FunctionSpec:
-    """Build one explicitly namespaced engine-specific function spec."""
-    return FunctionSpec(
-        namespace=namespace,
-        policy_category=FunctionPolicyCategory.EngineSpecific,
-        function_class=function_class,
-        aliases=[],
-        alias_policy=FunctionAliasPolicy.OptInCompatibility,
-        lifecycle=lifecycle,
-        determinism=determinism,
-        null_behavior=null_behavior,
-        error_behavior=error_behavior,
-        substrait=substrait,
-    )
+"""Build one explicitly namespaced engine-specific function spec."""
+
+pub engine_specific_spec = partial FunctionSpec(policy_category=FunctionPolicyCategory.EngineSpecific, aliases=[], alias_policy=FunctionAliasPolicy.OptInCompatibility)
 
 
 pub def rejected_function_policy(requested_name: str, reason: str, alternative: str) -> RejectedFunctionPolicy:
