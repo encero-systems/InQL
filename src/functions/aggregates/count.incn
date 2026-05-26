@@ -1,27 +1,34 @@
 """
 Count aggregate helper.
 
-`count` is registered as a zero-argument aggregate with a concrete Substrait extension mapping.
+`count` is registered as an aggregate with a concrete Substrait extension mapping. `count()` counts rows. `count_expr`
+is a compatibility helper for expression counts until the decorated public helper surface can expose `count(expr)`
+directly.
 """
 
-from aggregate_builders import AggregateKind, AggregateMeasure, count as count_builder
+from aggregate_builders import AggregateKind, AggregateMeasure, count as count_builder, count_expr as count_expr_builder
 from function_registry import (
     FunctionClass,
+    FunctionDeterminism,
+    FunctionErrorBehavior,
     FunctionLifecycle,
     FunctionNullBehavior,
+    compatibility_alias_spec,
+    CORE_FUNCTION_NAMESPACE,
     deterministic_spec,
     extension_mapping,
     v0_1,
 )
-from functions.registry import function_registry
+from functions.registry import register_function
+from projection_builders import ColumnExpr, column_expr_name
 from substrait.function_extensions import COUNT_FUNCTION_ANCHOR
 
 
-@function_registry.add("count", deterministic_spec(
-    FunctionClass.Aggregate,
-    FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
-    FunctionNullBehavior.NullSkippingAggregate,
-    extension_mapping("count", COUNT_FUNCTION_ANCHOR),
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Aggregate,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.NullSkippingAggregate,
+    substrait=extension_mapping("count", COUNT_FUNCTION_ANCHOR),
 ))
 pub def count() -> AggregateMeasure:
     """
@@ -33,7 +40,40 @@ pub def count() -> AggregateMeasure:
     return count_builder()
 
 
+@register_function(compatibility_alias_spec(
+    namespace=CORE_FUNCTION_NAMESPACE,
+    function_class=FunctionClass.Aggregate,
+    aliases=["count"],
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    determinism=FunctionDeterminism.Deterministic,
+    null_behavior=FunctionNullBehavior.NullSkippingAggregate,
+    error_behavior=FunctionErrorBehavior.Typechecked,
+    substrait=extension_mapping("count", COUNT_FUNCTION_ANCHOR),
+))
+pub def count_expr(expr: ColumnExpr) -> AggregateMeasure:
+    """
+    Build a count aggregate measure over non-null expression values.
+
+    Examples:
+        populated_codes = count_expr(col("discount_code"))
+
+    Parameters:
+        expr: Expression whose non-null values should be counted.
+    """
+    return count_expr_builder(expr)
+
+
 module tests:
+    from projection_builders import col
     def test_count_builds_count_aggregate_measure() -> None:
         measure = count()
         assert measure.kind == AggregateKind.Count
+        assert measure.canonical_name == "count"
+        assert not measure.has_expr
+        assert column_expr_name(measure.expr) == ""
+    def test_count_with_expression_builds_count_aggregate_measure() -> None:
+        measure = count_expr(col("amount"))
+        assert measure.kind == AggregateKind.Count
+        assert measure.canonical_name == "count_expr"
+        assert measure.has_expr
+        assert column_expr_name(measure.expr) == "amount"
