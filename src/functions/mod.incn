@@ -11,7 +11,6 @@ from functions.registry import (
     function_registry_entries as raw_function_registry_entries,
     function_registry_entry as raw_function_registry_entry,
     function_registry_entry_by_name as raw_function_registry_entry_by_name,
-    function_registry_entry_by_namespace_and_name as raw_function_registry_entry_by_namespace_and_name,
     function_registry_entry_count as raw_function_registry_entry_count,
     function_registry_function_refs as raw_function_registry_function_refs,
     registered_substrait_mapped_function_refs as raw_registered_substrait_mapped_function_refs,
@@ -86,14 +85,6 @@ pub def function_registry_entry(function_ref: str) -> Option[FunctionRegistryEnt
 pub def function_registry_entry_by_name(canonical_name: str) -> Option[FunctionRegistryEntry]:
     """Return a loaded core registry entry for one canonical public function name when it is known."""
     return raw_function_registry_entry_by_name(canonical_name)
-
-
-pub def function_registry_entry_by_namespace_and_name(
-    namespace: str,
-    canonical_name: str,
-) -> Option[FunctionRegistryEntry]:
-    """Return a loaded registry entry for one namespace-qualified function name when it is known."""
-    return raw_function_registry_entry_by_namespace_and_name(namespace, canonical_name)
 
 
 pub def function_registry_function_refs() -> list[str]:

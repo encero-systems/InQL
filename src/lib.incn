@@ -32,7 +32,6 @@ pub from functions import (
     function_registry_entries,
     function_registry_entry,
     function_registry_entry_by_name,
-    function_registry_entry_by_namespace_and_name,
     function_registry_entry_count,
     function_registry_function_refs,
     registered_substrait_mapped_function_refs,
