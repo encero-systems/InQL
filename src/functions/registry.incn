@@ -30,7 +30,13 @@ def _register_pending_function[F](func: F) -> F:
     """Register one pending declaration-side spec against the decorated helper name."""
     pending_index = function_registry.entry_count()
     assert pending_index < len(_pending_function_specs), "function registry decorator had no pending spec"
-    function_registry._add_entry(func.__name__, _pending_function_specs[pending_index])
+    spec = _pending_function_specs[pending_index]
+    mut canonical_name = func.__name__
+    match spec.canonical_name:
+        Some(name) =>
+            canonical_name = name
+        None => pass
+    function_registry._add_entry(canonical_name, spec)
     return func
 
 

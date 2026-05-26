@@ -334,10 +334,12 @@ def test_function_registry__lookup_exposes_canonical_metadata() -> None:
     _exercise_current_public_helpers()
     col_ref = function_ref_for("col")
     count_name = "count"
+    modulo_source_name = "modulo"
 
     # -- Act --
     col_entry = _entry_or_fail(col_ref)
     count_entry = _entry_by_name_or_fail(count_name)
+    mod_entry = _entry_by_name_or_fail("mod")
 
     # -- Assert --
     assert col_entry.canonical_name == "col", "lookup by function ref should return canonical name"
@@ -345,6 +347,11 @@ def test_function_registry__lookup_exposes_canonical_metadata() -> None:
     assert col_entry.alias_policy == FunctionAliasPolicy.CoreImport, "core helpers should use core import policy"
     assert count_entry.function_ref == function_ref_for("count"), "lookup by name should return the stable function ref"
     assert count_entry.function_class == FunctionClass.Aggregate, "count should be classified as aggregate"
+    assert mod_entry.function_ref == function_ref_for("mod"), "canonical-name overrides should derive refs from semantic names"
+    assert mod_entry.canonical_name == "mod", "modulo helper should register the canonical mod name"
+    match function_registry_entry_by_name(modulo_source_name):
+        Some(_) => return fail_t("modulo source helper should not create a second canonical registry entry")
+        None => pass
 
 
 def test_function_registry__core_helpers_expose_portable_policy_metadata() -> None:

@@ -3,7 +3,8 @@ Package-owned function registry metadata for the current public InQL function su
 
 Public helpers register themselves with declaration-side registry decorators. The decorator owns non-derivable machine
 metadata and records one runtime entry while returning the helper unchanged. Function signatures and canonical names
-come from checked public helper metadata.
+usually come from checked public helper metadata. Decorator metadata may override the canonical name only when the
+source helper name is constrained by the host language, such as the `modulo(...)` helper for canonical `mod`.
 """
 
 from substrait.function_extensions import function_extension_uri
@@ -134,6 +135,7 @@ pub model SubstraitMapping:
 pub model FunctionSpec:
     """Machine-readable function facts supplied to the registry decorator."""
 
+    pub canonical_name: Option[str]
     pub namespace: str
     pub policy_category: FunctionPolicyCategory
     pub function_class: FunctionClass
@@ -322,19 +324,19 @@ pub def sort_field_mapping(direction: str) -> SubstraitMapping:
 
 """Build one deterministic core-import function spec."""
 
-pub deterministic_spec = partial FunctionSpec(namespace=CORE_FUNCTION_NAMESPACE, policy_category=FunctionPolicyCategory.PortableCore, aliases=[], alias_policy=FunctionAliasPolicy.CoreImport, determinism=FunctionDeterminism.Deterministic, error_behavior=FunctionErrorBehavior.Typechecked)
+pub deterministic_spec = partial FunctionSpec(canonical_name=None, namespace=CORE_FUNCTION_NAMESPACE, policy_category=FunctionPolicyCategory.PortableCore, aliases=[], alias_policy=FunctionAliasPolicy.CoreImport, determinism=FunctionDeterminism.Deterministic, error_behavior=FunctionErrorBehavior.Typechecked)
 
 """Build one explicitly namespaced extension-only function spec."""
 
-pub extension_only_spec = partial FunctionSpec(policy_category=FunctionPolicyCategory.ExtensionOnly, aliases=[], alias_policy=FunctionAliasPolicy.OptInCompatibility)
+pub extension_only_spec = partial FunctionSpec(canonical_name=None, policy_category=FunctionPolicyCategory.ExtensionOnly, aliases=[], alias_policy=FunctionAliasPolicy.OptInCompatibility)
 
 """Build one opt-in compatibility alias spec for semantics that remain typeable by InQL."""
 
-pub compatibility_alias_spec = partial FunctionSpec(policy_category=FunctionPolicyCategory.CompatibilityAlias, alias_policy=FunctionAliasPolicy.OptInCompatibility)
+pub compatibility_alias_spec = partial FunctionSpec(canonical_name=None, policy_category=FunctionPolicyCategory.CompatibilityAlias, alias_policy=FunctionAliasPolicy.OptInCompatibility)
 
 """Build one explicitly namespaced engine-specific function spec."""
 
-pub engine_specific_spec = partial FunctionSpec(policy_category=FunctionPolicyCategory.EngineSpecific, aliases=[], alias_policy=FunctionAliasPolicy.OptInCompatibility)
+pub engine_specific_spec = partial FunctionSpec(canonical_name=None, policy_category=FunctionPolicyCategory.EngineSpecific, aliases=[], alias_policy=FunctionAliasPolicy.OptInCompatibility)
 
 
 pub def rejected_function_policy(requested_name: str, reason: str, alternative: str) -> RejectedFunctionPolicy:
