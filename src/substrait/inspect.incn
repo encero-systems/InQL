@@ -85,22 +85,16 @@ def _grouping_output_columns(input_columns: list[str], grouping_expressions: lis
 
 def _aggregate_measure_output_name(input_columns: list[str], measure: Measure) -> str:
     """Resolve one aggregate output name from the lowered Substrait aggregate measure payload."""
-    match measure.measure:
-        Some(agg_fn) =>
-            function_name = aggregate_function_name_from_anchor(agg_fn.function_reference)
-            if len(agg_fn.arguments) == 0:
-                return function_name
-            match agg_fn.arguments[0].arg_type:
-                Some(arg_type) =>
-                    match arg_type:
-                        ArgType.Value(expr) =>
-                            field_index = field_index_from_expression(expr)
-                            if field_index >= 0 and field_index < len(input_columns):
-                                return function_name + "_" + input_columns[field_index]
-                            return function_name
-                        _ => return function_name
-                _ => return function_name
-        None => return ""
+    if let Some(agg_fn) = measure.measure:
+        function_name = aggregate_function_name_from_anchor(agg_fn.function_reference)
+        if len(agg_fn.arguments) == 0:
+            return function_name
+        if let Some(ArgType.Value(expr)) = agg_fn.arguments[0].arg_type:
+            field_index = field_index_from_expression(expr)
+            if field_index >= 0 and field_index < len(input_columns):
+                return function_name + "_" + input_columns[field_index]
+        return function_name
+    return ""
 
 
 def _aggregate_measure_output_columns(input_columns: list[str], measures: list[Measure]) -> list[str]:
