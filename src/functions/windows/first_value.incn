@@ -1,0 +1,33 @@
+"""First-value window helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.registry import register_function
+from projection_builders import ColumnExpr
+from substrait.function_extensions import FIRST_VALUE_FUNCTION_ANCHOR
+from window_builders import WindowFunctionCall, first_value as first_value_builder
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.DependsOnInputs,
+    substrait=extension_mapping("first_value", FIRST_VALUE_FUNCTION_ANCHOR),
+))
+pub def first_value(expr: ColumnExpr) -> WindowFunctionCall:
+    """
+    Build a `first_value` window function call.
+
+    Examples:
+        first_amount = first_value(col("amount")).over(window().partition_by([col("customer_id")]).order_by([col("id")]))
+
+    Parameters:
+        expr: Value expression to read from the first row in the current frame.
+    """
+    return first_value_builder(expr)

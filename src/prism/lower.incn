@@ -15,6 +15,7 @@ from substrait.relations import (
     try_aggregate_rel_of_columns,
     try_filter_rel_of_columns,
     try_project_rel_of_columns,
+    try_window_rel_of_columns,
 )
 from substrait.errors import SubstraitLoweringError
 from prism.rewrite import derive_rewritten_view, rewritten_node_at
@@ -124,6 +125,12 @@ def _try_lower_node(view: PrismOptimizedView, node_id: int) -> Result[Rel, Subst
                 _try_lower_node(view, node.input_ids[0])?,
                 rewritten_output_columns(view, node.input_ids[0]),
                 node.generator_applications[0],
+            )
+        PrismNodeKind.Window =>
+            return try_window_rel_of_columns(
+                _try_lower_node(view, node.input_ids[0])?,
+                rewritten_output_columns(view, node.input_ids[0]),
+                node.window_projections,
             )
         PrismNodeKind.OrderBy =>
             return Ok(

@@ -37,6 +37,10 @@ pub def relation_children(rel: Rel) -> list[Rel]:
             match aggregate.input:
                 Some(child) => return [child.as_ref().clone()]
                 None => return []
+        Some(RelType.Window(window)) =>
+            match window.input:
+                Some(child) => return [child.as_ref().clone()]
+                None => return []
         Some(RelType.Sort(sort)) =>
             match sort.input:
                 Some(child) => return [child.as_ref().clone()]

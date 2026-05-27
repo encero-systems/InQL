@@ -1,0 +1,33 @@
+"""Last-value window helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.registry import register_function
+from projection_builders import ColumnExpr
+from substrait.function_extensions import LAST_VALUE_FUNCTION_ANCHOR
+from window_builders import WindowFunctionCall, last_value as last_value_builder
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.DependsOnInputs,
+    substrait=extension_mapping("last_value", LAST_VALUE_FUNCTION_ANCHOR),
+))
+pub def last_value(expr: ColumnExpr) -> WindowFunctionCall:
+    """
+    Build a `last_value` window function call.
+
+    Examples:
+        last_amount = last_value(col("amount")).over(window().partition_by([col("customer_id")]).order_by([col("id")]))
+
+    Parameters:
+        expr: Value expression to read from the last row in the current frame.
+    """
+    return last_value_builder(expr)

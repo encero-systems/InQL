@@ -1,0 +1,36 @@
+"""Dense-rank window helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.registry import register_function
+from substrait.function_extensions import DENSE_RANK_FUNCTION_ANCHOR
+from window_builders import WindowFunctionCall, dense_rank as dense_rank_builder
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.NonNullLiteral,
+    substrait=extension_mapping("dense_rank", DENSE_RANK_FUNCTION_ANCHOR),
+))
+pub def dense_rank() -> WindowFunctionCall:
+    """
+    Build a dense-rank window function call.
+
+    Examples:
+        ranked = dense_rank().over(window().partition_by([col("customer_id")]).order_by([desc(col("amount"))]))
+    """
+    return dense_rank_builder()
+
+
+module tests:
+    def test_dense_rank_builds_window_call() -> None:
+        call = dense_rank()
+        assert call.canonical_name == "dense_rank"
+        assert call.requires_ordering

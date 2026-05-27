@@ -1,0 +1,91 @@
+"""Tests for RFC 019 window specification and analytic helper builders."""
+
+from functions import (
+    col,
+    current_row,
+    dense_rank,
+    int_lit,
+    lag,
+    lead,
+    nth_value,
+    rank,
+    row_number,
+    unbounded_preceding,
+    window,
+)
+from projection_builders import column_expr_name
+from window_builders import (
+    WindowBoundKind,
+    WindowFrameKind,
+    WindowFunctionKind,
+    WindowNullTreatment,
+    window_output_columns,
+    window_projection,
+)
+
+
+def test_window_builders__spec_preserves_partition_and_order_columns() -> None:
+    # -- Arrange / Act --
+    spec = (window().partition_by([col("customer_id")]).order_by([col("amount")]).rows_between(
+        unbounded_preceding(),
+        current_row(),
+    ))
+
+    # -- Assert --
+    assert len(spec.partition_columns) == 1, "window partition should record explicit partition expressions"
+    assert column_expr_name(spec.partition_columns[0]) == "customer_id", "partition expression should preserve column refs"
+    assert len(spec.sort_columns) == 1, "window ordering should record explicit sort expressions"
+    assert column_expr_name(spec.sort_columns[0]) == "amount", "sort expression should preserve column refs"
+    assert spec.frame.kind == WindowFrameKind.Rows, "explicit row frame should preserve row coordinate system"
+    assert spec.frame.lower_bound.kind == WindowBoundKind.UnboundedPreceding, "lower frame bound should be explicit"
+    assert spec.frame.upper_bound.kind == WindowBoundKind.CurrentRow, "upper frame bound should be explicit"
+
+
+def test_window_builders__ranking_helpers_return_unplaced_calls() -> None:
+    # -- Arrange --
+    spec = window().order_by([col("amount")])
+
+    # -- Act --
+    row_number_app = row_number().over(spec)
+    rank_app = rank().over(spec)
+    dense_rank_app = dense_rank().over(spec)
+
+    # -- Assert --
+    assert row_number_app.kind == WindowFunctionKind.RowNumber, "row_number should keep typed window identity"
+    assert rank_app.kind == WindowFunctionKind.Rank, "rank should keep typed window identity"
+    assert dense_rank_app.kind == WindowFunctionKind.DenseRank, "dense_rank should keep typed window identity"
+    assert row_number_app.requires_ordering, "ranking helpers should require explicit window ordering"
+    assert rank_app.function_ref == "inql.functions.rank", "rank should derive stable registry identity"
+    assert dense_rank_app.canonical_name == "dense_rank", "dense_rank should expose its canonical name"
+
+
+def test_window_builders__offset_and_value_helpers_record_arguments_and_null_treatment() -> None:
+    # -- Arrange --
+    spec = window().order_by([col("amount")])
+
+    # -- Act --
+    lagged = lag(col("amount"), 2).ignore_nulls().over(spec)
+    led = lead(col("amount"), 1, int_lit(0)).over(spec)
+    nth = nth_value(col("amount"), 3).respect_nulls().over(spec)
+
+    # -- Assert --
+    assert lagged.kind == WindowFunctionKind.Lag, "lag should keep typed offset identity"
+    assert len(lagged.arguments) == 2, "lag without a default should carry expression and offset"
+    assert lagged.null_treatment == WindowNullTreatment.IgnoreNulls, "ignore_nulls should be preserved"
+    assert led.kind == WindowFunctionKind.Lead, "lead should keep typed offset identity"
+    assert len(led.arguments) == 3, "lead with a default should carry expression, offset, and default"
+    assert nth.kind == WindowFunctionKind.NthValue, "nth_value should keep typed value identity"
+    assert nth.null_treatment == WindowNullTreatment.RespectNulls, "respect_nulls should be preserved"
+
+
+def test_window_builders__output_columns_use_add_or_replace_alias_semantics() -> None:
+    # -- Arrange --
+    spec = window().order_by([col("amount")])
+
+    # -- Act --
+    appended = window_output_columns(["id", "amount"], [window_projection("row_num", row_number().over(spec))])
+    replaced = window_output_columns(["id", "rank"], [window_projection("rank", rank().over(spec))])
+
+    # -- Assert --
+    assert appended == ["id", "amount", "row_num"], "new window aliases should append to input columns"
+    assert replaced == ["id", "rank"], "existing window aliases should replace in place without duplicating names"

@@ -3,6 +3,7 @@
 from aggregate_builders import AggregateMeasure
 from generator_builders import GeneratorApplication
 from projection_builders import ColumnExpr, ProjectionAssignment
+from window_builders import WindowProjection
 
 
 pub type PrismStoreId = newtype int
@@ -19,6 +20,7 @@ pub enum PrismNodeKind(str):
     GroupBy = "GroupBy"
     Aggregate = "Aggregate"
     Generate = "Generate"
+    Window = "Window"
     OrderBy = "OrderBy"
     Limit = "Limit"
     Explode = "Explode"
@@ -44,6 +46,7 @@ pub model PrismNode:
     pub sort_columns: list[ColumnExpr]
     pub aggregate_measures: list[AggregateMeasure]
     pub generator_applications: list[GeneratorApplication]
+    pub window_projections: list[WindowProjection]
     pub projection_assignments: list[ProjectionAssignment]
 
 

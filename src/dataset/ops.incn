@@ -10,6 +10,7 @@ from rust::substrait::proto import Rel
 from aggregate_builders import AggregateMeasure
 from generator_builders import GeneratorApplication
 from projection_builders import ColumnExpr, ProjectionAssignment, with_column_assignment
+from window_builders import WindowFunctionApplication, window_projection
 from substrait.function_extensions import EXPLODE_EXTENSION_URI
 from substrait.inspect import relation_output_columns
 from substrait.relations import (
@@ -21,6 +22,7 @@ from substrait.relations import (
     project_rel_of_columns,
     sort_rel_of_columns,
     generator_rel_of_columns,
+    window_rel_of_columns,
 )
 
 
@@ -132,6 +134,16 @@ pub def generate_ds(rel: Rel, generator: GeneratorApplication) -> Rel:
 pub def generate_ds_of_columns(rel: Rel, input_columns: list[str], generator: GeneratorApplication) -> Rel:
     """Apply one relation-shaping generator using explicit input-column names."""
     return generator_rel_of_columns(rel, input_columns, generator)
+
+
+pub def with_window_column_ds(
+    rel: Rel,
+    input_columns: list[str],
+    name: str,
+    application: WindowFunctionApplication,
+) -> Rel:
+    """Apply one dataset-level named window projection using explicit input-column names."""
+    return window_rel_of_columns(rel, input_columns, [window_projection(name, application)])
 
 
 pub def order_by_ds(rel: Rel, columns: list[ColumnExpr]) -> Rel:

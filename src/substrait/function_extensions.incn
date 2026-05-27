@@ -12,6 +12,7 @@ pub enum ExtensionFunctionKind(str):
 
     Aggregate = "aggregate"
     Scalar = "scalar"
+    Window = "window"
 
 
 @derive(Clone)
@@ -76,6 +77,17 @@ pub const NAMED_STRUCT_FUNCTION_ANCHOR: u32 = 49
 pub const ARRAY_HAS_ANY_FUNCTION_ANCHOR: u32 = 50
 pub const ARRAY_FLATTEN_FUNCTION_ANCHOR: u32 = 51
 pub const RANGE_FUNCTION_ANCHOR: u32 = 52
+pub const ROW_NUMBER_FUNCTION_ANCHOR: u32 = 53
+pub const RANK_FUNCTION_ANCHOR: u32 = 54
+pub const DENSE_RANK_FUNCTION_ANCHOR: u32 = 55
+pub const PERCENT_RANK_FUNCTION_ANCHOR: u32 = 56
+pub const CUME_DIST_FUNCTION_ANCHOR: u32 = 57
+pub const NTILE_FUNCTION_ANCHOR: u32 = 58
+pub const LAG_FUNCTION_ANCHOR: u32 = 59
+pub const LEAD_FUNCTION_ANCHOR: u32 = 60
+pub const FIRST_VALUE_FUNCTION_ANCHOR: u32 = 61
+pub const LAST_VALUE_FUNCTION_ANCHOR: u32 = 62
+pub const NTH_VALUE_FUNCTION_ANCHOR: u32 = 63
 pub const FUNCTION_EXTENSION_URI: str = "https://inql.io/extensions/v0.1/functions.yaml"
 pub const EXPLODE_EXTENSION_URI: str = "https://inql.io/extensions/v0.1/unnest.yaml#explode"
 pub const EXPLODE_OUTER_EXTENSION_URI: str = "https://inql.io/extensions/v0.1/unnest.yaml#explode_outer"

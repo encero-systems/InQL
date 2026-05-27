@@ -2,6 +2,7 @@
 
 from aggregate_builders import AggregateMeasure
 from generator_builders import GeneratorApplication
+from window_builders import WindowBound, WindowFrame, WindowFunctionApplication, WindowProjection, WindowSpec
 from projection_builders import (
     BoolLiteralExpr,
     ColumnExpr,
@@ -56,6 +57,7 @@ pub def append_node(
     sort_columns: list[ColumnExpr],
     aggregate_measures: list[AggregateMeasure],
     generator_applications: list[GeneratorApplication],
+    window_projections: list[WindowProjection],
     projection_assignments: list[ProjectionAssignment],
 ) -> int:
     """
@@ -76,6 +78,7 @@ pub def append_node(
         sort_columns=sort_columns,
         aggregate_measures=aggregate_measures,
         generator_applications=generator_applications,
+        window_projections=window_projections,
         projection_assignments=projection_assignments,
     )
     prism_stored_nodes.append(PrismStoredNode(store_id_raw=store_id.0, node=appended))
@@ -123,11 +126,13 @@ pub def adopt_cursor_subgraph(
             adopted_sort_columns = [column for column in source_node.sort_columns]
             adopted_measures = [measure for measure in source_node.aggregate_measures]
             adopted_generators = [generator for generator in source_node.generator_applications]
+            adopted_windows = [projection for projection in source_node.window_projections]
             adopted_assignments = [assignment for assignment in source_node.projection_assignments]
             target_group_columns = [column for column in source_node.group_columns]
             target_sort_columns = [column for column in source_node.sort_columns]
             target_measures = [measure for measure in source_node.aggregate_measures]
             target_generators = [generator for generator in source_node.generator_applications]
+            target_windows = [projection for projection in source_node.window_projections]
             target_assignments = [assignment for assignment in source_node.projection_assignments]
             adopted_id = append_node(
                 store_id=target_store_id,
@@ -141,6 +146,7 @@ pub def adopt_cursor_subgraph(
                 sort_columns=adopted_sort_columns,
                 aggregate_measures=adopted_measures,
                 generator_applications=adopted_generators,
+                window_projections=adopted_windows,
                 projection_assignments=adopted_assignments,
             )
             target_store_nodes.append(
@@ -156,6 +162,7 @@ pub def adopt_cursor_subgraph(
                     sort_columns=target_sort_columns,
                     aggregate_measures=target_measures,
                     generator_applications=target_generators,
+                    window_projections=target_windows,
                     projection_assignments=target_assignments,
                 ),
             )
@@ -244,6 +251,8 @@ def _nodes_structurally_equal(candidate: PrismNode, source_node: PrismNode, rema
         source_node.generator_applications,
     ):
         return false
+    if not _window_projection_lists_structurally_equal(candidate.window_projections, source_node.window_projections):
+        return false
     if not _projection_assignments_structurally_equal(
         candidate.projection_assignments,
         source_node.projection_assignments,
@@ -313,6 +322,69 @@ def _generator_applications_structurally_equal(left: GeneratorApplication, right
     if not _text_lists_structurally_equal(left.output_columns, right.output_columns):
         return false
     return _column_exprs_structurally_equal(left.expr, right.expr)
+
+
+def _window_projection_lists_structurally_equal(left: list[WindowProjection], right: list[WindowProjection]) -> bool:
+    """Return whether two window projection lists carry identical output names and applications."""
+    if len(left) != len(right):
+        return false
+    for idx in range(len(left)):
+        if not _window_projections_structurally_equal(left[idx], right[idx]):
+            return false
+    return true
+
+
+def _window_projections_structurally_equal(left: WindowProjection, right: WindowProjection) -> bool:
+    """Return whether two window projections carry identical names and window semantics."""
+    if left.output_name != right.output_name:
+        return false
+    return _window_applications_structurally_equal(left.application, right.application)
+
+
+def _window_applications_structurally_equal(left: WindowFunctionApplication, right: WindowFunctionApplication) -> bool:
+    """Return whether two window applications carry identical registry identity and window specs."""
+    if left.kind != right.kind:
+        return false
+    if left.function_ref != right.function_ref:
+        return false
+    if left.canonical_name != right.canonical_name:
+        return false
+    if left.requires_ordering != right.requires_ordering:
+        return false
+    if left.null_treatment != right.null_treatment:
+        return false
+    if left.is_distinct != right.is_distinct:
+        return false
+    if left.has_filter != right.has_filter:
+        return false
+    if not _column_expr_lists_structurally_equal(left.arguments, right.arguments):
+        return false
+    return _window_specs_structurally_equal(left.spec, right.spec)
+
+
+def _window_specs_structurally_equal(left: WindowSpec, right: WindowSpec) -> bool:
+    """Return whether two window specs carry identical partitioning, ordering, and frame metadata."""
+    if not _column_expr_lists_structurally_equal(left.partition_columns, right.partition_columns):
+        return false
+    if not _column_expr_lists_structurally_equal(left.sort_columns, right.sort_columns):
+        return false
+    return _window_frames_structurally_equal(left.frame, right.frame)
+
+
+def _window_frames_structurally_equal(left: WindowFrame, right: WindowFrame) -> bool:
+    """Return whether two window frames carry identical coordinate systems and bounds."""
+    if left.kind != right.kind:
+        return false
+    if not _window_bounds_structurally_equal(left.lower_bound, right.lower_bound):
+        return false
+    return _window_bounds_structurally_equal(left.upper_bound, right.upper_bound)
+
+
+def _window_bounds_structurally_equal(left: WindowBound, right: WindowBound) -> bool:
+    """Return whether two window frame bounds carry identical direction and offsets."""
+    if left.kind != right.kind:
+        return false
+    return left.offset == right.offset
 
 
 def _text_lists_structurally_equal(left: list[str], right: list[str]) -> bool:

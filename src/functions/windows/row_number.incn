@@ -1,0 +1,36 @@
+"""Row-number window helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.registry import register_function
+from substrait.function_extensions import ROW_NUMBER_FUNCTION_ANCHOR
+from window_builders import WindowFunctionCall, row_number as row_number_builder
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.NonNullLiteral,
+    substrait=extension_mapping("row_number", ROW_NUMBER_FUNCTION_ANCHOR),
+))
+pub def row_number() -> WindowFunctionCall:
+    """
+    Build a row-number window function call.
+
+    Examples:
+        numbered = row_number().over(window().partition_by([col("customer_id")]).order_by([col("created_at")]))
+    """
+    return row_number_builder()
+
+
+module tests:
+    def test_row_number_builds_window_call() -> None:
+        call = row_number()
+        assert call.canonical_name == "row_number"
+        assert call.requires_ordering

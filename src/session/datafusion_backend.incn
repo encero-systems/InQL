@@ -3,23 +3,35 @@
 import std.async
 from rust::prost import Message
 from rust::std::boxed import Box
-from rust::std::primitive import i64 as RustI64, usize as RustUsize
+from rust::std::primitive import i32 as RustI32, i64 as RustI64, usize as RustUsize
 from rust::std::sync import Arc
 from rust::substrait::proto import (
     AggregateRel,
+    ConsistentPartitionWindowRel,
     CrossRel,
+    Expression,
     ExtensionSingleRel,
     FetchRel,
     FilterRel,
+    FunctionArgument,
+    FunctionOption,
     JoinRel,
     Plan,
     ProjectRel,
     Rel,
     SetRel,
+    SortField,
     SortRel,
 )
+from rust::substrait::proto::consistent_partition_window_rel import WindowRelFunction
+from rust::substrait::proto::expression import RexType
+from rust::substrait::proto::expression::literal import LiteralType
+from rust::substrait::proto::expression::window_function import Bound, BoundsType
+from rust::substrait::proto::expression::window_function::bound import Kind as BoundKind
+from rust::substrait::proto::function_argument import ArgType
 from rust::substrait::proto::rel import RelType
 from rust::substrait::proto::join_rel import JoinType
+from rust::substrait::proto::sort_field import SortDirection, SortKind
 from rust::datafusion::common import Column, UnnestOptions
 from rust::datafusion::arrow::record_batch import RecordBatch
 from rust::datafusion::datasource import MemTable
@@ -45,6 +57,8 @@ from substrait.function_extensions import (
     STACK_EXTENSION_URI,
 )
 from substrait.generator_payload import GeneratorExtensionPayload, decode_generator_extension_payload
+from substrait.expr_lowering import field_index_from_expression
+from substrait.extensions import window_function_name_from_anchor
 from substrait.inspect import relation_output_columns, root_names, root_rel
 from substrait.plans import plan_from_root_relation
 from substrait.relations import project_rel_with_expressions, read_named_table_rel
@@ -68,6 +82,14 @@ model MaterializedGeneratorRelation:
     path: str
     rel: Rel
     extension: ExtensionSingleRel
+
+
+model PendingWindowRelation:
+    """One window relation peeled from a nested window stack for sequential execution."""
+
+    window_rel: ConsistentPartitionWindowRel
+    input_columns: list[str]
+    output_columns: list[str]
 
 
 pub async def datafusion_execute_async(
@@ -151,7 +173,15 @@ pub async def datafusion_write_parquet_async(
 
 
 async def _dataframe_from_plan(ctx: SessionContext, plan: Plan) -> Result[RustDataFrame, BackendError]:
-    """Build a DataFusion DataFrame, including InQL-owned generator extension roots."""
+    """Build a DataFusion DataFrame, including InQL-owned relation bridges."""
+    root = root_rel(plan.clone())
+    match _window_rel(root.clone()):
+        Some(window_rel) => return await _dataframe_from_window_rel(ctx, window_rel, root_names(plan.clone()))
+        None => return await _dataframe_from_non_window_plan(ctx, plan)
+
+
+async def _dataframe_from_non_window_plan(ctx: SessionContext, plan: Plan) -> Result[RustDataFrame, BackendError]:
+    """Build a DataFusion DataFrame for plans that do not have a window root."""
     root = root_rel(plan.clone())
     # DataFusion's stock Substrait consumer cannot plan InQL generator ExtensionSingleRel nodes. Root generators can
     # execute directly; nested generators are first materialized and then replaced by execution-only temp reads.
@@ -179,6 +209,67 @@ async def _dataframe_from_standard_plan(ctx: SessionContext, plan: Plan) -> Resu
     match await from_substrait_plan(state, consumer_plan):
         Ok(logical_plan) =>
             match await ctx.execute_logical_plan(logical_plan):
+                Ok(df) => return Ok(df)
+                Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
+
+
+async def _dataframe_from_window_rel(
+    ctx: SessionContext,
+    window_rel: ConsistentPartitionWindowRel,
+    output_columns: list[str],
+) -> Result[RustDataFrame, BackendError]:
+    """Build a DataFusion DataFrame for one or more nested Substrait window relations via SQL."""
+    mut pending_windows: list[PendingWindowRelation] = []
+    mut current_window = window_rel
+    mut current_output_columns = output_columns
+    mut child = _window_input_rel(current_window.clone())?
+    while true:
+        child_columns = relation_output_columns(child.clone())
+        pending_windows.append(
+            PendingWindowRelation(
+                window_rel=current_window.clone(),
+                input_columns=child_columns.clone(),
+                output_columns=current_output_columns.clone(),
+            ),
+        )
+        match _window_rel(child.clone()):
+            Some(next_window) =>
+                current_window = next_window
+                current_output_columns = child_columns
+                child = _window_input_rel(current_window.clone())?
+            None =>
+                base_plan = plan_from_root_relation(child, child_columns)
+                mut current_df = await _dataframe_from_non_window_plan(ctx.clone(), base_plan)?
+                mut idx = len(pending_windows)
+                while idx > 0:
+                    idx -= 1
+                    pending = pending_windows[idx]
+                    table_name = f"__inql_window_input_{idx}"
+                    current_df = await _dataframe_from_window_sql(
+                        ctx.clone(),
+                        current_df,
+                        table_name,
+                        pending.input_columns,
+                        pending.window_rel,
+                        pending.output_columns,
+                    )?
+                return Ok(current_df)
+
+
+async def _dataframe_from_window_sql(
+    ctx: SessionContext,
+    child_df: RustDataFrame,
+    table_name: str,
+    child_columns: list[str],
+    window_rel: ConsistentPartitionWindowRel,
+    output_columns: list[str],
+) -> Result[RustDataFrame, BackendError]:
+    """Register one window input and render a DataFusion SQL projection over it."""
+    match ctx.register_table(f"{table_name}", child_df.into_view()):
+        Ok(_) =>
+            sql = _window_sql(table_name, child_columns, window_rel, output_columns)?
+            match await ctx.sql(sql):
                 Ok(df) => return Ok(df)
                 Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
         Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
@@ -645,6 +736,238 @@ def _generator_extension(rel: Rel) -> Option[ExtensionSingleRel]:
                     return Some(extension.as_ref().clone())
             return None
         _ => return None
+
+
+def _window_rel(rel: Rel) -> Option[ConsistentPartitionWindowRel]:
+    """Return the root window relation when the plan root is an InQL analytic window."""
+    match rel.rel_type:
+        Some(RelType.Window(window_rel)) => return Some(window_rel.as_ref().clone())
+        _ => return None
+
+
+def _window_input_rel(window_rel: ConsistentPartitionWindowRel) -> Result[Rel, BackendError]:
+    """Return the child relation for one window relation."""
+    match window_rel.input:
+        Some(child) => return Ok(child.as_ref().clone())
+        None => return Err(backend_error(BackendErrorKind.BackendPlanningError, "window relation is missing input"))
+
+
+def _window_sql(
+    table_name: str,
+    input_columns: list[str],
+    window_rel: ConsistentPartitionWindowRel,
+    output_columns: list[str],
+) -> Result[str, BackendError]:
+    """Render a DataFusion SQL query equivalent to one lowered window relation."""
+    final_columns = _window_final_columns(input_columns.clone(), window_rel.clone(), output_columns)
+    mut select_parts: list[str] = []
+    for output_column in final_columns:
+        match _window_function_for_output(window_rel.clone(), output_column):
+            Some(window_function) =>
+                select_parts.append(
+                    _window_function_sql(window_function, input_columns.clone(), window_rel.clone(), output_column)?,
+                )
+            None => select_parts.append(_quoted_ident(output_column))
+    return Ok("SELECT " + ", ".join(select_parts) + " FROM " + _quoted_ident(table_name))
+
+
+def _window_final_columns(
+    input_columns: list[str],
+    window_rel: ConsistentPartitionWindowRel,
+    output_columns: list[str],
+) -> list[str]:
+    """Return requested root output columns, or derive add-only output columns when roots are absent."""
+    if len(output_columns) > 0:
+        return output_columns
+    mut columns = input_columns
+    for window_function in window_rel.window_functions:
+        columns.append(_window_function_output_name(window_function.options))
+    return columns
+
+
+def _window_function_for_output(
+    window_rel: ConsistentPartitionWindowRel,
+    output_name: str,
+) -> Option[WindowRelFunction]:
+    """Return the lowered window function that owns one output alias."""
+    for window_function in window_rel.window_functions:
+        if _window_function_output_name(window_function.options) == output_name:
+            return Some(window_function)
+    return None
+
+
+def _window_function_sql(
+    window_function: WindowRelFunction,
+    input_columns: list[str],
+    window_rel: ConsistentPartitionWindowRel,
+    output_name: str,
+) -> Result[str, BackendError]:
+    """Render one `function(...) OVER (...) AS alias` expression."""
+    function_name = window_function_name_from_anchor(window_function.function_reference)
+    args = _window_function_argument_sql(window_function.clone(), input_columns.clone())?
+    null_treatment = _window_null_treatment_sql(window_function.options)
+    over_clause = _window_over_clause(window_function, input_columns, window_rel)?
+    return Ok(
+        function_name + "(" + args + ")" + null_treatment + " OVER (" + over_clause + ") AS " + _quoted_ident(
+            output_name,
+        ),
+    )
+
+
+def _window_function_argument_sql(
+    window_function: WindowRelFunction,
+    input_columns: list[str],
+) -> Result[str, BackendError]:
+    """Render window function arguments in Substrait order."""
+    mut args: list[str] = []
+    for argument in window_function.arguments:
+        args.append(_function_argument_sql(argument, input_columns.clone())?)
+    return Ok(", ".join(args))
+
+
+def _window_over_clause(
+    window_function: WindowRelFunction,
+    input_columns: list[str],
+    window_rel: ConsistentPartitionWindowRel,
+) -> Result[str, BackendError]:
+    """Render the SQL OVER clause for one consistent-partition window relation."""
+    mut clauses: list[str] = []
+    if len(window_rel.partition_expressions) > 0:
+        partitions = [_sql_expr(expr, input_columns.clone())? for expr in window_rel.partition_expressions]
+        clauses.append("PARTITION BY " + ", ".join(partitions))
+    if len(window_rel.sorts) > 0:
+        sorts = [_sort_sql(sort, input_columns.clone())? for sort in window_rel.sorts]
+        clauses.append("ORDER BY " + ", ".join(sorts))
+    frame_sql = _window_frame_sql(window_function)?
+    if len(frame_sql) > 0:
+        clauses.append(frame_sql)
+    return Ok(" ".join(clauses))
+
+
+def _function_argument_sql(argument: FunctionArgument, input_columns: list[str]) -> Result[str, BackendError]:
+    """Render one value argument carried by a Substrait function call."""
+    match argument.arg_type:
+        Some(ArgType.Value(expr)) => return _sql_expr(expr, input_columns)
+        _ =>
+            return Err(
+                backend_error(BackendErrorKind.BackendPlanningError, "window SQL bridge only supports value arguments"),
+            )
+
+
+def _sql_expr(expr: Expression, input_columns: list[str]) -> Result[str, BackendError]:
+    """Render the small Substrait expression subset needed by current window helpers."""
+    field_index = field_index_from_expression(expr.clone())
+    if field_index >= 0 and field_index < len(input_columns):
+        return Ok(_quoted_ident(input_columns[field_index]))
+    match expr.rex_type:
+        Some(RexType.Literal(literal)) =>
+            match literal.literal_type:
+                Some(LiteralType.I64(value)) => return Ok(f"{value}")
+                Some(LiteralType.Fp64(value)) => return Ok(f"{value}")
+                Some(LiteralType.Boolean(value)) =>
+                    if value:
+                        return Ok("TRUE")
+                    return Ok("FALSE")
+                Some(LiteralType.String(value)) =>
+                    escaped = f"{value}".replace("'", "''")
+                    return Ok(f"'{escaped}'")
+                _ => pass
+        _ => pass
+    return Err(
+        backend_error(
+            BackendErrorKind.BackendPlanningError,
+            "window SQL bridge only supports direct fields and primitive literals",
+        ),
+    )
+
+
+def _sort_sql(sort: SortField, input_columns: list[str]) -> Result[str, BackendError]:
+    """Render one Substrait sort field for a SQL OVER clause."""
+    mut sort_expr = ""
+    match sort.expr:
+        Some(expr) =>
+            sort_expr = _sql_expr(expr, input_columns)?
+        None =>
+            return Err(backend_error(BackendErrorKind.BackendPlanningError, "window sort field is missing expression"))
+    match sort.sort_kind:
+        Some(SortKind.Direction(direction)) => return Ok(sort_expr + _sort_direction_sql(direction))
+        _ => return Ok(sort_expr)
+
+
+def _sort_direction_sql(direction: RustI32) -> str:
+    """Render DataFusion SQL sort direction and null placement."""
+    asc_nulls_first: RustI32 = SortDirection.AscNullsFirst.into()
+    asc_nulls_last: RustI32 = SortDirection.AscNullsLast.into()
+    desc_nulls_first: RustI32 = SortDirection.DescNullsFirst.into()
+    desc_nulls_last: RustI32 = SortDirection.DescNullsLast.into()
+    if direction == asc_nulls_first:
+        return " ASC NULLS FIRST"
+    if direction == asc_nulls_last:
+        return " ASC NULLS LAST"
+    if direction == desc_nulls_first:
+        return " DESC NULLS FIRST"
+    if direction == desc_nulls_last:
+        return " DESC NULLS LAST"
+    return ""
+
+
+def _window_frame_sql(window_function: WindowRelFunction) -> Result[str, BackendError]:
+    """Render an explicit SQL frame preserved from Substrait window bounds."""
+    bounds_type = _window_bounds_type_sql(window_function.bounds_type)
+    if len(bounds_type) == 0:
+        return Ok("")
+    lower = _window_bound_sql(window_function.lower_bound, true)?
+    upper = _window_bound_sql(window_function.upper_bound, false)?
+    return Ok(bounds_type + " BETWEEN " + lower + " AND " + upper)
+
+
+def _window_bounds_type_sql(value: RustI32) -> str:
+    """Render a Substrait window bounds-type discriminant."""
+    rows: RustI32 = BoundsType.Rows.into()
+    range_bounds: RustI32 = BoundsType.Range.into()
+    if value == rows:
+        return "ROWS"
+    if value == range_bounds:
+        return "RANGE"
+    return ""
+
+
+def _window_bound_sql(bound: Option[Bound], is_lower: bool) -> Result[str, BackendError]:
+    """Render one SQL window-frame bound."""
+    match bound:
+        Some(value) =>
+            match value.kind:
+                Some(BoundKind.Unbounded(_)) =>
+                    if is_lower:
+                        return Ok("UNBOUNDED PRECEDING")
+                    return Ok("UNBOUNDED FOLLOWING")
+                Some(BoundKind.CurrentRow(_)) => return Ok("CURRENT ROW")
+                Some(BoundKind.Preceding(preceding)) => return Ok(f"{preceding.offset} PRECEDING")
+                Some(BoundKind.Following(following)) => return Ok(f"{following.offset} FOLLOWING")
+                None => pass
+        None => pass
+    return Err(backend_error(BackendErrorKind.BackendPlanningError, "window frame bound is missing"))
+
+
+def _window_function_output_name(options: list[FunctionOption]) -> str:
+    """Return the output alias encoded by Substrait lowering."""
+    for option in options:
+        if option.name == "inql_output_name" and len(option.preference) > 0:
+            return option.preference[0]
+    return ""
+
+
+def _window_null_treatment_sql(options: list[FunctionOption]) -> str:
+    """Render optional DataFusion SQL null treatment for value and offset windows."""
+    for option in options:
+        if option.name == "null_treatment" and len(option.preference) > 0 and option.preference[0] == "ignore_nulls":
+            return " IGNORE NULLS"
+    return ""
+
+
+def _quoted_ident(identifier: str) -> str:
+    """Quote a SQL identifier for DataFusion."""
+    return "\"" + identifier.replace("\"", "\"\"") + "\""
 
 
 def _generator_input_rel(extension: ExtensionSingleRel) -> Result[Rel, BackendError]:

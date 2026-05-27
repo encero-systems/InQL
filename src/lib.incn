@@ -16,6 +16,7 @@ pub from dataset.ops import (
     limit_ds,
     order_by_ds,
     select_ds,
+    with_window_column_ds,
 )
 pub from aggregate_builders import AggregateKind, AggregateMeasure
 pub from generator_builders import (
@@ -23,6 +24,20 @@ pub from generator_builders import (
     GeneratorKind,
     generator_output_columns,
     generator_primary_output_column,
+)
+pub from window_builders import (
+    WindowBound,
+    WindowBoundKind,
+    WindowFrame,
+    WindowFrameKind,
+    WindowFunctionApplication,
+    WindowFunctionCall,
+    WindowFunctionKind,
+    WindowNullTreatment,
+    WindowProjection,
+    WindowSpec,
+    window_output_columns,
+    window_projection,
 )
 pub from projection_builders import (
     BoolLiteralExpr,
@@ -105,6 +120,19 @@ pub from functions.generators.inline_outer import inline_outer
 pub from functions.generators.posexplode import posexplode
 pub from functions.generators.posexplode_outer import posexplode_outer
 pub from functions.generators.stack import stack
+pub from functions.windows.window import window
+pub from functions.windows.row_number import row_number
+pub from functions.windows.rank import rank
+pub from functions.windows.dense_rank import dense_rank
+pub from functions.windows.percent_rank import percent_rank
+pub from functions.windows.cume_dist import cume_dist
+pub from functions.windows.ntile import ntile
+pub from functions.windows.lag import lag
+pub from functions.windows.lead import lead
+pub from functions.windows.first_value import first_value
+pub from functions.windows.last_value import last_value
+pub from functions.windows.nth_value import nth_value
+pub from functions.windows.bounds import current_row, following, preceding, unbounded_following, unbounded_preceding
 pub from functions.operators.add import add
 pub from functions.operators.and_ import and_
 pub from functions.operators.div import div
@@ -224,6 +252,8 @@ pub from substrait.relations import (
     set_rel_of_kind,
     sort_rel,
     sort_rel_of_columns,
+    window_rel,
+    window_rel_of_columns,
 )
 pub from substrait.plans import (
     empty_plan,
@@ -250,8 +280,12 @@ pub from substrait.inspect import (
     rel_contains_kind,
     root_rel,
     set_operation_name,
+    window_function_names,
+    window_partition_count,
+    window_sort_count,
 )
 pub from substrait.function_extensions import (
+    DENSE_RANK_FUNCTION_ANCHOR,
     EXPLODE_EXTENSION_URI,
     EXPLODE_OUTER_EXTENSION_URI,
     FLATTEN_EXTENSION_URI,
@@ -260,6 +294,8 @@ pub from substrait.function_extensions import (
     INLINE_OUTER_EXTENSION_URI,
     POSEXPLODE_EXTENSION_URI,
     POSEXPLODE_OUTER_EXTENSION_URI,
+    RANK_FUNCTION_ANCHOR,
+    ROW_NUMBER_FUNCTION_ANCHOR,
     registered_substrait_extension_uris,
     STACK_EXTENSION_URI,
 )

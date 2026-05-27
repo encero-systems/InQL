@@ -1,0 +1,39 @@
+"""Lead offset window helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.registry import register_function
+from projection_builders import ColumnExpr, col
+from substrait.function_extensions import LEAD_FUNCTION_ANCHOR
+from window_builders import WindowFunctionCall, lead as lead_builder
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.DependsOnInputs,
+    substrait=extension_mapping("lead", LEAD_FUNCTION_ANCHOR),
+))
+pub def lead(
+    expr: ColumnExpr,
+    offset: int = 1,
+    default_value: ColumnExpr = col("__inql_no_window_default__"),
+) -> WindowFunctionCall:
+    """
+    Build a `lead` window function call.
+
+    Examples:
+        next_amount = lead(col("amount")).over(window().partition_by([col("customer_id")]).order_by([col("id")]))
+
+    Parameters:
+        expr: Value expression to read from a later row.
+        offset: Positive row offset ahead of the current row.
+        default_value: Value to use when the offset is outside the partition.
+    """
+    return lead_builder(expr, offset, default_value)

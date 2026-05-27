@@ -7,7 +7,16 @@ inspection utilities used by tests, dataset carriers, and conformance validation
 
 from rust::std::boxed import Box
 from rust::std::primitive import i32 as RustI32
-from rust::substrait::proto import AggregateRel, Expression, Plan, ReadRel, Rel, RelCommon
+from rust::substrait::proto import (
+    AggregateRel,
+    ConsistentPartitionWindowRel,
+    Expression,
+    FunctionOption,
+    Plan,
+    ReadRel,
+    Rel,
+    RelCommon,
+)
 from rust::substrait::proto::aggregate_rel import Measure
 from rust::substrait::proto::aggregate_function import AggregationInvocation
 from rust::substrait::proto::function_argument import ArgType
@@ -20,7 +29,7 @@ from rust::substrait::proto::sort_field import SortDirection, SortKind
 from aggregate_builders import AggregateMeasure
 from projection_builders import scalar_expr_output_name
 from substrait.expr_lowering import field_index_from_expression, project_output_columns_with_emit, rust_u32_to_int
-from substrait.extensions import aggregate_function_name_from_anchor
+from substrait.extensions import aggregate_function_name_from_anchor, window_function_name_from_anchor
 from substrait.function_extensions import (
     EXPLODE_EXTENSION_URI,
     EXPLODE_OUTER_EXTENSION_URI,
@@ -154,6 +163,42 @@ def _aggregate_output_columns(aggregate_rel: AggregateRel) -> list[str]:
     return columns
 
 
+def _window_input_columns(window_rel: ConsistentPartitionWindowRel) -> list[str]:
+    """Resolve the current input-column names feeding one window relation."""
+    match window_rel.input:
+        Some(child) => return relation_output_columns(child.as_ref().clone())
+        None => return []
+
+
+def _window_output_columns(window_rel: ConsistentPartitionWindowRel) -> list[str]:
+    """Return input-column names followed by lowered window output aliases."""
+    mut columns = _window_input_columns(window_rel.clone())
+    for idx, window_function in enumerate(window_rel.window_functions):
+        output_name = _window_function_output_name(window_function.options)
+        if len(output_name) > 0:
+            columns.append(output_name)
+        else:
+            function_name = window_function_name_from_anchor(window_function.function_reference)
+            if len(function_name) > 0:
+                columns.append(function_name)
+            else:
+                columns.append(f"window_{idx}")
+    return columns
+
+
+def _window_function_output_name(options: list[FunctionOption]) -> str:
+    """Return the InQL output alias encoded on one lowered window function."""
+    for option in options:
+        if option.name == "inql_output_name" and len(option.preference) > 0:
+            return option.preference[0]
+    return ""
+
+
+def _window_function_names_for_rel(window_rel: ConsistentPartitionWindowRel) -> list[str]:
+    """Return lowered window-function names in declaration order."""
+    return [window_function_name_from_anchor(fun.function_reference) for fun in window_rel.window_functions]
+
+
 def _relation_output_columns(rel: Rel) -> list[str]:
     """Return the current best-effort output column names for one relation subtree."""
     match rel.rel_type.clone():
@@ -217,12 +262,34 @@ def _relation_output_columns(rel: Rel) -> list[str]:
                 return []
             return _relation_output_columns(set_rel.inputs[0])
         Some(RelType.Aggregate(aggregate_rel)) => return _aggregate_output_columns(aggregate_rel.as_ref().clone())
+        Some(RelType.Window(window_rel)) => return _window_output_columns(window_rel.as_ref().clone())
         _ => return []
 
 
 pub def relation_output_columns(rel: Rel) -> list[str]:
     """Return best-effort logical output columns for one relation subtree."""
     return _relation_output_columns(rel)
+
+
+pub def window_function_names(rel: Rel) -> list[str]:
+    """Return lowered window-function names when `rel` is a window root."""
+    match rel.rel_type:
+        Some(RelType.Window(window_rel)) => return _window_function_names_for_rel(window_rel.as_ref().clone())
+        _ => return []
+
+
+pub def window_partition_count(rel: Rel) -> int:
+    """Return the number of partition expressions when `rel` is a window root."""
+    match rel.rel_type:
+        Some(RelType.Window(window_rel)) => return len(window_rel.partition_expressions)
+        _ => return 0
+
+
+pub def window_sort_count(rel: Rel) -> int:
+    """Return the number of sort expressions when `rel` is a window root."""
+    match rel.rel_type:
+        Some(RelType.Window(window_rel)) => return len(window_rel.sorts)
+        _ => return 0
 
 
 def _extension_single_output_columns(input_columns: list[str], extension_uri: str, payload: bytes) -> list[str]:
@@ -340,6 +407,7 @@ pub def relation_kind_name(rel: Rel) -> str:
         Some(RelType.Join(_)) => return "JoinRel"
         Some(RelType.Cross(_)) => return "CrossRel"
         Some(RelType.Aggregate(_)) => return "AggregateRel"
+        Some(RelType.Window(_)) => return "ConsistentPartitionWindowRel"
         Some(RelType.Sort(_)) => return "SortRel"
         Some(RelType.Fetch(_)) => return "FetchRel"
         Some(RelType.Set(_)) => return "SetRel"

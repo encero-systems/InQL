@@ -8,6 +8,7 @@ typechecker changes in the Incan compiler.
 
 from function_registry import function_ref_for
 from projection_builders import ColumnExpr, col as col_expr, column_expr_name
+from window_builders import WindowFunctionApplication, WindowSpec, aggregate_window_call
 
 
 @derive(Clone)
@@ -76,6 +77,19 @@ pub model AggregateMeasure:
             has_filter=self.has_filter,
             ordering=ordering,
         )
+
+    def over(self, spec: WindowSpec) -> WindowFunctionApplication:
+        """Place this aggregate measure over a window specification so it remains row-level."""
+        mut arguments: list[ColumnExpr] = []
+        if self.has_expr:
+            arguments.append(self.expr)
+        return aggregate_window_call(
+            self.function_ref,
+            self.canonical_name,
+            arguments,
+            self.is_distinct,
+            self.has_filter,
+        ).over(spec)
 
 
 pub def col(name: str) -> ColumnExpr:

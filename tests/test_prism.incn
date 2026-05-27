@@ -1,12 +1,13 @@
 """Internal Prism engine tests against the shared-store cursor substrate."""
 
-from functions import always_false, always_true, col, count, count_expr, explode, lit, mul, sum
+from functions import always_false, always_true, col, count, count_expr, explode, lit, mul, row_number, sum, window
 from prism import (
     PrismCursor,
     prism_cursor_apply_filter,
     prism_cursor_apply_generate,
     prism_cursor_apply_limit,
     prism_cursor_apply_select,
+    prism_cursor_apply_with_window_column,
     prism_cursor_authored_node_count,
     prism_cursor_named_table,
     prism_cursor_rewrite_applied_rule_count,
@@ -21,7 +22,8 @@ from prism import (
     prism_cursor_tip_origin_id,
     prism_cursors_share_store,
 )
-from substrait.inspect import plan_contains_relation_kind, relation_kind_name, root_rel
+from substrait.function_extensions import FUNCTION_EXTENSION_URI
+from substrait.inspect import plan_contains_relation_kind, plan_has_extension_urn, relation_kind_name, root_rel
 from substrait.plans import plan_encoded_len
 from substrait.schema_registry import register_named_table_schema
 from substrait.schema import RowColumnSpec, SubstraitPrimitiveKind
@@ -230,6 +232,10 @@ def test_prism__cursor_native_nodes_cover_current_method_surface() -> None:
     generated: PrismCursor[Order] = prism_cursor_named_table(str("orders_generator_prism")).generate(
         explode(col("line_items"), "line_item"),
     )
+    windowed: PrismCursor[Order] = prism_cursor_named_table(str("orders")).with_window_column(
+        "row_num",
+        row_number().over(window().order_by([col("id")])),
+    )
 
     # -- Assert --
     assert prism_cursor_tip_kind_name(projected) == str("Project"), "select should append a native project node"
@@ -239,7 +245,24 @@ def test_prism__cursor_native_nodes_cover_current_method_surface() -> None:
     assert prism_cursor_tip_kind_name(limited) == str("Limit"), "limit should append a native limit node"
     assert prism_cursor_tip_kind_name(exploded) == str("Explode"), "explode should append a native explode node"
     assert prism_cursor_tip_kind_name(generated) == str("Generate"), "generate should append a native generator node"
+    assert prism_cursor_tip_kind_name(windowed) == str("Window"), "with_window_column should append a native window node"
     assert prism_cursor_output_columns(generated) == ["id", "line_items", "line_item"], "generate should append declared output aliases"
+    assert prism_cursor_output_columns(windowed) == ["id", "row_num"], "window projections should append declared output aliases"
+
+
+def test_prism__window_column_lowers_through_substrait_boundary() -> None:
+    # -- Arrange --
+    _register_projection_test_schema(str("orders"))
+    base: PrismCursor[Order] = prism_cursor_named_table(str("orders"))
+
+    # -- Act --
+    windowed = prism_cursor_apply_with_window_column(base, "row_num", row_number().over(window().order_by([col("id")])))
+    plan = windowed.to_substrait_plan()
+
+    # -- Assert --
+    assert prism_cursor_tip_kind_name(windowed) == str("Window"), "window helper should create a Prism window node"
+    assert relation_kind_name(root_rel(plan)) == str("ConsistentPartitionWindowRel"), "window Prism node should lower to a window relation"
+    assert plan_has_extension_urn(plan, FUNCTION_EXTENSION_URI), "window plans should declare the shared function extension URI"
 
 
 def test_prism__rewrite_eliminates_filter_true_by_default() -> None:

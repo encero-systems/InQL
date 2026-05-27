@@ -1,0 +1,39 @@
+"""Lag offset window helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.registry import register_function
+from projection_builders import ColumnExpr, col
+from substrait.function_extensions import LAG_FUNCTION_ANCHOR
+from window_builders import WindowFunctionCall, lag as lag_builder
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.DependsOnInputs,
+    substrait=extension_mapping("lag", LAG_FUNCTION_ANCHOR),
+))
+pub def lag(
+    expr: ColumnExpr,
+    offset: int = 1,
+    default_value: ColumnExpr = col("__inql_no_window_default__"),
+) -> WindowFunctionCall:
+    """
+    Build a `lag` window function call.
+
+    Examples:
+        previous_amount = lag(col("amount")).over(window().partition_by([col("customer_id")]).order_by([col("id")]))
+
+    Parameters:
+        expr: Value expression to read from a prior row.
+        offset: Positive row offset behind the current row.
+        default_value: Value to use when the offset is outside the partition.
+    """
+    return lag_builder(expr, offset, default_value)

@@ -1,6 +1,6 @@
 # InQL RFC 019: Window functions
 
-- **Status:** Draft
+- **Status:** Implemented
 - **Created:** 2026-04-27
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -10,9 +10,9 @@
   - InQL RFC 014 (function registry and catalog governance)
   - InQL RFC 016 (core aggregate functions)
 - **Issue:** [InQL #36](https://github.com/dannys-code-corner/InQL/issues/36)
-- **RFC PR:** —
-- **Written against:** Incan v0.2
-- **Shipped in:** —
+- **RFC PR:** [InQL #48](https://github.com/dannys-code-corner/InQL/pull/48)
+- **Written against:** Incan v0.3-era InQL
+- **Shipped in:** v0.1
 
 ## Summary
 
@@ -40,19 +40,28 @@ Window functions also force a clearer relation between row-level expressions and
 
 ## Guide-level explanation (how authors think about it)
 
-Authors should be able to rank and compare rows within a partition:
+Authors can rank rows within a partition using the builder surface:
 
 ```incan
-from pub::inql.functions import col, desc, lag, rank, window
+from pub::inql.functions import col, current_row, desc, lag, rank, sum, unbounded_preceding, window
 
 ranked = (
     orders
-        .with_column("customer_rank", rank().over(window().partition_by([col("customer_id")]).order_by([desc(col("amount"))])))
-        .with_column("previous_amount", lag(col("amount"), 1).over(window().partition_by([col("customer_id")]).order_by([col("created_at")])))
+        .with_window_column("customer_rank", rank().over(window().partition_by([col("customer_id")]).order_by([desc(col("amount"))])))
+        .with_window_column("previous_amount", lag(col("amount")).over(window().partition_by([col("customer_id")]).order_by([desc(col("amount"))])))
+        .with_window_column(
+            "running_amount",
+            sum(col("amount")).over(
+                window()
+                    .partition_by([col("customer_id")])
+                    .order_by([desc(col("amount"))])
+                    .rows_between(unbounded_preceding(), current_row())
+            ),
+        )
 )
 ```
 
-The exact builder syntax may evolve, but authors should understand that a window function returns a row-level value computed with access to nearby or related rows.
+The exact query-block syntax may evolve, but authors should understand that a window function returns a row-level value computed with access to nearby or related rows.
 
 ## Reference-level explanation (precise rules)
 
@@ -62,7 +71,7 @@ InQL must define ranking functions `row_number`, `rank`, `dense_rank`, `percent_
 
 InQL must define offset functions `lag` and `lead`. Offset functions must accept a scalar input expression, an optional positive integer offset, and an optional default value whose type is compatible with the input expression.
 
-InQL must define value functions `first_value`, `last_value`, and `nth_value`. These functions must define null treatment and frame interaction before reaching Planned status.
+InQL must define value functions `first_value`, `last_value`, and `nth_value`. Value and offset calls support explicit `RESPECT NULLS` and `IGNORE NULLS` metadata through method modifiers on the unplaced window call.
 
 Windowed aggregate calls may reuse aggregate functions over a window specification. They must still obey aggregate input type rules, but their result is a row-level value in the surrounding projection.
 
@@ -72,7 +81,7 @@ Window functions must not be valid in all scalar positions. They may appear only
 
 ### Syntax
 
-This RFC permits method-like `.over(...)` forms and query-block `OVER (...)` forms if both lower to the same window function model.
+This RFC permits method-like `.over(...)` forms and query-block `OVER (...)` forms if both lower to the same window function model. The v0.1 package surface exposes the method-like builder form; RFC 003 query blocks will target the same registry-backed `WindowFunctionApplication` and `WindowSpec` model when the query-block syntax surface lands.
 
 ### Semantics
 
@@ -104,14 +113,22 @@ No current InQL function should be reclassified silently as a window function. A
 
 - **InQL specification** — window functions must be distinguished from scalar and aggregate functions.
 - **InQL library package** — public helpers should expose window function and window specification builders.
-- **Incan compiler** — query syntax must check window function placement, partition expressions, ordering expressions, and frame bounds.
+- **Incan compiler / InQL authoring surfaces** — checked call signatures and future query syntax must enforce window function placement, partition expressions, ordering expressions, and frame bounds.
 - **Execution / interchange** — Prism and Substrait lowering must preserve window partitioning, ordering, frames, and function identity.
 - **Documentation** — docs should clearly separate aggregate functions from window functions.
 
-## Unresolved questions
+## Design Decisions
 
-- What default frame should InQL use for ordered window functions?
-- Should window functions be allowed in `WHERE` or only in projection/order positions?
-- Should null treatment use explicit `IGNORE NULLS` / `RESPECT NULLS` style modifiers?
+### Resolved
 
-<!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->
+- The implemented package surface exposes explicit `with_window_column(...)` projection-like placement rather than accepting window functions in arbitrary scalar-expression positions.
+- Ranking helpers require explicit `order_by(...)` in the window spec. InQL does not invent a silent default ordering.
+- Distribution, offset, and value helpers use the same relation-aware placement model as ranking helpers.
+- Aggregate helpers may be placed over windows through `AggregateMeasure.over(...)`; invalid aggregate modifier combinations are rejected before backend execution.
+- Window specs use a documented whole-partition default row frame, and explicit `rows_between(...)` / `range_between(...)` calls preserve frame bounds through Substrait lowering.
+- Window relation lowering uses `ConsistentPartitionWindowRel` with registry-backed function anchors, partition/order expressions, frame bounds, invocation metadata, null-treatment options, and output aliases.
+- The DataFusion session adapter executes the portable window helper surface through the Substrait adapter boundary.
+
+### Remaining
+
+- Query-block `OVER (...)` syntax belongs to RFC 003 and should lower to the implemented window model instead of defining separate semantics.

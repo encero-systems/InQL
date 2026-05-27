@@ -1,0 +1,36 @@
+"""Rank window helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.registry import register_function
+from substrait.function_extensions import RANK_FUNCTION_ANCHOR
+from window_builders import WindowFunctionCall, rank as rank_builder
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.NonNullLiteral,
+    substrait=extension_mapping("rank", RANK_FUNCTION_ANCHOR),
+))
+pub def rank() -> WindowFunctionCall:
+    """
+    Build a rank window function call.
+
+    Examples:
+        ranked = rank().over(window().partition_by([col("customer_id")]).order_by([desc(col("amount"))]))
+    """
+    return rank_builder()
+
+
+module tests:
+    def test_rank_builds_window_call() -> None:
+        call = rank()
+        assert call.canonical_name == "rank"
+        assert call.requires_ordering
