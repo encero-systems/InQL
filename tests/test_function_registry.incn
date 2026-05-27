@@ -185,7 +185,7 @@ def _expected_registry_names() -> list[str]:
 
 def _expected_substrait_mapped_names() -> list[str]:
     """Return helpers with concrete Substrait extension-function mappings."""
-    return ["sum", "count", "count_expr", "avg", "min", "max", "add", "mul", "eq", "gt", "ne", "lt", "lte", "gte", "equal_null", "and_", "or_", "not_", "is_null", "is_not_null", "is_nan", "sub", "div", "mod", "neg", "coalesce", "nullif", "between", "abs", "ceil", "floor", "round"]
+    return ["sum", "count", "avg", "min", "max", "add", "mul", "eq", "gt", "ne", "lt", "lte", "gte", "equal_null", "and_", "or_", "not_", "is_null", "is_not_null", "is_nan", "sub", "div", "mod", "neg", "coalesce", "nullif", "between", "abs", "ceil", "floor", "round"]
 
 
 def _exercise_current_public_helpers() -> None:
@@ -204,6 +204,7 @@ def _exercise_current_public_helpers() -> None:
     always_false()
     sum(amount)
     count()
+    count(status)
     count_expr(status)
     count_distinct(status)
     count_if(eq(status, str_lit("paid")))
@@ -494,8 +495,8 @@ def test_function_registry__substrait_extension_mappings_are_structured() -> Non
         assert _contains_text(mapped_refs, function_ref_for(canonical_name)), "mapped helper should be in the Substrait extension mapping set"
     _assert_extension_mapping("sum", "sum", SUM_FUNCTION_ANCHOR)
     _assert_extension_mapping("count", "count", COUNT_FUNCTION_ANCHOR)
-    _assert_extension_mapping("count_expr", "count", COUNT_FUNCTION_ANCHOR)
-    _assert_rewrite_mapping("count_distinct", "count_expr(expr).distinct()")
+    _assert_rewrite_mapping("count_expr", "count(expr)")
+    _assert_rewrite_mapping("count_distinct", "count(expr).distinct()")
     _assert_rewrite_mapping("count_if", "count().filter(predicate)")
     _assert_extension_mapping("avg", "avg", AVG_FUNCTION_ANCHOR)
     _assert_extension_mapping("min", "min", MIN_FUNCTION_ANCHOR)
@@ -588,7 +589,8 @@ def test_function_registry__public_helpers_preserve_existing_behavior() -> None:
     # -- Act --
     sum_measure = sum(amount)
     count_measure = count()
-    expression_count_measure = count_expr(status)
+    expression_count_measure = count(status)
+    compatibility_count_measure = count_expr(status)
     distinct_count_measure = count_distinct(status)
     filtered_count_measure = count_if(eq(status, str_lit("paid")))
     avg_measure = avg(amount)
@@ -616,6 +618,9 @@ def test_function_registry__public_helpers_preserve_existing_behavior() -> None:
     assert not count_measure.has_expr, "count wrapper should preserve argument-free count semantics"
     assert expression_count_measure.kind == AggregateKind.Count, "count(expr) wrapper should preserve aggregate kind"
     assert expression_count_measure.has_expr, "count(expr) wrapper should preserve expression-count semantics"
+    assert compatibility_count_measure.kind == AggregateKind.Count, "count_expr compatibility wrapper should preserve aggregate kind"
+    assert compatibility_count_measure.canonical_name == "count", "count_expr compatibility wrapper should return canonical count measures"
+    assert compatibility_count_measure.has_expr, "count_expr compatibility wrapper should preserve expression-count semantics"
     assert distinct_count_measure.kind == AggregateKind.Count, "count_distinct wrapper should preserve aggregate kind"
     assert distinct_count_measure.is_distinct, "count_distinct should lower to the aggregate distinct modifier"
     assert filtered_count_measure.kind == AggregateKind.Count, "count_if wrapper should preserve aggregate kind"

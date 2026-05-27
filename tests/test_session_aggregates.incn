@@ -1,6 +1,6 @@
 """End-to-end Session aggregate execution tests over the DataFusion backend."""
 
-from functions import avg, col, count, count_distinct, count_expr, count_if, eq, max, min, str_lit, sum
+from functions import avg, col, count, count_distinct, count_if, eq, max, min, str_lit, sum
 from dataset import DataFrame, LazyFrame
 from session import Session
 from std.testing import assert_is_ok, fail_t
@@ -75,9 +75,7 @@ def test_session_aggregates__grouped_collect_executes_core_aggregates() -> None:
         "aggregate orders fixture should load",
     )
     grouped = lazy.group_by([col("customer_id")]).agg(
-        [sum(col("amount")), count(), count_expr(col("amount")), avg(col("amount")), min(col("amount")), max(
-            col("amount"),
-        )],
+        [sum(col("amount")), count(), count(col("amount")), avg(col("amount")), min(col("amount")), max(col("amount"))],
     )
     df = assert_is_ok(session.collect(grouped), "mixed grouped aggregate collect should execute")
     payload = df.preview_text()

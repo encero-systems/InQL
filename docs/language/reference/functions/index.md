@@ -32,6 +32,6 @@ The registered helper surface currently includes:
 | `in_(...)`, `between(...)` | scalar | built-in membership/range lowering (`SingularOrList` and `between`) |
 | `abs(...)`, `ceil(...)`, `floor(...)`, `round(...)` | scalar | registered Substrait math scalar mappings; `round(...)` is currently the single-argument form |
 | `asc(...)`, `desc(...)`, `asc_nulls_first(...)`, `asc_nulls_last(...)`, `desc_nulls_first(...)`, `desc_nulls_last(...)` | ordering | structural sort-field helpers consumed by `order_by(...)` and lowered to Substrait `SortRel.sorts` |
-| `sum(...)`, `count()`, `count_expr(...)`, `count_distinct(...)`, `count_if(...)`, `avg(...)`, `min(...)`, `max(...)` | aggregate | registered Substrait extension functions for core aggregates plus compatibility rewrites for `count_distinct(...)` and `count_if(...)`; core aggregates allow `DISTINCT` and aggregate-local `FILTER` where the aggregate shape is valid |
+| `sum(...)`, `count(...)`, `count_expr(...)`, `count_distinct(...)`, `count_if(...)`, `avg(...)`, `min(...)`, `max(...)` | aggregate | registered Substrait extension functions for core aggregates plus compatibility rewrites for `count_expr(...)`, `count_distinct(...)`, and `count_if(...)`; core aggregates allow `DISTINCT` and aggregate-local `FILTER` where the aggregate shape is valid |
 
 Future ANSI-style families should grow under this section instead of bloating `dataset_types` or `dataset_methods`.

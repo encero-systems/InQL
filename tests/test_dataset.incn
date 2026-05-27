@@ -14,7 +14,6 @@ from functions import (
     col,
     count,
     count_distinct,
-    count_expr,
     count_if,
     eq,
     float_expr,
@@ -155,7 +154,7 @@ def test_smoke__dataset_types_are_published() -> None:
     # -- Act --
     sum_result = sum(amount)
     count_result = count()
-    expression_count_result = count_expr(amount)
+    expression_count_result = count(amount)
     distinct_count_result = count_distinct(amount)
     filtered_count_result = count_if(eq(col("status"), str_lit("paid")))
     avg_result = avg(amount)
@@ -164,7 +163,7 @@ def test_smoke__dataset_types_are_published() -> None:
 
     # -- Assert --
     assert column_expr_name(sum_result.expr) == "amount", "sum should preserve the selected input column expression"
-    assert column_expr_name(count_result.expr) == "", "count should remain a zero-argument aggregate helper"
+    assert column_expr_name(count_result.expr) == "", "count should preserve row-count measures when called without an expression"
     assert expression_count_result.has_expr, "count(expr) should mark expression-count measures explicitly"
     assert column_expr_name(expression_count_result.expr) == "amount", "count(expr) should preserve the selected input column expression"
     assert distinct_count_result.is_distinct, "count_distinct should build a distinct aggregate measure"

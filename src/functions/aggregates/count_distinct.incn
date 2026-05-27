@@ -1,7 +1,7 @@
 """
 Distinct count compatibility helper.
 
-`count_distinct(expr)` is sugar over the canonical aggregate modifier model: `count_expr(expr).distinct()`.
+`count_distinct(expr)` is sugar over the canonical aggregate modifier model: `count(expr).distinct()`.
 """
 
 from aggregate_builders import AggregateKind, AggregateMeasure
@@ -17,7 +17,7 @@ from function_registry import (
     rewrite_mapping,
     v0_1,
 )
-from functions.aggregates.count import count_expr
+from functions.aggregates.count import count
 from functions.registry import register_function
 from projection_builders import ColumnExpr, col, column_expr_name
 
@@ -31,7 +31,7 @@ from projection_builders import ColumnExpr, col, column_expr_name
     null_behavior=FunctionNullBehavior.NullSkippingAggregate,
     error_behavior=FunctionErrorBehavior.Typechecked,
     aggregate_modifiers=CORE_AGGREGATE_MODIFIERS,
-    substrait=rewrite_mapping("count_expr(expr).distinct()"),
+    substrait=rewrite_mapping("count(expr).distinct()"),
 ))
 pub def count_distinct(expr: ColumnExpr) -> AggregateMeasure:
     """
@@ -43,7 +43,7 @@ pub def count_distinct(expr: ColumnExpr) -> AggregateMeasure:
     Parameters:
         expr: Expression whose distinct non-null values should be counted.
     """
-    return count_expr(expr).distinct()
+    return count(expr).distinct()
 
 
 module tests:

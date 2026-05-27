@@ -7,7 +7,7 @@ typechecker changes in the Incan compiler.
 """
 
 from function_registry import function_ref_for
-from projection_builders import ColumnExpr, col as col_expr
+from projection_builders import ColumnExpr, col as col_expr, column_expr_name
 
 
 @derive(Clone)
@@ -98,14 +98,26 @@ pub def sum(expr: ColumnExpr) -> AggregateMeasure:
     )
 
 
-pub def count() -> AggregateMeasure:
-    """Build one zero-argument `count` aggregate measure."""
+pub def count(expr: ColumnExpr = col_expr("")) -> AggregateMeasure:
+    """Build one `count` aggregate measure, counting rows without an expression and non-null values with one."""
+    if column_expr_name(expr) == "":
+        return AggregateMeasure(
+            kind=AggregateKind.Count,
+            function_ref=function_ref_for("count"),
+            canonical_name="count",
+            expr=expr,
+            has_expr=false,
+            is_distinct=false,
+            filter_expr=col_expr(""),
+            has_filter=false,
+            ordering=[],
+        )
     return AggregateMeasure(
         kind=AggregateKind.Count,
         function_ref=function_ref_for("count"),
         canonical_name="count",
-        expr=col_expr(""),
-        has_expr=false,
+        expr=expr,
+        has_expr=true,
         is_distinct=false,
         filter_expr=col_expr(""),
         has_filter=false,
@@ -114,18 +126,8 @@ pub def count() -> AggregateMeasure:
 
 
 pub def count_expr(expr: ColumnExpr) -> AggregateMeasure:
-    """Build one expression-count aggregate measure."""
-    return AggregateMeasure(
-        kind=AggregateKind.Count,
-        function_ref=function_ref_for("count_expr"),
-        canonical_name="count_expr",
-        expr=expr,
-        has_expr=true,
-        is_distinct=false,
-        filter_expr=col_expr(""),
-        has_filter=false,
-        ordering=[],
-    )
+    """Compatibility spelling for `count(expr)`."""
+    return count(expr)
 
 
 pub def avg(expr: ColumnExpr) -> AggregateMeasure:

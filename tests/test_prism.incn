@@ -1,6 +1,6 @@
 """Internal Prism engine tests against the shared-store cursor substrate."""
 
-from functions import always_false, always_true, col, count, count_expr, lit, mul, sum
+from functions import always_false, always_true, col, count, lit, mul, sum
 from prism import (
     PrismCursor,
     prism_cursor_apply_filter,
@@ -187,8 +187,8 @@ def test_prism__cross_store_adoption_keeps_distinct_aggregate_modifier_state() -
     _register_projection_test_schema(str("orders_archive"))
     left: PrismCursor[Order] = prism_cursor_named_table(str("orders")).filter(always_false())
     right_base: PrismCursor[Order] = prism_cursor_named_table(str("orders_archive"))
-    right_plain: PrismCursor[Order] = right_base.group_by([col("id")]).agg([count_expr(col("id"))])
-    right_distinct: PrismCursor[Order] = right_base.group_by([col("id")]).agg([count_expr(col("id")).distinct()])
+    right_plain: PrismCursor[Order] = right_base.group_by([col("id")]).agg([count(col("id"))])
+    right_distinct: PrismCursor[Order] = right_base.group_by([col("id")]).agg([count(col("id")).distinct()])
 
     # -- Act --
     right_joined: PrismCursor[Order] = right_plain.join(right_distinct.clone(), true)
