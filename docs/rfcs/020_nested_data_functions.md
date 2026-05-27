@@ -10,7 +10,7 @@
   - InQL RFC 014 (function registry and catalog governance)
   - InQL RFC 021 (generator and table-valued functions)
 - **Issue:** [InQL #37](https://github.com/dannys-code-corner/InQL/issues/37)
-- **RFC PR:** —
+- **RFC PR:** [InQL #46](https://github.com/dannys-code-corner/InQL/pull/46)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** v0.1
 

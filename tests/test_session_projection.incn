@@ -50,6 +50,22 @@ def _collect_or_fail(mut session: Session, projected: LazyFrame[AggregateOrder])
         Err(err) => return fail_t(err.error_message())
 
 
+def _preview_line_contains_all(line: str, expected_cells: list[str]) -> bool:
+    """Return whether one rendered preview row contains every expected cell value."""
+    for cell in expected_cells:
+        if not line.contains(cell):
+            return false
+    return true
+
+
+def _assert_preview_row_contains(payload: str, expected_cells: list[str], context: str) -> None:
+    """Assert one rendered preview row carries the expected materialized cells together."""
+    for line in payload.split("\n"):
+        if _preview_line_contains_all(line, expected_cells):
+            return
+    return fail_t(context)
+
+
 def test_session_projection__plan_root_names_match_append_projection() -> None:
     # -- Arrange --
     mut session = Session.default()
@@ -220,11 +236,16 @@ def test_session_projection__collect_executes_nested_scalar_projection_functions
     assert payload.contains("first_tag"), "element_at projection should materialize its alias"
     assert payload.contains("paid_position"), "array_position projection should materialize its alias"
     assert payload.contains("joined_tags"), "array_join projection should materialize its alias"
-    assert payload.contains("3"), "cardinality should report three input array elements"
-    assert payload.contains("true"), "array_contains should find the paid tag"
-    assert payload.contains("paid"), "element_at should return the first tag"
-    assert payload.contains("1"), "array_position should use one-based positions"
-    assert payload.contains("paid|A"), "array_join should materialize distinct string tags"
+    _assert_preview_row_contains(
+        payload,
+        ["A", "10", "3", "true", "paid", "1", "paid|A"],
+        "nested scalar projections should materialize the expected values for customer A amount 10",
+    )
+    _assert_preview_row_contains(
+        payload,
+        ["B", "7", "3", "true", "paid", "1", "paid|B"],
+        "nested scalar projections should materialize the expected values for customer B amount 7",
+    )
 
 
 def test_session_projection__collect_executes_identity_select() -> None:
