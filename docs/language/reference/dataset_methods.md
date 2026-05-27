@@ -22,7 +22,7 @@ The Substrait helper surface behind these methods is split by semantic role:
 | `generate`    | `def generate(self, generator: GeneratorApplication) -> Self` | Apply a relation-shaping generator such as `explode(...)` with explicit output aliases.        |
 | `order_by`    | `def order_by(self, columns: list[ColumnExpr]) -> Self`      | Sort rows by scalar expressions or ordering helpers such as `asc(...)` and `desc(...)`.        |
 | `limit`       | `def limit(self, n: int) -> Self`                            | Cap row count.                                                                                 |
-| `explode`     | `def explode(self) -> Self`                                  | Compatibility marker for the older EXPLODE extension path. Prefer `generate(explode(...))`.   |
+| `explode`     | `def explode(self) -> Self`                                  | Emit the lower-level `EXPLODE` extension boundary without expression/schema metadata.          |
 
 ## `with_column`
 

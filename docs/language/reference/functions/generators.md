@@ -35,9 +35,9 @@ The explicit generator surface currently includes:
 Generator applications preserve input columns and append generated columns in declaration order. Generated aliases are
 required, must be non-empty, and must not collide with existing input columns.
 
-The older zero-argument `DataSet.explode()` method remains available as a compatibility marker for the current Substrait
-extension relation gap. New code should prefer `generate(explode(...))` so the relation-shaping function identity and
-output schema are explicit.
+The zero-argument `DataSet.explode()` method is a lower-level extension-boundary operation. It emits the registered
+`EXPLODE` relation extension without carrying a source expression or generated output schema. Generator code should use
+`generate(explode(...))` so the relation-shaping function identity, input expression, and output schema are explicit.
 
 Nested scalar helpers such as `array_flatten(...)` remain scalar expressions. They do not expand rows and are documented
 on the [nested data functions](nested.md) page. The relation-shaping `flatten(...)` helper is intentionally separate.
