@@ -327,249 +327,231 @@ def _replace_materialized_generator_relations(rel: Rel, path: str) -> Rel:
 
 def _replace_materialized_generator_children(rel: Rel, path: str) -> Rel:
     """Recursively rewrite generator-bearing children while preserving the surrounding relation node."""
-    # Rebuild only nodes whose child pointers may change. Node-local predicates, projections, orderings, and aggregate
-    # payloads stay untouched so the rewritten plan remains semantically equivalent.
+    # Keep this dispatcher shallow. The relation-specific helpers own proto reconstruction details; this function owns
+    # only the traversal choice.
     match rel.rel_type.clone():
         Some(RelType.Filter(filter_rel)) =>
-            filter = filter_rel.as_ref().clone()
-            match filter.input:
-                Some(child) =>
-                    return Rel(
-                        rel_type=Some(
-                            RelType.Filter(
-                                Box.new(
-                                    FilterRel(
-                                        common=filter.common,
-                                        input=Some(
-                                            Box.new(
-                                                _replace_materialized_generator_relations(
-                                                    child.as_ref().clone(),
-                                                    f"{path}_filter",
-                                                ),
-                                            ),
-                                        ),
-                                        condition=filter.condition,
-                                        advanced_extension=filter.advanced_extension,
-                                    ),
-                                ),
-                            ),
-                        ),
-                    )
-                None => return rel
+            return _replace_filter_generator_child(rel, filter_rel.as_ref().clone(), path)
         Some(RelType.Project(project_rel)) =>
-            project = project_rel.as_ref().clone()
-            match project.input:
-                Some(child) =>
-                    return Rel(
-                        rel_type=Some(
-                            RelType.Project(
-                                Box.new(
-                                    ProjectRel(
-                                        common=project.common,
-                                        input=Some(
-                                            Box.new(
-                                                _replace_materialized_generator_relations(
-                                                    child.as_ref().clone(),
-                                                    f"{path}_project",
-                                                ),
-                                            ),
-                                        ),
-                                        expressions=project.expressions,
-                                        advanced_extension=project.advanced_extension,
-                                    ),
-                                ),
-                            ),
-                        ),
-                    )
-                None => return rel
-        Some(RelType.Join(join_rel)) =>
-            join = join_rel.as_ref().clone()
-            mut left = join.left
-            mut right = join.right
-            match left:
-                Some(child) =>
-                    left = Some(
-                        Box.new(_replace_materialized_generator_relations(child.as_ref().clone(), f"{path}_join_left")),
-                    )
-                None => pass
-            match right:
-                Some(child) =>
-                    right = Some(
-                        Box.new(_replace_materialized_generator_relations(child.as_ref().clone(), f"{path}_join_right")),
-                    )
-                None => pass
-            # Public InQL joins currently lower only inner joins; preserve that contract while rewriting child inputs.
-            return Rel(
-                rel_type=Some(
-                    RelType.Join(
-                        Box.new(
-                            JoinRel(
-                                common=join.common,
-                                left=left,
-                                right=right,
-                                expression=join.expression,
-                                post_join_filter=join.post_join_filter,
-                                type=JoinType.Inner.into(),
-                                advanced_extension=join.advanced_extension,
-                            ),
-                        ),
-                    ),
-                ),
-            )
-        Some(RelType.Cross(cross_rel)) =>
-            cross = cross_rel.as_ref().clone()
-            mut left = cross.left
-            mut right = cross.right
-            match left:
-                Some(child) =>
-                    left = Some(
-                        Box.new(_replace_materialized_generator_relations(child.as_ref().clone(), f"{path}_cross_left")),
-                    )
-                None => pass
-            match right:
-                Some(child) =>
-                    right = Some(
-                        Box.new(_replace_materialized_generator_relations(child.as_ref().clone(), f"{path}_cross_right")),
-                    )
-                None => pass
-            return Rel(
-                rel_type=Some(
-                    RelType.Cross(
-                        Box.new(
-                            CrossRel(
-                                common=cross.common,
-                                left=left,
-                                right=right,
-                                advanced_extension=cross.advanced_extension,
-                            ),
-                        ),
-                    ),
-                ),
-            )
+            return _replace_project_generator_child(rel, project_rel.as_ref().clone(), path)
+        Some(RelType.Join(join_rel)) => return _replace_join_generator_children(join_rel.as_ref().clone(), path)
+        Some(RelType.Cross(cross_rel)) => return _replace_cross_generator_children(cross_rel.as_ref().clone(), path)
         Some(RelType.Aggregate(aggregate_rel)) =>
-            aggregate = aggregate_rel.as_ref().clone()
-            match aggregate.input:
-                Some(child) =>
-                    return Rel(
-                        rel_type=Some(
-                            RelType.Aggregate(
-                                Box.new(
-                                    AggregateRel(
-                                        common=aggregate.common,
-                                        input=Some(
-                                            Box.new(
-                                                _replace_materialized_generator_relations(
-                                                    child.as_ref().clone(),
-                                                    f"{path}_aggregate",
-                                                ),
-                                            ),
-                                        ),
-                                        groupings=aggregate.groupings,
-                                        measures=aggregate.measures,
-                                        grouping_expressions=aggregate.grouping_expressions,
-                                        advanced_extension=aggregate.advanced_extension,
-                                    ),
-                                ),
-                            ),
-                        ),
-                    )
-                None => return rel
-        Some(RelType.Sort(sort_rel)) =>
-            sort = sort_rel.as_ref().clone()
-            match sort.input:
-                Some(child) =>
-                    return Rel(
-                        rel_type=Some(
-                            RelType.Sort(
-                                Box.new(
-                                    SortRel(
-                                        common=sort.common,
-                                        input=Some(
-                                            Box.new(
-                                                _replace_materialized_generator_relations(
-                                                    child.as_ref().clone(),
-                                                    f"{path}_sort",
-                                                ),
-                                            ),
-                                        ),
-                                        sorts=sort.sorts,
-                                        advanced_extension=sort.advanced_extension,
-                                    ),
-                                ),
-                            ),
-                        ),
-                    )
-                None => return rel
-        Some(RelType.Fetch(fetch_rel)) =>
-            fetch = fetch_rel.as_ref().clone()
-            match fetch.input:
-                Some(child) =>
-                    return Rel(
-                        rel_type=Some(
-                            RelType.Fetch(
-                                Box.new(
-                                    FetchRel(
-                                        common=fetch.common,
-                                        input=Some(
-                                            Box.new(
-                                                _replace_materialized_generator_relations(
-                                                    child.as_ref().clone(),
-                                                    f"{path}_fetch",
-                                                ),
-                                            ),
-                                        ),
-                                        advanced_extension=fetch.advanced_extension,
-                                        offset_mode=fetch.offset_mode,
-                                        count_mode=fetch.count_mode,
-                                    ),
-                                ),
-                            ),
-                        ),
-                    )
-                None => return rel
-        Some(RelType.Set(set_rel)) =>
-            mut inputs: list[Rel] = []
-            for idx, input in enumerate(set_rel.inputs):
-                rewritten = _replace_materialized_generator_relations(input, f"{path}_set_{idx}")
-                inputs.append(rewritten.clone())
+            return _replace_aggregate_generator_child(rel, aggregate_rel.as_ref().clone(), path)
+        Some(RelType.Sort(sort_rel)) => return _replace_sort_generator_child(rel, sort_rel.as_ref().clone(), path)
+        Some(RelType.Fetch(fetch_rel)) => return _replace_fetch_generator_child(rel, fetch_rel.as_ref().clone(), path)
+        Some(RelType.Set(set_rel)) => return _replace_set_generator_children(set_rel, path)
+        Some(RelType.ExtensionSingle(extension_rel)) =>
+            return _replace_extension_generator_child(rel, extension_rel.as_ref().clone(), path)
+        _ => return rel
+
+
+def _rewritten_generator_child(child: Box[Rel], path: str) -> Box[Rel]:
+    """Return one boxed child after replacing any materialized generator subtree beneath it."""
+    return Box.new(_replace_materialized_generator_relations(child.as_ref().clone(), path))
+
+
+def _replace_filter_generator_child(original: Rel, filter: FilterRel, path: str) -> Rel:
+    """Rebuild a FilterRel with its input child rewritten when present."""
+    match filter.input:
+        Some(child) =>
             return Rel(
                 rel_type=Some(
-                    RelType.Set(
-                        SetRel(
-                            common=set_rel.common,
-                            inputs=inputs,
-                            op=set_rel.op,
-                            advanced_extension=set_rel.advanced_extension,
+                    RelType.Filter(
+                        Box.new(
+                            FilterRel(
+                                common=filter.common,
+                                input=Some(_rewritten_generator_child(child, f"{path}_filter")),
+                                condition=filter.condition,
+                                advanced_extension=filter.advanced_extension,
+                            ),
                         ),
                     ),
                 ),
             )
-        Some(RelType.ExtensionSingle(extension_rel)) =>
-            extension = extension_rel.as_ref().clone()
-            match extension.input:
-                Some(child) =>
-                    return Rel(
-                        rel_type=Some(
-                            RelType.ExtensionSingle(
-                                Box.new(
-                                    ExtensionSingleRel(
-                                        common=extension.common,
-                                        input=Some(
-                                            Box.new(
-                                                _replace_materialized_generator_relations(
-                                                    child.as_ref().clone(),
-                                                    f"{path}_extension",
-                                                ),
-                                            ),
-                                        ),
-                                        detail=extension.detail,
-                                    ),
-                                ),
+        None => return original
+
+
+def _replace_project_generator_child(original: Rel, project: ProjectRel, path: str) -> Rel:
+    """Rebuild a ProjectRel with its input child rewritten when present."""
+    match project.input:
+        Some(child) =>
+            return Rel(
+                rel_type=Some(
+                    RelType.Project(
+                        Box.new(
+                            ProjectRel(
+                                common=project.common,
+                                input=Some(_rewritten_generator_child(child, f"{path}_project")),
+                                expressions=project.expressions,
+                                advanced_extension=project.advanced_extension,
                             ),
                         ),
-                    )
-                None => return rel
-        _ => return rel
+                    ),
+                ),
+            )
+        None => return original
+
+
+def _replace_join_generator_children(join: JoinRel, path: str) -> Rel:
+    """Rebuild a JoinRel with rewritten left and right inputs."""
+    mut left = join.left
+    mut right = join.right
+    match left:
+        Some(child) =>
+            left = Some(_rewritten_generator_child(child, f"{path}_join_left"))
+        None => pass
+    match right:
+        Some(child) =>
+            right = Some(_rewritten_generator_child(child, f"{path}_join_right"))
+        None => pass
+    # Public InQL joins currently lower only inner joins; preserve that contract while rewriting child inputs.
+    return Rel(
+        rel_type=Some(
+            RelType.Join(
+                Box.new(
+                    JoinRel(
+                        common=join.common,
+                        left=left,
+                        right=right,
+                        expression=join.expression,
+                        post_join_filter=join.post_join_filter,
+                        type=JoinType.Inner.into(),
+                        advanced_extension=join.advanced_extension,
+                    ),
+                ),
+            ),
+        ),
+    )
+
+
+def _replace_cross_generator_children(cross: CrossRel, path: str) -> Rel:
+    """Rebuild a CrossRel with rewritten left and right inputs."""
+    mut left = cross.left
+    mut right = cross.right
+    match left:
+        Some(child) =>
+            left = Some(_rewritten_generator_child(child, f"{path}_cross_left"))
+        None => pass
+    match right:
+        Some(child) =>
+            right = Some(_rewritten_generator_child(child, f"{path}_cross_right"))
+        None => pass
+    return Rel(
+        rel_type=Some(
+            RelType.Cross(
+                Box.new(
+                    CrossRel(common=cross.common, left=left, right=right, advanced_extension=cross.advanced_extension),
+                ),
+            ),
+        ),
+    )
+
+
+def _replace_aggregate_generator_child(original: Rel, aggregate: AggregateRel, path: str) -> Rel:
+    """Rebuild an AggregateRel with its input child rewritten when present."""
+    match aggregate.input:
+        Some(child) =>
+            return Rel(
+                rel_type=Some(
+                    RelType.Aggregate(
+                        Box.new(
+                            AggregateRel(
+                                common=aggregate.common,
+                                input=Some(_rewritten_generator_child(child, f"{path}_aggregate")),
+                                groupings=aggregate.groupings,
+                                measures=aggregate.measures,
+                                grouping_expressions=aggregate.grouping_expressions,
+                                advanced_extension=aggregate.advanced_extension,
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        None => return original
+
+
+def _replace_sort_generator_child(original: Rel, sort: SortRel, path: str) -> Rel:
+    """Rebuild a SortRel with its input child rewritten when present."""
+    match sort.input:
+        Some(child) =>
+            return Rel(
+                rel_type=Some(
+                    RelType.Sort(
+                        Box.new(
+                            SortRel(
+                                common=sort.common,
+                                input=Some(_rewritten_generator_child(child, f"{path}_sort")),
+                                sorts=sort.sorts,
+                                advanced_extension=sort.advanced_extension,
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        None => return original
+
+
+def _replace_fetch_generator_child(original: Rel, fetch: FetchRel, path: str) -> Rel:
+    """Rebuild a FetchRel with its input child rewritten when present."""
+    match fetch.input:
+        Some(child) =>
+            return Rel(
+                rel_type=Some(
+                    RelType.Fetch(
+                        Box.new(
+                            FetchRel(
+                                common=fetch.common,
+                                input=Some(_rewritten_generator_child(child, f"{path}_fetch")),
+                                advanced_extension=fetch.advanced_extension,
+                                offset_mode=fetch.offset_mode,
+                                count_mode=fetch.count_mode,
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        None => return original
+
+
+def _replace_set_generator_children(set_rel: SetRel, path: str) -> Rel:
+    """Rebuild a SetRel with every input child rewritten."""
+    mut inputs: list[Rel] = []
+    for idx, input in enumerate(set_rel.inputs):
+        rewritten = _replace_materialized_generator_relations(input, f"{path}_set_{idx}")
+        inputs.append(rewritten.clone())
+    return Rel(
+        rel_type=Some(
+            RelType.Set(
+                SetRel(
+                    common=set_rel.common,
+                    inputs=inputs,
+                    op=set_rel.op,
+                    advanced_extension=set_rel.advanced_extension,
+                ),
+            ),
+        ),
+    )
+
+
+def _replace_extension_generator_child(original: Rel, extension: ExtensionSingleRel, path: str) -> Rel:
+    """Rebuild a non-generator ExtensionSingleRel with its input child rewritten when present."""
+    match extension.input:
+        Some(child) =>
+            return Rel(
+                rel_type=Some(
+                    RelType.ExtensionSingle(
+                        Box.new(
+                            ExtensionSingleRel(
+                                common=extension.common,
+                                input=Some(_rewritten_generator_child(child, f"{path}_extension")),
+                                detail=extension.detail,
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        None => return original
 
 
 def _materialized_generator_table_name(path: str) -> str:
