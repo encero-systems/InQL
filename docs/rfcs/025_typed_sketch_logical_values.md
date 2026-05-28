@@ -9,7 +9,7 @@
   - InQL RFC 014 (function registry and catalog governance)
   - InQL RFC 023 (approximate and sketch functions)
   - InQL RFC 024 (function extension policy)
-- **Issue:** —
+- **Issue:** [InQL #51](https://github.com/dannys-code-corner/InQL/issues/51)
 - **RFC PR:** [InQL #50](https://github.com/dannys-code-corner/InQL/pull/50)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
