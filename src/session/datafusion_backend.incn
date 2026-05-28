@@ -1207,57 +1207,32 @@ def _datafusion_scalar_function_expr(
     """Translate one registry-backed scalar function into DataFusion's typed expression model."""
     function_name = scalar_function_name_from_anchor(function_reference)
     rendered_args = _datafusion_function_arguments(ctx.clone(), arguments, input_columns)?
-    if function_name == "add":
-        return _datafusion_binary_expr(DataFusionOperator.Plus, rendered_args)
-    if function_name == "subtract":
-        return _datafusion_binary_expr(DataFusionOperator.Minus, rendered_args)
-    if function_name == "multiply":
-        return _datafusion_binary_expr(DataFusionOperator.Multiply, rendered_args)
-    if function_name == "divide":
-        return _datafusion_binary_expr(DataFusionOperator.Divide, rendered_args)
-    if function_name == "modulus":
-        return _datafusion_binary_expr(DataFusionOperator.Modulo, rendered_args)
-    if function_name == "equal":
-        return _datafusion_binary_expr(DataFusionOperator.Eq, rendered_args)
-    if function_name == "not_equal":
-        return _datafusion_binary_expr(DataFusionOperator.NotEq, rendered_args)
-    if function_name == "gt":
-        return _datafusion_binary_expr(DataFusionOperator.Gt, rendered_args)
-    if function_name == "gte":
-        return _datafusion_binary_expr(DataFusionOperator.GtEq, rendered_args)
-    if function_name == "lt":
-        return _datafusion_binary_expr(DataFusionOperator.Lt, rendered_args)
-    if function_name == "lte":
-        return _datafusion_binary_expr(DataFusionOperator.LtEq, rendered_args)
-    if function_name == "equal_null":
-        return _datafusion_binary_expr(DataFusionOperator.IsNotDistinctFrom, rendered_args)
-    if function_name == "and":
-        return _datafusion_binary_expr(DataFusionOperator.And, rendered_args)
-    if function_name == "or":
-        return _datafusion_binary_expr(DataFusionOperator.Or, rendered_args)
-    if function_name == "not":
-        return _datafusion_unary_expr("not", rendered_args)
-    if function_name == "negate":
-        return _datafusion_unary_expr("negate", rendered_args)
-    if function_name == "is_null":
-        return _datafusion_unary_expr("is_null", rendered_args)
-    if function_name == "is_not_null":
-        return _datafusion_unary_expr("is_not_null", rendered_args)
-    if function_name == "between":
-        return _datafusion_between_expr(rendered_args)
-    if function_name == "abs":
-        return _datafusion_common_math_expr("abs", rendered_args)
-    if function_name == "ceil":
-        return _datafusion_common_math_expr("ceil", rendered_args)
-    if function_name == "floor":
-        return _datafusion_common_math_expr("floor", rendered_args)
-    if function_name == "round":
-        return _datafusion_common_math_expr("round", rendered_args)
-    if let Ok(udf) = ctx.state().udf(function_name):
-        return Ok(DataFusionExpr.ScalarFunction(DataFusionScalarFunction.new_udf(udf, rendered_args)))
-    return Err(
-        _unsupported_window_expr(f"window expression bridge does not yet translate scalar function `{function_name}`"),
-    )
+    match function_name:
+        "add" => return _datafusion_binary_expr(DataFusionOperator.Plus, rendered_args)
+        "subtract" => return _datafusion_binary_expr(DataFusionOperator.Minus, rendered_args)
+        "multiply" => return _datafusion_binary_expr(DataFusionOperator.Multiply, rendered_args)
+        "divide" => return _datafusion_binary_expr(DataFusionOperator.Divide, rendered_args)
+        "modulus" => return _datafusion_binary_expr(DataFusionOperator.Modulo, rendered_args)
+        "equal" => return _datafusion_binary_expr(DataFusionOperator.Eq, rendered_args)
+        "not_equal" => return _datafusion_binary_expr(DataFusionOperator.NotEq, rendered_args)
+        "gt" => return _datafusion_binary_expr(DataFusionOperator.Gt, rendered_args)
+        "gte" => return _datafusion_binary_expr(DataFusionOperator.GtEq, rendered_args)
+        "lt" => return _datafusion_binary_expr(DataFusionOperator.Lt, rendered_args)
+        "lte" => return _datafusion_binary_expr(DataFusionOperator.LtEq, rendered_args)
+        "equal_null" => return _datafusion_binary_expr(DataFusionOperator.IsNotDistinctFrom, rendered_args)
+        "and" => return _datafusion_binary_expr(DataFusionOperator.And, rendered_args)
+        "or" => return _datafusion_binary_expr(DataFusionOperator.Or, rendered_args)
+        "not" | "negate" | "is_null" | "is_not_null" => return _datafusion_unary_expr(function_name, rendered_args)
+        "between" => return _datafusion_between_expr(rendered_args)
+        "abs" | "ceil" | "floor" | "round" => return _datafusion_common_math_expr(function_name, rendered_args)
+        _ =>
+            if let Ok(udf) = ctx.state().udf(function_name):
+                return Ok(DataFusionExpr.ScalarFunction(DataFusionScalarFunction.new_udf(udf, rendered_args)))
+            return Err(
+                _unsupported_window_expr(
+                    f"window expression bridge does not yet translate scalar function `{function_name}`",
+                ),
+            )
 
 
 def _datafusion_function_arguments(
