@@ -8,50 +8,46 @@ pub def relation_children(rel: Rel) -> list[Rel]:
     """Return direct child relations for one relation node."""
     match rel.rel_type:
         Some(RelType.Filter(filter)) =>
-            match filter.input:
-                Some(child) => return [child.as_ref().clone()]
-                None => return []
+            if let Some(child) = filter.input:
+                return [child.as_ref().clone()]
+            return []
         Some(RelType.Project(project)) =>
-            match project.input:
-                Some(child) => return [child.as_ref().clone()]
-                None => return []
+            if let Some(child) = project.input:
+                return [child.as_ref().clone()]
+            return []
         Some(RelType.Join(join)) =>
             mut children: list[Rel] = []
-            match join.left:
-                Some(left) => children.append(left.as_ref().clone())
-                None => pass
-            match join.right:
-                Some(right) => children.append(right.as_ref().clone())
-                None => pass
+            if let Some(left) = join.left:
+                children.append(left.as_ref().clone())
+            if let Some(right) = join.right:
+                children.append(right.as_ref().clone())
             return children
         Some(RelType.Cross(cross)) =>
             mut children: list[Rel] = []
-            match cross.left:
-                Some(left) => children.append(left.as_ref().clone())
-                None => pass
-            match cross.right:
-                Some(right) => children.append(right.as_ref().clone())
-                None => pass
+            if let Some(left) = cross.left:
+                children.append(left.as_ref().clone())
+            if let Some(right) = cross.right:
+                children.append(right.as_ref().clone())
             return children
         Some(RelType.Aggregate(aggregate)) =>
-            match aggregate.input:
-                Some(child) => return [child.as_ref().clone()]
-                None => return []
+            if let Some(child) = aggregate.input:
+                return [child.as_ref().clone()]
+            return []
         Some(RelType.Window(window)) =>
-            match window.input:
-                Some(child) => return [child.as_ref().clone()]
-                None => return []
+            if let Some(child) = window.input:
+                return [child.as_ref().clone()]
+            return []
         Some(RelType.Sort(sort)) =>
-            match sort.input:
-                Some(child) => return [child.as_ref().clone()]
-                None => return []
+            if let Some(child) = sort.input:
+                return [child.as_ref().clone()]
+            return []
         Some(RelType.Fetch(fetch)) =>
-            match fetch.input:
-                Some(child) => return [child.as_ref().clone()]
-                None => return []
+            if let Some(child) = fetch.input:
+                return [child.as_ref().clone()]
+            return []
         Some(RelType.Set(set_rel)) => return set_rel.inputs
         Some(RelType.ExtensionSingle(extension)) =>
-            match extension.input:
-                Some(child) => return [child.as_ref().clone()]
-                None => return []
+            if let Some(child) = extension.input:
+                return [child.as_ref().clone()]
+            return []
         _ => return []

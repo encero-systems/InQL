@@ -32,10 +32,8 @@ def _register_pending_function[F](func: F) -> F:
     assert pending_index < len(_pending_function_specs), "function registry decorator had no pending spec"
     spec = _pending_function_specs[pending_index]
     mut canonical_name = func.__name__
-    match spec.canonical_name:
-        Some(name) =>
-            canonical_name = name
-        None => pass
+    if let Some(name) = spec.canonical_name:
+        canonical_name = name
     function_registry._add_entry(canonical_name, spec)
     return func
 
@@ -48,9 +46,8 @@ pub def registered_substrait_mapping(canonical_name: str) -> SubstraitMapping:
 
 pub def registered_function_entry(canonical_name: str) -> FunctionRegistryEntry:
     """Return the decorator-registered metadata for one helper name."""
-    match function_registry.entry_by_name(canonical_name):
-        Some(entry) => return entry
-        None => pass
+    if let Some(entry) = function_registry.entry_by_name(canonical_name):
+        return entry
     message = f"missing function registry entry for `{canonical_name}`"
     return raise_value_error(message)
 

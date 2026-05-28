@@ -125,6 +125,13 @@ model MaterializedWindowRelation:
     output_columns: list[str]
 
 
+model RelationChildPath:
+    """One direct relation child paired with its materialization traversal path."""
+
+    rel: Rel
+    path: str
+
+
 model PendingWindowRelation:
     """One window relation peeled from a nested window stack for sequential execution."""
 
@@ -141,12 +148,10 @@ pub async def datafusion_execute_async(
     ctx = SessionContext.new()
     await _register_sources(ctx, registrations)?
 
-    match await _dataframe_from_plan(ctx, plan):
-        Ok(df) => match await df.collect():
-            Ok(_) => return Ok(None)
-            Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
-
-        Err(err) => return Err(err)
+    df = await _dataframe_from_plan(ctx, plan)?
+    match await df.collect():
+        Ok(_) => return Ok(None)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
 
 
 pub async def datafusion_collect_materialization_async(
@@ -158,25 +163,23 @@ pub async def datafusion_collect_materialization_async(
     resolved_columns = root_names(plan.clone())
     await _register_sources(ctx, registrations)?
 
-    match await _dataframe_from_plan(ctx, plan):
-        Ok(df) => match await df.clone().collect():
-            Ok(batches) => match await df.to_string():
-                Ok(rendered) =>
-                    mut row_count = 0
-                    for batch in batches:
-                        row_count += _rust_usize_to_int(batch.num_rows())?
-                    return Ok(
-                        DataFrameMaterialization(
-                            resolved_columns=resolved_columns,
-                            row_count=row_count,
-                            preview_text=rendered,
-                        ),
-                    )
-                Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
-
+    df = await _dataframe_from_plan(ctx, plan)?
+    match await df.clone().collect():
+        Ok(batches) => match await df.to_string():
+            Ok(rendered) =>
+                mut row_count = 0
+                for batch in batches:
+                    row_count += _rust_usize_to_int(batch.num_rows())?
+                return Ok(
+                    DataFrameMaterialization(
+                        resolved_columns=resolved_columns,
+                        row_count=row_count,
+                        preview_text=rendered,
+                    ),
+                )
             Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
 
-        Err(err) => return Err(err)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
 
 
 pub async def datafusion_write_csv_async(
@@ -188,12 +191,10 @@ pub async def datafusion_write_csv_async(
     ctx = SessionContext.new()
     await _register_sources(ctx, registrations)?
 
-    match await _dataframe_from_plan(ctx, plan):
-        Ok(df) => match await df.write_csv(uri, DataFrameWriteOptions.new(), None):
-            Ok(_) => return Ok(None)
-            Err(err) => return Err(backend_error(BackendErrorKind.BackendSinkError, err.to_string()))
-
-        Err(err) => return Err(err)
+    df = await _dataframe_from_plan(ctx, plan)?
+    match await df.write_csv(uri, DataFrameWriteOptions.new(), None):
+        Ok(_) => return Ok(None)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendSinkError, err.to_string()))
 
 
 pub async def datafusion_write_parquet_async(
@@ -205,12 +206,10 @@ pub async def datafusion_write_parquet_async(
     ctx = SessionContext.new()
     await _register_sources(ctx, registrations)?
 
-    match await _dataframe_from_plan(ctx, plan):
-        Ok(df) => match await df.write_parquet(uri, DataFrameWriteOptions.new(), None):
-            Ok(_) => return Ok(None)
-            Err(err) => return Err(backend_error(BackendErrorKind.BackendSinkError, err.to_string()))
-
-        Err(err) => return Err(err)
+    df = await _dataframe_from_plan(ctx, plan)?
+    match await df.write_parquet(uri, DataFrameWriteOptions.new(), None):
+        Ok(_) => return Ok(None)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendSinkError, err.to_string()))
 
 
 async def _dataframe_from_plan(ctx: SessionContext, plan: Plan) -> Result[RustDataFrame, BackendError]:
@@ -289,10 +288,10 @@ async def _dataframe_from_standard_plan(ctx: SessionContext, plan: Plan) -> Resu
     consumer_plan = _consumer_plan_from_current_plan(plan)?
     state = ctx.state()
     match await from_substrait_plan(state, consumer_plan):
-        Ok(logical_plan) =>
-            match await ctx.execute_logical_plan(logical_plan):
-                Ok(df) => return Ok(df)
-                Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
+        Ok(logical_plan) => match await ctx.execute_logical_plan(logical_plan):
+            Ok(df) => return Ok(df)
+            Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
+
         Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
 
 
@@ -386,91 +385,69 @@ def _collect_materialized_generator_children(rel: Rel, path: str) -> list[Materi
     # This traversal must stay in lock-step with _replace_materialized_generator_children; the path segments are the
     # shared key between the discovery pass and the execution-plan rewrite pass.
     mut materializations: list[MaterializedGeneratorRelation] = []
+    for child_path in _materialization_child_paths(rel, path):
+        _extend_materializations(
+            materializations,
+            _collect_materialized_generator_relations(child_path.rel, child_path.path),
+        )
+    return materializations
+
+
+def _materialization_child_paths(rel: Rel, path: str) -> list[RelationChildPath]:
+    """Return direct relation children with path suffixes shared by materialization passes."""
     match rel.rel_type.clone():
         Some(RelType.Filter(filter_rel)) =>
             filter = filter_rel.as_ref().clone()
-            match filter.input:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_filter"),
-                )
-                None => pass
+            if let Some(child) = filter.input:
+                return [RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_filter")]
+            return []
         Some(RelType.Project(project_rel)) =>
             project = project_rel.as_ref().clone()
-            match project.input:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_project"),
-                )
-                None => pass
+            if let Some(child) = project.input:
+                return [RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_project")]
+            return []
         Some(RelType.Join(join_rel)) =>
             join = join_rel.as_ref().clone()
-            match join.left:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_join_left"),
-                )
-                None => pass
-            match join.right:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_join_right"),
-                )
-                None => pass
+            mut children: list[RelationChildPath] = []
+            if let Some(child) = join.left:
+                children.append(RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_join_left"))
+            if let Some(child) = join.right:
+                children.append(RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_join_right"))
+            return children
         Some(RelType.Cross(cross_rel)) =>
             cross = cross_rel.as_ref().clone()
-            match cross.left:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_cross_left"),
-                )
-                None => pass
-            match cross.right:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_cross_right"),
-                )
-                None => pass
+            mut children: list[RelationChildPath] = []
+            if let Some(child) = cross.left:
+                children.append(RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_cross_left"))
+            if let Some(child) = cross.right:
+                children.append(RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_cross_right"))
+            return children
         Some(RelType.Aggregate(aggregate_rel)) =>
             aggregate = aggregate_rel.as_ref().clone()
-            match aggregate.input:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_aggregate"),
-                )
-                None => pass
+            if let Some(child) = aggregate.input:
+                return [RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_aggregate")]
+            return []
         Some(RelType.Sort(sort_rel)) =>
             sort = sort_rel.as_ref().clone()
-            match sort.input:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_sort"),
-                )
-                None => pass
+            if let Some(child) = sort.input:
+                return [RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_sort")]
+            return []
         Some(RelType.Fetch(fetch_rel)) =>
             fetch = fetch_rel.as_ref().clone()
-            match fetch.input:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_fetch"),
-                )
-                None => pass
+            if let Some(child) = fetch.input:
+                return [RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_fetch")]
+            return []
         Some(RelType.Set(set_rel)) =>
+            mut children: list[RelationChildPath] = []
             for idx, input in enumerate(set_rel.inputs):
-                _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(input, f"{path}_set_{idx}"),
-                )
+                children.append(RelationChildPath(rel=input, path=f"{path}_set_{idx}"))
+            return children
         Some(RelType.ExtensionSingle(extension_rel)) =>
             extension = extension_rel.as_ref().clone()
-            match extension.input:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_extension"),
-                )
-                None => pass
-        _ => pass
-    return materializations
+            if let Some(child) = extension.input:
+                return [RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_extension")]
+            return []
+        _ => return []
 
 
 def _extend_materializations(
@@ -564,14 +541,10 @@ def _replace_join_generator_children(join: JoinRel, path: str) -> Rel:
     """Rebuild a JoinRel with rewritten left and right inputs."""
     mut left = join.left
     mut right = join.right
-    match left:
-        Some(child) =>
-            left = Some(_rewritten_generator_child(child, f"{path}_join_left"))
-        None => pass
-    match right:
-        Some(child) =>
-            right = Some(_rewritten_generator_child(child, f"{path}_join_right"))
-        None => pass
+    if let Some(child) = left:
+        left = Some(_rewritten_generator_child(child, f"{path}_join_left"))
+    if let Some(child) = right:
+        right = Some(_rewritten_generator_child(child, f"{path}_join_right"))
     # Public InQL joins currently lower only inner joins; preserve that contract while rewriting child inputs.
     return Rel(
         rel_type=Some(
@@ -596,14 +569,10 @@ def _replace_cross_generator_children(cross: CrossRel, path: str) -> Rel:
     """Rebuild a CrossRel with rewritten left and right inputs."""
     mut left = cross.left
     mut right = cross.right
-    match left:
-        Some(child) =>
-            left = Some(_rewritten_generator_child(child, f"{path}_cross_left"))
-        None => pass
-    match right:
-        Some(child) =>
-            right = Some(_rewritten_generator_child(child, f"{path}_cross_right"))
-        None => pass
+    if let Some(child) = left:
+        left = Some(_rewritten_generator_child(child, f"{path}_cross_left"))
+    if let Some(child) = right:
+        right = Some(_rewritten_generator_child(child, f"{path}_cross_right"))
     return Rel(
         rel_type=Some(
             RelType.Cross(
@@ -742,90 +711,11 @@ def _collect_materialized_window_relations(rel: Rel, path: str) -> list[Material
 def _collect_materialized_window_children(rel: Rel, path: str) -> list[MaterializedWindowRelation]:
     """Return window relations below direct children of one relation."""
     mut materializations: list[MaterializedWindowRelation] = []
-    match rel.rel_type.clone():
-        Some(RelType.Filter(filter_rel)) =>
-            filter = filter_rel.as_ref().clone()
-            match filter.input:
-                Some(child) => _extend_window_materializations(
-                    materializations,
-                    _collect_materialized_window_relations(child.as_ref().clone(), f"{path}_filter"),
-                )
-                None => pass
-        Some(RelType.Project(project_rel)) =>
-            project = project_rel.as_ref().clone()
-            match project.input:
-                Some(child) => _extend_window_materializations(
-                    materializations,
-                    _collect_materialized_window_relations(child.as_ref().clone(), f"{path}_project"),
-                )
-                None => pass
-        Some(RelType.Join(join_rel)) =>
-            join = join_rel.as_ref().clone()
-            match join.left:
-                Some(child) => _extend_window_materializations(
-                    materializations,
-                    _collect_materialized_window_relations(child.as_ref().clone(), f"{path}_join_left"),
-                )
-                None => pass
-            match join.right:
-                Some(child) => _extend_window_materializations(
-                    materializations,
-                    _collect_materialized_window_relations(child.as_ref().clone(), f"{path}_join_right"),
-                )
-                None => pass
-        Some(RelType.Cross(cross_rel)) =>
-            cross = cross_rel.as_ref().clone()
-            match cross.left:
-                Some(child) => _extend_window_materializations(
-                    materializations,
-                    _collect_materialized_window_relations(child.as_ref().clone(), f"{path}_cross_left"),
-                )
-                None => pass
-            match cross.right:
-                Some(child) => _extend_window_materializations(
-                    materializations,
-                    _collect_materialized_window_relations(child.as_ref().clone(), f"{path}_cross_right"),
-                )
-                None => pass
-        Some(RelType.Aggregate(aggregate_rel)) =>
-            aggregate = aggregate_rel.as_ref().clone()
-            match aggregate.input:
-                Some(child) => _extend_window_materializations(
-                    materializations,
-                    _collect_materialized_window_relations(child.as_ref().clone(), f"{path}_aggregate"),
-                )
-                None => pass
-        Some(RelType.Sort(sort_rel)) =>
-            sort = sort_rel.as_ref().clone()
-            match sort.input:
-                Some(child) => _extend_window_materializations(
-                    materializations,
-                    _collect_materialized_window_relations(child.as_ref().clone(), f"{path}_sort"),
-                )
-                None => pass
-        Some(RelType.Fetch(fetch_rel)) =>
-            fetch = fetch_rel.as_ref().clone()
-            match fetch.input:
-                Some(child) => _extend_window_materializations(
-                    materializations,
-                    _collect_materialized_window_relations(child.as_ref().clone(), f"{path}_fetch"),
-                )
-                None => pass
-        Some(RelType.Set(set_rel)) =>
-            for idx, input in enumerate(set_rel.inputs):
-                _extend_window_materializations(
-                    materializations,
-                    _collect_materialized_window_relations(input, f"{path}_set_{idx}"),
-                )
-        Some(RelType.ExtensionSingle(extension_rel)) =>
-            extension = extension_rel.as_ref().clone()
-            match extension.input:
-                Some(child) => _extend_window_materializations(
-                    materializations,
-                    _collect_materialized_window_relations(child.as_ref().clone(), f"{path}_extension"),
-                )
-                None => pass
-        _ => pass
+    for child_path in _materialization_child_paths(rel, path):
+        _extend_window_materializations(
+            materializations,
+            _collect_materialized_window_relations(child_path.rel, child_path.path),
+        )
     return materializations
 
 
@@ -915,14 +805,10 @@ def _replace_join_window_children(join: JoinRel, path: str) -> Rel:
     """Rebuild a JoinRel with rewritten left and right inputs."""
     mut left = join.left
     mut right = join.right
-    match left:
-        Some(child) =>
-            left = Some(_rewritten_window_child(child, f"{path}_join_left"))
-        None => pass
-    match right:
-        Some(child) =>
-            right = Some(_rewritten_window_child(child, f"{path}_join_right"))
-        None => pass
+    if let Some(child) = left:
+        left = Some(_rewritten_window_child(child, f"{path}_join_left"))
+    if let Some(child) = right:
+        right = Some(_rewritten_window_child(child, f"{path}_join_right"))
     return Rel(
         rel_type=Some(
             RelType.Join(
@@ -946,14 +832,10 @@ def _replace_cross_window_children(cross: CrossRel, path: str) -> Rel:
     """Rebuild a CrossRel with rewritten left and right inputs."""
     mut left = cross.left
     mut right = cross.right
-    match left:
-        Some(child) =>
-            left = Some(_rewritten_window_child(child, f"{path}_cross_left"))
-        None => pass
-    match right:
-        Some(child) =>
-            right = Some(_rewritten_window_child(child, f"{path}_cross_right"))
-        None => pass
+    if let Some(child) = left:
+        left = Some(_rewritten_window_child(child, f"{path}_cross_left"))
+    if let Some(child) = right:
+        right = Some(_rewritten_window_child(child, f"{path}_cross_right"))
     return Rel(
         rel_type=Some(
             RelType.Cross(
@@ -1371,9 +1253,8 @@ def _datafusion_scalar_function_expr(
         return _datafusion_common_math_expr("floor", rendered_args)
     if function_name == "round":
         return _datafusion_common_math_expr("round", rendered_args)
-    match ctx.state().udf(function_name):
-        Ok(udf) => return Ok(DataFusionExpr.ScalarFunction(DataFusionScalarFunction.new_udf(udf, rendered_args)))
-        Err(_) => pass
+    if let Ok(udf) = ctx.state().udf(function_name):
+        return Ok(DataFusionExpr.ScalarFunction(DataFusionScalarFunction.new_udf(udf, rendered_args)))
     return Err(
         _unsupported_window_expr(f"window expression bridge does not yet translate scalar function `{function_name}`"),
     )
@@ -1459,18 +1340,17 @@ def _datafusion_window_function_definition(
 ) -> Result[DataFusionWindowFunctionDefinition, BackendError]:
     """Resolve one InQL window function against DataFusion's function registry."""
     state = ctx.state()
-    match state.udwf(function_name):
-        Ok(udwf) => return Ok(DataFusionWindowFunctionDefinition.WindowUDF(udwf))
-        Err(_) =>
-            match state.udaf(function_name):
-                Ok(udaf) => return Ok(DataFusionWindowFunctionDefinition.AggregateUDF(udaf))
-                Err(err) =>
-                    return Err(
-                        backend_error(
-                            BackendErrorKind.BackendPlanningError,
-                            f"DataFusion does not expose window function `{function_name}`: {err.to_string()}",
-                        ),
-                    )
+    if let Ok(udwf) = state.udwf(function_name):
+        return Ok(DataFusionWindowFunctionDefinition.WindowUDF(udwf))
+    match state.udaf(function_name):
+        Ok(udaf) => return Ok(DataFusionWindowFunctionDefinition.AggregateUDF(udaf))
+        Err(err) =>
+            return Err(
+                backend_error(
+                    BackendErrorKind.BackendPlanningError,
+                    f"DataFusion does not expose window function `{function_name}`: {err.to_string()}",
+                ),
+            )
 
 
 def _datafusion_sort(
@@ -1537,28 +1417,26 @@ def _datafusion_window_frame_units(value: RustI32) -> Option[DataFusionWindowFra
 
 def _datafusion_window_bound(bound: Option[Bound], is_lower: bool) -> Result[DataFusionWindowFrameBound, BackendError]:
     """Translate one Substrait window-frame bound into DataFusion's frame model."""
-    match bound:
-        Some(value) =>
-            match value.kind:
-                Some(BoundKind.Unbounded(_)) =>
+    if let Some(value) = bound:
+        if let Some(kind) = value.kind:
+            match kind:
+                BoundKind.Unbounded(_) =>
                     if is_lower:
                         return Ok(DataFusionWindowFrameBound.Preceding(ScalarValue.UInt64(None)))
                     return Ok(DataFusionWindowFrameBound.Following(ScalarValue.UInt64(None)))
-                Some(BoundKind.CurrentRow(_)) => return Ok(DataFusionWindowFrameBound.CurrentRow)
-                Some(BoundKind.Preceding(preceding)) =>
+                BoundKind.CurrentRow(_) => return Ok(DataFusionWindowFrameBound.CurrentRow)
+                BoundKind.Preceding(preceding) =>
                     return Ok(
                         DataFusionWindowFrameBound.Preceding(
                             ScalarValue.UInt64(Some(_rust_i64_to_u64(preceding.offset)?)),
                         ),
                     )
-                Some(BoundKind.Following(following)) =>
+                BoundKind.Following(following) =>
                     return Ok(
                         DataFusionWindowFrameBound.Following(
                             ScalarValue.UInt64(Some(_rust_i64_to_u64(following.offset)?)),
                         ),
                     )
-                None => pass
-        None => pass
     return Err(backend_error(BackendErrorKind.BackendPlanningError, "window frame bound is missing"))
 
 

@@ -667,11 +667,9 @@ def _sort_direction_for_mapping_detail(direction: str) -> Result[SortDirection, 
 
 def _sort_field_direction_detail(application: ScalarFunctionApplicationExpr) -> str:
     """Return the sort-field registry mapping detail for one ordering helper application, or empty."""
-    match function_registry_entry(application.function_ref):
-        Some(entry) =>
-            if entry.substrait.kind == SubstraitMappingKind.StructuralFunction and entry.substrait.function_name == "sort_field":
-                return entry.substrait.detail
-        None => pass
+    if let Some(entry) = function_registry_entry(application.function_ref):
+        if entry.substrait.kind == SubstraitMappingKind.StructuralFunction and entry.substrait.function_name == "sort_field":
+            return entry.substrait.detail
     return ""
 
 

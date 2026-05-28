@@ -233,21 +233,17 @@ def _relation_output_columns(rel: Rel) -> list[str]:
                 None => return []
         Some(RelType.Join(join_rel)) =>
             mut names: list[str] = []
-            match join_rel.left:
-                Some(left) => names.extend(_relation_output_columns(left.as_ref().clone()))
-                None => pass
-            match join_rel.right:
-                Some(right) => names.extend(_relation_output_columns(right.as_ref().clone()))
-                None => pass
+            if let Some(left) = join_rel.left:
+                names.extend(_relation_output_columns(left.as_ref().clone()))
+            if let Some(right) = join_rel.right:
+                names.extend(_relation_output_columns(right.as_ref().clone()))
             return names
         Some(RelType.Cross(cross_rel)) =>
             mut names: list[str] = []
-            match cross_rel.left:
-                Some(left) => names.extend(_relation_output_columns(left.as_ref().clone()))
-                None => pass
-            match cross_rel.right:
-                Some(right) => names.extend(_relation_output_columns(right.as_ref().clone()))
-                None => pass
+            if let Some(left) = cross_rel.left:
+                names.extend(_relation_output_columns(left.as_ref().clone()))
+            if let Some(right) = cross_rel.right:
+                names.extend(_relation_output_columns(right.as_ref().clone()))
             return names
         Some(RelType.Set(set_rel)) =>
             if len(set_rel.inputs) == 0:
@@ -290,11 +286,9 @@ def _extension_single_output_columns(input_columns: list[str], extension_uri: st
     columns.extend(input_columns)
     # Prefer the RFC 021 payload when present. Some low-level extension-boundary tests still create URI-only nodes, so
     # retain the URI fallback below for those structurally valid but less informative relations.
-    match decode_generator_extension_payload(payload):
-        Ok(decoded) =>
-            columns.extend(decoded.output_columns)
-            return columns
-        Err(_) => pass
+    if let Ok(decoded) = decode_generator_extension_payload(payload):
+        columns.extend(decoded.output_columns)
+        return columns
     if extension_uri == EXPLODE_EXTENSION_URI or extension_uri == EXPLODE_OUTER_EXTENSION_URI:
         columns.append("value")
     elif extension_uri == POSEXPLODE_EXTENSION_URI or extension_uri == POSEXPLODE_OUTER_EXTENSION_URI:
