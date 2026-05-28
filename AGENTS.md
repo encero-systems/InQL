@@ -79,6 +79,14 @@ Normative behavior is defined in **`docs/rfcs/`**. If package code and an RFC di
    - Use `docs/architecture.md` for system boundaries, not implementation diaries.
    - Use `docs/release_notes/` for shipped/user-visible changes.
 
+## RFC 016+ review strategy
+
+The function-catalog RFC series is cumulative. For RFC 016 onward, review each PR against the merged end-to-end boundary rather than only the local diff: authoring helpers and query surface → Prism logical planning → Substrait IR → backend adapter. Scan shared files such as the function registry, Prism output/rewrite/lowering, Substrait expression/relation lowering, extension declarations, and the DataFusion adapter even when the current PR only changes one slice.
+
+DataFusion is the first adapter, not InQL’s semantic owner. Do not encode DataFusion-only behavior in Substrait IR, do not model core-function “unsupported” as a normal Substrait state, and do not use SQL/string-script generation when DataFusion exposes a typed API. Invalid context belongs in authoring/Prism/lowering validation; backend inability belongs in adapter capability or error handling.
+
+Merge strategy for this series: land cross-cutting boundary resets first, then base later slices on fresh `main`. Prefer fewer coherent follow-up PRs when RFCs share the same registry/Substrait/backend boundary, but do not fold unrelated remaining RFCs into an active boundary-reset PR without explicit maintainer approval.
+
 ## Common commands (this repo)
 
 | Command                                  | Purpose                                                                                     |
