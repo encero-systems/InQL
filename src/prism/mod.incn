@@ -15,6 +15,7 @@ from aggregate_builders import AggregateMeasure
 from filter_builders import always_true
 from generator_builders import GeneratorApplication
 from projection_builders import ColumnExpr, ProjectionAssignment, with_column_assignment
+from window_builders import WindowFunctionApplication, window_projection
 from prism.lower import (
     lower_prism_tip as lower_prism_tip_impl,
     prism_rel_to_plan,
@@ -71,6 +72,7 @@ pub class PrismCursor[T with Clone]:
             sort_columns=[],
             aggregate_measures=[],
             generator_applications=[],
+            window_projections=[],
             projection_assignments=[],
         )
         return PrismCursor(store_id=self.store_id, tip_id=next_tip_id, _type_marker=[])
@@ -90,6 +92,7 @@ pub class PrismCursor[T with Clone]:
                 sort_columns=[],
                 aggregate_measures=[],
                 generator_applications=[],
+                window_projections=[],
                 projection_assignments=[],
             )
             return PrismCursor(store_id=self.store_id, tip_id=next_tip_id, _type_marker=[])
@@ -106,6 +109,7 @@ pub class PrismCursor[T with Clone]:
             sort_columns=[],
             aggregate_measures=[],
             generator_applications=[],
+            window_projections=[],
             projection_assignments=[],
         )
         return PrismCursor(store_id=self.store_id, tip_id=next_tip_id, _type_marker=[])
@@ -124,6 +128,7 @@ pub class PrismCursor[T with Clone]:
             sort_columns=[],
             aggregate_measures=[],
             generator_applications=[],
+            window_projections=[],
             projection_assignments=[],
         )
         return PrismCursor(store_id=self.store_id, tip_id=next_tip_id, _type_marker=[])
@@ -142,6 +147,7 @@ pub class PrismCursor[T with Clone]:
             sort_columns=[],
             aggregate_measures=[],
             generator_applications=[],
+            window_projections=[],
             projection_assignments=[with_column_assignment(name, expr)],
         )
         return PrismCursor(store_id=self.store_id, tip_id=next_tip_id, _type_marker=[])
@@ -160,6 +166,7 @@ pub class PrismCursor[T with Clone]:
             sort_columns=[],
             aggregate_measures=[],
             generator_applications=[],
+            window_projections=[],
             projection_assignments=[],
         )
         return PrismCursor(store_id=self.store_id, tip_id=next_tip_id, _type_marker=[])
@@ -178,6 +185,7 @@ pub class PrismCursor[T with Clone]:
             sort_columns=[],
             aggregate_measures=measures,
             generator_applications=[],
+            window_projections=[],
             projection_assignments=[],
         )
         return PrismCursor(store_id=self.store_id, tip_id=next_tip_id, _type_marker=[])
@@ -196,6 +204,7 @@ pub class PrismCursor[T with Clone]:
             sort_columns=columns,
             aggregate_measures=[],
             generator_applications=[],
+            window_projections=[],
             projection_assignments=[],
         )
         return PrismCursor(store_id=self.store_id, tip_id=next_tip_id, _type_marker=[])
@@ -214,24 +223,7 @@ pub class PrismCursor[T with Clone]:
             sort_columns=[],
             aggregate_measures=[],
             generator_applications=[],
-            projection_assignments=[],
-        )
-        return PrismCursor(store_id=self.store_id, tip_id=next_tip_id, _type_marker=[])
-
-    def explode(self) -> Self:
-        """Append one explode node and return the derived tip."""
-        next_tip_id = append_node(
-            store_id=self.store_id,
-            kind=PrismNodeKind.Explode,
-            input_ids=[self.tip_id],
-            named_table="",
-            join_predicate=false,
-            filter_predicate=always_true(),
-            limit_count=0,
-            group_columns=[],
-            sort_columns=[],
-            aggregate_measures=[],
-            generator_applications=[],
+            window_projections=[],
             projection_assignments=[],
         )
         return PrismCursor(store_id=self.store_id, tip_id=next_tip_id, _type_marker=[])
@@ -250,6 +242,26 @@ pub class PrismCursor[T with Clone]:
             sort_columns=[],
             aggregate_measures=[],
             generator_applications=[generator],
+            window_projections=[],
+            projection_assignments=[],
+        )
+        return PrismCursor(store_id=self.store_id, tip_id=next_tip_id, _type_marker=[])
+
+    def with_window_column(self, name: str, application: WindowFunctionApplication) -> Self:
+        """Append one named window projection and return the derived tip."""
+        next_tip_id = append_node(
+            store_id=self.store_id,
+            kind=PrismNodeKind.Window,
+            input_ids=[self.tip_id],
+            named_table="",
+            join_predicate=false,
+            filter_predicate=always_true(),
+            limit_count=0,
+            group_columns=[],
+            sort_columns=[],
+            aggregate_measures=[],
+            generator_applications=[],
+            window_projections=[window_projection(name, application)],
             projection_assignments=[],
         )
         return PrismCursor(store_id=self.store_id, tip_id=next_tip_id, _type_marker=[])
@@ -294,6 +306,7 @@ pub def prism_cursor_named_table[T with Clone](table_name: str) -> PrismCursor[T
         sort_columns=[],
         aggregate_measures=[],
         generator_applications=[],
+        window_projections=[],
         projection_assignments=[],
     )
     return PrismCursor(store_id=store_id, tip_id=tip_id, _type_marker=[])
@@ -350,17 +363,21 @@ pub def prism_cursor_apply_limit[T with Clone](cursor: PrismCursor[T], n: int) -
     return cursor.limit(n)
 
 
-pub def prism_cursor_apply_explode[T with Clone](cursor: PrismCursor[T]) -> PrismCursor[T]:
-    """Apply dataset-level explode intent through Prism."""
-    return cursor.explode()
-
-
 pub def prism_cursor_apply_generate[T with Clone](
     cursor: PrismCursor[T],
     generator: GeneratorApplication,
 ) -> PrismCursor[T]:
     """Apply one explicit generator through Prism."""
     return cursor.generate(generator)
+
+
+pub def prism_cursor_apply_with_window_column[T with Clone](
+    cursor: PrismCursor[T],
+    name: str,
+    application: WindowFunctionApplication,
+) -> PrismCursor[T]:
+    """Apply one named window projection through Prism."""
+    return cursor.with_window_column(name, application)
 
 
 pub def prism_cursor_output_columns[T with Clone](cursor: PrismCursor[T]) -> list[str]:

@@ -1,0 +1,105 @@
+"""Window frame-bound helpers."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    structural_mapping,
+    v0_1,
+)
+from functions.registry import register_function
+from window_builders import (
+    WindowBound,
+    current_row as current_row_builder,
+    following as following_builder,
+    preceding as preceding_builder,
+    unbounded_following as unbounded_following_builder,
+    unbounded_preceding as unbounded_preceding_builder,
+)
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.NonNullLiteral,
+    substrait=structural_mapping("window_bound"),
+))
+pub def unbounded_preceding() -> WindowBound:
+    """
+    Build an unbounded lower frame bound.
+
+    Examples:
+        frame = window().rows_between(unbounded_preceding(), current_row())
+    """
+    return unbounded_preceding_builder()
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.NonNullLiteral,
+    substrait=structural_mapping("window_bound"),
+))
+pub def preceding(offset: int) -> WindowBound:
+    """
+    Build a positive preceding frame bound.
+
+    Examples:
+        frame = window().rows_between(preceding(2), current_row())
+
+    Parameters:
+        offset: Positive row or range offset before the current row.
+    """
+    return preceding_builder(offset)
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.NonNullLiteral,
+    substrait=structural_mapping("window_bound"),
+))
+pub def current_row() -> WindowBound:
+    """
+    Build a frame bound at the current row.
+
+    Examples:
+        frame = window().rows_between(unbounded_preceding(), current_row())
+    """
+    return current_row_builder()
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.NonNullLiteral,
+    substrait=structural_mapping("window_bound"),
+))
+pub def following(offset: int) -> WindowBound:
+    """
+    Build a positive following frame bound.
+
+    Examples:
+        frame = window().rows_between(current_row(), following(1))
+
+    Parameters:
+        offset: Positive row or range offset after the current row.
+    """
+    return following_builder(offset)
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.NonNullLiteral,
+    substrait=structural_mapping("window_bound"),
+))
+pub def unbounded_following() -> WindowBound:
+    """
+    Build an unbounded upper frame bound.
+
+    Examples:
+        frame = window().rows_between(current_row(), unbounded_following())
+    """
+    return unbounded_following_builder()

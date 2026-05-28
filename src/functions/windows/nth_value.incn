@@ -1,0 +1,34 @@
+"""Nth-value window helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.registry import register_function
+from projection_builders import ColumnExpr
+from substrait.function_extensions import NTH_VALUE_FUNCTION_ANCHOR
+from window_builders import WindowFunctionCall, nth_value as nth_value_builder
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.DependsOnInputs,
+    substrait=extension_mapping("nth_value", NTH_VALUE_FUNCTION_ANCHOR),
+))
+pub def nth_value(expr: ColumnExpr, nth: int) -> WindowFunctionCall:
+    """
+    Build an `nth_value` window function call.
+
+    Examples:
+        second_amount = nth_value(col("amount"), 2).over(window().partition_by([col("customer_id")]).order_by([col("id")]))
+
+    Parameters:
+        expr: Value expression to read from the current frame.
+        nth: Positive one-based frame position to read.
+    """
+    return nth_value_builder(expr, nth)

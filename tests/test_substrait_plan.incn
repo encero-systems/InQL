@@ -27,15 +27,18 @@ from functions import (
     cast,
     ceil,
     col,
+    cume_dist,
     coalesce,
     count,
     count_distinct,
     count_if,
+    dense_rank,
     desc,
     div,
     eq,
     equal_null,
     floor,
+    first_value,
     gt,
     gte,
     in_,
@@ -44,6 +47,9 @@ from functions import (
     is_not_null,
     is_null,
     lit,
+    lag,
+    last_value,
+    lead,
     lt,
     lte,
     map_contains_key,
@@ -60,14 +66,21 @@ from functions import (
     neg,
     named_struct,
     not_,
+    nth_value,
     nullif,
+    ntile,
     or_,
+    percent_rank,
+    rank,
     round,
+    row_number,
     sub,
     sum,
     try_cast,
     cardinality,
     element_at,
+    explode,
+    window,
 )
 from projection_builders import ColumnExpr, with_column_assignment
 from substrait.errors import SubstraitLoweringErrorKind
@@ -91,6 +104,7 @@ from substrait.inspect import (
     aggregate_measure_sort_counts,
     plan_extension_urn_anchor_at,
     plan_extension_urn_count,
+    plan_extension_function_names,
     plan_contains_relation_kind,
     plan_has_extension_urn,
     read_kind_name,
@@ -103,6 +117,9 @@ from substrait.inspect import (
     sort_field_count,
     sort_field_direction_name,
     sort_field_expr_index,
+    window_function_names,
+    window_partition_count,
+    window_sort_count,
 )
 from substrait.plans import (
     plan_encoded_len,
@@ -132,11 +149,20 @@ from substrait.relations import (
     reference_rel,
     set_rel,
     set_rel_of_kind,
+    generator_rel_of_columns,
     sort_rel_of_columns,
     try_aggregate_rel_of_columns,
+    try_window_rel_of_columns,
+    window_rel_of_columns,
 )
 from substrait.schema_registry import named_table_columns, register_named_table_schema
 from substrait.schema import RowColumnSpec, SubstraitPrimitiveKind
+from window_builders import (
+    WindowProjection,
+    current_row as current_row_bound,
+    unbounded_preceding as unbounded_preceding_bound,
+    window_projection,
+)
 from substrait.conformance import (
     ConformanceCapabilityTags,
     ConformancePortability,
@@ -203,6 +229,32 @@ def _fixture_virtual_table_name() -> str:
 
 def _register_orders_schema() -> None:
     register_named_table_schema("orders", [RowColumnSpec(name="id", kind=SubstraitPrimitiveKind.I64, nullable=false)])
+
+
+def _register_window_orders_schema() -> None:
+    register_named_table_schema(
+        "orders_window",
+        [RowColumnSpec(name="customer_id", kind=SubstraitPrimitiveKind.String, nullable=false), RowColumnSpec(
+            name="amount",
+            kind=SubstraitPrimitiveKind.I64,
+            nullable=false,
+        )],
+    )
+
+
+def _row_number_projection() -> WindowProjection:
+    spec = window().partition_by([col("customer_id")]).order_by([desc(col("amount"))])
+    return window_projection("row_num", row_number().over(spec))
+
+
+def _rank_projection() -> WindowProjection:
+    spec = window().partition_by([col("customer_id")]).order_by([desc(col("amount"))])
+    return window_projection("amount_rank", rank().over(spec))
+
+
+def _dense_rank_projection() -> WindowProjection:
+    spec = window().partition_by([col("customer_id")]).order_by([desc(col("amount"))])
+    return window_projection("dense_amount_rank", dense_rank().over(spec))
 
 
 def _register_fixture_schema(table_name: str) -> None:
@@ -544,6 +596,141 @@ def test_plan__aggregate_rel_rejects_invalid_modifier_shapes() -> None:
     assert ordered_err.message.contains("ordered aggregate input"), "ordered aggregate diagnostic should identify the unsupported modifier"
 
 
+def _assert_window_projection_lowers(projection: WindowProjection, expected_function_name: str) -> None:
+    """Assert one window projection lowers to a concrete Substrait window relation."""
+    _register_window_orders_schema()
+    base = read_named_table_rel("orders_window")
+    windowed = window_rel_of_columns(base, ["customer_id", "amount"], [projection])
+    plan = plan_from_root_relation(windowed, ["customer_id", "amount", projection.output_name])
+
+    assert relation_kind_name(windowed) == "ConsistentPartitionWindowRel", "window lowering should emit the Substrait window relation"
+    assert plan_contains_relation_kind(plan, "ConsistentPartitionWindowRel"), "window plans should preserve the window relation shape"
+    assert plan_has_extension_urn(plan, FUNCTION_EXTENSION_URI), "window function plans should register the shared function extension URN"
+    assert window_function_names(windowed) == [expected_function_name], "window relation should carry the registered window function"
+    assert window_partition_count(windowed) == 1, "window relation should lower explicit partition expressions"
+    assert window_sort_count(windowed) == 1, "ranking window relation should lower explicit ordering"
+
+
+def test_plan__row_number_window_rel_lowers_to_substrait() -> None:
+    # -- Arrange / Act / Assert --
+    _assert_window_projection_lowers(_row_number_projection(), "row_number")
+
+
+def test_plan__rank_window_rel_lowers_to_substrait() -> None:
+    # -- Arrange / Act / Assert --
+    _assert_window_projection_lowers(_rank_projection(), "rank")
+
+
+def test_plan__dense_rank_window_rel_lowers_to_substrait() -> None:
+    # -- Arrange / Act / Assert --
+    _assert_window_projection_lowers(_dense_rank_projection(), "dense_rank")
+
+
+def test_plan__ranking_window_rel_rejects_missing_ordering() -> None:
+    # -- Arrange --
+    _register_window_orders_schema()
+    base = read_named_table_rel("orders_window")
+    unordered = window_projection("row_num", row_number().over(window().partition_by([col("customer_id")])))
+
+    # -- Act --
+    result = try_window_rel_of_columns(base, ["customer_id", "amount"], [unordered])
+
+    # -- Assert --
+    assert_is_err(result, "ranking window helpers should require explicit ordering")
+
+
+def test_plan__window_rel_lowers_multiple_projections_with_shared_boundary() -> None:
+    # -- Arrange --
+    _register_window_orders_schema()
+    base = read_named_table_rel("orders_window")
+
+    # -- Act --
+    windowed = window_rel_of_columns(base, ["customer_id", "amount"], [_row_number_projection(), _rank_projection()])
+    plan = plan_from_root_relation(windowed, ["customer_id", "amount", "row_num", "amount_rank"])
+
+    # -- Assert --
+    assert relation_kind_name(windowed) == "ConsistentPartitionWindowRel", "shared-boundary window projections should share one relation"
+    assert relation_output_columns(windowed) == ["customer_id", "amount", "row_num", "amount_rank"], "window output aliases should be preserved in relation output"
+    assert window_function_names(windowed) == ["row_number", "rank"], "window relation should lower both window functions"
+    assert plan_has_extension_urn(plan, FUNCTION_EXTENSION_URI), "multi-window plans should register the shared function extension URN"
+
+
+def test_plan__window_rel_declares_scalar_extensions_from_window_expressions() -> None:
+    # -- Arrange --
+    _register_window_orders_schema()
+    base = read_named_table_rel("orders_window")
+    spec = window().partition_by([coalesce([col("customer_id"), lit("unknown")])]).order_by([col("amount")])
+    projection = window_projection("adjusted_sum", sum(add(col("amount"), lit(1))).over(spec))
+
+    # -- Act --
+    windowed = window_rel_of_columns(base, ["customer_id", "amount"], [projection])
+    plan = plan_from_root_relation(windowed, ["customer_id", "amount", "adjusted_sum"])
+    extension_functions = plan_extension_function_names(plan)
+
+    # -- Assert --
+    assert extension_functions.contains("sum"), "windowed aggregate function should be declared"
+    assert extension_functions.contains("add"), "scalar function inside window arguments should be declared"
+    assert extension_functions.contains("coalesce"), "scalar function inside window partition expressions should be declared"
+
+
+def test_plan__window_rel_rejects_multiple_projection_boundary_mismatch() -> None:
+    # -- Arrange --
+    _register_window_orders_schema()
+    base = read_named_table_rel("orders_window")
+    different_spec = window().partition_by([col("customer_id")]).order_by([col("amount")])
+    mismatched = window_projection("dense_amount_rank", dense_rank().over(different_spec))
+
+    # -- Act --
+    result = try_window_rel_of_columns(base, ["customer_id", "amount"], [_row_number_projection(), mismatched])
+
+    # -- Assert --
+    assert_is_err(result, "different window boundaries should require a separate relation")
+
+
+def test_plan__window_rel_rejects_scalar_expression_boundary_mismatch() -> None:
+    # -- Arrange --
+    _register_window_orders_schema()
+    base = read_named_table_rel("orders_window")
+    first_spec = window().partition_by([add(col("amount"), lit(1))]).order_by([col("amount")])
+    second_spec = window().partition_by([sub(col("amount"), lit(1))]).order_by([col("amount")])
+    first = window_projection("row_num", row_number().over(first_spec))
+    second = window_projection("amount_rank", rank().over(second_spec))
+
+    # -- Act --
+    result = try_window_rel_of_columns(base, ["customer_id", "amount"], [first, second])
+
+    # -- Assert --
+    assert_is_err(result, "different scalar partition expressions should require a separate relation")
+
+
+def test_plan__offset_value_distribution_and_aggregate_windows_lower_to_substrait() -> None:
+    # -- Arrange --
+    _register_window_orders_schema()
+    base = read_named_table_rel("orders_window")
+    spec = window().partition_by([col("customer_id")]).order_by([desc(col("amount"))])
+    running_spec = spec.rows_between(unbounded_preceding_bound(), current_row_bound())
+    projections = [window_projection("percent_rank", percent_rank().over(spec)), window_projection(
+        "cume_dist",
+        cume_dist().over(spec),
+    ), window_projection("tile", ntile(2).over(spec)), window_projection("lag_amount", lag(col("amount")).over(spec)), window_projection(
+        "lead_amount",
+        lead(col("amount"), 1, lit(0)).over(spec),
+    ), window_projection("first_amount", first_value(col("amount")).over(spec)), window_projection(
+        "last_amount",
+        last_value(col("amount")).over(spec),
+    ), window_projection("second_amount", nth_value(col("amount"), 2).over(spec)), window_projection(
+        "running_amount",
+        sum(col("amount")).over(running_spec),
+    )]
+
+    # -- Act / Assert --
+    for projection in projections:
+        windowed = window_rel_of_columns(base.clone(), ["customer_id", "amount"], [projection])
+        names = window_function_names(windowed)
+        assert len(names) == 1, "each analytic helper should lower to one window function"
+        assert relation_kind_name(windowed) == "ConsistentPartitionWindowRel", "analytic helper should lower through the window relation"
+
+
 def test_plan__set_rel_uses_operation_enum() -> None:
     # -- Arrange --
     left = read_named_table_rel("orders_current")
@@ -615,6 +802,21 @@ def test_plan__extension_urns_are_surfaced() -> None:
     assert plan_has_extension_urn(nested_plan, POSEXPLODE_EXTENSION_URI), "nested extension plans should include root extension URNs"
     assert plan_extension_urn_count(nested_plan) == 2, "different relation extension URIs should be declared once each"
     assert plan_extension_urn_anchor_at(nested_plan, 0) != plan_extension_urn_anchor_at(nested_plan, 1), "relation extension URNs should use distinct anchors"
+
+
+def test_plan__generator_payload_declares_scalar_extension_dependencies() -> None:
+    # -- Arrange --
+    _register_orders_schema()
+    base = read_named_table_rel("orders")
+    generated = generator_rel_of_columns(base, ["id"], explode(array([add(col("id"), lit(1))]), "generated_id"))
+
+    # -- Act --
+    plan = plan_from_root_relation(generated, ["id", "generated_id"])
+    extension_functions = plan_extension_function_names(plan)
+
+    # -- Assert --
+    assert extension_functions.contains("make_array"), "generator payload array constructor should be declared"
+    assert extension_functions.contains("add"), "generator payload scalar argument should be declared"
 
 
 def test_plan__revision_pin_and_extension_registry_are_exported() -> None:

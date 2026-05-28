@@ -1,0 +1,29 @@
+"""Percent-rank window helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.registry import register_function
+from substrait.function_extensions import PERCENT_RANK_FUNCTION_ANCHOR
+from window_builders import WindowFunctionCall, percent_rank as percent_rank_builder
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.NonNullLiteral,
+    substrait=extension_mapping("percent_rank", PERCENT_RANK_FUNCTION_ANCHOR),
+))
+pub def percent_rank() -> WindowFunctionCall:
+    """
+    Build a percent-rank window function call.
+
+    Examples:
+        ranked = percent_rank().over(window().partition_by([col("customer_id")]).order_by([col("amount")]))
+    """
+    return percent_rank_builder()

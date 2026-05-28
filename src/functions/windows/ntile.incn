@@ -1,0 +1,32 @@
+"""Bucketed-rank window helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.registry import register_function
+from substrait.function_extensions import NTILE_FUNCTION_ANCHOR
+from window_builders import WindowFunctionCall, ntile as ntile_builder
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.NonNullLiteral,
+    substrait=extension_mapping("ntile", NTILE_FUNCTION_ANCHOR),
+))
+pub def ntile(bucket_count: int) -> WindowFunctionCall:
+    """
+    Build an `ntile` window function call.
+
+    Examples:
+        quartile = ntile(4).over(window().order_by([col("amount")]))
+
+    Parameters:
+        bucket_count: Positive number of ordered buckets.
+    """
+    return ntile_builder(bucket_count)

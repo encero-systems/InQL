@@ -1,0 +1,303 @@
+"""End-to-end Session window execution tests over the DataFusion backend."""
+
+from functions import (
+    abs,
+    add,
+    col,
+    count_distinct,
+    cume_dist,
+    dense_rank,
+    desc,
+    eq,
+    first_value,
+    lag,
+    last_value,
+    lead,
+    lit,
+    nth_value,
+    ntile,
+    percent_rank,
+    rank,
+    row_number,
+    sum,
+    window,
+)
+from dataset import DataFrame, LazyFrame
+from session import Session
+from std.testing import assert_is_ok, fail_t
+from window_builders import (
+    WindowSpec,
+    current_row as current_row_bound,
+    unbounded_preceding as unbounded_preceding_bound,
+)
+
+
+@derive(Clone)
+pub model AggregateOrder:
+    pub customer_id: str
+    pub amount: int
+
+
+@derive(Clone)
+pub model AggregateModifierOrder:
+    pub customer_id: str
+    pub amount: int
+    pub status: str
+    pub product_id: str
+
+
+const AGGREGATE_MODIFIERS_CSV_FIXTURE: str = "tests/fixtures/aggregate_modifiers.csv"
+const AGGREGATE_ORDERS_CSV_FIXTURE: str = "tests/fixtures/aggregate_orders.csv"
+
+
+def _collect_or_fail(mut session: Session, windowed: LazyFrame[AggregateOrder]) -> DataFrame[AggregateOrder]:
+    """Collect a windowed aggregate-order frame or fail with the backend diagnostic."""
+    match session.collect(windowed):
+        Ok(df) => return df
+        Err(err) => return fail_t(err.error_message())
+
+
+def _collect_modifier_or_fail(
+    mut session: Session,
+    windowed: LazyFrame[AggregateModifierOrder],
+) -> DataFrame[AggregateModifierOrder]:
+    """Collect a modifier-order windowed frame or fail with the backend diagnostic."""
+    match session.collect(windowed):
+        Ok(df) => return df
+        Err(err) => return fail_t(err.error_message())
+
+
+def _orders(mut session: Session, table_name: str) -> LazyFrame[AggregateOrder]:
+    """Load the shared aggregate-order fixture."""
+    return assert_is_ok(
+        session.read_csv(table_name, AGGREGATE_ORDERS_CSV_FIXTURE),
+        "aggregate orders fixture should load",
+    )
+
+
+def _modifier_orders(mut session: Session, table_name: str) -> LazyFrame[AggregateModifierOrder]:
+    """Load the shared aggregate-modifier fixture."""
+    return assert_is_ok(
+        session.read_csv(table_name, AGGREGATE_MODIFIERS_CSV_FIXTURE),
+        "aggregate modifiers fixture should load",
+    )
+
+
+def _customer_amount_window() -> WindowSpec:
+    """Return the shared partition/order spec for deterministic window assertions."""
+    return window().partition_by([col("customer_id")]).order_by([desc(col("amount"))])
+
+
+def _preview_line_contains_all(line: str, expected_cells: list[str]) -> bool:
+    """Return whether one rendered preview row contains every expected cell value."""
+    for cell in expected_cells:
+        if not line.contains(cell):
+            return false
+    return true
+
+
+def _assert_preview_row_contains(payload: str, expected_cells: list[str], context: str) -> None:
+    """Assert one rendered preview row carries the expected materialized cells together."""
+    for line in payload.split("\n"):
+        if _preview_line_contains_all(line, expected_cells):
+            return
+    return fail_t(context)
+
+
+def test_session_windows__collect_executes_ranking_window_functions() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    spec = _customer_amount_window()
+
+    # -- Act --
+    windowed = (_orders(session, "aggregate_orders_ranking").with_window_column("row_num", row_number().over(spec)).with_window_column(
+        "amount_rank",
+        rank().over(spec),
+    ))
+    df = _collect_or_fail(session, windowed)
+    payload = df.preview_text()
+    resolved = df.resolved_columns()
+
+    # -- Assert --
+    assert df.row_count() == 3, "row_number should preserve input row count"
+    assert resolved == ["customer_id", "amount", "row_num", "amount_rank"], "window collect should expose chained aliases"
+    _assert_preview_row_contains(
+        payload,
+        ["A", "15", "1", "1"],
+        "highest customer A amount should receive first rankings",
+    )
+    _assert_preview_row_contains(payload, ["A", "10", "2"], "second customer A amount should receive row number 2")
+    _assert_preview_row_contains(payload, ["B", "7", "1"], "single customer B row should receive row number 1")
+
+
+def test_session_windows__collect_executes_distribution_window_functions() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    spec = _customer_amount_window()
+
+    # -- Act --
+    ranked = _orders(session, "aggregate_orders_rank").with_window_column("amount_rank", rank().over(spec))
+    dense = _orders(session, "aggregate_orders_dense").with_window_column("dense_amount_rank", dense_rank().over(spec))
+    percent = _orders(session, "aggregate_orders_percent").with_window_column(
+        "amount_percent_rank",
+        percent_rank().over(spec),
+    )
+    cume = _orders(session, "aggregate_orders_cume").with_window_column("amount_cume_dist", cume_dist().over(spec))
+    tile = _orders(session, "aggregate_orders_tile").with_window_column("amount_tile", ntile(2).over(spec))
+    ranked_df = _collect_or_fail(session, ranked)
+    dense_df = _collect_or_fail(session, dense)
+    percent_df = _collect_or_fail(session, percent)
+    cume_df = _collect_or_fail(session, cume)
+    tile_df = _collect_or_fail(session, tile)
+
+    # -- Assert --
+    _assert_preview_row_contains(ranked_df.preview_text(), ["A", "15", "1"], "rank should rank first A row as 1")
+    _assert_preview_row_contains(dense_df.preview_text(), ["A", "10", "2"], "dense_rank should rank second A row as 2")
+    _assert_preview_row_contains(percent_df.preview_text(), ["A", "15", "0"], "percent_rank should start at zero")
+    _assert_preview_row_contains(
+        cume_df.preview_text(),
+        ["A", "15", "0.5"],
+        "cume_dist should include first of two A rows",
+    )
+    _assert_preview_row_contains(
+        tile_df.preview_text(),
+        ["A", "10", "2"],
+        "ntile should assign second A row to bucket 2",
+    )
+
+
+def test_session_windows__collect_executes_offset_value_and_aggregate_windows() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    spec = _customer_amount_window()
+    running_spec = spec.rows_between(unbounded_preceding_bound(), current_row_bound())
+
+    # -- Act --
+    lagged = _orders(session, "aggregate_orders_lag").with_window_column(
+        "previous_amount",
+        lag(col("amount")).ignore_nulls().over(spec),
+    )
+    led = _orders(session, "aggregate_orders_lead").with_window_column(
+        "next_amount",
+        lead(col("amount"), 1, lit(0)).over(spec),
+    )
+    first = _orders(session, "aggregate_orders_first").with_window_column(
+        "first_amount",
+        first_value(col("amount")).over(spec),
+    )
+    last = _orders(session, "aggregate_orders_last").with_window_column(
+        "last_amount",
+        last_value(col("amount")).over(spec),
+    )
+    nth = _orders(session, "aggregate_orders_nth").with_window_column(
+        "second_amount",
+        nth_value(col("amount"), 2).over(spec),
+    )
+    running = _orders(session, "aggregate_orders_running").with_window_column(
+        "running_amount",
+        sum(col("amount")).over(running_spec),
+    )
+    lagged_df = _collect_or_fail(session, lagged)
+    led_df = _collect_or_fail(session, led)
+    first_df = _collect_or_fail(session, first)
+    last_df = _collect_or_fail(session, last)
+    nth_df = _collect_or_fail(session, nth)
+    running_df = _collect_or_fail(session, running)
+
+    # -- Assert --
+    _assert_preview_row_contains(
+        lagged_df.preview_text(),
+        ["A", "10", "15"],
+        "lag should expose the prior ordered amount",
+    )
+    _assert_preview_row_contains(
+        led_df.preview_text(),
+        ["A", "10", "0"],
+        "lead should expose the default past partition end",
+    )
+    _assert_preview_row_contains(
+        first_df.preview_text(),
+        ["A", "10", "15"],
+        "first_value should read the first partition amount",
+    )
+    _assert_preview_row_contains(
+        last_df.preview_text(),
+        ["A", "15", "10"],
+        "last_value should read the last partition amount",
+    )
+    _assert_preview_row_contains(
+        nth_df.preview_text(),
+        ["A", "15", "10"],
+        "nth_value should read the second partition amount",
+    )
+    _assert_preview_row_contains(
+        running_df.preview_text(),
+        ["A", "10", "25"],
+        "windowed sum should support explicit running frames",
+    )
+
+
+def test_session_windows__collect_executes_scalar_and_distinct_window_arguments() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    spec = _customer_amount_window()
+    running_spec = spec.rows_between(unbounded_preceding_bound(), current_row_bound())
+
+    # -- Act --
+    scalar_arg = _orders(session, "aggregate_orders_scalar_arg").with_window_column(
+        "running_adjusted_amount",
+        sum(add(col("amount"), lit(1))).over(running_spec),
+    )
+    math_arg = _orders(session, "aggregate_orders_math_arg").with_window_column(
+        "running_abs_delta",
+        sum(abs(add(col("amount"), lit(-20)))).over(running_spec),
+    )
+    distinct_arg = _modifier_orders(session, "aggregate_modifiers_window_distinct").with_window_column(
+        "running_distinct_products",
+        count_distinct(col("product_id")).over(
+            window().partition_by([col("customer_id")]).order_by([desc(col("amount"))]).rows_between(
+                unbounded_preceding_bound(),
+                current_row_bound(),
+            ),
+        ),
+    )
+    scalar_df = _collect_or_fail(session, scalar_arg)
+    math_df = _collect_or_fail(session, math_arg)
+    distinct_df = _collect_modifier_or_fail(session, distinct_arg)
+
+    # -- Assert --
+    _assert_preview_row_contains(
+        scalar_df.preview_text(),
+        ["A", "10", "27"],
+        "windowed aggregate should execute scalar arguments through the DataFusion expression bridge",
+    )
+    _assert_preview_row_contains(
+        math_df.preview_text(),
+        ["A", "10", "15"],
+        "windowed aggregate should execute RFC 018 math arguments through the DataFusion expression bridge",
+    )
+    _assert_preview_row_contains(
+        distinct_df.preview_text(),
+        ["A", "3", "2"],
+        "windowed distinct aggregate should preserve DISTINCT invocation",
+    )
+
+
+def test_session_windows__collect_executes_window_below_filter() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    spec = _customer_amount_window()
+
+    # -- Act --
+    filtered = _orders(session, "aggregate_orders_nested_filter").with_window_column("amount_rank", rank().over(spec)).filter(
+        eq(col("amount_rank"), lit(1)),
+    )
+    df = _collect_or_fail(session, filtered)
+    payload = df.preview_text()
+    resolved = df.resolved_columns()
+
+    # -- Assert --
+    assert df.row_count() == 2, "filter above a window should execute through nested window materialization"
+    assert resolved == ["customer_id", "amount", "amount_rank"], "filtered window output columns should stay stable"
+    _assert_preview_row_contains(payload, ["A", "15", "1"], "customer A top amount should survive the filter")
+    _assert_preview_row_contains(payload, ["B", "7", "1"], "customer B top amount should survive the filter")

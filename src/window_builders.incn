@@ -1,0 +1,446 @@
+"""
+Window specification and window-function builder surface.
+
+Window applications are relation-aware expressions: they produce one value per input row while reading a partition of
+related rows. They intentionally do not reuse scalar expression nodes, so invalid scalar positions can remain
+diagnosable as the query surface grows.
+"""
+
+from rust::incan_stdlib::errors import raise_value_error
+from function_registry import function_ref_for
+from projection_builders import ColumnExpr, col as col_expr, column_expr_name, int_expr
+
+const NO_DEFAULT_COLUMN_SENTINEL: str = "__inql_no_window_default__"
+
+
+@derive(Clone)
+pub enum WindowFunctionKind(str):
+    """Supported window function kinds."""
+
+    RowNumber = "row_number"
+    Rank = "rank"
+    DenseRank = "dense_rank"
+    PercentRank = "percent_rank"
+    CumeDist = "cume_dist"
+    Ntile = "ntile"
+    Lag = "lag"
+    Lead = "lead"
+    FirstValue = "first_value"
+    LastValue = "last_value"
+    NthValue = "nth_value"
+    Aggregate = "aggregate"
+
+
+@derive(Clone)
+pub enum WindowFrameKind(str):
+    """Window frame coordinate systems."""
+
+    Rows = "rows"
+    Range = "range"
+
+
+@derive(Clone)
+pub enum WindowBoundKind(str):
+    """Window frame boundary kinds."""
+
+    UnboundedPreceding = "unbounded_preceding"
+    Preceding = "preceding"
+    CurrentRow = "current_row"
+    Following = "following"
+    UnboundedFollowing = "unbounded_following"
+
+
+@derive(Clone)
+pub enum WindowNullTreatment(str):
+    """Null handling for value and offset functions."""
+
+    RespectNulls = "respect_nulls"
+    IgnoreNulls = "ignore_nulls"
+
+
+@derive(Clone)
+pub model WindowBound:
+    """One typed frame bound."""
+
+    pub kind: WindowBoundKind
+    pub offset: int
+
+
+@derive(Clone)
+pub model WindowFrame:
+    """A row-based or range-based window frame."""
+
+    pub kind: WindowFrameKind
+    pub lower_bound: WindowBound
+    pub upper_bound: WindowBound
+
+
+@derive(Clone)
+pub model WindowSpec:
+    """Partitioning, ordering, and frame shared by one or more window function applications."""
+
+    pub partition_columns: list[ColumnExpr]
+    pub sort_columns: list[ColumnExpr]
+    pub frame: WindowFrame
+
+    def partition_by(self, columns: list[ColumnExpr]) -> Self:
+        """Return this window spec with partition expressions replaced."""
+        return WindowSpec(partition_columns=columns, sort_columns=self.sort_columns, frame=self.frame)
+
+    def order_by(self, columns: list[ColumnExpr]) -> Self:
+        """Return this window spec with ordering expressions replaced."""
+        return WindowSpec(partition_columns=self.partition_columns, sort_columns=columns, frame=self.frame)
+
+    def rows_between(self, lower_bound: WindowBound, upper_bound: WindowBound) -> Self:
+        """Return this window spec with an explicit row frame."""
+        _validate_frame_bounds(lower_bound, upper_bound)
+        return WindowSpec(
+            partition_columns=self.partition_columns,
+            sort_columns=self.sort_columns,
+            frame=WindowFrame(kind=WindowFrameKind.Rows, lower_bound=lower_bound, upper_bound=upper_bound),
+        )
+
+    def range_between(self, lower_bound: WindowBound, upper_bound: WindowBound) -> Self:
+        """Return this window spec with an explicit range frame."""
+        _validate_frame_bounds(lower_bound, upper_bound)
+        return WindowSpec(
+            partition_columns=self.partition_columns,
+            sort_columns=self.sort_columns,
+            frame=WindowFrame(kind=WindowFrameKind.Range, lower_bound=lower_bound, upper_bound=upper_bound),
+        )
+
+
+@derive(Clone)
+pub model WindowFunctionApplication:
+    """One placed window function application."""
+
+    pub kind: WindowFunctionKind
+    pub function_ref: str
+    pub canonical_name: str
+    pub arguments: list[ColumnExpr]
+    pub spec: WindowSpec
+    pub requires_ordering: bool
+    pub null_treatment: WindowNullTreatment
+    pub is_distinct: bool
+    pub has_filter: bool
+
+
+@derive(Clone)
+pub model WindowFunctionCall:
+    """Unplaced window function call waiting for an explicit window specification."""
+
+    pub kind: WindowFunctionKind
+    pub function_ref: str
+    pub canonical_name: str
+    pub arguments: list[ColumnExpr]
+    pub requires_ordering: bool
+    pub null_treatment: WindowNullTreatment
+    pub is_distinct: bool
+    pub has_filter: bool
+
+    def ignore_nulls(self) -> Self:
+        """Return this call with `IGNORE NULLS` semantics."""
+        return self._with_null_treatment(WindowNullTreatment.IgnoreNulls)
+
+    def respect_nulls(self) -> Self:
+        """Return this call with `RESPECT NULLS` semantics."""
+        return self._with_null_treatment(WindowNullTreatment.RespectNulls)
+
+    def over(self, spec: WindowSpec) -> WindowFunctionApplication:
+        """Place this window function call over a concrete window specification."""
+        return WindowFunctionApplication(
+            kind=self.kind,
+            function_ref=self.function_ref,
+            canonical_name=self.canonical_name,
+            arguments=self.arguments,
+            spec=spec,
+            requires_ordering=self.requires_ordering,
+            null_treatment=self.null_treatment,
+            is_distinct=self.is_distinct,
+            has_filter=self.has_filter,
+        )
+
+    def _with_null_treatment(self, null_treatment: WindowNullTreatment) -> Self:
+        """Return this call with a different null treatment."""
+        if not _window_function_supports_null_treatment(self.kind):
+            message = f"{self.canonical_name} does not support null treatment"
+            return raise_value_error(message)
+        return WindowFunctionCall(
+            kind=self.kind,
+            function_ref=self.function_ref,
+            canonical_name=self.canonical_name,
+            arguments=self.arguments,
+            requires_ordering=self.requires_ordering,
+            null_treatment=null_treatment,
+            is_distinct=self.is_distinct,
+            has_filter=self.has_filter,
+        )
+
+
+@derive(Clone)
+pub model WindowProjection:
+    """One named output column backed by a placed window function application."""
+
+    pub output_name: str
+    pub application: WindowFunctionApplication
+
+
+pub def unbounded_preceding() -> WindowBound:
+    """Build an unbounded lower frame bound."""
+    return WindowBound(kind=WindowBoundKind.UnboundedPreceding, offset=0)
+
+
+pub def preceding(offset: int) -> WindowBound:
+    """Build a positive preceding frame bound."""
+    if offset <= 0:
+        return raise_value_error("preceding window bound offset must be positive")
+    return WindowBound(kind=WindowBoundKind.Preceding, offset=offset)
+
+
+pub def current_row() -> WindowBound:
+    """Build a frame bound at the current row."""
+    return WindowBound(kind=WindowBoundKind.CurrentRow, offset=0)
+
+
+pub def following(offset: int) -> WindowBound:
+    """Build a positive following frame bound."""
+    if offset <= 0:
+        return raise_value_error("following window bound offset must be positive")
+    return WindowBound(kind=WindowBoundKind.Following, offset=offset)
+
+
+pub def unbounded_following() -> WindowBound:
+    """Build an unbounded upper frame bound."""
+    return WindowBound(kind=WindowBoundKind.UnboundedFollowing, offset=0)
+
+
+pub def window() -> WindowSpec:
+    """
+    Build an empty window specification.
+
+    The default frame is the whole partition: `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`.
+    """
+    return WindowSpec(
+        partition_columns=[],
+        sort_columns=[],
+        frame=WindowFrame(
+            kind=WindowFrameKind.Rows,
+            lower_bound=unbounded_preceding(),
+            upper_bound=unbounded_following(),
+        ),
+    )
+
+
+pub def row_number() -> WindowFunctionCall:
+    """Build a `row_number` window function call."""
+    return _window_call("row_number", WindowFunctionKind.RowNumber, [], true)
+
+
+pub def rank() -> WindowFunctionCall:
+    """Build a `rank` window function call."""
+    return _window_call("rank", WindowFunctionKind.Rank, [], true)
+
+
+pub def dense_rank() -> WindowFunctionCall:
+    """Build a `dense_rank` window function call."""
+    return _window_call("dense_rank", WindowFunctionKind.DenseRank, [], true)
+
+
+pub def percent_rank() -> WindowFunctionCall:
+    """Build a `percent_rank` window function call."""
+    return _window_call("percent_rank", WindowFunctionKind.PercentRank, [], true)
+
+
+pub def cume_dist() -> WindowFunctionCall:
+    """Build a `cume_dist` window function call."""
+    return _window_call("cume_dist", WindowFunctionKind.CumeDist, [], true)
+
+
+pub def ntile(bucket_count: int) -> WindowFunctionCall:
+    """Build an `ntile` window function call."""
+    if bucket_count <= 0:
+        return raise_value_error("ntile bucket count must be positive")
+    return _window_call("ntile", WindowFunctionKind.Ntile, [_int_literal(bucket_count)], true)
+
+
+pub def lag(
+    expr: ColumnExpr,
+    offset: int = 1,
+    default_value: ColumnExpr = col_expr(NO_DEFAULT_COLUMN_SENTINEL),
+) -> WindowFunctionCall:
+    """Build a `lag` offset window function call."""
+    return _offset_call("lag", WindowFunctionKind.Lag, expr, offset, default_value)
+
+
+pub def lead(
+    expr: ColumnExpr,
+    offset: int = 1,
+    default_value: ColumnExpr = col_expr(NO_DEFAULT_COLUMN_SENTINEL),
+) -> WindowFunctionCall:
+    """Build a `lead` offset window function call."""
+    return _offset_call("lead", WindowFunctionKind.Lead, expr, offset, default_value)
+
+
+pub def first_value(expr: ColumnExpr) -> WindowFunctionCall:
+    """Build a `first_value` window function call."""
+    return _window_call("first_value", WindowFunctionKind.FirstValue, [expr], true)
+
+
+pub def last_value(expr: ColumnExpr) -> WindowFunctionCall:
+    """Build a `last_value` window function call."""
+    return _window_call("last_value", WindowFunctionKind.LastValue, [expr], true)
+
+
+pub def nth_value(expr: ColumnExpr, nth: int) -> WindowFunctionCall:
+    """Build an `nth_value` window function call."""
+    if nth <= 0:
+        return raise_value_error("nth_value position must be positive")
+    return _window_call("nth_value", WindowFunctionKind.NthValue, [expr, _int_literal(nth)], true)
+
+
+pub def aggregate_window_call(
+    function_ref: str,
+    canonical_name: str,
+    arguments: list[ColumnExpr],
+    is_distinct: bool,
+    has_filter: bool,
+) -> WindowFunctionCall:
+    """Build an aggregate call that still requires window placement before it becomes row-level."""
+    return WindowFunctionCall(
+        kind=WindowFunctionKind.Aggregate,
+        function_ref=function_ref,
+        canonical_name=canonical_name,
+        arguments=arguments,
+        requires_ordering=false,
+        null_treatment=WindowNullTreatment.RespectNulls,
+        is_distinct=is_distinct,
+        has_filter=has_filter,
+    )
+
+
+pub def window_projection(output_name: str, application: WindowFunctionApplication) -> WindowProjection:
+    """Build one named window projection after validating its output alias."""
+    if len(output_name) == 0:
+        return raise_value_error("window output alias must be non-empty")
+    return WindowProjection(output_name=output_name, application=application)
+
+
+pub def window_output_columns(input_columns: list[str], projections: list[WindowProjection]) -> list[str]:
+    """Return output columns after applying window projections with add-or-replace semantics."""
+    mut output_columns: list[str] = []
+    output_columns.extend(input_columns)
+    for projection in projections:
+        existing_idx = _index_of_text(output_columns, projection.output_name)
+        if existing_idx >= 0:
+            output_columns[existing_idx] = projection.output_name
+        else:
+            output_columns.append(projection.output_name)
+    return output_columns
+
+
+def _window_call(
+    canonical_name: str,
+    kind: WindowFunctionKind,
+    arguments: list[ColumnExpr],
+    requires_ordering: bool,
+) -> WindowFunctionCall:
+    """Build one unplaced window call."""
+    return WindowFunctionCall(
+        kind=kind,
+        function_ref=function_ref_for(canonical_name),
+        canonical_name=canonical_name,
+        arguments=arguments,
+        requires_ordering=requires_ordering,
+        null_treatment=WindowNullTreatment.RespectNulls,
+        is_distinct=false,
+        has_filter=false,
+    )
+
+
+def _validate_frame_bounds(lower_bound: WindowBound, upper_bound: WindowBound) -> None:
+    """Reject frame bounds that are invalid for their lower/upper positions."""
+    if lower_bound.kind == WindowBoundKind.UnboundedFollowing:
+        return raise_value_error("window frame lower bound cannot be unbounded following")
+    if upper_bound.kind == WindowBoundKind.UnboundedPreceding:
+        return raise_value_error("window frame upper bound cannot be unbounded preceding")
+
+
+def _window_function_supports_null_treatment(kind: WindowFunctionKind) -> bool:
+    """Return whether `IGNORE/RESPECT NULLS` is meaningful for this window function family."""
+    return (
+        kind == WindowFunctionKind.Lag
+        or kind == WindowFunctionKind.Lead
+        or kind == WindowFunctionKind.FirstValue
+        or kind == WindowFunctionKind.LastValue
+        or kind == WindowFunctionKind.NthValue
+    )
+
+
+def _offset_call(
+    canonical_name: str,
+    kind: WindowFunctionKind,
+    expr: ColumnExpr,
+    offset: int,
+    default_value: ColumnExpr,
+) -> WindowFunctionCall:
+    """Build one lag/lead call after validating the offset."""
+    if offset <= 0:
+        message = f"{canonical_name} offset must be positive"
+        return raise_value_error(message)
+    mut arguments = [expr, _int_literal(offset)]
+    if column_expr_name(default_value) != NO_DEFAULT_COLUMN_SENTINEL:
+        arguments.append(default_value)
+    return _window_call(canonical_name, kind, arguments, true)
+
+
+def _int_literal(value: int) -> ColumnExpr:
+    """Build one integer literal argument without importing the public helper file."""
+    return int_expr(value)
+
+
+def _index_of_text(values: list[str], expected: str) -> int:
+    """Return the index of a string value, or -1 when absent."""
+    for idx, value in enumerate(values):
+        if value == expected:
+            return idx
+    return -1
+
+
+module tests:
+    from projection_builders import col, column_expr_name
+    from std.testing import assert_raises
+    def _call_invalid_lower_frame_bound() -> None:
+        window().rows_between(unbounded_following(), current_row())
+    def _call_invalid_upper_frame_bound() -> None:
+        window().range_between(current_row(), unbounded_preceding())
+    def _call_ranking_null_treatment() -> None:
+        row_number().ignore_nulls()
+    def test_window_spec_builders_preserve_partition_order_and_frame() -> None:
+        spec = (window().partition_by([col("customer_id")]).order_by([col("amount")]).rows_between(
+            unbounded_preceding(),
+            current_row(),
+        ))
+        assert len(spec.partition_columns) == 1
+        assert column_expr_name(spec.partition_columns[0]) == "customer_id"
+        assert len(spec.sort_columns) == 1
+        assert column_expr_name(spec.sort_columns[0]) == "amount"
+        assert spec.frame.kind == WindowFrameKind.Rows
+        assert spec.frame.upper_bound.kind == WindowBoundKind.CurrentRow
+    def test_ranking_call_over_records_registry_identity() -> None:
+        application = rank().over(window().order_by([col("amount")]))
+        assert application.kind == WindowFunctionKind.Rank
+        assert application.function_ref == "inql.functions.rank"
+        assert application.requires_ordering
+    def test_offset_and_value_calls_record_arguments() -> None:
+        lagged = lag(col("amount"), 2).ignore_nulls()
+        assert lagged.kind == WindowFunctionKind.Lag
+        assert len(lagged.arguments) == 2
+        assert lagged.null_treatment == WindowNullTreatment.IgnoreNulls
+        nth = nth_value(col("amount"), 3)
+        assert nth.kind == WindowFunctionKind.NthValue
+        assert len(nth.arguments) == 2
+    def test_frame_builders_reject_invalid_unbounded_positions() -> None:
+        assert_raises[ValueError](_call_invalid_lower_frame_bound)
+        assert_raises[ValueError](_call_invalid_upper_frame_bound)
+    def test_null_treatment_is_limited_to_offset_and_value_functions() -> None:
+        assert_raises[ValueError](_call_ranking_null_treatment)

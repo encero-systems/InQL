@@ -7,7 +7,7 @@ The Substrait helper surface behind these methods is split by semantic role:
 - `src/substrait/relations.incn` builds concrete `Rel` nodes
 - `src/substrait/plans.incn` assembles `Plan` envelopes
 - `src/substrait/inspect.incn` owns relation/plan inspection and output-column inference
-- `src/substrait/schema_registry.incn` owns named-table schema binding
+- `src/schema_registry.incn` owns logical named-table schema binding
 
 ## Shared method surface
 
@@ -20,9 +20,9 @@ The Substrait helper surface behind these methods is split by semantic role:
 | `group_by`    | `def group_by(self, columns: list[ColumnExpr]) -> Self`      | Define grouping keys using scalar expressions.                                                 |
 | `agg`         | `def agg(self, measures: list[AggregateMeasure]) -> Self`    | Apply aggregate measures over the current relation or current grouping.                        |
 | `generate`    | `def generate(self, generator: GeneratorApplication) -> Self` | Apply a relation-shaping generator such as `explode(...)` with explicit output aliases.        |
+| `with_window_column` | `def with_window_column(self, name: str, application: WindowFunctionApplication) -> Self` | Add or replace one projected column using a placed window function. |
 | `order_by`    | `def order_by(self, columns: list[ColumnExpr]) -> Self`      | Sort rows by scalar expressions or ordering helpers such as `asc(...)` and `desc(...)`.        |
 | `limit`       | `def limit(self, n: int) -> Self`                            | Cap row count.                                                                                 |
-| `explode`     | `def explode(self) -> Self`                                  | Emit the lower-level `EXPLODE` extension boundary without expression/schema metadata.          |
 
 ## `with_column`
 
@@ -69,6 +69,7 @@ def enrich(orders: LazyFrame[Order]) -> LazyFrame[Order]:
 - `join(...)` is constrained to same-carrier inputs and the boolean join predicate surface shown in the signature.
 - `select(...)` preserves projection shape; explicit projection lists are represented today through `with_column(...)` and scalar-expression builders.
 - `generate(...)` preserves all input columns and appends generated output aliases for `explode`, `explode_outer`, `posexplode`, `posexplode_outer`, `inline`, `inline_outer`, `flatten`, and `stack` generator applications. Alias collisions are rejected during planning/lowering.
+- `with_window_column(...)` supports placed ranking, distribution, offset, value, and aggregate-over-window helpers over explicit window specs. Portable helpers lower through Substrait window relations and execute through the DataFusion session adapter.
 - `DataFrame[T]` exposes materialized metadata and preview text; row-level accessors belong to the materialized DataFrame API surface.
 - Query-block and scoped DSL surfaces lower into these builder APIs rather than defining separate method semantics.
 
@@ -77,3 +78,4 @@ def enrich(orders: LazyFrame[Order]) -> LazyFrame[Order]:
 - [Filter builders](builders/filters.md)
 - [Aggregate builders](builders/aggregates.md)
 - [Projection builders](builders/projections.md)
+- [Window functions](functions/windows.md)

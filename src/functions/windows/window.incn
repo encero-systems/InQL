@@ -1,0 +1,35 @@
+"""Window specification builder helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    structural_mapping,
+    v0_1,
+)
+from functions.registry import register_function
+from window_builders import WindowSpec, window as window_builder
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.NonNullLiteral,
+    substrait=structural_mapping("window_spec"),
+))
+pub def window() -> WindowSpec:
+    """
+    Build an empty window specification.
+
+    Examples:
+        spec = window().partition_by([col("customer_id")]).order_by([col("created_at")])
+    """
+    return window_builder()
+
+
+module tests:
+    def test_window_builds_empty_window_spec() -> None:
+        spec = window()
+        assert len(spec.partition_columns) == 0
+        assert len(spec.sort_columns) == 0

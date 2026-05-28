@@ -3,31 +3,72 @@
 import std.async
 from rust::prost import Message
 from rust::std::boxed import Box
-from rust::std::primitive import i64 as RustI64, usize as RustUsize
+from rust::std::primitive import i32 as RustI32, i64 as RustI64, u64 as RustU64, usize as RustUsize
 from rust::std::sync import Arc
 from rust::substrait::proto import (
     AggregateRel,
+    ConsistentPartitionWindowRel,
     CrossRel,
+    Expression,
     ExtensionSingleRel,
     FetchRel,
     FilterRel,
+    FunctionArgument,
+    FunctionOption,
     JoinRel,
     Plan,
     ProjectRel,
     Rel,
     SetRel,
+    SortField,
     SortRel,
 )
+from rust::substrait::proto::consistent_partition_window_rel import WindowRelFunction
+from rust::substrait::proto::aggregate_function import AggregationInvocation
+from rust::substrait::proto::expression import RexType
+from rust::substrait::proto::expression::literal import LiteralType
+from rust::substrait::proto::expression::window_function import Bound, BoundsType
+from rust::substrait::proto::expression::window_function::bound import Kind as BoundKind
+from rust::substrait::proto::function_argument import ArgType
 from rust::substrait::proto::rel import RelType
 from rust::substrait::proto::join_rel import JoinType
-from rust::datafusion::common import Column, UnnestOptions
+from rust::substrait::proto::sort_field import SortDirection, SortKind
+from rust::datafusion::common import Column, ScalarValue, UnnestOptions
+from rust::datafusion::arrow::datatypes import DataType as ArrowDataType
 from rust::datafusion::arrow::record_batch import RecordBatch
 from rust::datafusion::datasource import MemTable
 from rust::datafusion::dataframe import DataFrame as RustDataFrame
+from rust::datafusion::execution import FunctionRegistry as DataFusionFunctionRegistry
 from rust::datafusion::execution::context import SessionContext
 from rust::datafusion::execution::options import ArrowReadOptions
-from rust::datafusion::logical_expr import LogicalPlanBuilder
-from rust::datafusion::prelude import CsvReadOptions, ParquetReadOptions
+from rust::datafusion::logical_expr import (
+    Cast as DataFusionCast,
+    Expr as DataFusionExpr,
+    LogicalPlanBuilder,
+    Operator as DataFusionOperator,
+    WindowFrame as DataFusionWindowFrame,
+    WindowFrameBound as DataFusionWindowFrameBound,
+    WindowFrameUnits as DataFusionWindowFrameUnits,
+    WindowFunctionDefinition as DataFusionWindowFunctionDefinition,
+)
+from rust::datafusion::logical_expr::expr import (
+    Alias as DataFusionAlias,
+    Between as DataFusionBetween,
+    BinaryExpr as DataFusionBinaryExpr,
+    NullTreatment as DataFusionNullTreatment,
+    ScalarFunction as DataFusionScalarFunction,
+    Sort as DataFusionSort,
+    WindowFunction as DataFusionWindowFunction,
+    WindowFunctionParams as DataFusionWindowFunctionParams,
+)
+from rust::datafusion::prelude import (
+    CsvReadOptions,
+    ParquetReadOptions,
+    abs as datafusion_abs,
+    ceil as datafusion_ceil,
+    floor as datafusion_floor,
+    round as datafusion_round,
+)
 from rust::datafusion::dataframe import DataFrameWriteOptions
 from rust::datafusion_substrait::substrait::proto import Plan as ConsumerPlan
 from rust::datafusion_substrait::logical_plan::consumer import from_substrait_plan
@@ -43,13 +84,17 @@ from substrait.function_extensions import (
     POSEXPLODE_EXTENSION_URI,
     POSEXPLODE_OUTER_EXTENSION_URI,
     STACK_EXTENSION_URI,
+    is_generator_extension_uri,
 )
 from substrait.generator_payload import GeneratorExtensionPayload, decode_generator_extension_payload
+from substrait.expr_lowering import field_index_from_expression
+from substrait.extensions import scalar_function_name_from_anchor, window_function_name_from_anchor
 from substrait.inspect import relation_output_columns, root_names, root_rel
 from substrait.plans import plan_from_root_relation
 from substrait.relations import project_rel_with_expressions, read_named_table_rel
 from substrait.schema import RowColumnSpec, SubstraitPrimitiveKind
 from substrait.schema_registry import register_named_table_schema
+from substrait.window_metadata import WINDOW_NULL_TREATMENT_OPTION, WINDOW_OUTPUT_NAME_OPTION
 
 
 @derive(Clone)
@@ -70,6 +115,31 @@ model MaterializedGeneratorRelation:
     extension: ExtensionSingleRel
 
 
+@derive(Clone)
+model MaterializedWindowRelation:
+    """One nested window relation that must be bridged through a DataFusion temp view for execution."""
+
+    path: str
+    rel: Rel
+    window_rel: ConsistentPartitionWindowRel
+    output_columns: list[str]
+
+
+model RelationChildPath:
+    """One direct relation child paired with its materialization traversal path."""
+
+    rel: Rel
+    path: str
+
+
+model PendingWindowRelation:
+    """One window relation peeled from a nested window stack for sequential execution."""
+
+    window_rel: ConsistentPartitionWindowRel
+    input_columns: list[str]
+    output_columns: list[str]
+
+
 pub async def datafusion_execute_async(
     registrations: list[BackendRegistration],
     plan: Plan,
@@ -78,12 +148,10 @@ pub async def datafusion_execute_async(
     ctx = SessionContext.new()
     await _register_sources(ctx, registrations)?
 
-    match await _dataframe_from_plan(ctx, plan):
-        Ok(df) => match await df.collect():
-            Ok(_) => return Ok(None)
-            Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
-
-        Err(err) => return Err(err)
+    df = await _dataframe_from_plan(ctx, plan)?
+    match await df.collect():
+        Ok(_) => return Ok(None)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
 
 
 pub async def datafusion_collect_materialization_async(
@@ -95,25 +163,23 @@ pub async def datafusion_collect_materialization_async(
     resolved_columns = root_names(plan.clone())
     await _register_sources(ctx, registrations)?
 
-    match await _dataframe_from_plan(ctx, plan):
-        Ok(df) => match await df.clone().collect():
-            Ok(batches) => match await df.to_string():
-                Ok(rendered) =>
-                    mut row_count = 0
-                    for batch in batches:
-                        row_count += _rust_usize_to_int(batch.num_rows())?
-                    return Ok(
-                        DataFrameMaterialization(
-                            resolved_columns=resolved_columns,
-                            row_count=row_count,
-                            preview_text=rendered,
-                        ),
-                    )
-                Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
-
+    df = await _dataframe_from_plan(ctx, plan)?
+    match await df.clone().collect():
+        Ok(batches) => match await df.to_string():
+            Ok(rendered) =>
+                mut row_count = 0
+                for batch in batches:
+                    row_count += _rust_usize_to_int(batch.num_rows())?
+                return Ok(
+                    DataFrameMaterialization(
+                        resolved_columns=resolved_columns,
+                        row_count=row_count,
+                        preview_text=rendered,
+                    ),
+                )
             Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
 
-        Err(err) => return Err(err)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
 
 
 pub async def datafusion_write_csv_async(
@@ -125,12 +191,10 @@ pub async def datafusion_write_csv_async(
     ctx = SessionContext.new()
     await _register_sources(ctx, registrations)?
 
-    match await _dataframe_from_plan(ctx, plan):
-        Ok(df) => match await df.write_csv(uri, DataFrameWriteOptions.new(), None):
-            Ok(_) => return Ok(None)
-            Err(err) => return Err(backend_error(BackendErrorKind.BackendSinkError, err.to_string()))
-
-        Err(err) => return Err(err)
+    df = await _dataframe_from_plan(ctx, plan)?
+    match await df.write_csv(uri, DataFrameWriteOptions.new(), None):
+        Ok(_) => return Ok(None)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendSinkError, err.to_string()))
 
 
 pub async def datafusion_write_parquet_async(
@@ -142,32 +206,79 @@ pub async def datafusion_write_parquet_async(
     ctx = SessionContext.new()
     await _register_sources(ctx, registrations)?
 
-    match await _dataframe_from_plan(ctx, plan):
-        Ok(df) => match await df.write_parquet(uri, DataFrameWriteOptions.new(), None):
-            Ok(_) => return Ok(None)
-            Err(err) => return Err(backend_error(BackendErrorKind.BackendSinkError, err.to_string()))
-
-        Err(err) => return Err(err)
+    df = await _dataframe_from_plan(ctx, plan)?
+    match await df.write_parquet(uri, DataFrameWriteOptions.new(), None):
+        Ok(_) => return Ok(None)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendSinkError, err.to_string()))
 
 
 async def _dataframe_from_plan(ctx: SessionContext, plan: Plan) -> Result[RustDataFrame, BackendError]:
-    """Build a DataFusion DataFrame, including InQL-owned generator extension roots."""
+    """Build a DataFusion DataFrame, including InQL-owned relation bridges."""
+    root = root_rel(plan.clone())
+    match _window_rel(root.clone()):
+        Some(window_rel) => return await _dataframe_from_window_rel(ctx, window_rel, root_names(plan.clone()))
+        None => return await _dataframe_from_non_window_plan(ctx, plan)
+
+
+async def _dataframe_from_non_window_plan(ctx: SessionContext, plan: Plan) -> Result[RustDataFrame, BackendError]:
+    """Build a DataFusion DataFrame for plans that do not have a window root."""
     root = root_rel(plan.clone())
     # DataFusion's stock Substrait consumer cannot plan InQL generator ExtensionSingleRel nodes. Root generators can
     # execute directly; nested generators are first materialized and then replaced by execution-only temp reads.
     match _generator_extension(root):
         Some(extension) => return await _dataframe_from_generator_extension(ctx, extension)
         None =>
-            materializations = _collect_materialized_generator_relations(root_rel(plan.clone()), "root")
-            if len(materializations) == 0:
+            mut rewritten_root = root_rel(plan.clone())
+            mut rewritten_plan = plan.clone()
+            materializations = _collect_materialized_generator_relations(rewritten_root.clone(), "root")
+            if len(materializations) > 0:
+                for materialization in materializations:
+                    # The path key must match the later rewrite traversal so each temp read targets the exact generated
+                    # subtree that was collected here.
+                    table_name = _materialized_generator_table_name(materialization.path)
+                    df = await _dataframe_from_generator_extension(ctx.clone(), materialization.extension)?
+                    await _register_materialized_dataframe(ctx.clone(), table_name, df)?
+                rewritten_root = _replace_materialized_generator_relations(rewritten_root, "root")
+                rewritten_plan = plan_from_root_relation(rewritten_root.clone(), root_names(plan.clone()))
+
+            window_materializations = _collect_materialized_window_relations(rewritten_root.clone(), "root")
+            if len(window_materializations) == 0:
+                return await _dataframe_from_standard_plan(ctx, rewritten_plan)
+
+            for materialization in window_materializations:
+                table_name = _materialized_window_table_name(materialization.path)
+                df = await _dataframe_from_window_rel(
+                    ctx.clone(),
+                    materialization.window_rel,
+                    materialization.output_columns,
+                )?
+                await _register_materialized_dataframe(ctx.clone(), table_name, df)?
+            rewritten_root = _replace_materialized_window_relations(rewritten_root, "root")
+            rewritten_plan = plan_from_root_relation(rewritten_root, root_names(plan))
+            return await _dataframe_from_standard_plan(ctx, rewritten_plan)
+
+
+async def _dataframe_from_plan_with_window_materialization(
+    ctx: SessionContext,
+    plan: Plan,
+) -> Result[RustDataFrame, BackendError]:
+    """Build a DataFrame for an adapter-local plan after bridging nested window relations."""
+    root = root_rel(plan.clone())
+    match _window_rel(root.clone()):
+        Some(window_rel) => return await _dataframe_from_window_rel(ctx, window_rel, root_names(plan.clone()))
+        None =>
+            window_materializations = _collect_materialized_window_relations(root.clone(), "root")
+            if len(window_materializations) == 0:
                 return await _dataframe_from_standard_plan(ctx, plan)
-            for materialization in materializations:
-                # The path key must match the later rewrite traversal so each temp read targets the exact generated
-                # subtree that was collected here.
-                table_name = _materialized_generator_table_name(materialization.path)
-                df = await _dataframe_from_generator_extension(ctx.clone(), materialization.extension)?
-                await _register_materialized_generator_dataframe(ctx.clone(), table_name, df)?
-            rewritten_root = _replace_materialized_generator_relations(root_rel(plan.clone()), "root")
+            for materialization in window_materializations:
+                table_name = _materialized_window_table_name(materialization.path)
+                df = await _dataframe_from_window_rel(
+                    ctx.clone(),
+                    materialization.window_rel,
+                    materialization.output_columns,
+                )?
+                await _register_materialized_dataframe(ctx.clone(), table_name, df)?
+            rewritten_root = _replace_materialized_window_relations(root, "root")
             rewritten_plan = plan_from_root_relation(rewritten_root, root_names(plan))
             return await _dataframe_from_standard_plan(ctx, rewritten_plan)
 
@@ -177,10 +288,65 @@ async def _dataframe_from_standard_plan(ctx: SessionContext, plan: Plan) -> Resu
     consumer_plan = _consumer_plan_from_current_plan(plan)?
     state = ctx.state()
     match await from_substrait_plan(state, consumer_plan):
-        Ok(logical_plan) =>
-            match await ctx.execute_logical_plan(logical_plan):
-                Ok(df) => return Ok(df)
-                Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
+        Ok(logical_plan) => match await ctx.execute_logical_plan(logical_plan):
+            Ok(df) => return Ok(df)
+            Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
+
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
+
+
+async def _dataframe_from_window_rel(
+    ctx: SessionContext,
+    window_rel: ConsistentPartitionWindowRel,
+    output_columns: list[str],
+) -> Result[RustDataFrame, BackendError]:
+    """Build a DataFusion DataFrame for one or more nested Substrait window relations."""
+    mut pending_windows: list[PendingWindowRelation] = []
+    mut current_window = window_rel
+    mut current_output_columns = output_columns
+    mut child = _window_input_rel(current_window.clone())?
+    while true:
+        child_columns = relation_output_columns(child.clone())
+        pending_windows.append(
+            PendingWindowRelation(
+                window_rel=current_window.clone(),
+                input_columns=child_columns.clone(),
+                output_columns=current_output_columns.clone(),
+            ),
+        )
+        match _window_rel(child.clone()):
+            Some(next_window) =>
+                current_window = next_window
+                current_output_columns = child_columns
+                child = _window_input_rel(current_window.clone())?
+            None =>
+                base_plan = plan_from_root_relation(child, child_columns)
+                mut current_df = await _dataframe_from_standard_plan(ctx.clone(), base_plan)?
+                mut idx = len(pending_windows)
+                while idx > 0:
+                    idx -= 1
+                    pending = pending_windows[idx]
+                    current_df = _dataframe_from_window_api(
+                        ctx.clone(),
+                        current_df,
+                        pending.input_columns,
+                        pending.window_rel,
+                        pending.output_columns,
+                    )?
+                return Ok(current_df)
+
+
+def _dataframe_from_window_api(
+    ctx: SessionContext,
+    child_df: RustDataFrame,
+    child_columns: list[str],
+    window_rel: ConsistentPartitionWindowRel,
+    output_columns: list[str],
+) -> Result[RustDataFrame, BackendError]:
+    """Apply one InQL window relation through DataFusion's typed expression API."""
+    select_exprs = _window_select_exprs(ctx, child_columns, window_rel, output_columns)?
+    match child_df.select(select_exprs):
+        Ok(df) => return Ok(df)
         Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
 
 
@@ -203,7 +369,7 @@ async def _dataframe_from_generator_extension(
     )?
     projected_rel = project_rel_with_expressions(child, payload.arguments)
     projected_plan = plan_from_root_relation(projected_rel, projected_names)
-    projected_df = await _dataframe_from_standard_plan(ctx, projected_plan)?
+    projected_df = await _dataframe_from_plan_with_window_materialization(ctx, projected_plan)?
     return _apply_generator_dataframe_shape(projected_df, extension, payload, temp_columns)
 
 
@@ -219,91 +385,69 @@ def _collect_materialized_generator_children(rel: Rel, path: str) -> list[Materi
     # This traversal must stay in lock-step with _replace_materialized_generator_children; the path segments are the
     # shared key between the discovery pass and the execution-plan rewrite pass.
     mut materializations: list[MaterializedGeneratorRelation] = []
+    for child_path in _materialization_child_paths(rel, path):
+        _extend_materializations(
+            materializations,
+            _collect_materialized_generator_relations(child_path.rel, child_path.path),
+        )
+    return materializations
+
+
+def _materialization_child_paths(rel: Rel, path: str) -> list[RelationChildPath]:
+    """Return direct relation children with path suffixes shared by materialization passes."""
     match rel.rel_type.clone():
         Some(RelType.Filter(filter_rel)) =>
             filter = filter_rel.as_ref().clone()
-            match filter.input:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_filter"),
-                )
-                None => pass
+            if let Some(child) = filter.input:
+                return [RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_filter")]
+            return []
         Some(RelType.Project(project_rel)) =>
             project = project_rel.as_ref().clone()
-            match project.input:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_project"),
-                )
-                None => pass
+            if let Some(child) = project.input:
+                return [RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_project")]
+            return []
         Some(RelType.Join(join_rel)) =>
             join = join_rel.as_ref().clone()
-            match join.left:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_join_left"),
-                )
-                None => pass
-            match join.right:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_join_right"),
-                )
-                None => pass
+            mut children: list[RelationChildPath] = []
+            if let Some(child) = join.left:
+                children.append(RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_join_left"))
+            if let Some(child) = join.right:
+                children.append(RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_join_right"))
+            return children
         Some(RelType.Cross(cross_rel)) =>
             cross = cross_rel.as_ref().clone()
-            match cross.left:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_cross_left"),
-                )
-                None => pass
-            match cross.right:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_cross_right"),
-                )
-                None => pass
+            mut children: list[RelationChildPath] = []
+            if let Some(child) = cross.left:
+                children.append(RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_cross_left"))
+            if let Some(child) = cross.right:
+                children.append(RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_cross_right"))
+            return children
         Some(RelType.Aggregate(aggregate_rel)) =>
             aggregate = aggregate_rel.as_ref().clone()
-            match aggregate.input:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_aggregate"),
-                )
-                None => pass
+            if let Some(child) = aggregate.input:
+                return [RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_aggregate")]
+            return []
         Some(RelType.Sort(sort_rel)) =>
             sort = sort_rel.as_ref().clone()
-            match sort.input:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_sort"),
-                )
-                None => pass
+            if let Some(child) = sort.input:
+                return [RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_sort")]
+            return []
         Some(RelType.Fetch(fetch_rel)) =>
             fetch = fetch_rel.as_ref().clone()
-            match fetch.input:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_fetch"),
-                )
-                None => pass
+            if let Some(child) = fetch.input:
+                return [RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_fetch")]
+            return []
         Some(RelType.Set(set_rel)) =>
+            mut children: list[RelationChildPath] = []
             for idx, input in enumerate(set_rel.inputs):
-                _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(input, f"{path}_set_{idx}"),
-                )
+                children.append(RelationChildPath(rel=input, path=f"{path}_set_{idx}"))
+            return children
         Some(RelType.ExtensionSingle(extension_rel)) =>
             extension = extension_rel.as_ref().clone()
-            match extension.input:
-                Some(child) => _extend_materializations(
-                    materializations,
-                    _collect_materialized_generator_relations(child.as_ref().clone(), f"{path}_extension"),
-                )
-                None => pass
-        _ => pass
-    return materializations
+            if let Some(child) = extension.input:
+                return [RelationChildPath(rel=child.as_ref().clone(), path=f"{path}_extension")]
+            return []
+        _ => return []
 
 
 def _extend_materializations(
@@ -397,14 +541,10 @@ def _replace_join_generator_children(join: JoinRel, path: str) -> Rel:
     """Rebuild a JoinRel with rewritten left and right inputs."""
     mut left = join.left
     mut right = join.right
-    match left:
-        Some(child) =>
-            left = Some(_rewritten_generator_child(child, f"{path}_join_left"))
-        None => pass
-    match right:
-        Some(child) =>
-            right = Some(_rewritten_generator_child(child, f"{path}_join_right"))
-        None => pass
+    if let Some(child) = left:
+        left = Some(_rewritten_generator_child(child, f"{path}_join_left"))
+    if let Some(child) = right:
+        right = Some(_rewritten_generator_child(child, f"{path}_join_right"))
     # Public InQL joins currently lower only inner joins; preserve that contract while rewriting child inputs.
     return Rel(
         rel_type=Some(
@@ -429,14 +569,10 @@ def _replace_cross_generator_children(cross: CrossRel, path: str) -> Rel:
     """Rebuild a CrossRel with rewritten left and right inputs."""
     mut left = cross.left
     mut right = cross.right
-    match left:
-        Some(child) =>
-            left = Some(_rewritten_generator_child(child, f"{path}_cross_left"))
-        None => pass
-    match right:
-        Some(child) =>
-            right = Some(_rewritten_generator_child(child, f"{path}_cross_right"))
-        None => pass
+    if let Some(child) = left:
+        left = Some(_rewritten_generator_child(child, f"{path}_cross_left"))
+    if let Some(child) = right:
+        right = Some(_rewritten_generator_child(child, f"{path}_cross_right"))
     return Rel(
         rel_type=Some(
             RelType.Cross(
@@ -559,12 +695,275 @@ def _materialized_generator_table_name(path: str) -> str:
     return f"__inql_generator_materialized_{path}"
 
 
-async def _register_materialized_generator_dataframe(
+def _collect_materialized_window_relations(rel: Rel, path: str) -> list[MaterializedWindowRelation]:
+    """Return window relations nested below a non-window root."""
+    match _window_rel(rel.clone()):
+        Some(window_rel) =>
+            return [MaterializedWindowRelation(
+                path=path,
+                rel=rel.clone(),
+                window_rel=window_rel,
+                output_columns=relation_output_columns(rel),
+            )]
+        None => return _collect_materialized_window_children(rel, path)
+
+
+def _collect_materialized_window_children(rel: Rel, path: str) -> list[MaterializedWindowRelation]:
+    """Return window relations below direct children of one relation."""
+    mut materializations: list[MaterializedWindowRelation] = []
+    for child_path in _materialization_child_paths(rel, path):
+        _extend_window_materializations(
+            materializations,
+            _collect_materialized_window_relations(child_path.rel, child_path.path),
+        )
+    return materializations
+
+
+def _extend_window_materializations(
+    mut target: list[MaterializedWindowRelation],
+    values: list[MaterializedWindowRelation],
+) -> None:
+    """Append collected window materialization records while satisfying list clone requirements."""
+    for value in values:
+        target.append(value.clone())
+    return
+
+
+def _replace_materialized_window_relations(rel: Rel, path: str) -> Rel:
+    """Replace previously materialized window relation nodes with temp-view reads."""
+    match _window_rel(rel.clone()):
+        Some(_) => return read_named_table_rel(_materialized_window_table_name(path))
+        None => return _replace_materialized_window_children(rel, path)
+
+
+def _replace_materialized_window_children(rel: Rel, path: str) -> Rel:
+    """Recursively rewrite window-bearing children while preserving the surrounding relation node."""
+    match rel.rel_type.clone():
+        Some(RelType.Filter(filter_rel)) => return _replace_filter_window_child(rel, filter_rel.as_ref().clone(), path)
+        Some(RelType.Project(project_rel)) =>
+            return _replace_project_window_child(rel, project_rel.as_ref().clone(), path)
+        Some(RelType.Join(join_rel)) => return _replace_join_window_children(join_rel.as_ref().clone(), path)
+        Some(RelType.Cross(cross_rel)) => return _replace_cross_window_children(cross_rel.as_ref().clone(), path)
+        Some(RelType.Aggregate(aggregate_rel)) =>
+            return _replace_aggregate_window_child(rel, aggregate_rel.as_ref().clone(), path)
+        Some(RelType.Sort(sort_rel)) => return _replace_sort_window_child(rel, sort_rel.as_ref().clone(), path)
+        Some(RelType.Fetch(fetch_rel)) => return _replace_fetch_window_child(rel, fetch_rel.as_ref().clone(), path)
+        Some(RelType.Set(set_rel)) => return _replace_set_window_children(set_rel, path)
+        Some(RelType.ExtensionSingle(extension_rel)) =>
+            return _replace_extension_window_child(rel, extension_rel.as_ref().clone(), path)
+        _ => return rel
+
+
+def _rewritten_window_child(child: Box[Rel], path: str) -> Box[Rel]:
+    """Return one boxed child after replacing any materialized window subtree beneath it."""
+    return Box.new(_replace_materialized_window_relations(child.as_ref().clone(), path))
+
+
+def _replace_filter_window_child(original: Rel, filter: FilterRel, path: str) -> Rel:
+    """Rebuild a FilterRel with its input child rewritten when present."""
+    match filter.input:
+        Some(child) =>
+            return Rel(
+                rel_type=Some(
+                    RelType.Filter(
+                        Box.new(
+                            FilterRel(
+                                common=filter.common,
+                                input=Some(_rewritten_window_child(child, f"{path}_filter")),
+                                condition=filter.condition,
+                                advanced_extension=filter.advanced_extension,
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        None => return original
+
+
+def _replace_project_window_child(original: Rel, project: ProjectRel, path: str) -> Rel:
+    """Rebuild a ProjectRel with its input child rewritten when present."""
+    match project.input:
+        Some(child) =>
+            return Rel(
+                rel_type=Some(
+                    RelType.Project(
+                        Box.new(
+                            ProjectRel(
+                                common=project.common,
+                                input=Some(_rewritten_window_child(child, f"{path}_project")),
+                                expressions=project.expressions,
+                                advanced_extension=project.advanced_extension,
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        None => return original
+
+
+def _replace_join_window_children(join: JoinRel, path: str) -> Rel:
+    """Rebuild a JoinRel with rewritten left and right inputs."""
+    mut left = join.left
+    mut right = join.right
+    if let Some(child) = left:
+        left = Some(_rewritten_window_child(child, f"{path}_join_left"))
+    if let Some(child) = right:
+        right = Some(_rewritten_window_child(child, f"{path}_join_right"))
+    return Rel(
+        rel_type=Some(
+            RelType.Join(
+                Box.new(
+                    JoinRel(
+                        common=join.common,
+                        left=left,
+                        right=right,
+                        expression=join.expression,
+                        post_join_filter=join.post_join_filter,
+                        type=JoinType.Inner.into(),
+                        advanced_extension=join.advanced_extension,
+                    ),
+                ),
+            ),
+        ),
+    )
+
+
+def _replace_cross_window_children(cross: CrossRel, path: str) -> Rel:
+    """Rebuild a CrossRel with rewritten left and right inputs."""
+    mut left = cross.left
+    mut right = cross.right
+    if let Some(child) = left:
+        left = Some(_rewritten_window_child(child, f"{path}_cross_left"))
+    if let Some(child) = right:
+        right = Some(_rewritten_window_child(child, f"{path}_cross_right"))
+    return Rel(
+        rel_type=Some(
+            RelType.Cross(
+                Box.new(
+                    CrossRel(common=cross.common, left=left, right=right, advanced_extension=cross.advanced_extension),
+                ),
+            ),
+        ),
+    )
+
+
+def _replace_aggregate_window_child(original: Rel, aggregate: AggregateRel, path: str) -> Rel:
+    """Rebuild an AggregateRel with its input child rewritten when present."""
+    match aggregate.input:
+        Some(child) =>
+            return Rel(
+                rel_type=Some(
+                    RelType.Aggregate(
+                        Box.new(
+                            AggregateRel(
+                                common=aggregate.common,
+                                input=Some(_rewritten_window_child(child, f"{path}_aggregate")),
+                                groupings=aggregate.groupings,
+                                measures=aggregate.measures,
+                                grouping_expressions=aggregate.grouping_expressions,
+                                advanced_extension=aggregate.advanced_extension,
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        None => return original
+
+
+def _replace_sort_window_child(original: Rel, sort: SortRel, path: str) -> Rel:
+    """Rebuild a SortRel with its input child rewritten when present."""
+    match sort.input:
+        Some(child) =>
+            return Rel(
+                rel_type=Some(
+                    RelType.Sort(
+                        Box.new(
+                            SortRel(
+                                common=sort.common,
+                                input=Some(_rewritten_window_child(child, f"{path}_sort")),
+                                sorts=sort.sorts,
+                                advanced_extension=sort.advanced_extension,
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        None => return original
+
+
+def _replace_fetch_window_child(original: Rel, fetch: FetchRel, path: str) -> Rel:
+    """Rebuild a FetchRel with its input child rewritten when present."""
+    match fetch.input:
+        Some(child) =>
+            return Rel(
+                rel_type=Some(
+                    RelType.Fetch(
+                        Box.new(
+                            FetchRel(
+                                common=fetch.common,
+                                input=Some(_rewritten_window_child(child, f"{path}_fetch")),
+                                advanced_extension=fetch.advanced_extension,
+                                offset_mode=fetch.offset_mode,
+                                count_mode=fetch.count_mode,
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        None => return original
+
+
+def _replace_set_window_children(set_rel: SetRel, path: str) -> Rel:
+    """Rebuild a SetRel with every input child rewritten."""
+    mut inputs: list[Rel] = []
+    for idx, input in enumerate(set_rel.inputs):
+        rewritten = _replace_materialized_window_relations(input, f"{path}_set_{idx}")
+        inputs.append(rewritten.clone())
+    return Rel(
+        rel_type=Some(
+            RelType.Set(
+                SetRel(
+                    common=set_rel.common,
+                    inputs=inputs,
+                    op=set_rel.op,
+                    advanced_extension=set_rel.advanced_extension,
+                ),
+            ),
+        ),
+    )
+
+
+def _replace_extension_window_child(original: Rel, extension: ExtensionSingleRel, path: str) -> Rel:
+    """Rebuild an ExtensionSingleRel with its input child rewritten when present."""
+    match extension.input:
+        Some(child) =>
+            return Rel(
+                rel_type=Some(
+                    RelType.ExtensionSingle(
+                        Box.new(
+                            ExtensionSingleRel(
+                                common=extension.common,
+                                input=Some(_rewritten_window_child(child, f"{path}_extension")),
+                                detail=extension.detail,
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        None => return original
+
+
+def _materialized_window_table_name(path: str) -> str:
+    """Return the internal DataFusion temp-view name for one materialized window relation path."""
+    return f"__inql_window_materialized_{path}"
+
+
+async def _register_materialized_dataframe(
     ctx: SessionContext,
     table_name: str,
     df: RustDataFrame,
 ) -> Result[None, BackendError]:
-    """Collect one generated DataFrame into a MemTable so Substrait reads see concrete table scans."""
+    """Collect one bridged DataFrame into a MemTable so Substrait reads see concrete table scans."""
     match await df.clone().collect():
         Ok(batches) =>
             if len(batches) == 0:
@@ -572,7 +971,7 @@ async def _register_materialized_generator_dataframe(
                 match ctx.register_table(f"{table_name}", df.into_view()):
                     Ok(_) => return Ok(None)
                     Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
-            _register_materialized_generator_schema_from_batch(f"{table_name}", batches[0])
+            _register_materialized_schema_from_batch(f"{table_name}", batches[0])
             schema = batches[0].schema()
             # Non-empty outputs are frozen into a MemTable so the stock consumer reads a concrete table instead of an
             # InQL-specific generator extension relation.
@@ -585,8 +984,8 @@ async def _register_materialized_generator_dataframe(
         Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
 
 
-def _register_materialized_generator_schema_from_batch(table_name: str, batch: RecordBatch) -> None:
-    """Mirror one DataFusion materialized generator schema into the Substrait named-table schema registry."""
+def _register_materialized_schema_from_batch(table_name: str, batch: RecordBatch) -> None:
+    """Mirror one materialized DataFusion schema into the Substrait named-table schema registry."""
     # The rewritten ReadRel uses the same schema inference path as user-registered tables, so mirror DataFusion's batch
     # schema into that registry before the temporary plan is lowered.
     schema = batch.schema()
@@ -641,10 +1040,445 @@ def _generator_extension(rel: Rel) -> Option[ExtensionSingleRel]:
     match rel.rel_type:
         Some(RelType.ExtensionSingle(extension)) =>
             if let Some(detail) = extension.detail.clone():
-                if _is_generator_extension_uri(detail.type_url):
+                if is_generator_extension_uri(detail.type_url):
                     return Some(extension.as_ref().clone())
             return None
         _ => return None
+
+
+def _window_rel(rel: Rel) -> Option[ConsistentPartitionWindowRel]:
+    """Return the root window relation when the plan root is an InQL analytic window."""
+    match rel.rel_type:
+        Some(RelType.Window(window_rel)) => return Some(window_rel.as_ref().clone())
+        _ => return None
+
+
+def _window_input_rel(window_rel: ConsistentPartitionWindowRel) -> Result[Rel, BackendError]:
+    """Return the child relation for one window relation."""
+    match window_rel.input:
+        Some(child) => return Ok(child.as_ref().clone())
+        None => return Err(backend_error(BackendErrorKind.BackendPlanningError, "window relation is missing input"))
+
+
+def _window_select_exprs(
+    ctx: SessionContext,
+    input_columns: list[str],
+    window_rel: ConsistentPartitionWindowRel,
+    output_columns: list[str],
+) -> Result[list[DataFusionExpr], BackendError]:
+    """Build the typed DataFusion projection for one lowered InQL window relation."""
+    final_columns = _window_final_columns(input_columns.clone(), window_rel.clone(), output_columns)
+    return Ok(
+        [_window_select_expr(ctx.clone(), input_columns.clone(), window_rel.clone(), output_column)? for output_column in final_columns],
+    )
+
+
+def _window_select_expr(
+    ctx: SessionContext,
+    input_columns: list[str],
+    window_rel: ConsistentPartitionWindowRel,
+    output_column: str,
+) -> Result[DataFusionExpr, BackendError]:
+    """Build one typed DataFusion select expression for a final window output column."""
+    match _window_function_for_output(window_rel.clone(), output_column):
+        Some(window_function) =>
+            function_name = window_function_name_from_anchor(window_function.function_reference)
+            expr = _datafusion_window_expr(ctx, window_function, input_columns, window_rel)?
+            return Ok(_datafusion_alias(_window_output_expr(function_name, expr), output_column))
+        None => return Ok(_datafusion_column(output_column))
+
+
+def _window_final_columns(
+    input_columns: list[str],
+    window_rel: ConsistentPartitionWindowRel,
+    output_columns: list[str],
+) -> list[str]:
+    """Return requested root output columns, or derive add-only output columns when roots are absent."""
+    if len(output_columns) > 0:
+        return output_columns
+    mut columns = input_columns
+    for window_function in window_rel.window_functions:
+        columns.append(_window_function_output_name(window_function.options))
+    return columns
+
+
+def _window_function_for_output(
+    window_rel: ConsistentPartitionWindowRel,
+    output_name: str,
+) -> Option[WindowRelFunction]:
+    """Return the lowered window function that owns one output alias."""
+    for window_function in window_rel.window_functions:
+        if _window_function_output_name(window_function.options) == output_name:
+            return Some(window_function)
+    return None
+
+
+def _datafusion_window_expr(
+    ctx: SessionContext,
+    window_function: WindowRelFunction,
+    input_columns: list[str],
+    window_rel: ConsistentPartitionWindowRel,
+) -> Result[DataFusionExpr, BackendError]:
+    """Translate one Substrait window function into DataFusion's typed expression model."""
+    function_name = window_function_name_from_anchor(window_function.function_reference)
+    return Ok(
+        DataFusionExpr.WindowFunction(
+            Box.new(
+                DataFusionWindowFunction(
+                    fun=_datafusion_window_function_definition(ctx.clone(), function_name)?,
+                    params=DataFusionWindowFunctionParams(
+                        args=_datafusion_window_arguments(ctx.clone(), window_function.clone(), input_columns.clone())?,
+                        partition_by=[_datafusion_expr(ctx.clone(), expr, input_columns.clone())? for expr in window_rel.partition_expressions],
+                        order_by=[_datafusion_sort(ctx.clone(), sort, input_columns.clone())? for sort in window_rel.sorts],
+                        window_frame=_datafusion_window_frame(window_function, len(window_rel.sorts) > 0)?,
+                        filter=None,
+                        null_treatment=_datafusion_null_treatment(window_function.options),
+                        distinct=_datafusion_window_distinct(window_function.invocation),
+                    ),
+                ),
+            ),
+        ),
+    )
+
+
+def _datafusion_window_arguments(
+    ctx: SessionContext,
+    window_function: WindowRelFunction,
+    input_columns: list[str],
+) -> Result[list[DataFusionExpr], BackendError]:
+    """Translate Substrait window arguments into DataFusion expressions."""
+    function_name = window_function_name_from_anchor(window_function.function_reference)
+    if function_name == "count" and len(window_function.arguments) == 0:
+        return Ok([DataFusionExpr.Literal(ScalarValue.Int64(Some(1)), None)])
+    return Ok(
+        [_datafusion_function_argument(ctx.clone(), argument, input_columns.clone())? for argument in window_function.arguments],
+    )
+
+
+def _datafusion_function_argument(
+    ctx: SessionContext,
+    argument: FunctionArgument,
+    input_columns: list[str],
+) -> Result[DataFusionExpr, BackendError]:
+    """Translate one value argument carried by a Substrait function call."""
+    match argument.arg_type:
+        Some(ArgType.Value(expr)) => return _datafusion_expr(ctx, expr, input_columns)
+        _ =>
+            return Err(
+                backend_error(
+                    BackendErrorKind.BackendPlanningError,
+                    "window expression bridge only supports value arguments",
+                ),
+            )
+
+
+def _datafusion_expr(
+    ctx: SessionContext,
+    expr: Expression,
+    input_columns: list[str],
+) -> Result[DataFusionExpr, BackendError]:
+    """Translate Substrait scalar expressions needed by window arguments and boundaries."""
+    field_index = field_index_from_expression(expr.clone())
+    if field_index >= 0 and field_index < len(input_columns):
+        return Ok(_datafusion_column(input_columns[field_index]))
+    match expr.rex_type:
+        Some(RexType.Literal(literal)) =>
+            match literal.literal_type:
+                Some(LiteralType.I64(value)) => return Ok(DataFusionExpr.Literal(ScalarValue.Int64(Some(value)), None))
+                Some(LiteralType.Fp64(value)) =>
+                    return Ok(DataFusionExpr.Literal(ScalarValue.Float64(Some(value)), None))
+                Some(LiteralType.Boolean(value)) =>
+                    return Ok(DataFusionExpr.Literal(ScalarValue.Boolean(Some(value)), None))
+                Some(LiteralType.String(value)) =>
+                    return Ok(DataFusionExpr.Literal(ScalarValue.Utf8(Some(f"{value}")), None))
+                _ => pass
+        Some(RexType.ScalarFunction(function)) =>
+            return _datafusion_scalar_function_expr(ctx, function.function_reference, function.arguments, input_columns)
+        _ => pass
+    return Err(_unsupported_window_expr("window expression bridge cannot translate this scalar expression"))
+
+
+def _datafusion_scalar_function_expr(
+    ctx: SessionContext,
+    function_reference: u32,
+    arguments: list[FunctionArgument],
+    input_columns: list[str],
+) -> Result[DataFusionExpr, BackendError]:
+    """Translate one registry-backed scalar function into DataFusion's typed expression model."""
+    function_name = scalar_function_name_from_anchor(function_reference)
+    rendered_args = _datafusion_function_arguments(ctx.clone(), arguments, input_columns)?
+    match function_name:
+        "add" => return _datafusion_binary_expr(DataFusionOperator.Plus, rendered_args)
+        "subtract" => return _datafusion_binary_expr(DataFusionOperator.Minus, rendered_args)
+        "multiply" => return _datafusion_binary_expr(DataFusionOperator.Multiply, rendered_args)
+        "divide" => return _datafusion_binary_expr(DataFusionOperator.Divide, rendered_args)
+        "modulus" => return _datafusion_binary_expr(DataFusionOperator.Modulo, rendered_args)
+        "equal" => return _datafusion_binary_expr(DataFusionOperator.Eq, rendered_args)
+        "not_equal" => return _datafusion_binary_expr(DataFusionOperator.NotEq, rendered_args)
+        "gt" => return _datafusion_binary_expr(DataFusionOperator.Gt, rendered_args)
+        "gte" => return _datafusion_binary_expr(DataFusionOperator.GtEq, rendered_args)
+        "lt" => return _datafusion_binary_expr(DataFusionOperator.Lt, rendered_args)
+        "lte" => return _datafusion_binary_expr(DataFusionOperator.LtEq, rendered_args)
+        "equal_null" => return _datafusion_binary_expr(DataFusionOperator.IsNotDistinctFrom, rendered_args)
+        "and" => return _datafusion_binary_expr(DataFusionOperator.And, rendered_args)
+        "or" => return _datafusion_binary_expr(DataFusionOperator.Or, rendered_args)
+        "not" | "negate" | "is_null" | "is_not_null" => return _datafusion_unary_expr(function_name, rendered_args)
+        "between" => return _datafusion_between_expr(rendered_args)
+        "abs" | "ceil" | "floor" | "round" => return _datafusion_common_math_expr(function_name, rendered_args)
+        _ =>
+            if let Ok(udf) = ctx.state().udf(function_name):
+                return Ok(DataFusionExpr.ScalarFunction(DataFusionScalarFunction.new_udf(udf, rendered_args)))
+            return Err(
+                _unsupported_window_expr(
+                    f"window expression bridge does not yet translate scalar function `{function_name}`",
+                ),
+            )
+
+
+def _datafusion_function_arguments(
+    ctx: SessionContext,
+    arguments: list[FunctionArgument],
+    input_columns: list[str],
+) -> Result[list[DataFusionExpr], BackendError]:
+    """Translate scalar function value arguments recursively."""
+    return Ok([_datafusion_function_argument(ctx.clone(), argument, input_columns.clone())? for argument in arguments])
+
+
+def _datafusion_binary_expr(
+    operator: DataFusionOperator,
+    rendered_args: list[DataFusionExpr],
+) -> Result[DataFusionExpr, BackendError]:
+    """Build one binary DataFusion expression."""
+    if len(rendered_args) != 2:
+        return Err(_unsupported_window_expr(f"{operator} requires two arguments"))
+    return Ok(
+        DataFusionExpr.BinaryExpr(
+            DataFusionBinaryExpr.new(Box.new(rendered_args[0].clone()), operator, Box.new(rendered_args[1].clone())),
+        ),
+    )
+
+
+def _datafusion_unary_expr(kind: str, rendered_args: list[DataFusionExpr]) -> Result[DataFusionExpr, BackendError]:
+    """Build one unary DataFusion expression."""
+    if len(rendered_args) != 1:
+        return Err(_unsupported_window_expr(f"{kind} requires one argument"))
+    if kind == "not":
+        return Ok(DataFusionExpr.Not(Box.new(rendered_args[0].clone())))
+    if kind == "negate":
+        return Ok(DataFusionExpr.Negative(Box.new(rendered_args[0].clone())))
+    if kind == "is_null":
+        return Ok(DataFusionExpr.IsNull(Box.new(rendered_args[0].clone())))
+    if kind == "is_not_null":
+        return Ok(DataFusionExpr.IsNotNull(Box.new(rendered_args[0].clone())))
+    return Err(_unsupported_window_expr(f"unknown unary expression `{kind}`"))
+
+
+def _datafusion_between_expr(rendered_args: list[DataFusionExpr]) -> Result[DataFusionExpr, BackendError]:
+    """Build one DataFusion BETWEEN expression."""
+    if len(rendered_args) != 3:
+        return Err(_unsupported_window_expr("between requires three arguments"))
+    return Ok(
+        DataFusionExpr.Between(
+            DataFusionBetween.new(
+                Box.new(rendered_args[0].clone()),
+                false,
+                Box.new(rendered_args[1].clone()),
+                Box.new(rendered_args[2].clone()),
+            ),
+        ),
+    )
+
+
+def _datafusion_common_math_expr(
+    function_name: str,
+    rendered_args: list[DataFusionExpr],
+) -> Result[DataFusionExpr, BackendError]:
+    """Build one typed DataFusion expression for the RFC 018 math slice."""
+    if function_name == "round":
+        if len(rendered_args) < 1:
+            return Err(_unsupported_window_expr("round requires at least one argument"))
+        return Ok(datafusion_round(rendered_args))
+    if len(rendered_args) != 1:
+        return Err(_unsupported_window_expr(f"{function_name} requires one argument"))
+    if function_name == "abs":
+        return Ok(datafusion_abs(rendered_args[0].clone()))
+    if function_name == "ceil":
+        return Ok(datafusion_ceil(rendered_args[0].clone()))
+    if function_name == "floor":
+        return Ok(datafusion_floor(rendered_args[0].clone()))
+    return Err(_unsupported_window_expr(f"unknown common math function `{function_name}`"))
+
+
+def _datafusion_window_function_definition(
+    ctx: SessionContext,
+    function_name: str,
+) -> Result[DataFusionWindowFunctionDefinition, BackendError]:
+    """Resolve one InQL window function against DataFusion's function registry."""
+    state = ctx.state()
+    if let Ok(udwf) = state.udwf(function_name):
+        return Ok(DataFusionWindowFunctionDefinition.WindowUDF(udwf))
+    match state.udaf(function_name):
+        Ok(udaf) => return Ok(DataFusionWindowFunctionDefinition.AggregateUDF(udaf))
+        Err(err) =>
+            return Err(
+                backend_error(
+                    BackendErrorKind.BackendPlanningError,
+                    f"DataFusion does not expose window function `{function_name}`: {err.to_string()}",
+                ),
+            )
+
+
+def _datafusion_sort(
+    ctx: SessionContext,
+    sort: SortField,
+    input_columns: list[str],
+) -> Result[DataFusionSort, BackendError]:
+    """Translate one Substrait sort field for a DataFusion window expression."""
+    mut sort_expr = _datafusion_column("")
+    match sort.expr:
+        Some(expr) =>
+            sort_expr = _datafusion_expr(ctx, expr, input_columns)?
+        None =>
+            return Err(backend_error(BackendErrorKind.BackendPlanningError, "window sort field is missing expression"))
+    match sort.sort_kind:
+        Some(SortKind.Direction(direction)) => return Ok(_datafusion_sort_direction(sort_expr, direction))
+        _ => return Ok(DataFusionSort.new(sort_expr, true, true))
+
+
+def _datafusion_sort_direction(expr: DataFusionExpr, direction: RustI32) -> DataFusionSort:
+    """Translate Substrait sort direction into DataFusion's sort expression flags."""
+    asc_nulls_first: RustI32 = SortDirection.AscNullsFirst.into()
+    asc_nulls_last: RustI32 = SortDirection.AscNullsLast.into()
+    desc_nulls_first: RustI32 = SortDirection.DescNullsFirst.into()
+    desc_nulls_last: RustI32 = SortDirection.DescNullsLast.into()
+    if direction == asc_nulls_first:
+        return DataFusionSort.new(expr, true, true)
+    if direction == asc_nulls_last:
+        return DataFusionSort.new(expr, true, false)
+    if direction == desc_nulls_first:
+        return DataFusionSort.new(expr, false, true)
+    if direction == desc_nulls_last:
+        return DataFusionSort.new(expr, false, false)
+    return DataFusionSort.new(expr, true, true)
+
+
+def _datafusion_window_frame(
+    window_function: WindowRelFunction,
+    has_ordering: bool,
+) -> Result[DataFusionWindowFrame, BackendError]:
+    """Translate Substrait window bounds into DataFusion's frame model."""
+    bounds_type = _datafusion_window_frame_units(window_function.bounds_type)
+    match bounds_type:
+        Some(units) =>
+            lower = _datafusion_window_bound(window_function.lower_bound, true)?
+            upper = _datafusion_window_bound(window_function.upper_bound, false)?
+            return Ok(DataFusionWindowFrame.new_bounds(units, lower, upper))
+        None =>
+            if has_ordering:
+                return Ok(DataFusionWindowFrame.new(Some(false)))
+            return Ok(DataFusionWindowFrame.new(None))
+
+
+def _datafusion_window_frame_units(value: RustI32) -> Option[DataFusionWindowFrameUnits]:
+    """Translate the Substrait window-frame unit discriminant."""
+    rows: RustI32 = BoundsType.Rows.into()
+    range_bounds: RustI32 = BoundsType.Range.into()
+    if value == rows:
+        return Some(DataFusionWindowFrameUnits.Rows)
+    if value == range_bounds:
+        return Some(DataFusionWindowFrameUnits.Range)
+    return None
+
+
+def _datafusion_window_bound(bound: Option[Bound], is_lower: bool) -> Result[DataFusionWindowFrameBound, BackendError]:
+    """Translate one Substrait window-frame bound into DataFusion's frame model."""
+    if let Some(value) = bound:
+        if let Some(kind) = value.kind:
+            match kind:
+                BoundKind.Unbounded(_) =>
+                    if is_lower:
+                        return Ok(DataFusionWindowFrameBound.Preceding(ScalarValue.UInt64(None)))
+                    return Ok(DataFusionWindowFrameBound.Following(ScalarValue.UInt64(None)))
+                BoundKind.CurrentRow(_) => return Ok(DataFusionWindowFrameBound.CurrentRow)
+                BoundKind.Preceding(preceding) =>
+                    return Ok(
+                        DataFusionWindowFrameBound.Preceding(
+                            ScalarValue.UInt64(Some(_rust_i64_to_u64(preceding.offset)?)),
+                        ),
+                    )
+                BoundKind.Following(following) =>
+                    return Ok(
+                        DataFusionWindowFrameBound.Following(
+                            ScalarValue.UInt64(Some(_rust_i64_to_u64(following.offset)?)),
+                        ),
+                    )
+    return Err(backend_error(BackendErrorKind.BackendPlanningError, "window frame bound is missing"))
+
+
+def _datafusion_window_distinct(invocation: RustI32) -> bool:
+    """Return whether a Substrait aggregate invocation requests DISTINCT."""
+    distinct: RustI32 = AggregationInvocation.Distinct.into()
+    return invocation == distinct
+
+
+def _window_output_expr(function_name: str, expr: DataFusionExpr) -> DataFusionExpr:
+    """Cast DataFusion unsigned analytic outputs to InQL's signed integer surface."""
+    if _window_output_needs_i64_cast(function_name):
+        return DataFusionExpr.Cast(DataFusionCast.new(Box.new(expr), ArrowDataType.Int64))
+    return expr
+
+
+def _datafusion_alias(expr: DataFusionExpr, output_name: str) -> DataFusionExpr:
+    """Attach one InQL output name to a DataFusion expression."""
+    return DataFusionExpr.Alias(DataFusionAlias(expr=Box.new(expr), relation=None, name=f"{output_name}", metadata=None))
+
+
+def _datafusion_column(column_name: str) -> DataFusionExpr:
+    """Build a typed DataFusion column reference."""
+    return DataFusionExpr.Column(Column.from_name(f"{column_name}"))
+
+
+def _datafusion_null_treatment(options: list[FunctionOption]) -> Option[DataFusionNullTreatment]:
+    """Translate optional InQL null treatment metadata into DataFusion's window model."""
+    for option in options:
+        if option.name == WINDOW_NULL_TREATMENT_OPTION and len(option.preference) > 0:
+            if option.preference[0] == "ignore_nulls":
+                return Some(DataFusionNullTreatment.IgnoreNulls)
+            if option.preference[0] == "respect_nulls":
+                return Some(DataFusionNullTreatment.RespectNulls)
+    return None
+
+
+def _unsupported_window_expr(message: str) -> BackendError:
+    """Build a backend planning diagnostic for unsupported window expression bridge shapes."""
+    return backend_error(BackendErrorKind.BackendPlanningError, message)
+
+
+def _window_output_needs_i64_cast(function_name: str) -> bool:
+    """Return whether DataFusion's unsigned analytic result should be cast into InQL's i64 surface type."""
+    return (
+        function_name == "count"
+        or function_name == "row_number"
+        or function_name == "rank"
+        or function_name == "dense_rank"
+        or function_name == "ntile"
+    )
+
+
+def _window_function_output_name(options: list[FunctionOption]) -> str:
+    """Return the output alias encoded by Substrait lowering."""
+    for option in options:
+        if option.name == WINDOW_OUTPUT_NAME_OPTION and len(option.preference) > 0:
+            return option.preference[0]
+    return ""
+
+
+def _rust_i64_to_u64(value: RustI64) -> Result[RustU64, BackendError]:
+    """Convert a non-negative Substrait frame offset into DataFusion's unsigned scalar value."""
+    match RustU64.try_from(value):
+        Ok(converted) => return Ok(converted)
+        Err(_) =>
+            return Err(backend_error(BackendErrorKind.BackendPlanningError, "window frame offset must be non-negative"))
 
 
 def _generator_input_rel(extension: ExtensionSingleRel) -> Result[Rel, BackendError]:
@@ -761,20 +1595,6 @@ def _preserve_generator_nulls(extension_uri: str) -> bool:
 def _generator_expands_struct(extension_uri: str) -> bool:
     """Return whether the generator result should expand a struct value into multiple columns."""
     return extension_uri == INLINE_EXTENSION_URI or extension_uri == INLINE_OUTER_EXTENSION_URI or extension_uri == STACK_EXTENSION_URI
-
-
-def _is_generator_extension_uri(extension_uri: str) -> bool:
-    """Return whether an ExtensionSingle URI belongs to an InQL generator."""
-    return (
-        extension_uri == EXPLODE_EXTENSION_URI
-        or extension_uri == EXPLODE_OUTER_EXTENSION_URI
-        or extension_uri == POSEXPLODE_EXTENSION_URI
-        or extension_uri == POSEXPLODE_OUTER_EXTENSION_URI
-        or extension_uri == INLINE_EXTENSION_URI
-        or extension_uri == INLINE_OUTER_EXTENSION_URI
-        or extension_uri == FLATTEN_EXTENSION_URI
-        or extension_uri == STACK_EXTENSION_URI
-    )
 
 
 async def _register_sources(

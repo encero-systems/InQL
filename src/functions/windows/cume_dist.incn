@@ -1,0 +1,29 @@
+"""Cumulative-distribution window helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.registry import register_function
+from substrait.function_extensions import CUME_DIST_FUNCTION_ANCHOR
+from window_builders import WindowFunctionCall, cume_dist as cume_dist_builder
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Window,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.NonNullLiteral,
+    substrait=extension_mapping("cume_dist", CUME_DIST_FUNCTION_ANCHOR),
+))
+pub def cume_dist() -> WindowFunctionCall:
+    """
+    Build a cumulative-distribution window function call.
+
+    Examples:
+        distribution = cume_dist().over(window().order_by([col("amount")]))
+    """
+    return cume_dist_builder()

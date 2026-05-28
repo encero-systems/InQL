@@ -7,9 +7,19 @@ inspection utilities used by tests, dataset carriers, and conformance validation
 
 from rust::std::boxed import Box
 from rust::std::primitive import i32 as RustI32
-from rust::substrait::proto import AggregateRel, Expression, Plan, ReadRel, Rel, RelCommon
+from rust::substrait::proto import (
+    AggregateRel,
+    ConsistentPartitionWindowRel,
+    Expression,
+    FunctionOption,
+    Plan,
+    ReadRel,
+    Rel,
+    RelCommon,
+)
 from rust::substrait::proto::aggregate_rel import Measure
 from rust::substrait::proto::aggregate_function import AggregationInvocation
+from rust::substrait::proto::extensions::simple_extension_declaration import MappingType
 from rust::substrait::proto::function_argument import ArgType
 from rust::substrait::proto::plan_rel import RelType as PlanRelType
 from rust::substrait::proto::read_rel import NamedTable as ReadNamedTable, ReadType
@@ -17,10 +27,9 @@ from rust::substrait::proto::rel import RelType
 from rust::substrait::proto::rel_common import Direct, EmitKind
 from rust::substrait::proto::set_rel import SetOp
 from rust::substrait::proto::sort_field import SortDirection, SortKind
-from aggregate_builders import AggregateMeasure
-from projection_builders import scalar_expr_output_name
+from aggregate_builders import AggregateMeasure, aggregate_measure_output_name
 from substrait.expr_lowering import field_index_from_expression, project_output_columns_with_emit, rust_u32_to_int
-from substrait.extensions import aggregate_function_name_from_anchor
+from substrait.extensions import aggregate_function_name_from_anchor, window_function_name_from_anchor
 from substrait.function_extensions import (
     EXPLODE_EXTENSION_URI,
     EXPLODE_OUTER_EXTENSION_URI,
@@ -34,6 +43,7 @@ from substrait.function_extensions import (
 from substrait.generator_payload import decode_generator_extension_payload
 from substrait.schema_registry import named_table_columns, unknown_named_struct
 from substrait.traversal import relation_children
+from substrait.window_metadata import WINDOW_OUTPUT_NAME_OPTION
 
 
 def _malformed_root_rel() -> Rel:
@@ -69,16 +79,7 @@ def _measure_has_filter(measure: Measure) -> bool:
 
 def _measure_output_name(measure: AggregateMeasure) -> str:
     """Return the projected output column name for one aggregate measure."""
-    mut output_name = measure.kind.value()
-    if measure.is_distinct and measure.has_expr:
-        output_name = output_name + "_distinct_" + scalar_expr_output_name(measure.expr, "expr")
-    elif measure.has_expr:
-        output_name = output_name + "_" + scalar_expr_output_name(measure.expr, "expr")
-    if measure.has_filter:
-        output_name = output_name + "_filtered"
-    if len(measure.ordering) > 0:
-        output_name = output_name + "_ordered"
-    return output_name
+    return aggregate_measure_output_name(measure)
 
 
 pub def aggregate_measure_output_names(measures: list[AggregateMeasure]) -> list[str]:
@@ -154,6 +155,42 @@ def _aggregate_output_columns(aggregate_rel: AggregateRel) -> list[str]:
     return columns
 
 
+def _window_input_columns(window_rel: ConsistentPartitionWindowRel) -> list[str]:
+    """Resolve the current input-column names feeding one window relation."""
+    match window_rel.input:
+        Some(child) => return relation_output_columns(child.as_ref().clone())
+        None => return []
+
+
+def _window_output_columns(window_rel: ConsistentPartitionWindowRel) -> list[str]:
+    """Return input-column names followed by lowered window output aliases."""
+    mut columns = _window_input_columns(window_rel.clone())
+    for idx, window_function in enumerate(window_rel.window_functions):
+        output_name = _window_function_output_name(window_function.options)
+        if len(output_name) > 0:
+            columns.append(output_name)
+        else:
+            function_name = window_function_name_from_anchor(window_function.function_reference)
+            if len(function_name) > 0:
+                columns.append(function_name)
+            else:
+                columns.append(f"window_{idx}")
+    return columns
+
+
+def _window_function_output_name(options: list[FunctionOption]) -> str:
+    """Return the InQL output alias encoded on one lowered window function."""
+    for option in options:
+        if option.name == WINDOW_OUTPUT_NAME_OPTION and len(option.preference) > 0:
+            return option.preference[0]
+    return ""
+
+
+def _window_function_names_for_rel(window_rel: ConsistentPartitionWindowRel) -> list[str]:
+    """Return lowered window-function names in declaration order."""
+    return [window_function_name_from_anchor(fun.function_reference) for fun in window_rel.window_functions]
+
+
 def _relation_output_columns(rel: Rel) -> list[str]:
     """Return the current best-effort output column names for one relation subtree."""
     match rel.rel_type.clone():
@@ -196,27 +233,24 @@ def _relation_output_columns(rel: Rel) -> list[str]:
                 None => return []
         Some(RelType.Join(join_rel)) =>
             mut names: list[str] = []
-            match join_rel.left:
-                Some(left) => names.extend(_relation_output_columns(left.as_ref().clone()))
-                None => pass
-            match join_rel.right:
-                Some(right) => names.extend(_relation_output_columns(right.as_ref().clone()))
-                None => pass
+            if let Some(left) = join_rel.left:
+                names.extend(_relation_output_columns(left.as_ref().clone()))
+            if let Some(right) = join_rel.right:
+                names.extend(_relation_output_columns(right.as_ref().clone()))
             return names
         Some(RelType.Cross(cross_rel)) =>
             mut names: list[str] = []
-            match cross_rel.left:
-                Some(left) => names.extend(_relation_output_columns(left.as_ref().clone()))
-                None => pass
-            match cross_rel.right:
-                Some(right) => names.extend(_relation_output_columns(right.as_ref().clone()))
-                None => pass
+            if let Some(left) = cross_rel.left:
+                names.extend(_relation_output_columns(left.as_ref().clone()))
+            if let Some(right) = cross_rel.right:
+                names.extend(_relation_output_columns(right.as_ref().clone()))
             return names
         Some(RelType.Set(set_rel)) =>
             if len(set_rel.inputs) == 0:
                 return []
             return _relation_output_columns(set_rel.inputs[0])
         Some(RelType.Aggregate(aggregate_rel)) => return _aggregate_output_columns(aggregate_rel.as_ref().clone())
+        Some(RelType.Window(window_rel)) => return _window_output_columns(window_rel.as_ref().clone())
         _ => return []
 
 
@@ -225,17 +259,36 @@ pub def relation_output_columns(rel: Rel) -> list[str]:
     return _relation_output_columns(rel)
 
 
+pub def window_function_names(rel: Rel) -> list[str]:
+    """Return lowered window-function names when `rel` is a window root."""
+    match rel.rel_type:
+        Some(RelType.Window(window_rel)) => return _window_function_names_for_rel(window_rel.as_ref().clone())
+        _ => return []
+
+
+pub def window_partition_count(rel: Rel) -> int:
+    """Return the number of partition expressions when `rel` is a window root."""
+    match rel.rel_type:
+        Some(RelType.Window(window_rel)) => return len(window_rel.partition_expressions)
+        _ => return 0
+
+
+pub def window_sort_count(rel: Rel) -> int:
+    """Return the number of sort expressions when `rel` is a window root."""
+    match rel.rel_type:
+        Some(RelType.Window(window_rel)) => return len(window_rel.sorts)
+        _ => return 0
+
+
 def _extension_single_output_columns(input_columns: list[str], extension_uri: str, payload: bytes) -> list[str]:
     """Return best-effort output columns for known extension-single relation encodings."""
     mut columns: list[str] = []
     columns.extend(input_columns)
     # Prefer the RFC 021 payload when present. Some low-level extension-boundary tests still create URI-only nodes, so
     # retain the URI fallback below for those structurally valid but less informative relations.
-    match decode_generator_extension_payload(payload):
-        Ok(decoded) =>
-            columns.extend(decoded.output_columns)
-            return columns
-        Err(_) => pass
+    if let Ok(decoded) = decode_generator_extension_payload(payload):
+        columns.extend(decoded.output_columns)
+        return columns
     if extension_uri == EXPLODE_EXTENSION_URI or extension_uri == EXPLODE_OUTER_EXTENSION_URI:
         columns.append("value")
     elif extension_uri == POSEXPLODE_EXTENSION_URI or extension_uri == POSEXPLODE_OUTER_EXTENSION_URI:
@@ -340,6 +393,7 @@ pub def relation_kind_name(rel: Rel) -> str:
         Some(RelType.Join(_)) => return "JoinRel"
         Some(RelType.Cross(_)) => return "CrossRel"
         Some(RelType.Aggregate(_)) => return "AggregateRel"
+        Some(RelType.Window(_)) => return "ConsistentPartitionWindowRel"
         Some(RelType.Sort(_)) => return "SortRel"
         Some(RelType.Fetch(_)) => return "FetchRel"
         Some(RelType.Set(_)) => return "SetRel"
@@ -495,3 +549,13 @@ pub def plan_extension_urn_anchor_at(plan: Plan, index: int) -> int:
     if index < 0 or index >= len(plan.extension_urns):
         return -1
     return rust_u32_to_int(plan.extension_urns[index].extension_urn_anchor)
+
+
+pub def plan_extension_function_names(plan: Plan) -> list[str]:
+    """Return extension-function declaration names carried by one plan."""
+    mut names: list[str] = []
+    for declaration in plan.extensions:
+        match declaration.mapping_type:
+            Some(MappingType.ExtensionFunction(function)) => names.append(function.name)
+            _ => pass
+    return names
