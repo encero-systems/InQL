@@ -9,6 +9,7 @@ from function_registry import (
     extension_mapping,
     v0_1,
 )
+from functions.format_schema import FormatSchema, format_schema_description
 from functions.registry import register_function, registered_application
 from projection_builders import ColumnExpr, str_expr
 from substrait.function_extensions import FROM_JSON_FUNCTION_ANCHOR
@@ -21,18 +22,19 @@ from substrait.function_extensions import FROM_JSON_FUNCTION_ANCHOR
     error_behavior=FunctionErrorBehavior.InvalidInputDiagnostic,
     substrait=extension_mapping("from_json", FROM_JSON_FUNCTION_ANCHOR),
 ))
-pub def from_json(expr: ColumnExpr, schema: str) -> ColumnExpr:
+pub def from_json(expr: ColumnExpr, schema: FormatSchema) -> ColumnExpr:
     """
     Validate JSON using an explicit schema description and return a normalized JSON payload.
 
     Examples:
         payload = from_json(col("payload"), "STRUCT<type: STRING>")
+        typed_payload = from_json(col("payload"), row_shape_from_model(EventPayload(type="click")))
 
     Parameters:
         expr: String expression containing a JSON payload.
-        schema: Explicit schema description for the expected JSON payload.
+        schema: Schema description or `RowShapeSpec` for the expected JSON payload.
     """
-    return registered_application("from_json", [expr, str_expr(schema)])
+    return registered_application("from_json", [expr, str_expr(format_schema_description(schema))])
 
 
 module tests:
@@ -43,8 +45,18 @@ module tests:
         column_expr_function_name,
         column_expr_kind,
     )
+    from substrait.schema import RowColumnSpec, RowShapeSpec, SubstraitPrimitiveKind
     def test_from_json_builds_registered_application() -> None:
         expr = from_json(col("payload"), "STRUCT<type: STRING>")
+        assert column_expr_kind(expr) == ColumnExprKind.ScalarFunction
+        assert column_expr_function_name(expr) == "from_json"
+        assert column_expr_argument_count(expr) == 2
+    def test_from_json_accepts_row_shape_schema() -> None:
+        shape = RowShapeSpec(
+            model_name="EventPayload",
+            columns=[RowColumnSpec(name="type", kind=SubstraitPrimitiveKind.String, nullable=false)],
+        )
+        expr = from_json(col("payload"), shape)
         assert column_expr_kind(expr) == ColumnExprKind.ScalarFunction
         assert column_expr_function_name(expr) == "from_json"
         assert column_expr_argument_count(expr) == 2

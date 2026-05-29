@@ -3,7 +3,7 @@
 
 [incan]
 format = 1
-incan-version = "0.3.0-rc24"
+incan-version = "0.3.0-rc25"
 deps-fingerprint = "sha256:c857db33615865c432fa4c9b3947975ccb4255249143ecc1676c26e85981aafb"
 cargo-features = []
 cargo-no-default-features = false
@@ -481,9 +481,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.62"
+version = "1.2.63"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1dce859f0832a7d088c4f1119888ab94ef4b5d6795d1ce05afb7fe159d79f98"
+checksum = "556e016178bb5662a08681bbe0f00f8e17631781a4dfc8c45e466e4b185ec27f"
 dependencies = [
  "find-msvc-tools",
  "jobserver",
@@ -1824,14 +1824,14 @@ dependencies = [
 
 [[package]]
 name = "incan_core"
-version = "0.3.0-rc24"
+version = "0.3.0-rc25"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "incan_derive"
-version = "0.3.0-rc24"
+version = "0.3.0-rc25"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1840,7 +1840,7 @@ dependencies = [
 
 [[package]]
 name = "incan_stdlib"
-version = "0.3.0-rc24"
+version = "0.3.0-rc25"
 dependencies = [
  "incan_core",
  "incan_derive",
@@ -1864,7 +1864,7 @@ dependencies = [
 
 [[package]]
 name = "inql"
-version = "0.3.0-rc24"
+version = "0.3.0-rc25"
 dependencies = [
  "blake2",
  "blake3",
@@ -2788,9 +2788,9 @@ dependencies = [
 
 [[package]]
 name = "shlex"
-version = "1.3.0"
+version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
+checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
 
 [[package]]
 name = "simd-adler32"

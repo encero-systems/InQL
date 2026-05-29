@@ -59,6 +59,7 @@ pub from projection_builders import (
 )
 pub from functions.registry import function_registry
 pub from functions import (
+    FormatSchema,
     function_registry_canonical_names,
     function_registry_entries,
     function_registry_entry,
@@ -254,6 +255,8 @@ pub from substrait.schema import (
     demo_customer_row_shape,
     row_shape_to_named_struct,
     row_shape_field_names,
+    row_shape_from_model,
+    row_shape_to_schema_description,
     row_shape_to_substrait_struct_type,
     substrait_row_type_encoded_len,
 )

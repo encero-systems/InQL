@@ -48,11 +48,16 @@ Without a separate RFC, format helpers risk leaking ingestion policy into the sc
 Authors should be able to parse and produce semi-structured scalar values inside relational transformations:
 
 ```incan
+from pub::inql import row_shape_from_model
 from pub::inql.functions import col, from_json, get_json_object, sha2, to_json
+
+@derive(Clone)
+model EventPayload:
+    type_ as "type": str
 
 events = (
     raw_events
-        .with_column("payload_obj", from_json(col("payload"), EventPayload))
+        .with_column("payload_obj", from_json(col("payload"), row_shape_from_model(EventPayload(type="click"))))
         .with_column("event_type", get_json_object(col("payload"), "$.type"))
         .with_column("user_hash", sha2(col("user_id"), 256))
         .with_column("payload_out", to_json(col("payload_obj")))
@@ -63,9 +68,9 @@ Reading a JSON file into a dataset remains a session/source operation, not a sca
 
 ## Reference-level explanation (precise rules)
 
-InQL should define JSON functions including `from_json`, `to_json`, `get_json_object`, `json_array_length`, `json_object_keys`, `schema_of_json`, `parse_json`, `check_json`, `json_extract_path_text`, and `try_from_json` where recoverable parse behavior is desired.
+InQL should define JSON functions including `from_json`, `to_json`, `get_json_object`, `json_array_length`, `json_object_keys`, `schema_of_json`, `parse_json`, `check_json`, `json_extract_path_text`, and `try_from_json` where recoverable parse behavior is desired. Explicit-schema JSON helpers accept schema descriptions and model-derived row shapes.
 
-InQL should define CSV value functions including `from_csv`, `to_csv`, and `schema_of_csv` only insofar as they operate on scalar values or schema descriptions. `from_csv` returns a logical map keyed by schema field names, or `_cN` positional keys when no schema is supplied. These functions must not replace the session CSV read/write contract.
+InQL should define CSV value functions including `from_csv`, `to_csv`, and `schema_of_csv` only insofar as they operate on scalar values, schema descriptions, or model-derived row shapes. `from_csv` returns a logical map keyed by schema field names, or `_cN` positional keys when no schema is supplied. These functions must not replace the session CSV read/write contract.
 
 InQL should define URL functions including `parse_url`, `url_encode`, `url_decode`, and `try_url_decode`, with exact invalid-input behavior recorded in the registry. `parse_url` extracts query parameter values by key.
 

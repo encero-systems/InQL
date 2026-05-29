@@ -15,6 +15,7 @@ pub from functions.registry import (
     function_registry_function_refs,
     registered_substrait_mapped_function_refs,
 )
+pub from functions.format_schema import FormatSchema
 pub from functions.references.col import col
 pub from functions.literals.always_false import always_false
 pub from functions.literals.always_true import always_true

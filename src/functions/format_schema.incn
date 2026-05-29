@@ -1,0 +1,13 @@
+"""Shared schema-argument normalization for scalar format helpers."""
+
+from substrait.schema import RowShapeSpec, row_shape_to_schema_description
+
+
+pub type FormatSchema = Union[str, RowShapeSpec]
+
+
+pub def format_schema_description(schema: FormatSchema) -> str:
+    """Normalize compact schema strings and model-derived row shapes to one schema description."""
+    match schema:
+        str(text) => return text
+        RowShapeSpec(shape) => return row_shape_to_schema_description(shape)

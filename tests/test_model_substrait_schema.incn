@@ -2,10 +2,19 @@
 
 from substrait.schema import (
     demo_customer_row_shape,
+    row_shape_from_model,
     row_shape_field_names,
+    row_shape_to_schema_description,
     row_shape_to_substrait_struct_type,
     substrait_row_type_encoded_len,
 )
+
+
+@derive(Clone)
+model CsvOrderSchema:
+    order_id as "id": int
+    status: str
+    discount: Option[float]
 
 
 def test_demo_customer_row_shape__field_order() -> None:
@@ -32,3 +41,31 @@ def test_row_shape_to_substrait_struct_type__encodes() -> None:
 
     # -- Assert --
     assert encoded > 0, "protobuf encoding should be non-empty"
+
+
+def test_row_shape_from_model__uses_reflected_wire_names_and_types() -> None:
+    # -- Arrange --
+    row = CsvOrderSchema(id=42, status="paid", discount=None)
+
+    # -- Act --
+    shape = row_shape_from_model(row)
+    names = row_shape_field_names(shape)
+
+    # -- Assert --
+    assert shape.model_name == "CsvOrderSchema", "model name should come from reflection"
+    assert names[0] == "id", "alias should become the external schema field name"
+    assert names[1] == "status", "plain field name should be preserved"
+    assert names[2] == "discount", "optional field should be preserved"
+    assert shape.columns[2].nullable, "Option fields should be nullable"
+
+
+def test_row_shape_to_schema_description__renders_csv_schema_string() -> None:
+    # -- Arrange --
+    row = CsvOrderSchema(id=42, status="paid", discount=None)
+    shape = row_shape_from_model(row)
+
+    # -- Act --
+    schema = row_shape_to_schema_description(shape)
+
+    # -- Assert --
+    assert schema == "STRUCT<id: BIGINT, status: STRING, discount: DOUBLE>", "schema description"
