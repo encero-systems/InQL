@@ -265,6 +265,12 @@ from substrait.function_extensions import (
 )
 
 
+@derive(Clone)
+model FormatRegistrySchema:
+    id: int
+    type_ as "type": str
+
+
 def _contains_text(items: list[str], expected: str) -> bool:
     """Return whether one list contains the expected string."""
     for item in items:
@@ -455,11 +461,11 @@ def _exercise_current_public_helpers() -> None:
     json_extract_path_text(status, "$.type")
     json_array_length(status)
     json_object_keys(status)
-    from_json(status, "STRUCT<type: STRING>")
-    try_from_json(status, "STRUCT<type: STRING>")
+    from_json[FormatRegistrySchema](status)
+    try_from_json[FormatRegistrySchema](status)
     to_json(status)
     schema_of_csv(status)
-    from_csv(status, "STRUCT<id: STRING>")
+    from_csv[FormatRegistrySchema](status)
     to_csv(status)
     return
 
@@ -653,6 +659,28 @@ def test_function_registry__extension_policy_is_separate_from_scalar_class() -> 
     assert extension_entry.policy_category == FunctionPolicyCategory.ExtensionOnly, "extension-only entries should expose policy category"
     assert extension_entry.function_class == FunctionClass.Scalar, "extension-only policy should not replace semantic function class"
     assert extension_entry.substrait.kind == SubstraitMappingKind.ExtensionFunction, "extension-only entries may declare Substrait extension mappings"
+
+
+def test_function_registry__matching_duplicate_registration_is_idempotent() -> None:
+    """Assert repeated declaration-side registration keeps one entry when metadata matches exactly."""
+    # -- Arrange --
+    mut registry = FunctionRegistry.new()
+    spec = deterministic_spec(
+        function_class=FunctionClass.Scalar,
+        lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+        null_behavior=FunctionNullBehavior.DependsOnInputs,
+        substrait=extension_mapping("from_json", FROM_JSON_FUNCTION_ANCHOR),
+    )
+
+    # -- Act --
+    registry._add_entry("from_json", spec.clone())
+    registry._add_entry("from_json", spec)
+    entry = _local_entry_by_name_or_fail(registry, "from_json")
+
+    # -- Assert --
+    assert registry.entry_count() == 1, "matching duplicate declaration-side registration should be idempotent"
+    assert entry.function_ref == function_ref_for("from_json"), "idempotent registration should preserve the original function ref"
+    assert entry.substrait.function_name == "from_json", "idempotent registration should preserve mapping metadata"
 
 
 def test_function_registry__canonical_name_lookup_stays_core_scoped() -> None:
@@ -946,10 +974,9 @@ def test_function_registry__public_helpers_preserve_existing_behavior() -> None:
     ), check_json(status), schema_of_json(status), get_json_object(status, "$.type"), json_extract_path_text(
         status,
         "$.type",
-    ), json_array_length(status), json_object_keys(status), from_json(status, "STRUCT<type: STRING>"), try_from_json(
+    ), json_array_length(status), json_object_keys(status), from_json[FormatRegistrySchema](status), try_from_json[FormatRegistrySchema](
         status,
-        "STRUCT<type: STRING>",
-    ), to_json(status), schema_of_csv(status), from_csv(status, "STRUCT<id: STRING>"), to_csv(status)]
+    ), to_json(status), schema_of_csv(status), from_csv[FormatRegistrySchema](status), to_csv(status)]
 
     # -- Assert --
     assert column_expr_kind(amount) == ColumnExprKind.Column, "col should still build a column reference"

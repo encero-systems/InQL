@@ -206,6 +206,12 @@ from substrait.conformance import (
 )
 
 
+@derive(Clone)
+model FormatPlanSchema:
+    id: int
+    type_ as "type": str
+
+
 def _core_keys() -> list[CoreScenarioKey]:
     return [CoreScenarioKey.ReadNamedTable, CoreScenarioKey.ReadLocalFiles, CoreScenarioKey.ReadVirtualTable, CoreScenarioKey.FilterRows, CoreScenarioKey.ProjectComputedColumns, CoreScenarioKey.JoinRelVariants, CoreScenarioKey.CrossRelCartesian, CoreScenarioKey.AggregateGroupingSets, CoreScenarioKey.SortRelOrdering, CoreScenarioKey.FetchRelLimitOffset, CoreScenarioKey.SetRelOperations, CoreScenarioKey.ReferenceRelSharedSubplan]
 
@@ -500,11 +506,11 @@ def test_plan__core_scalar_extension_mappings_lower_to_substrait() -> None:
     _assert_scalar_expr_lowers(json_extract_path_text(col("status"), "$.type"))
     _assert_scalar_expr_lowers(json_array_length(col("status")))
     _assert_scalar_expr_lowers(json_object_keys(col("status")))
-    _assert_scalar_expr_lowers(from_json(col("status"), "STRUCT<type: STRING>"))
-    _assert_scalar_expr_lowers(try_from_json(col("status"), "STRUCT<type: STRING>"))
+    _assert_scalar_expr_lowers(from_json[FormatPlanSchema](col("status")))
+    _assert_scalar_expr_lowers(try_from_json[FormatPlanSchema](col("status")))
     _assert_scalar_expr_lowers(to_json(col("status")))
     _assert_scalar_expr_lowers(schema_of_csv(col("status")))
-    _assert_scalar_expr_lowers(from_csv(col("status"), "STRUCT<id: STRING>"))
+    _assert_scalar_expr_lowers(from_csv[FormatPlanSchema](col("status")))
     _assert_scalar_expr_lowers(to_csv(col("status")))
 
 

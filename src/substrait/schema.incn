@@ -1,9 +1,6 @@
 """
 Describe an Incan row shape and lower it to Substrait schema structures.
 
-The demo model `DemoCustomer` is hand-authored; `demo_customer_row_shape()` lists columns in the same declaration order.
-`row_shape_from_model(...)` derives `RowShapeSpec` from runtime reflection metadata on model or class values.
-
 `NamedStruct` (names + struct) is the full read-root shape; this module emits the inner column
 types and exposes names separately until Incan can set prost's `r#struct` field ergonomically.
 
@@ -23,12 +20,6 @@ from rust::substrait::proto::type import (
     Struct,
 )
 from rust::incan_stdlib::errors import raise_value_error
-
-
-@derive(Clone)
-pub model DemoCustomer:
-    pub id: int
-    pub name: str
 
 
 @derive(Clone)
@@ -53,25 +44,13 @@ pub model RowShapeSpec:
     pub columns: list[RowColumnSpec]
 
 
-pub def demo_customer_row_shape() -> RowShapeSpec:
-    """Return the row shape for `DemoCustomer` (manual until compiler-derived)."""
-    return RowShapeSpec(
-        model_name=str("DemoCustomer"),
-        columns=[RowColumnSpec(name=str("id"), kind=SubstraitPrimitiveKind.I64, nullable=false), RowColumnSpec(
-            name=str("name"),
-            kind=SubstraitPrimitiveKind.String,
-            nullable=true,
-        )],
-    )
-
-
 pub def row_shape_field_names(shape: RowShapeSpec) -> list[str]:
     """Field names in index order (flat row; no nested structs in this prototype)."""
     return [col.name for col in shape.columns]
 
 
 def _primitive_kind_from_type_name(type_name: str) -> SubstraitPrimitiveKind:
-    """Map Incan field reflection type names to the primitive schema kinds InQL can lower today."""
+    """Map Incan field reflection type names to primitive schema kinds InQL can lower today."""
     if type_name == "bool":
         return SubstraitPrimitiveKind.Bool
     if type_name == "int":
@@ -106,10 +85,10 @@ def _field_is_nullable(raw_type_name: str) -> bool:
     return raw_type_name.startswith("Option[") and raw_type_name.endswith("]")
 
 
-pub def row_shape_from_model[T](value: T) -> RowShapeSpec:
-    """Derive a flat row shape from an Incan model or class value using compiler-provided field metadata."""
+pub def row_shape_from_type[T]() -> RowShapeSpec:
+    """Derive a flat row shape from an Incan model or class type parameter."""
     mut columns: list[RowColumnSpec] = []
-    for field in value.__fields__():
+    for field in T.__fields__():
         raw_type_name = str(field.type_name)
         field_type_name = _field_type_name(raw_type_name)
         columns.append(
@@ -119,7 +98,7 @@ pub def row_shape_from_model[T](value: T) -> RowShapeSpec:
                 nullable=_field_is_nullable(raw_type_name),
             ),
         )
-    return RowShapeSpec(model_name=str(value.__class_name__()), columns=columns)
+    return RowShapeSpec(model_name=str(T.__class_name__()), columns=columns)
 
 
 pub def row_shape_to_schema_description(shape: RowShapeSpec) -> str:
@@ -129,6 +108,11 @@ pub def row_shape_to_schema_description(shape: RowShapeSpec) -> str:
         specs.append(f"{col.name}: {_schema_type_name(col.kind)}")
     fields = ", ".join(specs)
     return f"STRUCT<{fields}>"
+
+
+pub def schema_description_for_type[T]() -> str:
+    """Return the compact schema string for an Incan model or class type parameter."""
+    return row_shape_to_schema_description(row_shape_from_type[T]())
 
 
 def _type_from_primitive(kind: SubstraitPrimitiveKind, nullable: bool) -> Type:
