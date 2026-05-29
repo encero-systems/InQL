@@ -28,7 +28,10 @@ pub def from_json(expr: ColumnExpr, schema: FormatSchema) -> ColumnExpr:
 
     Examples:
         payload = from_json(col("payload"), "STRUCT<type: STRING>")
-        typed_payload = from_json(col("payload"), row_shape_from_model(EventPayload(type="click")))
+
+        # With an `EventPayload` model in scope:
+        schema = row_shape_from_model(EventPayload(type="click"))
+        typed_payload = from_json(col("payload"), schema)
 
     Parameters:
         expr: String expression containing a JSON payload.

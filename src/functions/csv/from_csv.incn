@@ -27,8 +27,11 @@ pub def from_csv(expr: ColumnExpr, schema: FormatSchema) -> ColumnExpr:
     Parse one CSV row string into a logical map keyed by schema field names.
 
     Examples:
-        row = from_csv(col("line"), "STRUCT<id: STRING, status: STRING>")
-        typed_row = from_csv(col("line"), row_shape_from_model(Customer(id=0, name="")))
+        row = from_csv(col("line"), "STRUCT<id: BIGINT, status: STRING>")
+
+        # With a `CsvRowSchema` model in scope:
+        schema = row_shape_from_model(CsvRowSchema(id=0, status=""))
+        typed_row = from_csv(col("line"), schema)
 
     Parameters:
         expr: String expression containing one CSV row.
