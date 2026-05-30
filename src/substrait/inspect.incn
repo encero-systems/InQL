@@ -11,6 +11,7 @@ from rust::substrait::proto import (
     AggregateRel,
     ConsistentPartitionWindowRel,
     Expression,
+    FunctionArgument,
     FunctionOption,
     Plan,
     ReadRel,
@@ -19,6 +20,8 @@ from rust::substrait::proto import (
 )
 from rust::substrait::proto::aggregate_rel import Measure
 from rust::substrait::proto::aggregate_function import AggregationInvocation
+from rust::substrait::proto::expression import RexType
+from rust::substrait::proto::expression::literal import LiteralType
 from rust::substrait::proto::extensions::simple_extension_declaration import MappingType
 from rust::substrait::proto::function_argument import ArgType
 from rust::substrait::proto::plan_rel import RelType as PlanRelType
@@ -121,6 +124,7 @@ def _aggregate_measure_output_name(input_columns: list[str], measure: Measure) -
     if let Some(agg_fn) = measure.measure:
         function_name = aggregate_function_name_from_anchor(agg_fn.function_reference)
         is_distinct = agg_fn.invocation == _aggregation_invocation_value(AggregationInvocation.Distinct)
+        is_approx_percentile = function_name == "approx_percentile"
         mut output_name = function_name
         if len(agg_fn.arguments) > 0:
             if is_distinct:
@@ -129,12 +133,41 @@ def _aggregate_measure_output_name(input_columns: list[str], measure: Measure) -
                 field_index = field_index_from_expression(expr)
                 if field_index >= 0 and field_index < len(input_columns):
                     output_name = output_name + "_" + input_columns[field_index]
+        if is_approx_percentile:
+            output_name = output_name + _approx_percentile_measure_suffix(agg_fn.arguments)
         if measure_has_filter:
             output_name = output_name + "_filtered"
         if len(agg_fn.sorts) > 0:
             output_name = output_name + "_ordered"
         return output_name
     return ""
+
+
+def _approx_percentile_measure_suffix(arguments: list[FunctionArgument]) -> str:
+    """Return the percentile/accuracy suffix for an approximate percentile Substrait measure."""
+    if len(arguments) < 3:
+        return ""
+    percentile = _measure_literal_argument_name(arguments[1])
+    accuracy = _measure_literal_argument_name(arguments[2])
+    return f"_p{percentile}_a{accuracy}"
+
+
+def _measure_literal_argument_name(argument: FunctionArgument) -> str:
+    """Return one output-name-safe literal label for aggregate parameter arguments."""
+    match argument.arg_type:
+        Some(ArgType.Value(expr)) => return _literal_expression_output_name(expr)
+        _ => return "expr"
+
+
+def _literal_expression_output_name(expr: Expression) -> str:
+    """Return a stable label for literal expressions used as aggregate parameters."""
+    match expr.rex_type:
+        Some(RexType.Literal(literal)) =>
+            match literal.literal_type:
+                Some(LiteralType.I64(value)) => return f"{value}"
+                Some(LiteralType.Fp64(value)) => return f"{value}".replace(".", "_")
+                _ => return "expr"
+        _ => return "expr"
 
 
 def _aggregate_measure_output_columns(input_columns: list[str], measures: list[Measure]) -> list[str]:

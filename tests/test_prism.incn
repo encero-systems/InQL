@@ -1,6 +1,20 @@
 """Internal Prism engine tests against the shared-store cursor substrate."""
 
-from functions import always_false, always_true, col, count, count_expr, explode, lit, mul, row_number, sum, window
+from functions import (
+    always_false,
+    always_true,
+    approx_count_distinct,
+    approx_percentile,
+    col,
+    count,
+    count_expr,
+    explode,
+    lit,
+    mul,
+    row_number,
+    sum,
+    window,
+)
 from prism import (
     PrismCursor,
     prism_cursor_apply_filter,
@@ -217,6 +231,28 @@ def test_prism__cross_store_adoption_keeps_distinct_aggregate_modifier_state() -
     assert plan_contains_relation_kind(plan, str("AggregateRel")), "both rhs aggregate branches should survive into lowering"
 
 
+def test_prism__cross_store_adoption_keeps_aggregate_arguments() -> None:
+    # -- Arrange --
+    _register_projection_test_schema(str("orders"))
+    _register_projection_test_schema(str("orders_archive"))
+    left: PrismCursor[Order] = prism_cursor_named_table(str("orders")).filter(always_false())
+    right_base: PrismCursor[Order] = prism_cursor_named_table(str("orders_archive"))
+    right_median: PrismCursor[Order] = right_base.group_by([col("id")]).agg([approx_percentile(col("id"), 0.5)])
+    right_tail: PrismCursor[Order] = right_base.group_by([col("id")]).agg([approx_percentile(col("id"), 0.95)])
+
+    # -- Act --
+    right_joined: PrismCursor[Order] = right_median.join(right_tail.clone(), true)
+    joined: PrismCursor[Order] = left.join(right_joined.clone(), true)
+    plan = joined.to_substrait_plan()
+
+    # -- Assert --
+    assert prism_cursors_share_store(left, right_joined) is false, "final join should still adopt the rhs aggregate tree"
+    assert prism_cursor_store_node_count(joined) == 8, "cross-store adoption must not dedup aggregates that differ by percentile argument"
+    assert prism_cursor_authored_node_count(joined) == 8, "joined cursor should preserve both approximate aggregate branches"
+    assert relation_kind_name(root_rel(plan)) == str("JoinRel"), "aggregate argument adoption should still lower through JoinRel"
+    assert plan_contains_relation_kind(plan, str("AggregateRel")), "both approximate aggregate branches should survive into lowering"
+
+
 def test_prism__cursor_native_nodes_cover_current_method_surface() -> None:
     # -- Arrange --
     _register_projection_test_schema(str("orders"))
@@ -320,6 +356,22 @@ def test_prism__rewrite_collapses_adjacent_aggregates_by_merging_measures() -> N
     assert output_cols[1] == "sum_id", "existing aggregate measures should survive adjacent aggregate collapse"
     assert output_cols[2] == "count", "later aggregate measures should append after existing measures"
     assert relation_kind_name(root_rel(plan)) == str("AggregateRel"), "collapsed aggregate rewrite should still lower through AggregateRel"
+
+
+def test_prism__aggregate_output_columns_include_approximate_measures() -> None:
+    # -- Arrange --
+    _register_projection_test_schema(str("orders"))
+    aggregated: PrismCursor[Order] = prism_cursor_named_table(str("orders")).group_by([col("id")]).agg(
+        [approx_count_distinct(col("id")), approx_percentile(col("id"), 0.5)],
+    )
+
+    # -- Act --
+    output_cols = prism_cursor_output_columns(aggregated)
+    plan = aggregated.to_substrait_plan()
+
+    # -- Assert --
+    assert output_cols == ["id", "approx_count_distinct_id", "approx_percentile_id_p0_5_a10000"], "approximate aggregate output columns should stay stable through Prism"
+    assert relation_kind_name(root_rel(plan)) == str("AggregateRel"), "approximate aggregate should lower through AggregateRel"
 
 
 def test_prism__rewrite_collapses_adjacent_compatible_windows() -> None:

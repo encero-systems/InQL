@@ -1,0 +1,170 @@
+"""Test: RFC 023 approximate aggregate helper surface."""
+
+from std.testing import assert_is_err, assert_raises, fail_t
+from functions import approx_count_distinct, approx_percentile, asc, col, eq, str_lit
+from aggregate_builders import AggregateKind, aggregate_measure_output_name
+from function_registry import function_ref_for
+from projection_builders import column_expr_name
+from substrait.errors import SubstraitLoweringErrorKind
+from substrait.relations import read_named_table_rel, try_aggregate_rel_of_columns
+from substrait.schema import RowColumnSpec, SubstraitPrimitiveKind
+from substrait.schema_registry import register_named_table_schema
+
+
+def _register_approx_orders_schema() -> None:
+    """Register a small table schema for aggregate lowering tests."""
+    register_named_table_schema(
+        "approx_orders",
+        [RowColumnSpec(name="customer_id", kind=SubstraitPrimitiveKind.String, nullable=false), RowColumnSpec(
+            name="product_id",
+            kind=SubstraitPrimitiveKind.String,
+            nullable=true,
+        )],
+    )
+
+
+def test_approximate_functions__approx_count_distinct_builds_aggregate_measure() -> None:
+    # -- Arrange --
+    product_id = col("product_id")
+
+    # -- Act --
+    measure = approx_count_distinct(product_id)
+
+    # -- Assert --
+    assert measure.kind == AggregateKind.ApproxCountDistinct, "approx_count_distinct should use its own aggregate kind"
+    assert measure.function_ref == function_ref_for("approx_count_distinct"), "measure should preserve registry identity"
+    assert measure.canonical_name == "approx_count_distinct", "measure should preserve canonical helper name"
+    assert measure.has_expr, "approx_count_distinct should require an input expression"
+    assert not measure.is_distinct, "approx_count_distinct should not add a distinct modifier"
+    assert not measure.has_filter, "approx_count_distinct should start without a filter"
+    assert len(measure.ordering) == 0, "approx_count_distinct should start without ordered input"
+    assert column_expr_name(measure.expr) == "product_id", "measure should preserve the input expression"
+
+
+def _call_approx_percentile_with_invalid_percentile() -> None:
+    """Call approx_percentile with an invalid percentile for ValueError assertions."""
+    approx_percentile(col("amount"), 1.5)
+    return
+
+
+def _call_approx_percentile_with_invalid_accuracy() -> None:
+    """Call approx_percentile with an invalid accuracy for ValueError assertions."""
+    approx_percentile(col("amount"), 0.95, accuracy=0)
+    return
+
+
+def test_approximate_functions__approx_percentile_builds_aggregate_measure() -> None:
+    # -- Arrange --
+    amount = col("amount")
+
+    # -- Act --
+    measure = approx_percentile(amount, 0.95, accuracy=2500)
+
+    # -- Assert --
+    assert measure.kind == AggregateKind.ApproxPercentile, "approx_percentile should use its own aggregate kind"
+    assert measure.function_ref == function_ref_for("approx_percentile"), "measure should preserve registry identity"
+    assert measure.canonical_name == "approx_percentile", "measure should preserve canonical helper name"
+    assert measure.has_expr, "approx_percentile should require an input expression"
+    assert not measure.is_distinct, "approx_percentile should not add a distinct modifier"
+    assert not measure.has_filter, "approx_percentile should start without a filter"
+    assert len(measure.arguments) == 3, "approx_percentile should carry value, percentile, and accuracy arguments"
+    assert column_expr_name(measure.expr) == "amount", "measure should preserve the primary input expression"
+
+
+def test_approximate_functions__approx_percentile_output_names_include_parameters() -> None:
+    # -- Arrange --
+    median = approx_percentile(col("amount"), 0.5)
+    high_tail = approx_percentile(col("amount"), 0.95, accuracy=2500)
+
+    # -- Act --
+    median_name = aggregate_measure_output_name(median)
+    high_tail_name = aggregate_measure_output_name(high_tail)
+
+    # -- Assert --
+    assert median_name == "approx_percentile_amount_p0_5_a10000", "default percentile output should include percentile and accuracy"
+    assert high_tail_name == "approx_percentile_amount_p0_95_a2500", "explicit percentile output should include percentile and accuracy"
+    assert median_name != high_tail_name, "different approximate percentile requests must not collapse to one output name"
+
+
+def test_approximate_functions__approx_percentile_validates_literal_parameters() -> None:
+    # -- Arrange / Act / Assert --
+    assert_raises[ValueError](_call_approx_percentile_with_invalid_percentile)
+    assert_raises[ValueError](_call_approx_percentile_with_invalid_accuracy)
+
+
+def test_approximate_functions__approx_count_distinct_allows_filter_but_not_distinct_or_ordered_input() -> None:
+    # -- Arrange --
+    _register_approx_orders_schema()
+    base = read_named_table_rel("approx_orders")
+    product_id = col("product_id")
+    paid = eq(col("customer_id"), str_lit("A"))
+
+    # -- Act --
+    filtered_result = try_aggregate_rel_of_columns(
+        base.clone(),
+        ["customer_id", "product_id"],
+        [col("customer_id")],
+        [approx_count_distinct(product_id.clone()).filter(paid)],
+    )
+    distinct_result = try_aggregate_rel_of_columns(
+        base.clone(),
+        ["customer_id", "product_id"],
+        [col("customer_id")],
+        [approx_count_distinct(product_id.clone()).distinct()],
+    )
+    ordered_result = try_aggregate_rel_of_columns(
+        base,
+        ["customer_id", "product_id"],
+        [col("customer_id")],
+        [approx_count_distinct(product_id).order_by([asc(col("product_id"))])],
+    )
+
+    # -- Assert --
+    match filtered_result:
+        Ok(_) => pass
+        Err(err) => return fail_t(err.error_message())
+    distinct_err = assert_is_err(distinct_result, "approx_count_distinct should reject extra DISTINCT")
+    ordered_err = assert_is_err(ordered_result, "approx_count_distinct should reject ordered input")
+    assert distinct_err.kind == SubstraitLoweringErrorKind.InvalidScalarExpression, "distinct rejection should be a lowering diagnostic"
+    assert ordered_err.kind == SubstraitLoweringErrorKind.InvalidScalarExpression, "ordered-input rejection should be a lowering diagnostic"
+    assert distinct_err.message.contains("DISTINCT"), "distinct rejection should identify the modifier"
+    assert ordered_err.message.contains("ordered aggregate input"), "ordered rejection should identify the modifier"
+
+
+def test_approximate_functions__approx_percentile_allows_filter_but_not_distinct_or_ordered_input() -> None:
+    # -- Arrange --
+    _register_approx_orders_schema()
+    base = read_named_table_rel("approx_orders")
+    product_id = col("product_id")
+    paid = eq(col("customer_id"), str_lit("A"))
+
+    # -- Act --
+    filtered_result = try_aggregate_rel_of_columns(
+        base.clone(),
+        ["customer_id", "product_id"],
+        [col("customer_id")],
+        [approx_percentile(product_id.clone(), 0.5).filter(paid)],
+    )
+    distinct_result = try_aggregate_rel_of_columns(
+        base.clone(),
+        ["customer_id", "product_id"],
+        [col("customer_id")],
+        [approx_percentile(product_id.clone(), 0.5).distinct()],
+    )
+    ordered_result = try_aggregate_rel_of_columns(
+        base,
+        ["customer_id", "product_id"],
+        [col("customer_id")],
+        [approx_percentile(product_id, 0.5).order_by([asc(col("product_id"))])],
+    )
+
+    # -- Assert --
+    match filtered_result:
+        Ok(_) => pass
+        Err(err) => return fail_t(err.error_message())
+    distinct_err = assert_is_err(distinct_result, "approx_percentile should reject DISTINCT")
+    ordered_err = assert_is_err(ordered_result, "approx_percentile should reject ordered input")
+    assert distinct_err.kind == SubstraitLoweringErrorKind.InvalidScalarExpression, "distinct rejection should be a lowering diagnostic"
+    assert ordered_err.kind == SubstraitLoweringErrorKind.InvalidScalarExpression, "ordered-input rejection should be a lowering diagnostic"
+    assert distinct_err.message.contains("DISTINCT"), "distinct rejection should identify the modifier"
+    assert ordered_err.message.contains("ordered aggregate input"), "ordered rejection should identify the modifier"
