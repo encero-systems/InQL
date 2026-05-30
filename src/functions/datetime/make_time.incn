@@ -1,0 +1,49 @@
+"""Time construction helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.registry import register_function, registered_application
+from projection_builders import ColumnExpr
+from substrait.function_extensions import MAKE_TIME_FUNCTION_ANCHOR
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Scalar,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.DependsOnInputs,
+    substrait=extension_mapping("make_time", MAKE_TIME_FUNCTION_ANCHOR),
+))
+pub def make_time(hour: ColumnExpr, minute: ColumnExpr, second: ColumnExpr) -> ColumnExpr:
+    """
+    Build a time construction expression.
+
+    Examples:
+        time_value = make_time(int_expr(12), int_expr(30), int_expr(5))
+
+    Parameters:
+        hour: Hour expression.
+        minute: Minute expression.
+        second: Second expression.
+    """
+    return registered_application("make_time", [hour, minute, second])
+
+
+module tests:
+    from projection_builders import (
+        ColumnExprKind,
+        column_expr_argument_count,
+        column_expr_function_name,
+        column_expr_kind,
+        int_expr,
+    )
+    def test_make_time_builds_registered_application() -> None:
+        expr = make_time(int_expr(12), int_expr(30), int_expr(5))
+        assert column_expr_kind(expr) == ColumnExprKind.ScalarFunction
+        assert column_expr_function_name(expr) == "make_time"
+        assert column_expr_argument_count(expr) == 3

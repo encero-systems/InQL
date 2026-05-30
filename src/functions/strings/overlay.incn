@@ -1,0 +1,59 @@
+"""String overlay helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.registry import register_function, registered_application
+from projection_builders import ColumnExpr
+from substrait.function_extensions import OVERLAY_FUNCTION_ANCHOR
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Scalar,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.DependsOnInputs,
+    substrait=extension_mapping("overlay", OVERLAY_FUNCTION_ANCHOR),
+))
+pub def overlay(
+    expr: ColumnExpr,
+    replacement: ColumnExpr,
+    start: ColumnExpr,
+    length: Option[ColumnExpr] = None,
+) -> ColumnExpr:
+    """
+    Build an overlay expression using one-based start positions.
+
+    Examples:
+        masked = overlay(col("sku"), str_expr("XX"), int_expr(2), int_expr(2))
+
+    Parameters:
+        expr: Input scalar expression.
+        replacement: Replacement expression.
+        start: Start scalar expression.
+        length: Length expression.
+    """
+    if let Some(value) = length:
+        return registered_application("overlay", [expr, replacement, start, value])
+    return registered_application("overlay", [expr, replacement, start])
+
+
+module tests:
+    from projection_builders import (
+        ColumnExprKind,
+        col,
+        column_expr_argument_count,
+        column_expr_function_name,
+        column_expr_kind,
+        int_expr,
+        str_expr,
+    )
+    def test_overlay_builds_registered_application() -> None:
+        expr = overlay(col("sku"), str_expr("XX"), int_expr(2), int_expr(2))
+        assert column_expr_kind(expr) == ColumnExprKind.ScalarFunction
+        assert column_expr_function_name(expr) == "overlay"
+        assert column_expr_argument_count(expr) == 4
