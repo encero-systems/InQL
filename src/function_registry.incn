@@ -218,7 +218,9 @@ pub class FunctionRegistry:
 
         function_ref = namespaced_function_ref(spec.namespace, canonical_name)
         for entry in self.entries:
-            assert entry.function_ref != function_ref, f"duplicate function reference `{function_ref}`"
+            if entry.function_ref == function_ref:
+                assert _entry_matches_spec(entry, canonical_name, spec), f"conflicting duplicate function reference `{function_ref}`"
+                return
             assert entry.namespace != spec.namespace or entry.canonical_name != canonical_name, f"duplicate canonical function name `{canonical_name}` in namespace `{spec.namespace}`"
 
         self.entries.append(
@@ -273,6 +275,74 @@ pub class FunctionRegistry:
     def substrait_mapped_function_refs(self) -> list[str]:
         """Return function references with a concrete Substrait extension mapping."""
         return [entry.function_ref for entry in self.entries if entry.substrait.kind == SubstraitMappingKind.ExtensionFunction]
+
+
+def _same_string_list(left: list[str], right: list[str]) -> bool:
+    """Return whether two string lists contain the same ordered values."""
+    if len(left) != len(right):
+        return false
+    for idx in range(len(left)):
+        if left[idx] != right[idx]:
+            return false
+    return true
+
+
+def _same_version(left: FunctionVersion, right: FunctionVersion) -> bool:
+    """Return whether two version markers describe the same package version."""
+    return left.major == right.major and left.minor == right.minor
+
+
+def _same_deprecation(left: Option[FunctionDeprecation], right: Option[FunctionDeprecation]) -> bool:
+    """Return whether two optional deprecation markers describe the same policy."""
+    if let Some(left_value) = left:
+        if let Some(right_value) = right:
+            return _same_version(left_value.since, right_value.since) and left_value.note == right_value.note and left_value.replacement == right_value.replacement
+        return false
+    if let Some(_right_value) = right:
+        return false
+    return true
+
+
+def _same_lifecycle(left: FunctionLifecycle, right: FunctionLifecycle) -> bool:
+    """Return whether two lifecycle records expose the same versioned facts."""
+    if not _same_version(left.since, right.since):
+        return false
+    if len(left.changed) != len(right.changed):
+        return false
+    for idx in range(len(left.changed)):
+        left_change = left.changed[idx]
+        right_change = right.changed[idx]
+        if not _same_version(left_change.version, right_change.version) or left_change.note != right_change.note:
+            return false
+    return _same_deprecation(left.deprecated, right.deprecated)
+
+
+def _same_aggregate_modifiers(left: AggregateModifierPolicy, right: AggregateModifierPolicy) -> bool:
+    """Return whether two aggregate modifier policies are identical."""
+    return left.allows_distinct == right.allows_distinct and left.allows_filter == right.allows_filter and left.allows_ordered_input == right.allows_ordered_input
+
+
+def _same_substrait_mapping(left: SubstraitMapping, right: SubstraitMapping) -> bool:
+    """Return whether two Substrait mapping records are identical."""
+    return (
+        left.kind == right.kind
+        and left.uri == right.uri
+        and left.function_name == right.function_name
+        and left.anchor == right.anchor
+        and left.rewrite == right.rewrite
+        and left.detail == right.detail
+    )
+
+
+def _entry_matches_spec(entry: FunctionRegistryEntry, canonical_name: str, spec: FunctionSpec) -> bool:
+    """Return whether an existing registry entry is an idempotent repeat of one declaration-side spec."""
+    return (entry.function_ref == namespaced_function_ref(spec.namespace, canonical_name) and entry.namespace == spec.namespace and entry.canonical_name == canonical_name and entry.policy_category == spec.policy_category and entry.function_class == spec.function_class and _same_string_list(
+        entry.aliases,
+        spec.aliases,
+    ) and entry.alias_policy == spec.alias_policy and _same_lifecycle(entry.lifecycle, spec.lifecycle) and entry.determinism == spec.determinism and entry.null_behavior == spec.null_behavior and entry.error_behavior == spec.error_behavior and _same_aggregate_modifiers(
+        entry.aggregate_modifiers,
+        spec.aggregate_modifiers,
+    ) and _same_substrait_mapping(entry.substrait, spec.substrait))
 
 
 pub def function_ref_for(canonical_name: str) -> str:

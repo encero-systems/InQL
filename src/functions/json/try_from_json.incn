@@ -1,0 +1,50 @@
+"""Recoverable JSON parse helper."""
+
+from function_registry import (
+    FunctionClass,
+    FunctionLifecycle,
+    FunctionNullBehavior,
+    deterministic_spec,
+    extension_mapping,
+    v0_1,
+)
+from functions.registry import register_function, registered_application
+from projection_builders import ColumnExpr, str_expr
+from substrait.function_extensions import TRY_FROM_JSON_FUNCTION_ANCHOR
+from substrait.schema import schema_description_for_type
+
+
+@register_function(deterministic_spec(
+    function_class=FunctionClass.Scalar,
+    lifecycle=FunctionLifecycle(since=v0_1, changed=[], deprecated=None),
+    null_behavior=FunctionNullBehavior.DependsOnInputs,
+    substrait=extension_mapping("try_from_json", TRY_FROM_JSON_FUNCTION_ANCHOR),
+))
+pub def try_from_json[T](expr: ColumnExpr) -> ColumnExpr:
+    """
+    Parse JSON with an Incan model schema and return null when the payload is invalid.
+
+    Examples:
+        payload = try_from_json[EventPayload](col("payload"))
+
+    Parameters:
+        expr: String expression containing a JSON payload.
+    """
+    return registered_application("try_from_json", [expr, str_expr(schema_description_for_type[T]())])
+
+
+module tests:
+    from projection_builders import (
+        ColumnExprKind,
+        col,
+        column_expr_argument_count,
+        column_expr_function_name,
+        column_expr_kind,
+    )
+    model EventPayload:
+        type_ as "type": str
+    def test_try_from_json_builds_registered_application() -> None:
+        expr = try_from_json[EventPayload](col("payload"))
+        assert column_expr_kind(expr) == ColumnExprKind.ScalarFunction
+        assert column_expr_function_name(expr) == "try_from_json"
+        assert column_expr_argument_count(expr) == 2

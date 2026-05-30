@@ -1,34 +1,57 @@
-"""Tests for model → Substrait NamedStruct prototype."""
+"""Tests for model type metadata to Substrait schema structures."""
 
 from substrait.schema import (
-    demo_customer_row_shape,
+    row_shape_from_type,
     row_shape_field_names,
+    row_shape_to_schema_description,
     row_shape_to_substrait_struct_type,
+    schema_description_for_type,
     substrait_row_type_encoded_len,
 )
 
 
-def test_demo_customer_row_shape__field_order() -> None:
+@derive(Clone)
+model CsvOrderSchema:
+    order_id as "id": int
+    status: str
+    discount: Option[float]
+
+
+def test_row_shape_from_type__uses_reflected_wire_names_and_types() -> None:
     # -- Arrange --
-    shape = demo_customer_row_shape()
+    shape = row_shape_from_type[CsvOrderSchema]()
 
     # -- Act --
     names = row_shape_field_names(shape)
 
     # -- Assert --
-    assert shape.model_name == "DemoCustomer", "model name"
-    assert len(names) == 2, "column count"
-    assert names[0] == "id", "first field is declaration order"
-    assert names[1] == "name", "second field"
+    assert shape.model_name == "CsvOrderSchema", "model name should come from the type parameter"
+    assert names[0] == "id", "alias should become the external schema field name"
+    assert names[1] == "status", "plain field name should be preserved"
+    assert names[2] == "discount", "optional field should be preserved"
+    assert shape.columns[2].nullable, "Option fields should be nullable"
+
+
+def test_schema_description_for_type__renders_compact_struct_schema() -> None:
+    # -- Arrange --
+    expected_schema = "STRUCT<id: BIGINT, status: STRING, discount: DOUBLE>"
+
+    # -- Act --
+    schema = schema_description_for_type[CsvOrderSchema]()
+
+    # -- Assert --
+    assert schema == expected_schema, "schema description"
 
 
 def test_row_shape_to_substrait_struct_type__encodes() -> None:
     # -- Arrange --
-    shape = demo_customer_row_shape()
+    shape = row_shape_from_type[CsvOrderSchema]()
 
     # -- Act --
     row_ty = row_shape_to_substrait_struct_type(shape)
+    schema = row_shape_to_schema_description(shape)
     encoded = substrait_row_type_encoded_len(row_ty)
 
     # -- Assert --
+    assert schema.contains("id: BIGINT"), "schema should preserve reflected field names before lowering"
     assert encoded > 0, "protobuf encoding should be non-empty"

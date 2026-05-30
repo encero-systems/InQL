@@ -10,4 +10,8 @@ prost-types = "0.14"
 substrait = { version = "0.63", features = ["protoc"] }
 # Datafusion is InQL default query engine, and provides the Substrait to Datafusion translation.
 datafusion = "53"
+datafusion_common = { package = "datafusion-common", version = "53" }
+datafusion_expr = { package = "datafusion-expr", version = "53" }
 datafusion-substrait = { version = "53", features = ["protoc"] }
+crc32fast = "1.5"
+url = "2.5"

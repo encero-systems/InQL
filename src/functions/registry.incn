@@ -27,9 +27,9 @@ pub def register_function[F](spec: FunctionSpec) -> (F) -> F:
 
 
 def _register_pending_function[F](func: F) -> F:
-    """Register one pending declaration-side spec against the decorated helper name."""
-    pending_index = function_registry.entry_count()
-    assert pending_index < len(_pending_function_specs), "function registry decorator had no pending spec"
+    """Register the most recently queued declaration-side spec against the decorated helper name."""
+    pending_index = len(_pending_function_specs) - 1
+    assert pending_index >= 0, "function registry decorator had no pending spec"
     spec = _pending_function_specs[pending_index]
     mut canonical_name = func.__name__
     if let Some(name) = spec.canonical_name:

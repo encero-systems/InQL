@@ -28,9 +28,10 @@ InQL uses its **own** RFC series (starting at 000), independent of the [Incan la
 | [019][rfc-019] | Implemented | Window functions                                                                                  |     |
 | [020][rfc-020] | Implemented | Nested data functions                                                                             |     |
 | [021][rfc-021] | Implemented | Generator and table-valued functions                                                              |     |
-| [022][rfc-022] | Draft       | Semi-structured and format functions                                                              |     |
+| [022][rfc-022] | Implemented | Semi-structured and format functions                                                              |     |
 | [023][rfc-023] | Draft       | Approximate and sketch functions                                                                  |     |
 | [024][rfc-024] | Implemented | Function extension policy                                                                         |     |
+| [026][rfc-026] | Draft       | Semi-structured variant logical values                                                            |     |
 
 <!-- TODO: #7: auto populate this table (like how we do in incan) -->
 
@@ -67,4 +68,5 @@ New RFCs should follow [TEMPLATE.md] (aligned with Incan’s RFC structure, adap
 [rfc-022]: 022_semi_structured_format_functions.md
 [rfc-023]: 023_approximate_sketch_functions.md
 [rfc-024]: 024_function_extension_policy.md
+[rfc-026]: 026_semi_structured_variant_values.md
 [incan-rfcs]: https://github.com/dannys-code-corner/incan/tree/main/workspaces/docs-site/docs/RFCs
