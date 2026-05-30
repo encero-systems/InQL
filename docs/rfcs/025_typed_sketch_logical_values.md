@@ -10,7 +10,7 @@
   - InQL RFC 023 (approximate and sketch functions)
   - InQL RFC 024 (function extension policy)
 - **Issue:** [InQL #51](https://github.com/dannys-code-corner/InQL/issues/51)
-- **RFC PR:** —
+- **RFC PR:** [InQL #55](https://github.com/dannys-code-corner/InQL/pull/55)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** v0.1
 
