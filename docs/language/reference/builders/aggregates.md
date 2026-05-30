@@ -9,7 +9,7 @@ Current aggregate authoring is explicit and scalar-expression-based.
 | `col`   | `def col(name: str) -> ColumnExpr`                          | Column reference builder used by aggregates, filters, and projections. |
 | `lit`   | `def lit(value: int \| float \| str \| bool) -> ColumnExpr` | Canonical scalar literal helper.                                       |
 | `sum`   | `def sum(expr: ColumnExpr) -> AggregateMeasure`             | Sum one scalar expression.                                             |
-| `count` | `def count(expr: ColumnExpr = col("__inql_count_no_argument__")) -> AggregateMeasure` | Count rows with no argument, or count non-null expression values with one argument. |
+| `count` | `def count() -> AggregateMeasure`; `def count(expr: ColumnExpr) -> AggregateMeasure` | Count rows with no argument, or count non-null expression values with one argument. |
 | `count_expr` | `def count_expr(expr: ColumnExpr) -> AggregateMeasure` | Compatibility spelling for `count(expr)`. |
 | `count_distinct` | `def count_distinct(expr: ColumnExpr) -> AggregateMeasure` | Count distinct non-null expression values. |
 | `count_if` | `def count_if(predicate: ColumnExpr) -> AggregateMeasure` | Count rows where the predicate is true. |
