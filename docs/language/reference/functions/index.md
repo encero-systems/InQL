@@ -1,6 +1,6 @@
 # Functions (Reference)
 
-This section is the landing page for broad function families as InQL grows beyond the current builder-first slice.
+This section is the landing page for InQL's registered function families.
 
 Today the concrete shipped surfaces are documented here:
 
@@ -39,7 +39,7 @@ The registered helper surface currently includes:
 | `char_length(...)`, `octet_length(...)`, `upper(...)`, `lower(...)`, `trim(...)`, `ltrim(...)`, `rtrim(...)`, `substring(...)`, `position(...)`, `overlay(...)`, `concat(...)`, `concat_ws(...)`, `replace(...)`, `translate(...)`, `repeat(...)`, `left(...)`, `right(...)`, `lpad(...)`, `rpad(...)`, `split_part(...)` | scalar | registered RFC 018 string scalar mappings with SQL-compatible one-based positions |
 | `substr(...)`, `ucase(...)`, `lcase(...)` | scalar | RFC 018 compatibility aliases that rewrite to `substring(...)`, `upper(...)`, and `lower(...)` |
 | `encode(...)`, `decode(...)`, `base64(...)`, `unbase64(...)`, `hex(...)`, `unhex(...)` | scalar | registered RFC 018 text encoding helpers; convenience helpers rewrite to `encode(...)` or `decode(...)` with an explicit format literal |
-| `regexp_like(...)`, `regexp_replace(...)`, `regexp_extract(...)` | scalar | registered RFC 018 regex helpers using Rust/DataFusion regex semantics |
+| `regexp_like(...)`, `regexp_replace(...)`, `regexp_extract(...)` | scalar | registered RFC 018 regex helpers using Rust-regex-compatible semantics |
 | `current_date()`, `current_time()`, `current_timestamp()`, `date_part(...)`, `date_trunc(...)`, `time_trunc(...)`, `date_add(...)`, `date_sub(...)`, `date_diff(...)`, `timestamp_diff(...)`, `to_date(...)`, `to_time(...)`, `to_timestamp(...)`, `from_unixtime(...)`, `unix_seconds(...)`, `unix_millis(...)`, `unix_micros(...)`, `make_date(...)`, `make_time(...)`, `make_timestamp(...)`, `last_day(...)` | scalar | registered RFC 018 date/time helpers; current date/time helpers are nondeterministic registry entries |
 | `extract(...)`, `dateadd(...)`, `datediff(...)`, `safe_cast(...)` | scalar | RFC 018 compatibility aliases that rewrite to `date_part(...)`, `date_add(...)`, `date_diff(...)`, and `try_cast(...)` |
 | `array(...)`, `cardinality(...)`, `array_contains(...)`, `arrays_overlap(...)`, `array_position(...)`, `array_range(...)`, `element_at(...)`, `array_sort(...)`, `array_distinct(...)`, `array_except(...)`, `array_intersect(...)`, `array_union(...)`, `array_join(...)`, `array_slice(...)`, `array_reverse(...)`, `array_flatten(...)`, `map_from_arrays(...)`, `map_extract(...)`, `map_contains_key(...)`, `map_keys(...)`, `map_values(...)`, `map_entries(...)`, `named_struct(...)` | scalar | registered nested scalar helpers backed by Substrait extension mappings; `array_range(...)` registers canonical `range` for positional generator lowering and `map_contains_key(...)` lowers as a documented predicate rewrite |

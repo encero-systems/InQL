@@ -1,6 +1,5 @@
 """String concatenation helper."""
 
-from rust::incan_stdlib::errors import raise_value_error
 from function_registry import (
     FunctionClass,
     FunctionLifecycle,
@@ -20,19 +19,20 @@ from substrait.function_extensions import CONCAT_FUNCTION_ANCHOR
     null_behavior=FunctionNullBehavior.DependsOnInputs,
     substrait=extension_mapping("concat", CONCAT_FUNCTION_ANCHOR),
 ))
-pub def concat(values: list[ColumnExpr]) -> ColumnExpr:
+pub def concat(first: ColumnExpr, *rest: ColumnExpr) -> ColumnExpr:
     """
     Build a string concatenation expression.
 
     Examples:
-        full_name = concat([col("first_name"), str_expr(" "), col("last_name")])
+        full_name = concat(col("first_name"), str_expr(" "), col("last_name"))
 
     Parameters:
-        values: Scalar expressions to concatenate.
+        first: First scalar expression.
+        rest: Additional scalar expressions to concatenate.
     """
-    if len(values) == 0:
-        return raise_value_error("concat requires at least one scalar expression")
-    return registered_application("concat", values)
+    mut arguments = [first]
+    arguments.extend(rest)
+    return registered_application("concat", arguments)
 
 
 module tests:
@@ -45,7 +45,7 @@ module tests:
         str_expr,
     )
     def test_concat_builds_registered_application() -> None:
-        expr = concat([col("first_name"), str_expr(" "), col("last_name")])
+        expr = concat(col("first_name"), str_expr(" "), col("last_name"))
         assert column_expr_kind(expr) == ColumnExprKind.ScalarFunction
         assert column_expr_function_name(expr) == "concat"
         assert column_expr_argument_count(expr) == 3

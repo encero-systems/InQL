@@ -83,7 +83,7 @@ Canonical names should prefer SQL-standard or widely portable names where semant
 
 String functions must use one-based SQL-compatible positions for functions such as `substring`, `position`, `overlay`, `left`, `right`, `lpad`, `rpad`, and `split_part`. `position` returns `0` when the search string is not found.
 
-Regex functions use the safe Rust/DataFusion regex flavor for the current adapter: no lookaround or backreferences are guaranteed by the portable contract. `regexp_extract` defaults to capture group `1`; group `0` returns the full match.
+Regex functions use a safe Rust-regex-compatible flavor: no lookaround or backreferences are guaranteed by the portable contract. `regexp_extract` defaults to capture group `1`; group `0` returns the full match.
 
 Current date, time, and timestamp helpers are registry-marked as nondeterministic because InQL's registry has no separate statement-stable determinism category. Backends may evaluate them statement-stably, but InQL authors must not rely on them as deterministic pure functions.
 
@@ -149,7 +149,7 @@ Existing arithmetic helpers should be treated as the start of this catalog but s
 ## Design Decisions
 
 - **String positions:** RFC 018 string positions are one-based for SQL compatibility. `position` returns `0` when the search string is absent.
-- **Regex flavor:** RFC 018 regex helpers use Rust/DataFusion regex semantics. The portable contract does not require lookaround or backreference support.
+- **Regex flavor:** RFC 018 regex helpers use Rust-regex-compatible semantics. The portable contract does not require lookaround or backreference support.
 - **Regex captures:** `regexp_extract(expr, pattern)` defaults to capture group `1`; group `0` returns the full match.
 - **Current time determinism:** `current_date`, `current_time`, and `current_timestamp` are registry-marked nondeterministic until the registry has a statement-stable category.
 - **Encoding scope:** RFC 018 encoding helpers are text-to-text helpers. Binary and semi-structured logical value surfaces belong to InQL RFC 026 rather than hidden DataFusion-specific behavior.

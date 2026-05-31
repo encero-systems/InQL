@@ -350,8 +350,8 @@ def test_session_projection__collect_executes_common_string_scalar_projection_fu
         position(lit("abcdef"), lit("cd")),
     ).with_column("overlayed", overlay(lit("abcdef"), lit("ZZ"), lit(3), lit(2))).with_column(
         "joined",
-        concat([lit("a"), lit("b")]),
-    ).with_column("joined_ws", concat_ws(lit("-"), [lit("a"), lit("b")])).with_column(
+        concat(lit("a"), lit("b")),
+    ).with_column("joined_ws", concat_ws(lit("-"), lit("a"), lit("b"))).with_column(
         "replaced",
         replace(lit("banana"), lit("na"), lit("NA")),
     ).with_column("translated", translate(lit("abc"), lit("ab"), lit("xy"))).with_column(

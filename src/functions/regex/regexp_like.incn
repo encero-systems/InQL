@@ -23,7 +23,7 @@ pub def regexp_like(expr: ColumnExpr, pattern: ColumnExpr, flags: Option[ColumnE
     """
     Build a regex match predicate.
 
-    Regex syntax follows DataFusion's Rust-regex-compatible feature set: no lookaround or backreferences.
+    Regex syntax follows a Rust-regex-compatible feature set: no lookaround or backreferences.
 
     Examples:
         is_example = regexp_like(col("email"), str_expr("@example\.com$"))
