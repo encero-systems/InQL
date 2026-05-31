@@ -168,6 +168,6 @@ Substrait extension mappings and carry variant kind, encoding, and parse mode as
 - Variant-returning JSON parsing uses new helper names, `parse_variant_json(...)` and `try_parse_variant_json(...)`, so
   RFC 022 string-backed JSON helpers remain stable.
 - The shipped kind set is the JSON-compatible family plus timestamp: null, boolean, integer, float, string, timestamp,
-  array, and object. Decimal, binary, date, and interval can be added later without changing the existing kind contract.
+  array, and object. Decimal, binary, date, and interval are not part of this RFC's public variant-kind contract.
 - Variant path access uses literal `$`-rooted paths through `variant_get(...)`; missing-path runtime behavior is an
   execution contract for adapters and must not collapse SQL null and variant null.

@@ -102,7 +102,9 @@ pub def variant_col(name: str, variant_type: VariantLogicalType = variant_type()
 
 pub def variant_types_compatible(left: VariantLogicalType, right: VariantLogicalType) -> bool:
     """Return whether two variant logical types can participate in the same typed helper contract."""
-    return left.kind == right.kind and left.encoding == right.encoding
+    if left.encoding != right.encoding:
+        return false
+    return left.kind == VariantKind.Any or right.kind == VariantKind.Any or left.kind == right.kind
 
 
 pub def variant_scalar_options(variant_type: VariantLogicalType) -> list[ScalarFunctionOption]:
@@ -140,6 +142,10 @@ module tests:
         payload_type = variant_type(VariantKind.Object)
         assert payload_type.kind == VariantKind.Object
         assert payload_type.encoding == VariantEncoding.Json
+    def test_variant_types_treat_any_as_runtime_discovered_kind() -> None:
+        assert variant_types_compatible(variant_type(), variant_type(VariantKind.Object))
+        assert variant_types_compatible(variant_type(VariantKind.Array), variant_type())
+        assert not variant_types_compatible(variant_type(VariantKind.Array), variant_type(VariantKind.Object))
     def test_variant_col_preserves_expression_and_type() -> None:
         payload = variant_col("payload_value", variant_type(VariantKind.Object))
         assert column_expr_name(payload.expr) == "payload_value"

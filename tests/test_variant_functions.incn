@@ -54,12 +54,14 @@ def test_variant_type_and_columns_preserve_logical_metadata() -> None:
     # -- Arrange / Act --
     payload_type = variant_type(VariantKind.Object)
     same_type = variant_type(VariantKind.Object)
+    discovered_type = variant_type()
     other_type = variant_type(VariantKind.Array)
     payload = variant_col("payload_value", payload_type)
 
     # -- Assert --
     assert payload_type.kind == VariantKind.Object
     assert variant_types_compatible(payload_type, same_type), "matching kind and encoding should be compatible"
+    assert variant_types_compatible(discovered_type, payload_type), "Any should be compatible with concrete runtime-discovered kinds"
     assert not variant_types_compatible(payload_type, other_type), "different variant kinds should not be compatible"
     assert column_expr_name(payload.expr) == "payload_value", "variant_col should preserve the referenced column"
     assert payload.variant_type.kind == VariantKind.Object, "variant_col should preserve explicit logical type metadata"
