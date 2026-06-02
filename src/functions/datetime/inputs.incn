@@ -3,7 +3,10 @@
 from projection_builders import ColumnExpr, int_expr
 
 
-pub def integer_component_expr(value: Union[ColumnExpr, int]) -> ColumnExpr:
+pub type IntColumn = Union[ColumnExpr, int]
+
+
+pub def integer_component_expr(value: IntColumn) -> ColumnExpr:
     """Return one integer component as a scalar expression."""
     match value:
         int(number) => return int_expr(number)

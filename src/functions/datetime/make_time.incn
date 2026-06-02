@@ -8,7 +8,7 @@ from function_registry import (
     extension_mapping,
     v0_1,
 )
-from functions.datetime.inputs import integer_component_expr
+from functions.datetime.inputs import IntColumn, integer_component_expr
 from functions.registry import register_function, registered_application
 from projection_builders import ColumnExpr
 from substrait.function_extensions import MAKE_TIME_FUNCTION_ANCHOR
@@ -20,11 +20,7 @@ from substrait.function_extensions import MAKE_TIME_FUNCTION_ANCHOR
     null_behavior=FunctionNullBehavior.DependsOnInputs,
     substrait=extension_mapping("make_time", MAKE_TIME_FUNCTION_ANCHOR),
 ))
-pub def make_time(
-    hour: Union[ColumnExpr, int],
-    minute: Union[ColumnExpr, int],
-    second: Union[ColumnExpr, int],
-) -> ColumnExpr:
+pub def make_time(hour: IntColumn, minute: IntColumn, second: IntColumn) -> ColumnExpr:
     """
     Build a time construction expression.
 
