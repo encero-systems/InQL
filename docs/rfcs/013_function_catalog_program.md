@@ -1,6 +1,6 @@
 # InQL RFC 013: Function catalog program
 
-- **Status:** In Progress
+- **Status:** Implemented
 - **Created:** 2026-04-27
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -21,7 +21,7 @@
 - **Issue:** [InQL #30](https://github.com/dannys-code-corner/InQL/issues/30)
 - **RFC PR:** —
 - **Written against:** Incan v0.2
-- **Shipped in:** —
+- **Shipped in:** InQL v0.1
 
 ## Summary
 
@@ -141,3 +141,4 @@ Existing helpers may remain while the child RFCs migrate them into the registry-
 
 - **Child RFC scope:** the current child RFC set is the scope of the function catalog program. InQL RFC 014 through InQL RFC 026 are required children unless this umbrella RFC is later amended or superseded.
 - **Implemented status:** this umbrella RFC may be marked Implemented only when all required child RFCs through InQL RFC 026 are implemented, rejected, or superseded by explicit design decision. Extension, sketch, typed sketch value, and semi-structured value families are part of the umbrella scope, not optional follow-on scope.
+- **Closeout:** the required child RFC set is now resolved. InQL RFC 014 through InQL RFC 026 are implemented, and the shared catalog surface also includes typed value-or-column inputs plus schema-aware scalar input validation as cross-cutting support grounded in InQL RFC 000, InQL RFC 012, and InQL RFC 014. No additional child RFC is required for that support because it tightens the existing registry and query-schema contracts rather than adding a new function family.

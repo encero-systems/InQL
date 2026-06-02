@@ -478,14 +478,18 @@ def _function_input_type_name(kind: FunctionInputType) -> str:
         FunctionInputType.Temporal => return "temporal"
 
 
-def _schema_kind_scalar_type(kind: SubstraitPrimitiveKind) -> FunctionInputType:
-    """Convert one concrete schema kind into the matching scalar type category."""
+def _schema_kind_scalar_type(kind: SubstraitPrimitiveKind) -> Option[FunctionInputType]:
+    """Convert one scalar schema kind into the matching scalar type category when possible."""
     match kind:
-        SubstraitPrimitiveKind.Bool => return FunctionInputType.Bool
-        SubstraitPrimitiveKind.I64 => return FunctionInputType.Int
-        SubstraitPrimitiveKind.F64 => return FunctionInputType.Float
-        SubstraitPrimitiveKind.Timestamp => return FunctionInputType.Timestamp
-        SubstraitPrimitiveKind.String => return FunctionInputType.String
+        SubstraitPrimitiveKind.Bool => return Some(FunctionInputType.Bool)
+        SubstraitPrimitiveKind.I64 => return Some(FunctionInputType.Int)
+        SubstraitPrimitiveKind.F64 => return Some(FunctionInputType.Float)
+        SubstraitPrimitiveKind.Timestamp => return Some(FunctionInputType.Timestamp)
+        SubstraitPrimitiveKind.String => return Some(FunctionInputType.String)
+        SubstraitPrimitiveKind.BoolList => return None
+        SubstraitPrimitiveKind.I64List => return None
+        SubstraitPrimitiveKind.F64List => return None
+        SubstraitPrimitiveKind.StringList => return None
 
 
 def _argument_kind_context(bindings: list[ResolvedProjectionBinding], expr: ColumnExpr) -> str:
@@ -547,7 +551,7 @@ def _known_expression_scalar_type(
         ScalarFunctionApplicationExpr(_) => return Ok(None)
         _ =>
             if let Some(kind) = _known_expression_kind(bindings, expr)?:
-                return Ok(Some(_schema_kind_scalar_type(kind)))
+                return Ok(_schema_kind_scalar_type(kind))
             return Ok(None)
 
 
@@ -758,6 +762,56 @@ pub def lower_project_for_columns(
             )
     for binding in bindings:
         mapping_indexes.append(binding.output_index)
+    return Ok(
+        LoweredProject(
+            expressions=[resolved.expr.clone() for resolved in expressions],
+            output_mapping=[to_rust_i32(index) for index in mapping_indexes],
+        ),
+    )
+
+
+pub def lower_select_project(
+    input_columns: list[str],
+    assignments: list[ProjectionAssignment],
+) -> Result[LoweredProject, SubstraitLoweringError]:
+    """Lower one exclusive projection, preserving lateral aliases for later expressions in the same list."""
+    return lower_select_project_for_columns(scalar_columns_from_names(input_columns), assignments)
+
+
+pub def lower_select_project_for_columns(
+    input_columns: list[ScalarColumnSpec],
+    assignments: list[ProjectionAssignment],
+) -> Result[LoweredProject, SubstraitLoweringError]:
+    """Lower one exclusive projection against typed-or-name-only input column facts."""
+    input_column_count = len(input_columns)
+    mut bindings = _resolved_projection_bindings_for_column_specs(input_columns)
+    mut expressions: list[ResolvedProjectExpression] = []
+    mut mapping_indexes: list[int] = []
+    for assignment in assignments:
+        resolved_expr = _resolved_projection_expr(bindings, assignment.expr)?
+        output_kind = _known_expression_kind(bindings, assignment.expr)?
+        expressions.append(ResolvedProjectExpression(expr=resolved_expr.clone()))
+        output_index = input_column_count + len(expressions) - 1
+        mapping_indexes.append(output_index)
+        existing_idx = _index_of_binding(bindings, assignment.output_name)
+        if existing_idx >= 0:
+            bindings[existing_idx] = ResolvedProjectionBinding(
+                name=assignment.output_name,
+                expr=resolved_expr,
+                output_index=output_index,
+                kind=output_kind,
+                nullable=true,
+            )
+        else:
+            bindings.append(
+                ResolvedProjectionBinding(
+                    name=assignment.output_name,
+                    expr=resolved_expr,
+                    output_index=output_index,
+                    kind=output_kind,
+                    nullable=true,
+                ),
+            )
     return Ok(
         LoweredProject(
             expressions=[resolved.expr.clone() for resolved in expressions],
