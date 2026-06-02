@@ -10,7 +10,7 @@ from function_registry import (
 )
 from functions.encoding.decode import decode
 from functions.registry import register_function
-from projection_builders import ColumnExpr, str_expr
+from projection_builders import ColumnExpr
 
 
 @register_function(deterministic_spec(
@@ -29,7 +29,7 @@ pub def unhex(expr: ColumnExpr) -> ColumnExpr:
     Parameters:
         expr: Input scalar expression.
     """
-    return decode(expr, str_expr("hex"))
+    return decode(expr, "hex")
 
 
 module tests:

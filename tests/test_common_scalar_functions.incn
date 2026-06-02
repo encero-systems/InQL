@@ -65,7 +65,6 @@ from functions import (
     sin,
     split_part,
     sqrt,
-    str_expr,
     substr,
     substring,
     tan,
@@ -140,10 +139,10 @@ def test_common_scalar_functions__string_helpers_share_scalar_application_node()
     """Assert RFC 018 string helpers use canonical registry-backed applications and aliases."""
     # -- Arrange --
     text = col("text")
-    needle = str_expr("-")
-    replacement = str_expr("_")
-    start = int_expr(1)
-    length = int_expr(3)
+    needle = "-"
+    replacement = "_"
+    start = 1
+    length = 3
 
     # -- Act / Assert --
     _assert_application(char_length(text), "char_length", 1)
@@ -163,7 +162,7 @@ def test_common_scalar_functions__string_helpers_share_scalar_application_node()
     _assert_application(concat(text, needle, replacement), "concat", 3)
     _assert_application(concat_ws(needle, text, replacement), "concat_ws", 3)
     _assert_application(replace(text, needle, replacement), "replace", 3)
-    _assert_application(translate(text, str_expr("ABC"), str_expr("abc")), "translate", 3)
+    _assert_application(translate(text, "ABC", "abc"), "translate", 3)
     _assert_application(repeat(text, length), "repeat", 2)
     _assert_application(left(text, length), "left", 2)
     _assert_application(right(text, length), "right", 2)
@@ -178,30 +177,30 @@ def test_common_scalar_functions__encoding_and_regex_helpers_share_scalar_applic
     """Assert RFC 018 encoding and regex helpers expose canonical expression shapes."""
     # -- Arrange --
     text = col("text")
-    pattern = str_expr("^([a-z]+)$")
-    flags = str_expr("i")
+    pattern = "^([a-z]+)$"
+    flags = "i"
 
     # -- Act / Assert --
-    _assert_application(encode(text, str_expr("base64")), "encode", 2)
-    _assert_application(decode(text, str_expr("base64")), "decode", 2)
+    _assert_application(encode(text, "base64"), "encode", 2)
+    _assert_application(decode(text, "base64"), "decode", 2)
     _assert_application(base64(text), "encode", 2)
     _assert_application(unbase64(text), "decode", 2)
     _assert_application(hex(text), "encode", 2)
     _assert_application(unhex(text), "decode", 2)
     _assert_application(regexp_like(text, pattern), "regexp_like", 2)
     _assert_application(regexp_like(text, pattern, flags), "regexp_like", 3)
-    _assert_application(regexp_replace(text, pattern, str_expr("x")), "regexp_replace", 3)
-    _assert_application(regexp_replace(text, pattern, str_expr("x"), flags), "regexp_replace", 4)
+    _assert_application(regexp_replace(text, pattern, "x"), "regexp_replace", 3)
+    _assert_application(regexp_replace(text, pattern, "x", flags), "regexp_replace", 4)
     _assert_application(regexp_extract(text, pattern), "regexp_extract", 3)
-    _assert_application(regexp_extract(text, pattern, int_expr(0)), "regexp_extract", 3)
+    _assert_application(regexp_extract(text, pattern, 0), "regexp_extract", 3)
 
 
 def test_common_scalar_functions__datetime_helpers_share_scalar_application_node() -> None:
     """Assert RFC 018 date/time helpers expose canonical expression shapes and aliases."""
     # -- Arrange --
     value = col("created_at")
-    part = str_expr("day")
-    amount = int_expr(1)
+    part = "day"
+    amount = 1
 
     # -- Act / Assert --
     _assert_application(current_date(), "current_date", 0)

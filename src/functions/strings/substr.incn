@@ -6,8 +6,8 @@ pub substr = alias substring
 
 
 module tests:
-    from projection_builders import ColumnExprKind, col, column_expr_function_name, column_expr_kind, int_expr
+    from projection_builders import ColumnExprKind, col, column_expr_function_name, column_expr_kind
     def test_substr_rewrites_to_substring() -> None:
-        expr = substr(col("sku"), int_expr(1), int_expr(3))
+        expr = substr(col("sku"), 1, 3)
         assert column_expr_kind(expr) == ColumnExprKind.ScalarFunction
         assert column_expr_function_name(expr) == "substring"

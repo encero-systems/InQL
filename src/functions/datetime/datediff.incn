@@ -6,8 +6,8 @@ pub datediff = alias date_diff
 
 
 module tests:
-    from projection_builders import ColumnExprKind, col, column_expr_function_name, column_expr_kind, str_expr
+    from projection_builders import ColumnExprKind, col, column_expr_function_name, column_expr_kind
     def test_datediff_rewrites_to_date_diff() -> None:
-        expr = datediff(str_expr("day"), col("start_at"), col("end_at"))
+        expr = datediff("day", col("start_at"), col("end_at"))
         assert column_expr_kind(expr) == ColumnExprKind.ScalarFunction
         assert column_expr_function_name(expr) == "date_diff"

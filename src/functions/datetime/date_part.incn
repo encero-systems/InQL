@@ -8,6 +8,7 @@ from function_registry import (
     extension_mapping,
     v0_1,
 )
+from functions.inputs import StrValueOrColumn, str_value_or_column_expr
 from functions.registry import register_function, register_function_alias, registered_application
 from projection_builders import ColumnExpr
 from substrait.function_extensions import DATE_PART_FUNCTION_ANCHOR
@@ -19,18 +20,18 @@ from substrait.function_extensions import DATE_PART_FUNCTION_ANCHOR
     null_behavior=FunctionNullBehavior.DependsOnInputs,
     substrait=extension_mapping("date_part", DATE_PART_FUNCTION_ANCHOR),
 ))
-pub def date_part(part: ColumnExpr, expr: ColumnExpr) -> ColumnExpr:
+pub def date_part(part: StrValueOrColumn, expr: ColumnExpr) -> ColumnExpr:
     """
     Build a date/time field extraction expression.
 
     Examples:
-        order_year = date_part(str_expr("year"), col("ordered_at"))
+        order_year = date_part("year", col("ordered_at"))
 
     Parameters:
         part: Date or time part expression.
         expr: Input scalar expression.
     """
-    return registered_application("date_part", [part, expr])
+    return registered_application("date_part", [str_value_or_column_expr(part), expr])
 
 
 static _extract_alias_registration: None = register_function_alias("date_part", "extract")
@@ -43,10 +44,9 @@ module tests:
         column_expr_argument_count,
         column_expr_function_name,
         column_expr_kind,
-        str_expr,
     )
     def test_date_part_builds_registered_application() -> None:
-        expr = date_part(str_expr("year"), col("created_at"))
+        expr = date_part("year", col("created_at"))
         assert column_expr_kind(expr) == ColumnExprKind.ScalarFunction
         assert column_expr_function_name(expr) == "date_part"
         assert column_expr_argument_count(expr) == 2

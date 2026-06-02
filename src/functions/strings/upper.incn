@@ -8,6 +8,7 @@ from function_registry import (
     extension_mapping,
     v0_1,
 )
+from functions.inputs import StrValueOrColumn, str_value_or_column_expr
 from functions.registry import register_function, register_function_alias, registered_application
 from projection_builders import ColumnExpr
 from substrait.function_extensions import UPPER_FUNCTION_ANCHOR
@@ -19,7 +20,7 @@ from substrait.function_extensions import UPPER_FUNCTION_ANCHOR
     null_behavior=FunctionNullBehavior.DependsOnInputs,
     substrait=extension_mapping("upper", UPPER_FUNCTION_ANCHOR),
 ))
-pub def upper(expr: ColumnExpr) -> ColumnExpr:
+pub def upper(expr: StrValueOrColumn) -> ColumnExpr:
     """
     Build an uppercase expression.
 
@@ -29,7 +30,7 @@ pub def upper(expr: ColumnExpr) -> ColumnExpr:
     Parameters:
         expr: Input scalar expression.
     """
-    return registered_application("upper", [expr])
+    return registered_application("upper", [str_value_or_column_expr(expr)])
 
 
 static _ucase_alias_registration: None = register_function_alias("upper", "ucase")

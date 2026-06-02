@@ -8,6 +8,7 @@ from function_registry import (
     extension_mapping,
     v0_1,
 )
+from functions.inputs import StrValueOrColumn, str_value_or_column_expr
 from functions.registry import register_function, registered_application
 from projection_builders import ColumnExpr
 from substrait.function_extensions import TRIM_FUNCTION_ANCHOR
@@ -19,7 +20,7 @@ from substrait.function_extensions import TRIM_FUNCTION_ANCHOR
     null_behavior=FunctionNullBehavior.DependsOnInputs,
     substrait=extension_mapping("btrim", TRIM_FUNCTION_ANCHOR),
 ))
-pub def trim(expr: ColumnExpr, characters: Option[ColumnExpr] = None) -> ColumnExpr:
+pub def trim(expr: StrValueOrColumn, characters: Option[StrValueOrColumn] = None) -> ColumnExpr:
     """
     Build a both-side trim expression.
 
@@ -30,9 +31,10 @@ pub def trim(expr: ColumnExpr, characters: Option[ColumnExpr] = None) -> ColumnE
         expr: Input scalar expression.
         characters: Optional trim character-set expression.
     """
+    expr_value = str_value_or_column_expr(expr)
     if let Some(value) = characters:
-        return registered_application("trim", [expr, value])
-    return registered_application("trim", [expr])
+        return registered_application("trim", [expr_value, str_value_or_column_expr(value)])
+    return registered_application("trim", [expr_value])
 
 
 module tests:
@@ -42,7 +44,6 @@ module tests:
         column_expr_argument_count,
         column_expr_function_name,
         column_expr_kind,
-        str_expr,
     )
     def test_trim_builds_registered_application() -> None:
         expr = trim(col("name"))
@@ -50,5 +51,5 @@ module tests:
         assert column_expr_function_name(expr) == "trim"
         assert column_expr_argument_count(expr) == 1
     def test_trim_accepts_character_set() -> None:
-        expr = trim(col("name"), str_expr("_"))
+        expr = trim(col("name"), "_")
         assert column_expr_argument_count(expr) == 2

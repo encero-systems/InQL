@@ -8,6 +8,7 @@ from function_registry import (
     extension_mapping,
     v0_1,
 )
+from functions.inputs import StrValueOrColumn, str_value_or_column_expr
 from functions.registry import register_function, registered_application
 from projection_builders import ColumnExpr
 from substrait.function_extensions import TO_TIME_FUNCTION_ANCHOR
@@ -19,7 +20,7 @@ from substrait.function_extensions import TO_TIME_FUNCTION_ANCHOR
     null_behavior=FunctionNullBehavior.DependsOnInputs,
     substrait=extension_mapping("to_time", TO_TIME_FUNCTION_ANCHOR),
 ))
-pub def to_time(expr: ColumnExpr, format: Option[ColumnExpr] = None) -> ColumnExpr:
+pub def to_time(expr: ColumnExpr, format: Option[StrValueOrColumn] = None) -> ColumnExpr:
     """
     Build a time parsing expression.
 
@@ -28,10 +29,10 @@ pub def to_time(expr: ColumnExpr, format: Option[ColumnExpr] = None) -> ColumnEx
 
     Parameters:
         expr: Input scalar expression.
-        format: Format selector expression.
+        format: Format selector expression or string literal.
     """
     if let Some(value) = format:
-        return registered_application("to_time", [expr, value])
+        return registered_application("to_time", [expr, str_value_or_column_expr(value)])
     return registered_application("to_time", [expr])
 
 
@@ -48,3 +49,6 @@ module tests:
         assert column_expr_kind(expr) == ColumnExprKind.ScalarFunction
         assert column_expr_function_name(expr) == "to_time"
         assert column_expr_argument_count(expr) == 1
+    def test_to_time_accepts_literal_format() -> None:
+        expr = to_time(col("time_text"), "%H:%M:%S")
+        assert column_expr_argument_count(expr) == 2
