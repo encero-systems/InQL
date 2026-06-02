@@ -962,12 +962,12 @@ def test_function_registry__typed_value_or_column_helpers_expose_scalar_argument
     # -- Arrange --
     _exercise_current_public_helpers()
 
+    # -- Act / Assert --
     _assert_scalar_argument_contract("sqrt", [FunctionInputType.Number], None)
     _assert_scalar_result("sqrt", FunctionInputType.Number)
     _assert_scalar_argument_contract("round", [FunctionInputType.Number, FunctionInputType.Int], None)
     _assert_scalar_result("round", FunctionInputType.Number)
 
-    # -- Act / Assert --
     _assert_scalar_argument_contract(
         "make_date",
         [FunctionInputType.Int, FunctionInputType.Int, FunctionInputType.Int],

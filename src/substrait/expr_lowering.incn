@@ -43,7 +43,12 @@ from rust::substrait::proto::expression::reference_segment import ReferenceType 
 from rust::substrait::proto::function_argument import ArgType
 from rust::substrait::proto::rel_common import EmitKind
 from rust::substrait::proto::type import Boolean, Fp64, I64, Kind, Nullability, String as SubstraitString
-from scalar_schema import ScalarColumnSpec, scalar_columns_from_names, scalar_columns_from_row_columns
+from scalar_schema import (
+    ScalarColumnSpec,
+    scalar_column_kind_from_function_input_type,
+    scalar_columns_from_names,
+    scalar_columns_from_row_columns,
+)
 from substrait.errors import SubstraitLoweringError, invalid_scalar_expression, unknown_scalar_column
 from substrait.extensions import scalar_function_name_from_anchor
 from substrait.schema import RowColumnSpec, SubstraitPrimitiveKind
@@ -437,18 +442,6 @@ def _schema_kind_scalar_type(kind: SubstraitPrimitiveKind) -> FunctionInputType:
         SubstraitPrimitiveKind.String => return FunctionInputType.String
 
 
-def _function_input_type_schema_kind(kind: FunctionInputType) -> Option[SubstraitPrimitiveKind]:
-    """Convert exact scalar type categories into concrete schema kinds."""
-    match kind:
-        FunctionInputType.Bool => return Some(SubstraitPrimitiveKind.Bool)
-        FunctionInputType.Int => return Some(SubstraitPrimitiveKind.I64)
-        FunctionInputType.Float => return Some(SubstraitPrimitiveKind.F64)
-        FunctionInputType.String => return Some(SubstraitPrimitiveKind.String)
-        FunctionInputType.Timestamp => return Some(SubstraitPrimitiveKind.Timestamp)
-        FunctionInputType.Any => return None
-        FunctionInputType.Number => return None
-
-
 def _argument_kind_context(bindings: list[ResolvedProjectionBinding], expr: ColumnExpr) -> str:
     """Return a compact source description for one typed scalar argument."""
     match expr:
@@ -478,7 +471,7 @@ def _known_expression_kind(
         ScalarFunctionApplicationExpr(application) =>
             entry = _registry_entry_for_application(application)?
             if let Some(result) = entry.scalar_result:
-                return Ok(_function_input_type_schema_kind(result))
+                return Ok(scalar_column_kind_from_function_input_type(result))
             return Ok(None)
 
 

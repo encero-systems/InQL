@@ -498,6 +498,20 @@ def test_session_projection__typed_value_or_column_rejects_schema_mismatch_befor
             assert err.message.contains("string"), "diagnostic should name the expected input type"
         Ok(_) => return fail_t("encode should reject an integer source column before DataFusion execution")
 
+    projected_result = session.collect(
+        lazy.with_column("normalized_customer", lower(col("customer_id"))).order_by([col("amount")]).with_column(
+            "bad_projected_date",
+            make_date(col("normalized_customer"), 5, 30),
+        ),
+    )
+    match projected_result:
+        Err(err) =>
+            assert err.kind == SessionErrorKind.InvalidScalarExpression, "projected function result mismatches should be planning diagnostics"
+            assert err.message.contains("make_date"), "diagnostic should name the typed helper"
+            assert err.message.contains("normalized_customer"), "diagnostic should name the projected column"
+            assert err.message.contains("int"), "diagnostic should name the expected input type"
+        Ok(_) => return fail_t("make_date should reject a projected string column before DataFusion execution")
+
 
 def test_session_projection__collect_executes_format_hashing_projection_functions() -> None:
     """collect should execute RFC 022 hashing helpers through DataFusion."""
