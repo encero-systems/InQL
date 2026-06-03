@@ -205,6 +205,18 @@ def _expr_uses_scalar_function_anchor(expr: Expression, expected_anchor: u32) ->
             for option in list_expr.options:
                 if _expr_uses_scalar_function_anchor(option, expected_anchor):
                     return true
+        Some(RexType.IfThen(if_then)) =>
+            condition = if_then.as_ref().clone()
+            for clause in condition.ifs:
+                if let Some(condition_expr) = clause.if:
+                    if _expr_uses_scalar_function_anchor(condition_expr, expected_anchor):
+                        return true
+                if let Some(result_expr) = clause.then:
+                    if _expr_uses_scalar_function_anchor(result_expr, expected_anchor):
+                        return true
+            if let Some(otherwise) = condition.else:
+                if _expr_uses_scalar_function_anchor(otherwise.as_ref().clone(), expected_anchor):
+                    return true
         _ => pass
     return false
 
@@ -229,6 +241,18 @@ def _expr_uses_if_then(expr: Expression) -> bool:
                     return true
             for option in list_expr.options:
                 if _expr_uses_if_then(option):
+                    return true
+        Some(RexType.IfThen(if_then)) =>
+            condition = if_then.as_ref().clone()
+            for clause in condition.ifs:
+                if let Some(condition_expr) = clause.if:
+                    if _expr_uses_if_then(condition_expr):
+                        return true
+                if let Some(result_expr) = clause.then:
+                    if _expr_uses_if_then(result_expr):
+                        return true
+            if let Some(otherwise) = condition.else:
+                if _expr_uses_if_then(otherwise.as_ref().clone()):
                     return true
         _ => pass
     return false
@@ -474,11 +498,6 @@ def _is_window_capable_extension_kind(kind: ExtensionFunctionKind) -> bool:
 
 def _scalar_extension_anchors_for_rel(rel: Rel) -> list[u32]:
     """Collect scalar-function anchors used by one relation subtree in stable declaration order."""
-    if _rel_uses_if_then(rel.clone()):
-        # `IfThen` branch fields are generated from keyword-named proto fields. Declare scalar extensions
-        # conservatively for now so nested case predicates execute without relying on field-level traversal here.
-        return [spec.anchor for spec in _function_extension_specs() if spec.kind == ExtensionFunctionKind.Scalar]
-
     mut anchors: list[u32] = []
     for spec in _function_extension_specs():
         if (spec.kind == ExtensionFunctionKind.Scalar and _rel_uses_scalar_function_anchor(rel.clone(), spec.anchor) and not anchors.contains(
