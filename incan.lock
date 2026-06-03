@@ -3,7 +3,7 @@
 
 [incan]
 format = 1
-incan-version = "0.3.0-rc45"
+incan-version = "0.3.0-rc47"
 deps-fingerprint = "sha256:9bc7b859d7eb9b1d1cd385b6ccd26e5c9abe32c73f814e1a34345aea30a21b96"
 cargo-features = []
 cargo-no-default-features = false
@@ -1824,14 +1824,14 @@ dependencies = [
 
 [[package]]
 name = "incan_core"
-version = "0.3.0-rc45"
+version = "0.3.0-rc47"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "incan_derive"
-version = "0.3.0-rc45"
+version = "0.3.0-rc47"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1840,7 +1840,7 @@ dependencies = [
 
 [[package]]
 name = "incan_stdlib"
-version = "0.3.0-rc45"
+version = "0.3.0-rc47"
 dependencies = [
  "incan_core",
  "incan_derive",
@@ -1864,7 +1864,7 @@ dependencies = [
 
 [[package]]
 name = "inql"
-version = "0.3.0-rc45"
+version = "0.3.0-rc47"
 dependencies = [
  "blake2",
  "blake3",

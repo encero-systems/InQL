@@ -28,7 +28,7 @@ The registered helper surface currently includes:
 | `col(...)` | scalar | deterministic field-reference rewrite |
 | `lit(...)`, `int_expr(...)`, `float_expr(...)`, `str_expr(...)`, `bool_expr(...)`, `int_lit(...)`, `str_lit(...)`, `bool_lit(...)` | scalar | deterministic literal rewrites |
 | `always_true()`, `always_false()` | scalar | deterministic boolean-literal rewrites |
-| `cast(...)`, `try_cast(...)` | scalar | built-in Substrait `Cast` Rex shapes; `try_cast` uses return-null failure behavior |
+| `cast(...)`, `try_cast(...)` | scalar | built-in Substrait `Cast` Rex shapes; primitive targets use type tokens such as `int`, `float`, `str`, and `bool`; explicit string target spellings remain available for compatibility aliases such as `int64` and `float64`; `try_cast` uses return-null failure behavior |
 | `add(...)`, `sub(...)`, `mul(...)`, `div(...)`, `modulo(...)`, `neg(...)` | scalar | registered Substrait scalar mappings; `modulo(...)` registers canonical `mod` |
 | `eq(...)`, `ne(...)`, `lt(...)`, `lte(...)`, `gt(...)`, `gte(...)`, `equal_null(...)` | scalar | registered Substrait scalar mappings; `equal_null(...)` lowers as null-safe equality |
 | `and_(...)`, `or_(...)`, `not_(...)` | scalar | registered Substrait boolean mappings |

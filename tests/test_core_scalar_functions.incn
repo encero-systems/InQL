@@ -69,7 +69,8 @@ def test_core_scalar_functions__operator_helpers_share_one_application_node() ->
 
     # -- Act / Assert --
     _assert_scalar_application(cast(amount, "string"), "cast")
-    _assert_scalar_application(try_cast(status, "int64"), "try_cast")
+    _assert_scalar_application(cast(amount, str), "cast")
+    _assert_scalar_application(try_cast(status, int), "try_cast")
     _assert_scalar_application(add(amount, 1), "add")
     _assert_scalar_application(sub(amount, 1), "sub")
     _assert_scalar_application(mul(amount, 2), "mul")
@@ -119,7 +120,7 @@ def test_core_scalar_functions__cast_records_type_as_registry_option() -> None:
 
     # -- Act --
     cast_expr = cast(amount, "decimal(10,2)")
-    try_cast_expr = try_cast(amount, "float64")
+    try_cast_expr = try_cast(amount, float)
 
     # -- Assert --
     _assert_scalar_application(cast_expr, "cast")
@@ -127,7 +128,31 @@ def test_core_scalar_functions__cast_records_type_as_registry_option() -> None:
     assert column_expr_argument_count(cast_expr) == 1, "cast should keep only scalar inputs in the argument list"
     assert column_expr_argument_count(try_cast_expr) == 1, "try_cast should keep only scalar inputs in the argument list"
     assert column_expr_option_value(cast_expr, "target_type") == "decimal(10,2)", "cast should preserve the target type option"
-    assert column_expr_option_value(try_cast_expr, "target_type") == "float64", "try_cast should preserve the target type option"
+    assert column_expr_option_value(try_cast_expr, "target_type") == "float", "try_cast should preserve the target type option"
+
+
+def test_core_scalar_functions__primitive_cast_type_tokens_return_typed_expressions() -> None:
+    """Assert primitive type-token casts keep typed helper return surfaces."""
+    # -- Arrange --
+    amount = col("amount")
+    status = col("status")
+
+    # -- Act --
+    int_expr = cast(amount, int)
+    float_expr = cast(amount, float)
+    str_expr = cast(amount, str)
+    bool_expr = try_cast(status, bool)
+
+    # -- Assert --
+    _assert_scalar_application(int_expr, "cast")
+    _assert_scalar_application(float_expr, "cast")
+    _assert_scalar_application(str_expr, "cast")
+    _assert_scalar_application(bool_expr, "try_cast")
+    assert column_expr_option_value(int_expr, "target_type") == "int"
+    assert column_expr_option_value(float_expr, "target_type") == "float"
+    assert column_expr_option_value(str_expr, "target_type") == "str"
+    assert column_expr_option_value(bool_expr, "target_type") == "bool"
+    _assert_scalar_application(mul(float_expr, 2), "mul")
 
 
 def test_core_scalar_functions__literal_helpers_stay_structural() -> None:

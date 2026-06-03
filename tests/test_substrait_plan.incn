@@ -625,8 +625,8 @@ def test_plan__core_scalar_extension_mappings_lower_to_substrait() -> None:
     """Assert RFC 015 core scalar helpers emit Substrait scalar functions."""
     # -- Arrange / Act / Assert --
     _assert_scalar_expr_lowers(ne(col("id"), 1))
-    _assert_scalar_expr_lowers(cast(col("id"), "string"))
-    _assert_scalar_expr_lowers(try_cast(col("status"), "int64"))
+    _assert_scalar_expr_lowers(cast(col("id"), str))
+    _assert_scalar_expr_lowers(try_cast(col("status"), int))
     _assert_scalar_expr_lowers(lt(col("id"), 10))
     _assert_scalar_expr_lowers(lte(col("id"), 10))
     _assert_scalar_expr_lowers(gte(col("id"), 1))
@@ -764,7 +764,7 @@ def test_plan__common_scalar_extension_mappings_lower_to_substrait() -> None:
     _assert_scalar_expr_lowers(make_time(12, 34, 56))
     _assert_scalar_expr_lowers(make_timestamp(2026, 5, 30, 12, 34, 56))
     _assert_scalar_expr_lowers(last_day(col("status")))
-    _assert_scalar_expr_lowers(safe_cast(col("status"), "int64"))
+    _assert_scalar_expr_lowers(safe_cast(col("status"), int))
 
 
 def test_plan__nested_scalar_extension_mappings_lower_to_substrait() -> None:

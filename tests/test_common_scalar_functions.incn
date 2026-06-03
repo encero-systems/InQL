@@ -234,8 +234,8 @@ def test_common_scalar_functions__safe_cast_alias_targets_try_cast() -> None:
     value = col("maybe_number")
 
     # -- Act --
-    expr = safe_cast(value, "int64")
+    expr = safe_cast(value, int)
 
     # -- Assert --
     _assert_application(expr, "try_cast", 1)
-    assert column_expr_option_value(expr, "target_type") == "int64", "safe_cast should preserve the target type option"
+    assert column_expr_option_value(expr, "target_type") == "int", "safe_cast should preserve the target type option"

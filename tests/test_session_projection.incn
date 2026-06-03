@@ -252,8 +252,8 @@ def test_session_projection__collect_executes_core_scalar_projection_functions()
         coalesce([col("customer_id"), lit("unknown")]),
     ).with_column("customer_null_if_a", nullif(col("customer_id"), lit("A"))).with_column(
         "amount_text",
-        cast(col("amount"), "string"),
-    ).with_column("customer_try_int", try_cast(col("customer_id"), "int64")).with_column(
+        cast(col("amount"), str),
+    ).with_column("customer_try_int", try_cast(col("customer_id"), int)).with_column(
         "amount_bucket",
         case_when([gt(col("amount"), 10)], [lit("large")], lit("small")),
     )
