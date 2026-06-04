@@ -42,6 +42,8 @@ fn lower_query(declaration: &VocabDeclaration) -> Result<IncanExpr, DesugarError
     let mut saw_select = false;
     let mut pending_join: Option<PendingJoin> = None;
 
+    // Query clauses are lowered left-to-right into the same carrier method calls that authors can write manually.
+    // `JOIN` is staged until the following `ON` clause so relation naming and predicate lowering stay together.
     for item in &declaration.body {
         let VocabBodyItem::Clause(clause) = item else {
             continue;
@@ -426,6 +428,8 @@ fn lower_expression_list(clause: &VocabClause) -> Result<Vec<IncanExpr>, Desugar
 }
 
 fn lower_column_expr(expr: &IncanExpr) -> Result<IncanExpr, DesugarError> {
+    // The vocab AST distinguishes query-only field shorthands from ordinary Incan expressions. Normalize every
+    // supported query expression into the public InQL helper surface before the compiler typechecks the generated call.
     match expr {
         IncanExpr::ScopedSurface(surface) if surface.descriptor_key == QUERY_FIELD_DESCRIPTOR => {
             if let IncanScopedSurfacePayload::LeadingDotPath { segments, .. } = &surface.payload {
@@ -473,7 +477,7 @@ fn lower_column_expr(expr: &IncanExpr) -> Result<IncanExpr, DesugarError> {
                 .collect::<Result<Vec<_>, _>>()?,
         )),
         _ => Err(DesugarError::new(
-            "query expression form is not part of the RFC003 grammar",
+            "query blocks do not support this expression form",
         )),
     }
 }
@@ -532,7 +536,7 @@ fn binary_helper(op: IncanBinaryOp) -> Result<&'static str, DesugarError> {
         IncanBinaryOp::And => Ok("and_"),
         IncanBinaryOp::Or => Ok("or_"),
         _ => Err(DesugarError::new(
-            "query binary operator is not part of the RFC003 grammar",
+            "query blocks do not support this binary operator",
         )),
     }
 }
@@ -542,7 +546,7 @@ fn unary_helper(op: IncanUnaryOp) -> Result<&'static str, DesugarError> {
         IncanUnaryOp::Not => Ok("not_"),
         IncanUnaryOp::Neg => Ok("neg"),
         _ => Err(DesugarError::new(
-            "query unary operator is not part of the RFC003 grammar",
+            "query blocks do not support this unary operator",
         )),
     }
 }

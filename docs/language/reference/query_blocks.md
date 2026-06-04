@@ -20,6 +20,10 @@ def summarize_orders(orders: DataFrame[Order]) -> DataFrame[OrderSummary]:
     }
 ```
 
+The `OrderSummary` type parameter documents the intended output row model. The v0.1 implementation checks query
+schema evolution and selected aliases through the carrier planning surface; full field/type compatibility validation
+against annotated output models is tracked as schema-validation follow-up work.
+
 InQL also accepts the colon spelling in expression position:
 
 ```incan
@@ -56,4 +60,6 @@ The implemented v0.1 query-block surface supports:
 - `SELECT` aliases become the output schema for later clauses.
 - A `SELECT` alias may be reused by later expressions in the same `SELECT` list.
 
-Query blocks lower into the same Dataset, Prism, Substrait, and Session adapter path as equivalent method-chain code.
+Query blocks desugar into the same carrier method calls available to ordinary InQL code before lowering through the
+current carrier planning path. `LazyFrame` flows are Prism-backed; concrete `DataFrame` and `DataStream` flows still use
+their documented carrier paths before converging at the Substrait boundary.

@@ -372,6 +372,8 @@ async def _dataframe_from_window_rel(
     mut current_window = window_rel
     mut current_output_columns = output_columns
     mut child = _window_input_rel(current_window.clone())?
+    # DataFusion's typed window API is easiest to apply from the innermost relation outward. First peel the nested
+    # Substrait window chain into a stack, then execute the base child and replay each window on the resulting frame.
     while true:
         child_columns = relation_output_columns(child.clone())
         pending_windows.append(
@@ -725,25 +727,17 @@ def _replace_fetch_generator_child(original: Rel, fetch: FetchRel, path: str) ->
 
 def _replace_window_generator_child(original: Rel, window: ConsistentPartitionWindowRel, path: str) -> Rel:
     """Rebuild a WindowRel with its input child rewritten when present."""
-    match window.input:
-        Some(child) =>
-            return Rel(
-                rel_type=Some(
-                    RelType.Window(
-                        Box.new(
-                            ConsistentPartitionWindowRel(
-                                common=window.common,
-                                input=Some(_rewritten_generator_child(child, f"{path}_window")),
-                                window_functions=window.window_functions,
-                                partition_expressions=window.partition_expressions,
-                                sorts=window.sorts,
-                                advanced_extension=window.advanced_extension,
-                            ),
-                        ),
-                    ),
-                ),
-            )
-        None => return original
+    if let Some(child) = window.input:
+        rewritten_window = ConsistentPartitionWindowRel(
+            common=window.common,
+            input=Some(_rewritten_generator_child(child, f"{path}_window")),
+            window_functions=window.window_functions,
+            partition_expressions=window.partition_expressions,
+            sorts=window.sorts,
+            advanced_extension=window.advanced_extension,
+        )
+        return Rel(rel_type=Some(RelType.Window(Box.new(rewritten_window))))
+    return original
 
 
 def _replace_set_generator_children(set_rel: SetRel, path: str) -> Rel:

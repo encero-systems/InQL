@@ -19,7 +19,7 @@
   - InQL RFC 025 (typed sketch logical values)
   - InQL RFC 026 (semi-structured variant logical values)
 - **Issue:** [InQL #30](https://github.com/dannys-code-corner/InQL/issues/30)
-- **RFC PR:** —
+- **RFC PR:** [InQL #59](https://github.com/dannys-code-corner/InQL/pull/59)
 - **Written against:** Incan v0.2
 - **Shipped in:** InQL v0.1
 

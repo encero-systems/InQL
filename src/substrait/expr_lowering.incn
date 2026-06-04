@@ -794,24 +794,17 @@ pub def lower_select_project_for_columns(
         output_index = input_column_count + len(expressions) - 1
         mapping_indexes.append(output_index)
         existing_idx = _index_of_binding(bindings, assignment.output_name)
+        resolved_projection_binding = ResolvedProjectionBinding(
+            name=assignment.output_name,
+            expr=resolved_expr,
+            output_index=output_index,
+            kind=output_kind,
+            nullable=true,
+        )
         if existing_idx >= 0:
-            bindings[existing_idx] = ResolvedProjectionBinding(
-                name=assignment.output_name,
-                expr=resolved_expr,
-                output_index=output_index,
-                kind=output_kind,
-                nullable=true,
-            )
+            bindings[existing_idx] = resolved_projection_binding
         else:
-            bindings.append(
-                ResolvedProjectionBinding(
-                    name=assignment.output_name,
-                    expr=resolved_expr,
-                    output_index=output_index,
-                    kind=output_kind,
-                    nullable=true,
-                ),
-            )
+            bindings.append(resolved_projection_binding)
     return Ok(
         LoweredProject(
             expressions=[resolved.expr.clone() for resolved in expressions],

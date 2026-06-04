@@ -18,7 +18,8 @@ ordinary Incan code.
 - `session_grouped_aggregate_csv.incn` — Grouped aggregate over `LazyFrame[AggregateOrder]` using `col(...)`, `sum(...)`, and `count()`
 - `session_with_column_csv.incn` — Derived-column example over `LazyFrame[AggregateOrder]` using `with_column(...)`, `mul(...)`, and `lit(...)`
 - `advanced_retail_analytics.incn` — Larger 100-row retail method-chain spike covering scalar functions, JSON, URL parsing, hashing, aggregates, windows, and generators
-- `advanced_retail_query_blocks/` — Dependency-consumer query-block version of the retail spike, covering RFC 003 vocab over the same 100-row fixture
+- `advanced_retail_query_blocks/` — Dependency-consumer query-block version of the retail spike, covering the
+  query-block vocabulary over the same 100-row fixture
 - `models.incn` — Shared `@derive(Clone)` row models for examples
 
 ## Running examples
@@ -48,8 +49,7 @@ quoted JSON event payloads. It materializes three outputs:
 - a generated tag view that composes window ranking with `explode(...)`
 
 `advanced_retail_query_blocks/` is the same fixture exercised from a standalone dependency consumer. It imports
-`pub::inql` and runs real RFC 003 query blocks for the high-value projection, grouped rollup, and generated-tag window
-view:
+`pub::inql` and runs query blocks for the high-value projection, grouped rollup, and generated-tag window view:
 
 ```incan
 high_value = query {
@@ -88,7 +88,8 @@ These examples document the API patterns for the InQL dataset and Session surfac
 2. Carrier transformations remain typed Incan functions rather than stringly runtime scripts
 3. Builder-based aggregation runs through `col(...)`, `sum(...)`, and `count()`
 4. Builder-based scalar expressions run through `col(...)`, `lit(...)`, `eq(...)`, `gt(...)`, `add(...)`, and `mul(...)`
-5. Query blocks activate through `pub::inql` in dependency consumers and lower into the same Dataset/Prism/Substrait path
+5. Query blocks activate through `pub::inql` in dependency consumers, desugar into carrier calls, and meet the rest of
+   InQL at the Substrait boundary
 6. Session execution provides `collect`, `display`, and write sinks over DataFusion
 
 They serve three purposes:

@@ -14,7 +14,7 @@ The Substrait helper surface behind these methods is split by semantic role:
 | Method        | Signature                                                    | Meaning                                                                                        |
 | ------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
 | `filter`      | `def filter(self, predicate: ColumnExpr) -> Self`            | Restrict rows by a boolean scalar expression.                                                  |
-| `join`        | `def join(self, other: Self, on: bool) -> Self`              | Combine with another same-carrier relation using the package's boolean join predicate surface. |
+| `join`        | `def join(self, other: Self, on: ColumnExpr) -> Self`        | Combine with another same-carrier relation using the package's scalar predicate surface.       |
 | `select`      | `def select[U](self, assignments: list[ProjectionAssignment] = []) -> SameCarrier[U]` | Project an output row shape while preserving the carrier kind. |
 | `with_column` | `def with_column(self, name: str, expr: ColumnExpr) -> Self` | Add or replace one projected column using a scalar expression.                                 |
 | `group_by`    | `def group_by(self, columns: list[ColumnExpr]) -> Self`      | Define grouping keys using scalar expressions.                                                 |
@@ -70,7 +70,7 @@ def enrich(orders: LazyFrame[Order]) -> LazyFrame[Order]:
 
 ## Capability notes
 
-- `join(...)` is constrained to same-carrier inputs and the boolean join predicate surface shown in the signature.
+- `join(...)` is constrained to same-carrier inputs and the `ColumnExpr` predicate surface shown in the signature.
 - `select(...)` is the schema-changing projection boundary used by query blocks. Identity `select()` preserves the current row model through its surrounding expected type, while explicit assignments can retarget to a new row model.
 - `generate(...)` preserves all input columns and appends generated output aliases for `explode`, `explode_outer`, `posexplode`, `posexplode_outer`, `inline`, `inline_outer`, `flatten`, and `stack` generator applications. Alias collisions are rejected during planning/lowering.
 - `with_window_column(...)` supports placed ranking, distribution, offset, value, and aggregate-over-window helpers over explicit window specs. Portable helpers lower through Substrait window relations and execute through the DataFusion session adapter.

@@ -939,7 +939,7 @@ pub def try_select_project_rel_for_columns(
 
 pub def project_rel_with_expressions(input: Rel, expressions: list[Expression]) -> Rel:
     """Append already-lowered Substrait expressions to a relation."""
-    # The DataFusion adapter uses this to evaluate generator arguments into temporary columns before unnesting.
+    # Execution adapters can use this to materialize pre-lowered expressions before a relation-shaping operation.
     return _rel_project(
         ProjectRel(
             common=Some(_direct_common()),

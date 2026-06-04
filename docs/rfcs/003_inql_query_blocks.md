@@ -8,7 +8,7 @@
   - InQL RFC 001 (dataset types — **prerequisite**; `FROM` sources must conform to `DataSet[T]`)
   - InQL RFC 002 (Apache Substrait — **normative `Rel`-level contract** for lowering)
 - **Issue:** [InQL #4](https://github.com/dannys-code-corner/InQL/issues/4)
-- **RFC PR:** -
+- **RFC PR:** [InQL #59](https://github.com/dannys-code-corner/InQL/pull/59)
 - **Written against:** Incan v0.3
 - **Shipped in:** InQL v0.1
 
@@ -56,7 +56,10 @@ def summarize_orders(orders: DataFrame[Order]) -> DataFrame[OrderSummary]:
     }
 ```
 
-The compiler checks `.status`, `.amount`, `GROUP BY` / `SELECT` consistency, and output compatibility with `DataFrame[OrderSummary]` (or structural rules this RFC finalizes). The checked tree lowers to Substrait (InQL RFC 002); execution uses the execution context.
+The compiler checks `.status`, `.amount`, and `GROUP BY` / `SELECT` consistency. The `DataFrame[OrderSummary]` return
+type records the intended output row model; full field/type compatibility validation against annotated output models is
+tracked as schema-validation follow-up work. The checked tree lowers to Substrait (InQL RFC 002); execution uses the
+execution context.
 
 ## Reference-level explanation
 

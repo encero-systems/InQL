@@ -39,6 +39,11 @@ test: ## Run package tests (`incan test tests`)
 	@echo "\033[1mRunning InQL tests...\033[0m"
 	@$(INCAN) test $(INQL_TEST_DIR)
 
+.PHONY: vocab-companion-test
+vocab-companion-test: ## Run Rust tests for the query-block vocabulary companion
+	@echo "\033[1mRunning query-block vocabulary companion tests...\033[0m"
+	@cargo test --manifest-path vocab_companion/Cargo.toml
+
 .PHONY: test-style
 test-style: ## Validate test style markers (Arrange / Act / Assert) across `tests/*.incn`
 	@echo "\033[1mChecking test style markers...\033[0m"
@@ -105,15 +110,15 @@ fmt-check: ## Check formatting without writing (`incan fmt --check` per director
 # =============================================================================
 
 .PHONY: check
-check: fmt-check test-style registry-metadata build test ## Format check, style gate, metadata check, build, and test
+check: fmt-check test-style vocab-companion-test registry-metadata build test ## Format check, style gate, metadata check, build, and test
 	@echo "\033[32m✓ check passed\033[0m"
 
 .PHONY: pre-commit
-pre-commit: fmt-check test-style registry-metadata build test ## Fast gate before commit (same as `check`)
+pre-commit: fmt-check test-style vocab-companion-test registry-metadata build test ## Fast gate before commit (same as `check`)
 	@echo "\033[32m✓ pre-commit gate passed\033[0m"
 
 .PHONY: ci
-ci: fmt-check test-style registry-metadata build test smoke-consumer ## Same steps as GitHub Actions `inql` job
+ci: fmt-check test-style vocab-companion-test registry-metadata build test smoke-consumer ## Same steps as GitHub Actions `inql` job
 	@echo "\033[32m✓ ci gate passed\033[0m"
 
 .PHONY: verify
