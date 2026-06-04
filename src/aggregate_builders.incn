@@ -7,6 +7,7 @@ typechecker changes in the Incan compiler.
 """
 
 from function_registry import function_ref_for
+from functions.inputs import ScalarValueOrColumn, scalar_value_or_column_expr
 from projection_builders import (
     ColumnExpr,
     col as col_expr,
@@ -19,6 +20,7 @@ from projection_builders import (
     untyped_column_expr,
 )
 from rust::incan_stdlib::errors import raise_value_error
+from sketch_types import SketchExpr, SketchLogicalType, SketchValueDomain, hll_type, require_hll_sketch
 from window_builders import WindowFunctionApplication, WindowSpec, aggregate_window_call
 
 
@@ -33,6 +35,8 @@ pub enum AggregateKind(str):
     Max = "max"
     ApproxCountDistinct = "approx_count_distinct"
     ApproxPercentile = "approx_percentile"
+    HllSketch = "hll_sketch"
+    HllMerge = "hll_merge"
 
 
 @derive(Clone)
@@ -49,6 +53,7 @@ pub model AggregateMeasure:
     pub filter_expr: ColumnExpr
     pub has_filter: bool
     pub ordering: list[ColumnExpr]
+    pub sketch_type: Option[SketchLogicalType]
 
     def distinct(self) -> Self:
         """Return this aggregate measure with `DISTINCT` input semantics."""
@@ -63,6 +68,7 @@ pub model AggregateMeasure:
             filter_expr=self.filter_expr,
             has_filter=self.has_filter,
             ordering=self.ordering,
+            sketch_type=self.sketch_type,
         )
 
     def filter(self, predicate: ColumnExpr) -> Self:
@@ -78,6 +84,7 @@ pub model AggregateMeasure:
             filter_expr=predicate,
             has_filter=true,
             ordering=self.ordering,
+            sketch_type=self.sketch_type,
         )
 
     def order_by(self, ordering: list[ColumnExpr]) -> Self:
@@ -93,6 +100,7 @@ pub model AggregateMeasure:
             filter_expr=self.filter_expr,
             has_filter=self.has_filter,
             ordering=ordering,
+            sketch_type=self.sketch_type,
         )
 
     def over(self, spec: WindowSpec) -> WindowFunctionApplication:
@@ -124,6 +132,7 @@ pub def sum(expr: ColumnExpr) -> AggregateMeasure:
         filter_expr=col_expr(""),
         has_filter=false,
         ordering=[],
+        sketch_type=None,
     )
 
 
@@ -141,6 +150,7 @@ pub def count(expr: Option[ColumnExpr] = None) -> AggregateMeasure:
             filter_expr=col_expr(""),
             has_filter=false,
             ordering=[],
+            sketch_type=None,
         )
     return AggregateMeasure(
         kind=AggregateKind.Count,
@@ -153,6 +163,7 @@ pub def count(expr: Option[ColumnExpr] = None) -> AggregateMeasure:
         filter_expr=col_expr(""),
         has_filter=false,
         ordering=[],
+        sketch_type=None,
     )
 
 
@@ -174,6 +185,7 @@ pub def avg(expr: ColumnExpr) -> AggregateMeasure:
         filter_expr=col_expr(""),
         has_filter=false,
         ordering=[],
+        sketch_type=None,
     )
 
 
@@ -190,6 +202,7 @@ pub def min(expr: ColumnExpr) -> AggregateMeasure:
         filter_expr=col_expr(""),
         has_filter=false,
         ordering=[],
+        sketch_type=None,
     )
 
 
@@ -206,6 +219,7 @@ pub def max(expr: ColumnExpr) -> AggregateMeasure:
         filter_expr=col_expr(""),
         has_filter=false,
         ordering=[],
+        sketch_type=None,
     )
 
 
@@ -222,6 +236,7 @@ pub def approx_count_distinct(expr: ColumnExpr) -> AggregateMeasure:
         filter_expr=col_expr(""),
         has_filter=false,
         ordering=[],
+        sketch_type=None,
     )
 
 
@@ -242,6 +257,48 @@ pub def approx_percentile(expr: ColumnExpr, percentile: float, accuracy: int = 1
         filter_expr=col_expr(""),
         has_filter=false,
         ordering=[],
+        sketch_type=None,
+    )
+
+
+pub def hll_sketch(
+    expr: ScalarValueOrColumn,
+    value_domain: SketchValueDomain = SketchValueDomain.StringIdentifier,
+    precision: int = 14,
+) -> AggregateMeasure:
+    """Build one HyperLogLog sketch aggregate measure."""
+    input_expr = scalar_value_or_column_expr(expr)
+    sketch_type = hll_type(value_domain=value_domain, precision=precision)
+    return AggregateMeasure(
+        kind=AggregateKind.HllSketch,
+        function_ref=function_ref_for("hll_sketch"),
+        canonical_name="hll_sketch",
+        expr=input_expr,
+        arguments=[input_expr, int_expr(precision)],
+        has_expr=true,
+        is_distinct=false,
+        filter_expr=col_expr(""),
+        has_filter=false,
+        ordering=[],
+        sketch_type=Some(sketch_type),
+    )
+
+
+pub def hll_merge(sketch: SketchExpr) -> AggregateMeasure:
+    """Build one HyperLogLog sketch merge aggregate measure."""
+    checked = require_hll_sketch(sketch, "hll_merge")
+    return AggregateMeasure(
+        kind=AggregateKind.HllMerge,
+        function_ref=function_ref_for("hll_merge"),
+        canonical_name="hll_merge",
+        expr=checked.expr,
+        arguments=[checked.expr],
+        has_expr=true,
+        is_distinct=false,
+        filter_expr=col_expr(""),
+        has_filter=false,
+        ordering=[],
+        sketch_type=Some(checked.sketch_type),
     )
 
 
@@ -254,6 +311,7 @@ pub def aggregate_measure_output_name(measure: AggregateMeasure) -> str:
         output_name = output_name + "_" + scalar_expr_output_name(measure.expr, "expr")
     if measure.kind == AggregateKind.ApproxPercentile:
         output_name = output_name + _approx_percentile_output_suffix(measure)
+    output_name = output_name + _sketch_output_suffix(measure)
     if measure.has_filter:
         output_name = output_name + "_filtered"
     if len(measure.ordering) > 0:
@@ -268,6 +326,21 @@ def _approx_percentile_output_suffix(measure: AggregateMeasure) -> str:
     percentile = _aggregate_literal_name(measure.arguments[1])
     accuracy = _aggregate_literal_name(measure.arguments[2])
     return f"_p{percentile}_a{accuracy}"
+
+
+def _sketch_output_suffix(measure: AggregateMeasure) -> str:
+    """Return the non-default sketch-compatibility suffix for output names."""
+    match measure.sketch_type:
+        Some(sketch_type) =>
+            mut suffix = ""
+            if sketch_type.value_domain != SketchValueDomain.StringIdentifier:
+                suffix = suffix + "_" + sketch_type.value_domain.value()
+            if sketch_type.precision != 14:
+                suffix = suffix + f"_p{sketch_type.precision}"
+            if sketch_type.format.value() != "inql_hll_v1":
+                suffix = suffix + "_" + sketch_type.format.value()
+            return suffix
+        None => return ""
 
 
 def _aggregate_literal_name(expr: ColumnExpr) -> str:

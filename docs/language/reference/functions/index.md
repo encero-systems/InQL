@@ -12,6 +12,7 @@ Today the concrete shipped surfaces are documented here:
 - [Window functions](windows.md)
 - [Format functions](format.md)
 - [Approximate functions](approximate.md)
+- [Sketch functions](sketches.md)
 
 The canonical scalar literal helper is `lit(...)`. Typed literal helpers construct the same scalar-expression representation. Public helper signatures use literal-or-column aliases such as `IntValueOrColumn`, `StrValueOrColumn`, `FloatValueOrColumn`, `BoolValueOrColumn`, and `ScalarValueOrColumn` when a parameter naturally accepts either a primitive literal or an existing scalar expression. These aliases normalize literals into the same scalar expression nodes, so typed helpers can be written as `make_date(2026, 5, 30)` or `substring(col("sku"), 1, 3)` without wrapping constants in `lit(...)`. Referenced columns are validated during Prism/Substrait lowering when the current query schema has concrete primitive kind facts.
 
@@ -49,5 +50,6 @@ The registered helper surface currently includes:
 | `asc(...)`, `desc(...)`, `asc_nulls_first(...)`, `asc_nulls_last(...)`, `desc_nulls_first(...)`, `desc_nulls_last(...)` | ordering | structural sort-field helpers consumed by `order_by(...)` and lowered to Substrait `SortRel.sorts` |
 | `sum(...)`, `count(...)`, `count_expr(...)`, `count_distinct(...)`, `count_if(...)`, `avg(...)`, `min(...)`, `max(...)` | aggregate | registered Substrait extension functions for core aggregates; `count_expr(...)` is an alias spelling for `count(expr)`, while `count_distinct(...)` and `count_if(...)` are compatibility rewrites; core aggregates allow `DISTINCT` and aggregate-local `FILTER` where the aggregate shape is valid |
 | `approx_count_distinct(...)`, `approx_percentile(...)` | aggregate | registered approximate aggregate extension functions; both are explicit approximate choices and keep DataFusion implementation-name rewrites inside the backend adapter |
+| `hll_sketch(...)`, `hll_merge(...)`, `hll_estimate(...)`, `hll_serialize(...)`, `hll_deserialize(...)` | aggregate/scalar | RFC 025 typed HyperLogLog sketch helpers; construction and merge are aggregate measures, estimate/serialization/deserialization are scalar helpers, and all carry explicit sketch metadata through registry and Substrait options |
 
 New function families should grow under this section instead of bloating dataset carrier or dataset method modules.
