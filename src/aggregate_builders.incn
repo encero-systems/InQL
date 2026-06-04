@@ -7,6 +7,7 @@ typechecker changes in the Incan compiler.
 """
 
 from function_registry import function_ref_for
+from functions.inputs import ScalarValueOrColumn, scalar_value_or_column_expr
 from projection_builders import (
     ColumnExpr,
     col as col_expr,
@@ -261,18 +262,19 @@ pub def approx_percentile(expr: ColumnExpr, percentile: float, accuracy: int = 1
 
 
 pub def hll_sketch(
-    expr: ColumnExpr,
+    expr: ScalarValueOrColumn,
     value_domain: SketchValueDomain = SketchValueDomain.StringIdentifier,
     precision: int = 14,
 ) -> AggregateMeasure:
     """Build one HyperLogLog sketch aggregate measure."""
+    input_expr = scalar_value_or_column_expr(expr)
     sketch_type = hll_type(value_domain=value_domain, precision=precision)
     return AggregateMeasure(
         kind=AggregateKind.HllSketch,
         function_ref=function_ref_for("hll_sketch"),
         canonical_name="hll_sketch",
-        expr=expr,
-        arguments=[expr, int_expr(precision)],
+        expr=input_expr,
+        arguments=[input_expr, int_expr(precision)],
         has_expr=true,
         is_distinct=false,
         filter_expr=col_expr(""),

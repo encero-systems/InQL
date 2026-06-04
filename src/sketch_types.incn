@@ -1,5 +1,6 @@
 """Typed sketch logical values for RFC 025 public helpers."""
 
+from functions.inputs import ScalarValueOrColumn, scalar_value_or_column_expr
 from projection_builders import ColumnExpr, ScalarFunctionOption, col, scalar_function_option
 from rust::incan_stdlib::errors import raise_value_error
 
@@ -77,7 +78,7 @@ pub def hll_type(
     )
 
 
-pub def sketch_value(expr: ColumnExpr, sketch_type: SketchLogicalType) -> SketchExpr:
+pub def sketch_value(expr: ScalarValueOrColumn, sketch_type: SketchLogicalType) -> SketchExpr:
     """
     Attach sketch logical type metadata to a scalar expression.
 
@@ -85,10 +86,10 @@ pub def sketch_value(expr: ColumnExpr, sketch_type: SketchLogicalType) -> Sketch
         stored = sketch_value(col("users_hll"), hll_type())
 
     Parameters:
-        expr: Scalar expression that carries opaque sketch state.
+        expr: Scalar expression or literal that carries opaque sketch state.
         sketch_type: Explicit logical sketch type for the expression.
     """
-    return SketchExpr(expr=expr, sketch_type=sketch_type)
+    return SketchExpr(expr=scalar_value_or_column_expr(expr), sketch_type=sketch_type)
 
 
 pub def sketch_col(name: str, sketch_type: SketchLogicalType) -> SketchExpr:
@@ -151,4 +152,7 @@ module tests:
     def test_sketch_col_preserves_expression_and_type() -> None:
         sketch = sketch_col("users_hll", hll_type())
         assert column_expr_name(sketch.expr) == "users_hll"
+        assert sketch.sketch_type.family == SketchFamily.HyperLogLog
+    def test_sketch_value_accepts_literal_payloads() -> None:
+        sketch = sketch_value("opaque_payload", hll_type())
         assert sketch.sketch_type.family == SketchFamily.HyperLogLog

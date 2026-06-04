@@ -8,8 +8,9 @@ from function_registry import (
     hll_scalar_spec,
     v0_1,
 )
+from functions.inputs import StrValueOrColumn, str_value_or_column_expr
 from functions.registry import register_function, registered_application_with_options
-from projection_builders import ColumnExpr, col, column_expr_function_name
+from projection_builders import col, column_expr_function_name
 from sketch_types import (
     SketchExpr,
     SketchSerializationFormat,
@@ -28,7 +29,7 @@ from substrait.function_extensions import HLL_DESERIALIZE_FUNCTION_ANCHOR
     substrait=extension_mapping("hll_deserialize", HLL_DESERIALIZE_FUNCTION_ANCHOR),
 ))
 pub def hll_deserialize(
-    payload: ColumnExpr,
+    payload: StrValueOrColumn,
     value_domain: SketchValueDomain = SketchValueDomain.StringIdentifier,
     precision: int = 14,
     format: SketchSerializationFormat = SketchSerializationFormat.InqlHllV1,
@@ -38,15 +39,20 @@ pub def hll_deserialize(
 
     Examples:
         users_hll = hll_deserialize(col("users_hll_payload"), precision=14)
+        literal_hll = hll_deserialize("opaque_payload", precision=14)
 
     Parameters:
-        payload: Scalar expression containing the serialized sketch payload.
+        payload: String value or scalar expression containing the serialized sketch payload.
         value_domain: Domain of values summarized by the sketch.
         precision: Positive HyperLogLog precision parameter used for merge compatibility.
         format: Explicit serialized sketch format identity.
     """
     sketch_type = hll_type(value_domain=value_domain, precision=precision, format=format)
-    expr = registered_application_with_options("hll_deserialize", [payload], sketch_scalar_options(sketch_type))
+    expr = registered_application_with_options(
+        "hll_deserialize",
+        [str_value_or_column_expr(payload)],
+        sketch_scalar_options(sketch_type),
+    )
     return sketch_value(expr, sketch_type)
 
 
