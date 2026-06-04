@@ -565,10 +565,10 @@ def test_lazy_frame__deeper_independent_roots_still_lower_with_stable_shapes() -
     right_base: LazyFrame[Order] = lazy_frame_named_table("orders_archive")
 
     # -- Act --
-    right_joined: LazyFrame[Order] = right_base.filter(always_false()).order_by([col("id")]).join(
-        right_base.filter(always_false()).order_by([col("id")]),
-        always_true(),
-    )
+    right_joined: LazyFrame[Order] = right_base
+        .filter(always_false())
+        .order_by([col("id")])
+        .join(right_base.filter(always_false()).order_by([col("id")]), always_true())
     joined: LazyFrame[Order] = left.join(right_joined, always_true())
     plan = joined.to_substrait_plan()
 

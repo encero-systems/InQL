@@ -26,10 +26,10 @@ from window_builders import (
 
 def test_window_builders__spec_preserves_partition_and_order_columns() -> None:
     # -- Arrange / Act --
-    spec = (window().partition_by([col("customer_id")]).order_by([col("amount")]).rows_between(
-        unbounded_preceding(),
-        current_row(),
-    ))
+    spec = (window()
+        .partition_by([col("customer_id")])
+        .order_by([col("amount")])
+        .rows_between(unbounded_preceding(), current_row()))
 
     # -- Assert --
     assert len(spec.partition_columns) == 1, "window partition should record explicit partition expressions"

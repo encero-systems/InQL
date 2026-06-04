@@ -338,9 +338,10 @@ def test_prism__rewrite_collapses_adjacent_limits_projects_and_order_by() -> Non
 def test_prism__rewrite_collapses_adjacent_aggregates_by_merging_measures() -> None:
     # -- Arrange --
     _register_projection_test_schema(str("orders"))
-    aggregated: PrismCursor[Order] = prism_cursor_named_table(str("orders")).group_by([col("id")]).agg([sum(col("id"))]).agg(
-        [count()],
-    )
+    aggregated: PrismCursor[Order] = prism_cursor_named_table(str("orders"))
+        .group_by([col("id")])
+        .agg([sum(col("id"))])
+        .agg([count()])
 
     # -- Act --
     output_cols = prism_cursor_output_columns(aggregated)
@@ -361,9 +362,9 @@ def test_prism__rewrite_collapses_adjacent_aggregates_by_merging_measures() -> N
 def test_prism__aggregate_output_columns_include_approximate_measures() -> None:
     # -- Arrange --
     _register_projection_test_schema(str("orders"))
-    aggregated: PrismCursor[Order] = prism_cursor_named_table(str("orders")).group_by([col("id")]).agg(
-        [approx_count_distinct(col("id")), approx_percentile(col("id"), 0.5)],
-    )
+    aggregated: PrismCursor[Order] = prism_cursor_named_table(str("orders"))
+        .group_by([col("id")])
+        .agg([approx_count_distinct(col("id")), approx_percentile(col("id"), 0.5)])
 
     # -- Act --
     output_cols = prism_cursor_output_columns(aggregated)
@@ -380,10 +381,9 @@ def test_prism__rewrite_collapses_adjacent_compatible_windows() -> None:
     spec = window().order_by([col("id")])
 
     # -- Act --
-    windowed: PrismCursor[Order] = prism_cursor_named_table(str("orders")).with_window_column(
-        "first_row_num",
-        row_number().over(spec),
-    ).with_window_column("second_row_num", row_number().over(spec))
+    windowed: PrismCursor[Order] = prism_cursor_named_table(str("orders"))
+        .with_window_column("first_row_num", row_number().over(spec))
+        .with_window_column("second_row_num", row_number().over(spec))
     plan = windowed.to_substrait_plan()
 
     # -- Assert --
@@ -400,10 +400,9 @@ def test_prism__with_column_tracks_output_columns_and_collapses_adjacent_project
     base: PrismCursor[Order] = prism_cursor_named_table(str("orders_projection_prism"))
 
     # -- Act --
-    projected: PrismCursor[Order] = base.with_column("double_id", mul(col("id"), 2)).with_column(
-        "triple_id",
-        mul(col("id"), 3),
-    )
+    projected: PrismCursor[Order] = base
+        .with_column("double_id", mul(col("id"), 2))
+        .with_column("triple_id", mul(col("id"), 3))
     output_cols = prism_cursor_output_columns(projected)
     plan = projected.to_substrait_plan()
 

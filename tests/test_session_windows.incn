@@ -110,10 +110,9 @@ def test_session_windows__collect_executes_ranking_window_functions() -> None:
     spec = _customer_amount_window()
 
     # -- Act --
-    windowed = (_orders(session, "aggregate_orders_ranking").with_window_column("row_num", row_number().over(spec)).with_window_column(
-        "amount_rank",
-        rank().over(spec),
-    ))
+    windowed = (_orders(session, "aggregate_orders_ranking")
+        .with_window_column("row_num", row_number().over(spec))
+        .with_window_column("amount_rank", rank().over(spec)))
     df = _collect_or_fail(session, windowed)
     payload = df.preview_text()
     resolved = df.resolved_columns()
@@ -255,10 +254,10 @@ def test_session_windows__collect_executes_scalar_and_distinct_window_arguments(
     distinct_arg = _modifier_orders(session, "aggregate_modifiers_window_distinct").with_window_column(
         "running_distinct_products",
         count_distinct(col("product_id")).over(
-            window().partition_by([col("customer_id")]).order_by([desc(col("amount"))]).rows_between(
-                unbounded_preceding_bound(),
-                current_row_bound(),
-            ),
+            window()
+                .partition_by([col("customer_id")])
+                .order_by([desc(col("amount"))])
+                .rows_between(unbounded_preceding_bound(), current_row_bound()),
         ),
     )
     scalar_df = _collect_or_fail(session, scalar_arg)
@@ -289,9 +288,9 @@ def test_session_windows__collect_executes_window_below_filter() -> None:
     spec = _customer_amount_window()
 
     # -- Act --
-    filtered = _orders(session, "aggregate_orders_nested_filter").with_window_column("amount_rank", rank().over(spec)).filter(
-        eq(col("amount_rank"), 1),
-    )
+    filtered = _orders(session, "aggregate_orders_nested_filter")
+        .with_window_column("amount_rank", rank().over(spec))
+        .filter(eq(col("amount_rank"), 1))
     df = _collect_or_fail(session, filtered)
     payload = df.preview_text()
     resolved = df.resolved_columns()

@@ -160,10 +160,10 @@ def test_session_filters__mixed_scalar_query_shape_executes_end_to_end() -> None
         session.read_csv("order_lines", ORDER_LINES_CSV_FIXTURE),
         "order lines fixture should load",
     )
-    query_like = lazy.filter(and_(gt(col("qty"), 2), in_(col("status"), [lit("open"), lit("closed")]))).with_column(
-        "line_total",
-        mul(cast(col("unit_price"), float), cast(col("qty"), float)),
-    ).order_by([desc(col("line_total"))])
+    query_like = lazy
+        .filter(and_(gt(col("qty"), 2), in_(col("status"), [lit("open"), lit("closed")])))
+        .with_column("line_total", mul(cast(col("unit_price"), float), cast(col("qty"), float)))
+        .order_by([desc(col("line_total"))])
     plan_root = root_rel(query_like.to_substrait_plan())
     df = assert_is_ok(session.collect(query_like), "mixed scalar query shape should collect")
     payload = df.preview_text()

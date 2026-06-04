@@ -33,10 +33,10 @@ def _read_transform_collect_display_write(
 
 
 def open_eur_lines_with_discount(lines: LazyFrame[OrderLine]) -> LazyFrame[OrderLine]:
-    return lines.filter(eq(col("status"), lit("open"))).filter(eq(col("currency"), lit("EUR"))).with_column(
-        "discounted_unit_price",
-        mul(col("unit_price"), lit(0.9)),
-    )
+    return lines
+        .filter(eq(col("status"), lit("open")))
+        .filter(eq(col("currency"), lit("EUR")))
+        .with_column("discounted_unit_price", mul(col("unit_price"), lit(0.9)))
 
 
 def print_lazy_schema(label: str, frame: LazyFrame[OrderLine]) -> None:

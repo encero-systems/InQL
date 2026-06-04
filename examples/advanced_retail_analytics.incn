@@ -1,0 +1,160 @@
+"""
+Example: advanced retail analytics over a 100-row CSV fixture.
+
+This is a compact spike of the larger InQL surface:
+
+- typed Session CSV ingestion
+- scalar cleanup and derivation
+- JSON validation and path extraction
+- arbitrary URL query-parameter extraction
+- hashing, regex, math, and date/time helpers
+- grouped aggregate measures
+- window functions composed with generators
+"""
+
+from dataset import DataFrame, LazyFrame
+from functions import (
+    array,
+    array_contains,
+    array_distinct,
+    avg,
+    check_json,
+    col,
+    count,
+    count_distinct,
+    date_part,
+    desc,
+    eq,
+    explode,
+    gt,
+    json_array_length,
+    json_extract_path_text,
+    lower,
+    max,
+    min,
+    modulo,
+    mul,
+    parse_url,
+    regexp_extract,
+    regexp_like,
+    round,
+    row_number,
+    sha256,
+    sub,
+    sum,
+    trim,
+    upper,
+    window,
+)
+from projection_builders import ColumnExpr
+from session import Session, SessionError, report_session_error
+
+
+@derive(Clone)
+pub model RetailOrder:
+    pub order_id: int
+    pub customer_id: str
+    pub region: str
+    pub status: str
+    pub quantity: int
+    pub unit_price: float
+    pub discount_pct: float
+    pub created_at: str
+    pub product_url: str
+    pub event_json: str
+
+
+const ADVANCED_RETAIL_CSV_FIXTURE: str = "tests/fixtures/advanced_retail_orders.csv"
+
+
+def main() -> None:
+    mut session = Session.default()
+    match run_advanced_retail_spike(session):
+        Ok(_) => println("advanced retail analytics spike complete")
+        Err(err) => report_session_error("example.advanced_retail_analytics", err)
+
+
+def run_advanced_retail_spike(mut session: Session) -> Result[None, SessionError]:
+    orders: LazyFrame[RetailOrder] = session.read_csv("advanced_retail_orders", ADVANCED_RETAIL_CSV_FIXTURE)?
+    enriched = enrich_orders(orders.clone())
+
+    _print_collected(
+        session.clone(),
+        "enriched high-value orders",
+        enriched
+            .filter(eq(col("status_norm"), "paid"))
+            .filter(gt(col("net_amount"), 100.0))
+            .order_by([desc(col("net_amount"))])
+            .limit(8),
+    )?
+    _print_collected(session.clone(), "paid rollup by region and channel", paid_rollup(enriched.clone()))?
+    _print_collected(session.clone(), "generated tags with customer order rank", generated_ranked_tags(orders))?
+    return Ok(None)
+
+
+def enrich_orders(orders: LazyFrame[RetailOrder]) -> LazyFrame[RetailOrder]:
+    gross_amount = round(mul(col("quantity"), col("unit_price")), 2)
+    net_amount = round(mul(gross_amount.clone(), sub(1.0, col("discount_pct"))), 2)
+    return orders
+        .with_column("region_norm", upper(trim(col("region"))))
+        .with_column("status_norm", lower(trim(col("status"))))
+        .with_column("gross_amount", gross_amount)
+        .with_column("net_amount", net_amount)
+        .with_column("order_bucket", modulo(col("order_id"), 10))
+        .with_column("order_year", date_part("year", col("created_at")))
+        .with_column("customer_hash", sha256(col("customer_id")))
+        .with_column("json_valid", check_json(col("event_json")))
+        .with_column("event_type", json_extract_path_text(col("event_json"), "$.type"))
+        .with_column("channel", json_extract_path_text(col("event_json"), "$.channel"))
+        .with_column("tag_count", json_array_length(json_extract_path_text(col("event_json"), "$.tags")))
+        .with_column("campaign", parse_url(col("product_url"), "campaign"))
+        .with_column("product_page", parse_url(col("product_url"), "page"))
+        .with_column("sku_family", regexp_extract(parse_url(col("product_url"), "sku"), "^SKU-([A-Z]+)", 1))
+        .with_column("status_looks_clean", regexp_like(col("status_norm"), "^[a-z]+$"))
+        .with_column("is_paid_event", array_contains(_derived_tags(), "paid"))
+
+
+def paid_rollup(enriched: LazyFrame[RetailOrder]) -> LazyFrame[RetailOrder]:
+    paid = enriched.filter(eq(col("status_norm"), "paid"))
+    mut measures = [sum(col("net_amount"))]
+    measures.append(avg(col("net_amount")))
+    measures.append(min(col("net_amount")))
+    measures.append(max(col("net_amount")))
+    measures.append(count())
+    measures.append(count_distinct(col("customer_id")))
+    return paid.group_by([col("region_norm"), col("channel")]).agg(measures).order_by([desc(col("sum_net_amount"))])
+
+
+def generated_ranked_tags(orders: LazyFrame[RetailOrder]) -> LazyFrame[RetailOrder]:
+    tagged = orders
+        .with_column("status_norm", lower(trim(col("status"))))
+        .with_column("json_valid", check_json(col("event_json")))
+        .with_column("campaign", parse_url(col("product_url"), "campaign"))
+        .with_column("channel", json_extract_path_text(col("event_json"), "$.channel"))
+    ranked = tagged.with_window_column(
+        "customer_order_rank",
+        row_number().over(window().partition_by([col("customer_id")]).order_by([desc(col("unit_price"))])),
+    )
+    return ranked
+        .generate(explode(_derived_tags(), "derived_tag"))
+        .filter(eq(col("json_valid"), true))
+        .order_by([col("customer_id"), col("customer_order_rank")])
+        .limit(12)
+
+
+def _derived_tags() -> ColumnExpr:
+    return array_distinct(array([col("status_norm"), col("campaign"), col("channel")]))
+
+
+def _print_collected[T with Clone](mut session: Session, label: str, frame: LazyFrame[T]) -> Result[None, SessionError]:
+    df = session.collect(frame)?
+    _print_data_frame(label, df)
+    return Ok(None)
+
+
+def _print_data_frame[T with Clone](label: str, df: DataFrame[T]) -> None:
+    println("")
+    println(label)
+    println(f"columns: {df.resolved_columns():?}")
+    println(f"rows: {df.row_count()}")
+    println(df.preview_text())

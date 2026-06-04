@@ -632,5 +632,8 @@ fn expr_is_aggregate(expr: &IncanExpr) -> bool {
 }
 
 fn is_aggregate_name(name: &str) -> bool {
-    matches!(name, "sum" | "count" | "avg" | "min" | "max")
+    matches!(
+        name,
+        "sum" | "count" | "count_distinct" | "avg" | "min" | "max"
+    )
 }

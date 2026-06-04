@@ -1,0 +1,251 @@
+"""
+Advanced retail analytics over InQL's dependency-activated query-block surface.
+
+Run from this directory with:
+
+    incan run src/main.incn
+"""
+
+import pub::inql
+from pub::inql import (
+    DataFrame,
+    LazyFrame,
+    Session,
+    SessionError,
+    array,
+    array_distinct,
+    avg,
+    check_json,
+    col,
+    count,
+    count_distinct,
+    date_part,
+    desc,
+    eq,
+    explode,
+    gt,
+    json_array_length,
+    json_extract_path_text,
+    lower,
+    max,
+    min,
+    modulo,
+    mul,
+    parse_url,
+    regexp_extract,
+    regexp_like,
+    round,
+    row_number,
+    sha256,
+    sub,
+    sum,
+    trim,
+    upper,
+    window,
+)
+
+
+@derive(Clone)
+pub model RetailOrder:
+    pub order_id: int
+    pub customer_id: str
+    pub region: str
+    pub status: str
+    pub quantity: int
+    pub unit_price: float
+    pub discount_pct: float
+    pub created_at: str
+    pub product_url: str
+    pub event_json: str
+
+
+@derive(Clone)
+pub model RetailHighValueOrder:
+    pub order_id: int
+    pub customer_id: str
+    pub region_norm: str
+    pub gross_amount: float
+    pub net_amount: float
+    pub order_bucket: int
+    pub order_year: int
+    pub customer_hash: str
+    pub json_valid: bool
+    pub event_type: str
+    pub channel: str
+    pub tag_count: int
+    pub campaign: str
+    pub product_page: str
+    pub sku_family: str
+    pub status_looks_clean: bool
+
+
+@derive(Clone)
+pub model RetailRollup:
+    pub region_norm: str
+    pub channel: str
+    pub total_net_amount: float
+    pub avg_net_amount: float
+    pub min_net_amount: float
+    pub max_net_amount: float
+    pub order_count: int
+    pub customer_count: int
+
+
+@derive(Clone)
+pub model RetailGeneratedTag:
+    pub order_id: int
+    pub customer_id: str
+    pub status_norm: str
+    pub campaign: str
+    pub channel: str
+    pub customer_order_rank: int
+    pub derived_tag: str
+
+
+const ADVANCED_RETAIL_CSV_FIXTURE: str = "../../tests/fixtures/advanced_retail_orders.csv"
+
+
+def main() -> None:
+    mut session = Session.default()
+    match run_query_block_spike(session):
+        Ok(_) => println("advanced retail query-block spike complete")
+        Err(err) => println(err.error_message())
+
+
+def run_query_block_spike(mut session: Session) -> Result[None, SessionError]:
+    # Load a typed CSV once, then reuse the same lazy source across separate query-block pipelines.
+    orders: LazyFrame[RetailOrder] = session.read_csv("advanced_retail_orders_query", ADVANCED_RETAIL_CSV_FIXTURE)?
+
+    _print_collected(session.clone(), "query-block high-value orders", high_value_orders(orders.clone()))?
+    _print_collected(session.clone(), "query-block paid rollup by region and channel", paid_rollup(orders.clone()))?
+    _print_collected(
+        session.clone(),
+        "query-block generated tags with customer order rank",
+        generated_ranked_tags(orders),
+    )?
+    return Ok(None)
+
+
+def high_value_orders(orders: LazyFrame[RetailOrder]) -> LazyFrame[RetailHighValueOrder]:
+    # Do row-level scalar cleanup in the fluent API before the relational query block.
+    enriched = orders
+        .with_column("region_norm", upper(trim(col("region"))))
+        .with_column("status_norm", lower(trim(col("status"))))
+        .with_column("gross_amount", round(mul(col("quantity"), col("unit_price")), 2))
+        .with_column(
+            "net_amount",
+            round(mul(round(mul(col("quantity"), col("unit_price")), 2), sub(1.0, col("discount_pct"))), 2),
+        )
+        .with_column("order_bucket", modulo(col("order_id"), 10))
+        .with_column("order_year", date_part("year", col("created_at")))
+        .with_column("customer_hash", sha256(col("customer_id")))
+        .with_column("json_valid", check_json(col("event_json")))
+        .with_column("event_type", json_extract_path_text(col("event_json"), "$.type"))
+        .with_column("channel", json_extract_path_text(col("event_json"), "$.channel"))
+        .with_column("tag_count", json_array_length(json_extract_path_text(col("event_json"), "$.tags")))
+        .with_column("campaign", parse_url(col("product_url"), "campaign"))
+        .with_column("product_page", parse_url(col("product_url"), "page"))
+        .with_column("sku_family", regexp_extract(parse_url(col("product_url"), "sku"), "^SKU-([A-Z]+)", 1))
+        .with_column("status_looks_clean", regexp_like(col("status_norm"), "^[a-z]+$"))
+    paid = enriched.filter(eq(col("status_norm"), "paid"))
+    # The query block can reference ordinary local Incan values, so `paid` stays a normal lazy frame binding.
+    return query {
+        FROM paid
+        SELECT
+            .order_id as order_id
+            .customer_id as customer_id
+            .region_norm as region_norm
+            .gross_amount as gross_amount
+            .net_amount as net_amount
+            .order_bucket as order_bucket
+            .order_year as order_year
+            .customer_hash as customer_hash
+            .json_valid as json_valid
+            .event_type as event_type
+            .channel as channel
+            .tag_count as tag_count
+            .campaign as campaign
+            .product_page as product_page
+            .sku_family as sku_family
+            .status_looks_clean as status_looks_clean
+        WHERE .net_amount > 100
+        ORDER BY desc(.net_amount)
+        LIMIT 8
+    }
+
+
+def paid_rollup(orders: LazyFrame[RetailOrder]) -> LazyFrame[RetailRollup]:
+    enriched = orders
+        .with_column("region_norm", upper(trim(col("region"))))
+        .with_column("status_norm", lower(trim(col("status"))))
+        .with_column("channel", json_extract_path_text(col("event_json"), "$.channel"))
+        .with_column(
+            "net_amount",
+            round(mul(round(mul(col("quantity"), col("unit_price")), 2), sub(1.0, col("discount_pct"))), 2),
+        )
+    # Keep reusable derivations outside the aggregate query so the grouping block stays focused on relational shape.
+    return query {
+        FROM enriched
+        WHERE eq(.status_norm, "paid")
+        GROUP BY
+            .region_norm,
+            .channel
+        SELECT
+            # Aggregate aliases define the typed output model fields.
+            .region_norm as region_norm
+            .channel as channel
+            sum(.net_amount) as total_net_amount
+            avg(.net_amount) as avg_net_amount
+            min(.net_amount) as min_net_amount
+            max(.net_amount) as max_net_amount
+            count() as order_count
+            count_distinct(.customer_id) as customer_count
+        ORDER BY desc(.total_net_amount)
+    }
+
+
+def generated_ranked_tags(orders: LazyFrame[RetailOrder]) -> LazyFrame[RetailGeneratedTag]:
+    # This block demonstrates generator and window composition inside the query vocabulary.
+    return query {
+        FROM orders
+        WHERE eq(check_json(.event_json), true)
+        EXPLODE
+            # Build derived tags from scalar helpers, then expand them into one row per tag.
+            array_distinct(
+                array(
+                    [lower(trim(.status)), parse_url(.product_url, "campaign"), json_extract_path_text(
+                        .event_json,
+                        "$.channel",
+                    )],
+                ),
+            ) as derived_tag
+        WINDOW BY
+            # Window output is available to the later SELECT list like any other derived column.
+            customer_order_rank = row_number().over(window().partition_by([.customer_id]).order_by([desc(.unit_price)]))
+        SELECT
+            .order_id as order_id
+            .customer_id as customer_id
+            lower(trim(.status)) as status_norm
+            parse_url(.product_url, "campaign") as campaign
+            json_extract_path_text(.event_json, "$.channel") as channel
+            .customer_order_rank as customer_order_rank
+            .derived_tag as derived_tag
+        ORDER BY
+            .customer_id,
+            .customer_order_rank
+        LIMIT 12
+    }
+
+
+def _print_collected[T with Clone](mut session: Session, label: str, frame: LazyFrame[T]) -> Result[None, SessionError]:
+    df = session.collect(frame)?
+    _print_data_frame(label, df)
+    return Ok(None)
+
+
+def _print_data_frame[T with Clone](label: str, df: DataFrame[T]) -> None:
+    println("")
+    println(label)
+    println(f"columns: {df.resolved_columns():?}")
+    println(f"rows: {df.row_count()}")
+    println(df.preview_text())
