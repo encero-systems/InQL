@@ -65,6 +65,20 @@ def test_sketch_functions__hll_sketch_builds_typed_aggregate_measure() -> None:
             assert false, "hll_sketch should carry sketch output metadata"
 
 
+def test_sketch_functions__hll_sketch_accepts_literal_source_values() -> None:
+    # -- Arrange / Act --
+    measure = hll_sketch("anonymous-user", precision=12)
+
+    # -- Assert --
+    assert measure.kind == AggregateKind.HllSketch, "hll_sketch should accept primitive values through the typed input surface"
+    assert aggregate_measure_output_name(measure) == "hll_sketch_expr_p12", "literal inputs should use the scalar fallback output label"
+    match measure.sketch_type:
+        Some(sketch_type) =>
+            assert sketch_type.precision == 12, "literal hll_sketch inputs should preserve sketch precision"
+        None =>
+            assert false, "hll_sketch should carry sketch output metadata for literal inputs"
+
+
 def test_sketch_functions__hll_merge_preserves_typed_sketch_metadata() -> None:
     # -- Arrange --
     sketch = sketch_col("daily_users_hll", hll_type(precision=12))
@@ -120,3 +134,12 @@ def test_sketch_functions__hll_deserialize_returns_typed_sketch_expr() -> None:
     assert sketch.sketch_type.value_domain == SketchValueDomain.IntegerIdentifier, "hll_deserialize should preserve value domain"
     assert sketch.sketch_type.precision == 12, "hll_deserialize should preserve precision"
     assert column_expr_option_value(sketch.expr, SKETCH_PRECISION_OPTION) == "12", "hll_deserialize should carry precision in scalar options"
+
+
+def test_sketch_functions__hll_deserialize_accepts_string_payload_values() -> None:
+    # -- Arrange / Act --
+    sketch = hll_deserialize("opaque_payload", precision=12)
+
+    # -- Assert --
+    assert column_expr_function_name(sketch.expr) == "hll_deserialize", "hll_deserialize should accept string payload values"
+    assert sketch.sketch_type.precision == 12, "hll_deserialize should preserve sketch precision for literal payloads"

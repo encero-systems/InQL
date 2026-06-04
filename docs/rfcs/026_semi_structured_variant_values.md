@@ -85,16 +85,20 @@ component. `is_null_value(...)` must be true only for semi-structured null value
 
 SQL null must remain distinct from variant null. If a predicate input is SQL null rather than a present variant value, the predicate result must follow InQL's scalar null behavior for missing inputs rather than returning true for `is_null_value(...)`.
 
-`parse_variant_json(expr)` is the strict JSON-to-variant helper. `try_parse_variant_json(expr)` is the recoverable form.
-Strict parse helpers must fail malformed payloads according to registry error metadata. Recoverable parse helpers must
-return SQL null or another explicitly documented recoverable result for malformed payloads. A JSON `null` payload must
-produce a present variant null, not SQL null.
+`parse_variant_json(payload)` is the strict JSON-to-variant helper. `try_parse_variant_json(payload)` is the
+recoverable form. Their payload parameter accepts `StrValueOrColumn`, so authors may pass a string literal, a string
+column reference, or a string-producing expression without wrapping primitive values in `lit(...)`. Strict parse helpers
+must fail malformed payloads according to registry error metadata. Recoverable parse helpers must return SQL null or
+another explicitly documented recoverable result for malformed payloads. A JSON `null` payload must produce a present
+variant null, not SQL null.
 
-`variant_get(expr, path)` accesses a literal path beginning with `$`. The current path spelling matches the RFC 022 JSON
-path helper spelling so authors do not learn two root-marker conventions, but it remains a variant operation rather than
-a JSON-text extraction shortcut. Variant field/path access must preserve whether a missing path produced SQL null,
-variant null, or a present value. If a backend cannot preserve that distinction, the adapter must reject the operation or
-require an explicit compatibility mode.
+`variant_get(expr, path)` accesses a variant path. Literal path strings are validated as beginning with `$`. String
+columns or string-producing expressions are accepted as dynamic paths and are validated at execution time by the
+implementation that evaluates the expression. The current path spelling matches the RFC 022 JSON path helper spelling so
+authors do not learn two root-marker conventions, but it remains a variant operation rather than a JSON-text extraction
+shortcut. Variant field/path access must preserve whether a missing path produced SQL null, variant null, or a present
+value. If a backend cannot preserve that distinction, the adapter must reject the operation or require an explicit
+compatibility mode.
 
 Substrait lowering preserves variant logical type identity in registry metadata and scalar function options. A backend
 adapter may map variant values and predicates to native functions only when it preserves the InQL variant contract. The
@@ -169,5 +173,6 @@ Substrait extension mappings and carry variant kind, encoding, and parse mode as
   RFC 022 string-backed JSON helpers remain stable.
 - The shipped kind set is the JSON-compatible family plus timestamp: null, boolean, integer, float, string, timestamp,
   array, and object. Decimal, binary, date, and interval are not part of this RFC's public variant-kind contract.
-- Variant path access uses literal `$`-rooted paths through `variant_get(...)`; missing-path runtime behavior is an
-  execution contract for adapters and must not collapse SQL null and variant null.
+- Variant path access uses `$`-rooted literal paths or string-producing dynamic path expressions through
+  `variant_get(...)`; missing-path runtime behavior is an execution contract for adapters and must not collapse SQL null
+  and variant null.

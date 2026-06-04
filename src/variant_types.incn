@@ -1,5 +1,11 @@
 """Semi-structured variant logical value metadata and expression wrappers."""
 
+from functions.inputs import (
+    ScalarValueOrColumn,
+    StrValueOrColumn,
+    scalar_value_or_column_expr,
+    str_value_or_column_expr,
+)
 from projection_builders import ColumnExpr, ScalarFunctionOption, col, scalar_function_option, str_expr
 from rust::incan_stdlib::errors import raise_value_error
 
@@ -72,18 +78,19 @@ pub def variant_type(
     return VariantLogicalType(kind=kind, encoding=encoding)
 
 
-pub def variant_value(expr: ColumnExpr, variant_type: VariantLogicalType) -> VariantExpr:
+pub def variant_value(expr: ScalarValueOrColumn, variant_type: VariantLogicalType) -> VariantExpr:
     """
     Attach variant logical type metadata to a scalar expression.
 
     Examples:
         payload = variant_value(col("payload_value"), variant_type())
+        literal_payload = variant_value("{"status":"paid"}", variant_type())
 
     Parameters:
-        expr: Scalar expression carrying semi-structured variant state.
+        expr: Primitive value or scalar expression carrying semi-structured variant state.
         variant_type: Explicit logical variant type for the expression.
     """
-    return VariantExpr(expr=expr, variant_type=variant_type)
+    return VariantExpr(expr=scalar_value_or_column_expr(expr), variant_type=variant_type)
 
 
 pub def variant_col(name: str, variant_type: VariantLogicalType = variant_type()) -> VariantExpr:
@@ -131,6 +138,13 @@ pub def variant_path_expr(path: str) -> ColumnExpr:
     return str_expr(path)
 
 
+pub def variant_path_value_or_column_expr(path: StrValueOrColumn) -> ColumnExpr:
+    """Return a variant path value as an expression, validating only literal path strings."""
+    match path:
+        str(text) => return variant_path_expr(text)
+        value => return str_value_or_column_expr(value)
+
+
 module tests:
     from std.testing import assert_raises
     from projection_builders import column_expr_name
@@ -149,6 +163,9 @@ module tests:
     def test_variant_col_preserves_expression_and_type() -> None:
         payload = variant_col("payload_value", variant_type(VariantKind.Object))
         assert column_expr_name(payload.expr) == "payload_value"
+        assert payload.variant_type.kind == VariantKind.Object
+    def test_variant_value_accepts_literal_values() -> None:
+        payload = variant_value("{\"status\":\"paid\"}", variant_type(VariantKind.Object))
         assert payload.variant_type.kind == VariantKind.Object
     def test_variant_path_expr_requires_explicit_root() -> None:
         assert_raises[ValueError](_invalid_variant_path)

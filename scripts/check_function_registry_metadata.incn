@@ -136,10 +136,15 @@ def declarations_by_name(module: JsonValue, kind: str) -> dict[str, JsonValue]:
 def declaration_named(module: JsonValue, name: str) -> Option[JsonValue]:
     """Return one declaration by name from a module."""
     items = require_array(require_field(module, "declarations", "module"), "module.declarations")
+    mut fallback: Option[JsonValue] = None
     for declaration in items:
         if require_string_field(declaration, "name", "declaration") == name:
-            return Some(declaration)
-    return None
+            if let None = fallback:
+                fallback = Some(declaration)
+            declaration_kind = require_string_field(declaration, "kind", "declaration")
+            if declaration_kind == "function" and len(registry_decorators(declaration)) > 0:
+                return Some(declaration)
+    return fallback
 
 
 def resolve_declaration_path(
@@ -152,7 +157,8 @@ def resolve_declaration_path(
     if depth > 8:
         return metadata_fail[Option[JsonValue]](f"{context}: alias resolution exceeded maximum depth")
     if len(target_path) < 2:
-        return metadata_fail[Option[JsonValue]]("alias target path must contain a module path and declaration name")
+        # Public compatibility aliases can point at module-local imported names instead of owning decorators.
+        return None
 
     module_path_value = target_path[:-1]
     declaration_name = target_path[len(target_path) - 1]

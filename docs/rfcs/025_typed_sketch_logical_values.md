@@ -153,10 +153,12 @@ The implemented first family is HyperLogLog:
 - `SketchLogicalType` carries `family`, `value_domain`, `precision`, and `format`.
 - `SketchExpr` pairs a scalar expression with `SketchLogicalType`.
 - `hll_type(...)`, `sketch_value(...)`, and `sketch_col(...)` build typed sketch metadata at the authoring boundary.
-- `hll_sketch(...)` is an aggregate measure that produces typed HyperLogLog state.
+- `sketch_value(...)` accepts the standard scalar value-or-column input surface before attaching sketch metadata.
+- `hll_sketch(...)` is an aggregate measure that produces typed HyperLogLog state from scalar values or expressions.
 - `hll_merge(...)` is an aggregate measure over existing typed HyperLogLog state.
 - `hll_estimate(...)`, `hll_serialize(...)`, and `hll_deserialize(...)` are scalar helpers over typed sketch state or
   explicit serialized payloads.
+- `hll_deserialize(...)` accepts the standard string value-or-column input surface for explicit payloads.
 - The public `SketchFamily` API exposes HyperLogLog in this implementation; additional families should add their own
   family-specific type builders, serialization formats, registry policies, and tests rather than sharing HLL metadata.
 - Function registry entries expose typed sketch policy metadata and Substrait extension mappings.
@@ -208,6 +210,9 @@ explicit deserialization with the required sketch type metadata.
 
 - The first public type spelling is explicit library metadata: `SketchLogicalType`, `SketchExpr`, `hll_type(...)`,
   `sketch_value(...)`, and `sketch_col(...)`.
+- Public sketch helpers use the same typed value-or-column input conventions as the post-RFC018 scalar catalog: source
+  values are accepted as primitive values or scalar expressions, while serialized sketch payloads use the string
+  value-or-column surface.
 - HyperLogLog is the first implemented sketch family because it cleanly extends the distinct-count approximation surface.
 - HyperLogLog merge compatibility is defined by family, value domain, precision, and serialization format.
 - Serialized sketch format identity is explicit and portable at the InQL logical layer. RFC 025 defines
