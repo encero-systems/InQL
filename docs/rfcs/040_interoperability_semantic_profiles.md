@@ -22,8 +22,8 @@
   - InQL RFC 036 (governed plan bundle)
   - InQL RFC 038 (evidence export bridges)
   - InQL RFC 041 (Prism plan ingress and external client frontends)
-- **Issue:** —
-- **RFC PR:** —
+- **Issue:** [InQL #74](https://github.com/dannys-code-corner/InQL/issues/74)
+- **RFC PR:** [InQL #60](https://github.com/dannys-code-corner/InQL/pull/60)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 

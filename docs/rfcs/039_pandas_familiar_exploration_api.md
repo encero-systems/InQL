@@ -9,8 +9,8 @@
   - InQL RFC 003 (`query {}` blocks and relational authoring)
   - InQL RFC 005 (pipe-forward relational syntax)
   - InQL RFC 012 (unified scalar expression surface)
-- **Issue:** —
-- **RFC PR:** —
+- **Issue:** [InQL #73](https://github.com/dannys-code-corner/InQL/issues/73)
+- **RFC PR:** [InQL #60](https://github.com/dannys-code-corner/InQL/pull/60)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 

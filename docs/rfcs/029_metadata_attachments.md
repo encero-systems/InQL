@@ -7,8 +7,8 @@
   - InQL RFC 007 (Prism logical planning and optimization engine)
   - InQL RFC 027 (relational evidence program)
   - InQL RFC 028 (semantic identity and target model)
-- **Issue:** —
-- **RFC PR:** —
+- **Issue:** [InQL #63](https://github.com/dannys-code-corner/InQL/issues/63)
+- **RFC PR:** [InQL #60](https://github.com/dannys-code-corner/InQL/pull/60)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 

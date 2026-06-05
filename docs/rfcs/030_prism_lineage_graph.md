@@ -14,8 +14,8 @@
   - InQL RFC 027 (relational evidence program)
   - InQL RFC 028 (semantic identity and target model)
   - InQL RFC 041 (Prism plan ingress and external client frontends)
-- **Issue:** —
-- **RFC PR:** —
+- **Issue:** [InQL #64](https://github.com/dannys-code-corner/InQL/issues/64)
+- **RFC PR:** [InQL #60](https://github.com/dannys-code-corner/InQL/pull/60)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 

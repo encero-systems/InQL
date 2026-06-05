@@ -16,8 +16,8 @@
   - InQL RFC 031 (local inspection APIs and artifacts)
   - InQL RFC 033 (adapter requirements and coverage)
   - InQL RFC 040 (interoperability semantic profiles)
-- **Issue:** —
-- **RFC PR:** —
+- **Issue:** [InQL #75](https://github.com/dannys-code-corner/InQL/issues/75)
+- **RFC PR:** [InQL #60](https://github.com/dannys-code-corner/InQL/pull/60)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 

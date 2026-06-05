@@ -12,8 +12,8 @@
   - InQL RFC 032 (execution observations)
   - InQL RFC 040 (interoperability semantic profiles)
   - InQL RFC 041 (Prism plan ingress and external client frontends)
-- **Issue:** —
-- **RFC PR:** —
+- **Issue:** [InQL #67](https://github.com/dannys-code-corner/InQL/issues/67)
+- **RFC PR:** [InQL #60](https://github.com/dannys-code-corner/InQL/pull/60)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 
