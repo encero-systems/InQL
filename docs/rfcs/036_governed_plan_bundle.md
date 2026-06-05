@@ -94,7 +94,7 @@ The bundle is an evidence package. It does not make policy decisions by itself.
 
 ### Interaction with other InQL surfaces
 
-Inspection artifacts, execution observations, quality observations, ingress frontends, and export bridges may all read from or write to bundle-compatible records.
+Inspection artifacts, execution observations, quality observations, ingress frontends, and evidence exchange bridges may all read from or write to bundle-compatible records.
 
 ### Compatibility / migration
 

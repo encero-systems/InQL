@@ -75,7 +75,7 @@ Execution observations are runtime evidence. They describe an attempt to execute
 
 ### Interaction with other InQL surfaces
 
-Quality observations, adapter coverage records, semantic profile records, and export bridges may refer to execution observations. Pipeline layers may consume them, but orchestration behavior remains outside this RFC.
+Quality observations, adapter coverage records, semantic profile records, and evidence exchange bridges may refer to execution observations. Pipeline layers may consume them, but orchestration behavior remains outside this RFC.
 
 ### Compatibility / migration
 

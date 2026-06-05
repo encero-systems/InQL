@@ -20,7 +20,7 @@
   - InQL RFC 032 (execution observations)
   - InQL RFC 033 (adapter requirements and coverage)
   - InQL RFC 036 (governed plan bundle)
-  - InQL RFC 038 (evidence export bridges)
+  - InQL RFC 038 (evidence exchange bridges)
   - InQL RFC 041 (Prism plan ingress and external client frontends)
 - **Issue:** [InQL #74](https://github.com/dannys-code-corner/InQL/issues/74)
 - **RFC PR:** [InQL #60](https://github.com/dannys-code-corner/InQL/pull/60)
@@ -29,7 +29,7 @@
 
 ## Summary
 
-This RFC defines interoperability semantic profiles for InQL evidence. A profile describes the semantic environment a plan is being received from, compared with, targeted at, or observed under: an InQL baseline, client protocol, plan ingress frontend, execution engine, adapter binding, SQL dialect, interchange consumer, or conformance baseline. Profiles give ingress coverage records, adapter requirements, coverage records, execution observations, plan diffs, bundles, and exports a shared context without making any external system the owner of InQL relational meaning.
+This RFC defines interoperability semantic profiles for InQL evidence. A profile describes the semantic environment a plan is being received from, compared with, targeted at, or observed under: an InQL baseline, client protocol, plan ingress frontend, execution engine, adapter binding, SQL dialect, catalog/schema system, transformation project, interchange consumer, or conformance baseline. Profiles give ingress coverage records, adapter requirements, coverage records, execution observations, plan diffs, bundles, and exchanges a shared context without making any external system the owner of InQL relational meaning.
 
 ## Motivation
 
@@ -42,7 +42,7 @@ Profiles provide the missing layer between InQL-authored semantics, plan ingress
 ## Goals
 
 - Define semantic profiles as versioned evidence records.
-- Allow profiles for InQL baselines, client protocols, plan ingress frontends, execution engines, adapter bindings, SQL dialects, interchange consumers, and conformance baselines.
+- Allow profiles for InQL baselines, client protocols, plan ingress frontends, execution engines, adapter bindings, SQL dialects, catalog/schema systems, transformation projects, interchange consumers, and conformance baselines.
 - Name the semantic dimensions that affect relational correctness and evidence interpretation.
 - Let adapter requirements and coverage records state which profile they were evaluated against.
 - Let execution observations report the profile requested before execution and the profile observed at runtime when available.
@@ -54,6 +54,7 @@ Profiles provide the missing layer between InQL-authored semantics, plan ingress
 - Defining a profile for one specific external engine.
 - Making any external engine, SQL dialect, or interchange format the normative InQL semantic model.
 - Defining SQL transpilation, physical planning, or backend execution strategies.
+- Defining transformation-project semantics as InQL semantics.
 - Defining a full conformance test suite.
 - Defining a global registry of every engine version or deployment configuration.
 - Guaranteeing semantic equivalence merely because a profile name is present.
@@ -109,6 +110,8 @@ Target class must distinguish at least:
 - execution_engine
 - adapter_binding
 - sql_dialect
+- catalog_schema_system
+- transformation_project
 - interchange_consumer
 - conformance_baseline
 
@@ -120,6 +123,8 @@ Semantic dimensions must be represented as structured records rather than free-f
 - boolean, null, and NaN semantics
 - string comparison, collation, and case sensitivity
 - identifier resolution and catalog naming
+- schema catalog, partition, and external table metadata semantics
+- transformation project selection, materialization, test, and metadata semantics
 - client session state and configuration semantics
 - relation ordering and determinism
 - aggregate and grouping edge semantics
@@ -175,7 +180,7 @@ Adapter coverage records should cite the profile used for evaluation when the an
 
 Governed plan bundles may include profile records and profile assessments so downstream tools can understand which target environments were checked.
 
-Export bridges may project profile evidence into external formats. Lossy exports must report dimensions that could not be represented.
+Evidence exchange bridges may project profile evidence into external formats or ingest external project artifacts with profile context. Lossy exports and lossy imports must report dimensions that could not be represented.
 
 ### Compatibility / migration
 
@@ -189,7 +194,7 @@ Profile schemas must be versioned from the start. Profile names that appear in s
 - **Use Substrait as the profile model.** Rejected because Substrait is an interchange boundary and does not capture every InQL evidence dimension.
 - **Make one external engine profile normative.** Rejected because InQL needs to interoperate with multiple targets without importing one target's semantics as the language definition.
 - **Rely only on conformance tests.** Rejected because tests are valuable evidence but do not replace structured profile records, coverage states, or diagnostics.
-- **Leave profiles to downstream integrations.** Rejected because independent profile reconstruction would cause drift across adapters, CI, notebooks, agents, and governance exports.
+- **Leave profiles to downstream integrations.** Rejected because independent profile reconstruction would cause drift across adapters, CI, notebooks, agents, transformation projects, and governance exchanges.
 
 ## Drawbacks
 
@@ -211,5 +216,6 @@ Profile schemas must be versioned from the start. Profile names that appear in s
 - Should built-in InQL profiles live in core or in optional integration packages?
 - How should profile records compare target configurations without leaking sensitive deployment details?
 - Should conformance test results become profile evidence in this RFC or a later RFC?
+- Which transformation-project profile dimensions are needed before exchange bridges can safely emit test and metadata suggestions?
 
 <!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->

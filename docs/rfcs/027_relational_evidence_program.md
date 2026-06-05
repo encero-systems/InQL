@@ -20,7 +20,7 @@
   - InQL RFC 035 (governed attributes and policy checkpoints)
   - InQL RFC 036 (governed plan bundle)
   - InQL RFC 037 (plan diff and blast-radius inputs)
-  - InQL RFC 038 (evidence export bridges)
+  - InQL RFC 038 (evidence exchange bridges)
   - InQL RFC 040 (interoperability semantic profiles)
   - InQL RFC 041 (Prism plan ingress and external client frontends)
 - **Issue:** [InQL #61](https://github.com/dannys-code-corner/InQL/issues/61)
@@ -30,7 +30,7 @@
 
 ## Summary
 
-This RFC is the umbrella tracking RFC for InQL's relational evidence program. The program defines the local, open semantic evidence contracts that make typed relational computation inspectable before execution and reviewable after execution: stable semantic targets, metadata attachments, Prism lineage, inspection artifacts, execution observations, adapter coverage, quality observations, governed attributes, plan bundles, plan diffs, export bridges, interoperability semantic profiles, and Prism plan ingress. This RFC is complete only when the child RFCs are implemented, rejected, or explicitly superseded by design decision.
+This RFC is the umbrella tracking RFC for InQL's relational evidence program. The program defines the local, open semantic evidence contracts that make typed relational computation inspectable before execution and reviewable after execution: stable semantic targets, metadata attachments, Prism lineage, inspection artifacts, execution observations, adapter coverage, quality observations, governed attributes, plan bundles, plan diffs, evidence exchange bridges, interoperability semantic profiles, and Prism plan ingress. This RFC is complete only when the child RFCs are implemented, rejected, or explicitly superseded by design decision.
 
 ## Core model
 
@@ -51,7 +51,7 @@ Without this program, lineage, governance, quality, observability, and change-im
 ## Goals
 
 - Establish relational evidence as one coordinated InQL program.
-- Define the child RFC set required for semantic identity, lineage, inspection, observations, coverage, quality, governed attributes, plan bundles, plan diffs, exports, and interoperability profiles.
+- Define the child RFC set required for semantic identity, lineage, inspection, observations, coverage, quality, governed attributes, plan bundles, plan diffs, evidence exchange, and interoperability profiles.
 - Keep the program open, local, and backend-neutral.
 - Make Prism-authored relational meaning the source of local lineage and schema-flow evidence.
 - Define target-environment profile evidence without making any external engine, dialect, or interchange format the semantic owner.
@@ -65,7 +65,7 @@ Without this program, lineage, governance, quality, observability, and change-im
 - Defining pipeline orchestration, scheduling, retries, checkpointing, or cross-step lifecycle state.
 - Making Substrait extension metadata the authoritative evidence store.
 - Making a specific backend adapter the semantic owner of lineage, quality, policy, or coverage.
-- Defining every external export mapping directly in this umbrella RFC.
+- Defining every external artifact exchange mapping directly in this umbrella RFC.
 
 ## Guide-level explanation (how authors think about it)
 
@@ -87,6 +87,22 @@ total = lineage.field("total_amount")
 
 The exact API is defined in the child RFCs. The important user model is stable: InQL can explain typed relational computation locally, before a backend runs it and without requiring an external governance service.
 
+The same evidence model should also support migration and modernization workbenches. A tool can ingest source-system metadata, target-environment profiles, transformation project artifacts, catalog metadata, and orchestration metadata; attach them to InQL semantic targets; assess compatibility gaps; and export reviewable suggestions back into the transformation stack:
+
+```incan
+brief = migration_evidence_brief(
+    source_profile="legacy_sql",
+    target_profile="cloud_analytics",
+    transformation_project="analytics_project",
+)
+
+inspection = inspect_migration(brief)
+risk = inspection.profile_gaps()
+suggestions = inspection.export_transformation_suggestions()
+```
+
+The names are illustrative. The important boundary is not the exact migration stack. InQL owns semantic targets, profile assessments, lineage, and evidence; external projects, catalogs, and orchestrators remain consumers or evidence sources.
+
 ## Reference-level explanation (precise rules)
 
 The relational evidence program must consist of the following child RFCs unless this RFC is amended or superseded:
@@ -101,13 +117,13 @@ The relational evidence program must consist of the following child RFCs unless 
 - InQL RFC 035 (governed attributes and policy checkpoints)
 - InQL RFC 036 (governed plan bundle)
 - InQL RFC 037 (plan diff and blast-radius inputs)
-- InQL RFC 038 (evidence export bridges)
+- InQL RFC 038 (evidence exchange bridges)
 - InQL RFC 040 (interoperability semantic profiles)
 - InQL RFC 041 (Prism plan ingress and external client frontends)
 
 This umbrella RFC must not be marked Implemented while any required child RFC remains Draft, Planned, In Progress, Blocked, or otherwise unresolved. A child RFC may be removed from the required completion set only by a design decision recorded in this RFC or by a superseding RFC.
 
-Child RFCs must preserve the layer boundary established by this RFC. They may define local InQL evidence contracts and generic export shapes. They must not define proprietary product behavior, hosted storage behavior, managed approval semantics, or organization-wide policy lifecycle rules.
+Child RFCs must preserve the layer boundary established by this RFC. They may define local InQL evidence contracts and generic exchange shapes. They must not define proprietary product behavior, hosted storage behavior, managed approval semantics, or organization-wide policy lifecycle rules.
 
 Relational evidence must derive from InQL semantic sources where possible. Prism-authored and Prism-rewritten plans are the authoritative source for local relational lineage. Session and backend adapter observations may report execution facts, diagnostics, and capability coverage, but they must not decide that an authored lineage edge exists or does not exist.
 
