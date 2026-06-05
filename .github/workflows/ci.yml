@@ -1,8 +1,8 @@
 # InQL CI — Incan library package
 #
-# Builds the Incan compiler from source in CI, then runs the InQL package
-# checks against that local binary. Keeping this workflow self-contained avoids
-# a hard dependency on a remote composite action path staying in sync.
+# Checks out the pinned Incan compiler source, installs it through Incan's
+# downstream install action, then runs the InQL package checks against that
+# local binary.
 
 name: CI
 
@@ -46,15 +46,14 @@ jobs:
           ref: ${{ env.INCAN_REF }}
           path: incan
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install Incan compiler
+        uses: ./incan/.github/actions/install-incan
         with:
-          targets: wasm32-wasip1
+          profile: debug
+          cache-shared-key: inql-incan-${{ runner.os }}-${{ env.EXPECTED_INCAN_VERSION }}
 
-      - name: Cache Incan build artifacts
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: incan -> target
+      - name: Install Incan vocab target
+        run: rustup target add wasm32-wasip1
 
       - name: Cache generated InQL Cargo artifacts
         uses: actions/cache@v4
@@ -77,13 +76,6 @@ jobs:
           restore-keys: |
             inql-rust-inspect-${{ runner.os }}-incan-${{ env.EXPECTED_INCAN_VERSION }}-${{ hashFiles('incan.lock', 'incan.toml') }}-
             inql-rust-inspect-${{ runner.os }}-incan-${{ env.EXPECTED_INCAN_VERSION }}-
-
-      - name: Build Incan compiler
-        working-directory: incan
-        run: cargo build --locked --bin incan
-
-      - name: Expose local Incan binary on PATH
-        run: echo "$GITHUB_WORKSPACE/incan/target/debug" >> "$GITHUB_PATH"
 
       - name: Show toolchain
         run: |
