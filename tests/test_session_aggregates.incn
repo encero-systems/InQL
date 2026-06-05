@@ -105,9 +105,13 @@ def test_session_aggregates__grouped_collect_executes_core_aggregates() -> None:
         session.read_csv("aggregate_orders", AGGREGATE_ORDERS_CSV_FIXTURE),
         "aggregate orders fixture should load",
     )
-    grouped = lazy.group_by([col("customer_id")]).agg(
-        [sum(col("amount")), count(), count(col("amount")), avg(col("amount")), min(col("amount")), max(col("amount"))],
-    )
+    grouped = lazy
+        .group_by([col("customer_id")])
+        .agg(
+            [sum(col("amount")), count(), count(col("amount")), avg(col("amount")), min(col("amount")), max(
+                col("amount"),
+            )],
+        )
     df = assert_is_ok(session.collect(grouped), "mixed grouped aggregate collect should execute")
     payload = df.preview_text()
     resolved = df.resolved_columns()
@@ -157,9 +161,9 @@ def test_session_aggregates__grouped_collect_executes_distinct_and_filter_modifi
         "aggregate modifiers fixture should load",
     )
     paid = eq(col("status"), str_lit("paid"))
-    grouped = lazy.group_by([col("customer_id")]).agg(
-        [count_distinct(col("product_id")), count_if(paid.clone()), sum(col("amount")).filter(paid)],
-    )
+    grouped = lazy
+        .group_by([col("customer_id")])
+        .agg([count_distinct(col("product_id")), count_if(paid.clone()), sum(col("amount")).filter(paid)])
     df = _collect_modifier_or_fail(session, grouped)
     payload = df.preview_text()
     resolved = df.resolved_columns()
@@ -209,11 +213,13 @@ def test_session_aggregates__grouped_collect_executes_approximate_aggregates() -
         "aggregate modifiers fixture should load",
     )
     paid = eq(col("status"), str_lit("paid"))
-    grouped = lazy.group_by([col("customer_id")]).agg(
-        [approx_count_distinct(col("product_id")).filter(paid.clone()), approx_percentile(col("amount"), 0.0).filter(
-            paid,
-        )],
-    )
+    grouped = lazy
+        .group_by([col("customer_id")])
+        .agg(
+            [approx_count_distinct(col("product_id")).filter(paid.clone()), approx_percentile(col("amount"), 0.0).filter(
+                paid,
+            )],
+        )
     df = _collect_modifier_or_fail(session, grouped)
     payload = df.preview_text()
     resolved = df.resolved_columns()

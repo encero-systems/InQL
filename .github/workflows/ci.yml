@@ -1,8 +1,8 @@
 # InQL CI — Incan library package
 #
-# Builds the Incan compiler from source in CI, then runs the InQL package
-# checks against that local binary. Keeping this workflow self-contained avoids
-# a hard dependency on a remote composite action path staying in sync.
+# Checks out the pinned Incan compiler source, installs it through Incan's
+# downstream install action, then runs the InQL package checks against that
+# local binary.
 
 name: CI
 
@@ -19,8 +19,8 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
-  INCAN_REF: feature/750-primitive-type-tokens
-  EXPECTED_INCAN_VERSION: 0.3.0-rc47
+  INCAN_REF: release/v0.3
+  EXPECTED_INCAN_VERSION: 0.3.0-rc50
   RUST_BACKTRACE: 1
   INCAN_NO_BANNER: 1
   INCAN_GENERATED_CARGO_TARGET_DIR: ${{ github.workspace }}/.incan-generated-cargo-target
@@ -46,13 +46,11 @@ jobs:
           ref: ${{ env.INCAN_REF }}
           path: incan
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Incan build artifacts
-        uses: Swatinem/rust-cache@v2
+      - name: Install Incan compiler
+        uses: ./incan/.github/actions/install-incan
         with:
-          workspaces: incan -> target
+          profile: debug
+          cache-shared-key: inql-incan-${{ runner.os }}-${{ env.EXPECTED_INCAN_VERSION }}
 
       - name: Cache generated InQL Cargo artifacts
         uses: actions/cache@v4
@@ -75,13 +73,6 @@ jobs:
           restore-keys: |
             inql-rust-inspect-${{ runner.os }}-incan-${{ env.EXPECTED_INCAN_VERSION }}-${{ hashFiles('incan.lock', 'incan.toml') }}-
             inql-rust-inspect-${{ runner.os }}-incan-${{ env.EXPECTED_INCAN_VERSION }}-
-
-      - name: Build Incan compiler
-        working-directory: incan
-        run: cargo build --locked --bin incan
-
-      - name: Expose local Incan binary on PATH
-        run: echo "$GITHUB_WORKSPACE/incan/target/debug" >> "$GITHUB_PATH"
 
       - name: Show toolchain
         run: |

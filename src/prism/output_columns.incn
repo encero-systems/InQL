@@ -48,6 +48,11 @@ pub def authored_output_schema(store_id: PrismStoreId, tip_id: int) -> list[Scal
         return authored_output_schema(store_id, node.input_ids[0])
     if node.kind == PrismNodeKind.Project:
         return _project_output_schema(authored_output_schema(store_id, node.input_ids[0]), node.projection_assignments)
+    if node.kind == PrismNodeKind.SelectProject:
+        return _select_project_output_schema(
+            authored_output_schema(store_id, node.input_ids[0]),
+            node.projection_assignments,
+        )
     if node.kind == PrismNodeKind.Generate:
         return _generator_output_schema(
             authored_output_schema(store_id, node.input_ids[0]),
@@ -57,7 +62,10 @@ pub def authored_output_schema(store_id: PrismStoreId, tip_id: int) -> list[Scal
         return _window_output_schema(authored_output_schema(store_id, node.input_ids[0]), node.window_projections)
     if node.kind == PrismNodeKind.Join:
         lhs_columns = authored_output_schema(store_id, node.input_ids[0])
-        rhs_columns = authored_output_schema(store_id, node.input_ids[1])
+        rhs_columns = _right_join_output_schema(
+            authored_output_schema(store_id, node.input_ids[1]),
+            node.join_relation_name,
+        )
         mut columns: list[ScalarColumnSpec] = []
         columns.extend(lhs_columns)
         columns.extend(rhs_columns)
@@ -87,13 +95,21 @@ pub def rewritten_output_schema(view: PrismOptimizedView, node_id: int) -> list[
         return rewritten_output_schema(view, node.input_ids[0])
     if node.kind == PrismNodeKind.Project:
         return _project_output_schema(rewritten_output_schema(view, node.input_ids[0]), node.projection_assignments)
+    if node.kind == PrismNodeKind.SelectProject:
+        return _select_project_output_schema(
+            rewritten_output_schema(view, node.input_ids[0]),
+            node.projection_assignments,
+        )
     if node.kind == PrismNodeKind.Generate:
         return _generator_output_schema(rewritten_output_schema(view, node.input_ids[0]), node.generator_applications[0])
     if node.kind == PrismNodeKind.Window:
         return _window_output_schema(rewritten_output_schema(view, node.input_ids[0]), node.window_projections)
     if node.kind == PrismNodeKind.Join:
         lhs_columns = rewritten_output_schema(view, node.input_ids[0])
-        rhs_columns = rewritten_output_schema(view, node.input_ids[1])
+        rhs_columns = _right_join_output_schema(
+            rewritten_output_schema(view, node.input_ids[1]),
+            node.join_relation_name,
+        )
         mut columns: list[ScalarColumnSpec] = []
         columns.extend(lhs_columns)
         columns.extend(rhs_columns)
@@ -123,6 +139,25 @@ def _project_output_schema(
             output_columns[existing_idx] = output
         else:
             output_columns.append(output)
+    return output_columns
+
+
+def _select_project_output_schema(
+    input_columns: list[ScalarColumnSpec],
+    assignments: list[ProjectionAssignment],
+) -> list[ScalarColumnSpec]:
+    """Return exclusive select output schema facts while honoring lateral aliases."""
+    mut bindings: list[ScalarColumnSpec] = []
+    bindings.extend(input_columns)
+    mut output_columns: list[ScalarColumnSpec] = []
+    for assignment in assignments:
+        output = _expression_output_schema(bindings, assignment.expr, assignment.output_name)
+        output_columns.append(output)
+        existing_idx = _index_of_column(bindings, assignment.output_name)
+        if existing_idx >= 0:
+            bindings[existing_idx] = output
+        else:
+            bindings.append(output)
     return output_columns
 
 
@@ -183,6 +218,13 @@ def _window_output_schema(
     output_columns.extend(input_columns)
     output_columns.extend(_unknown_schema_from_names([projection.output_name for projection in projections]))
     return output_columns
+
+
+def _right_join_output_schema(columns: list[ScalarColumnSpec], relation_name: str) -> list[ScalarColumnSpec]:
+    """Qualify right-side join output schema names when query lowering supplied a relation alias."""
+    if len(relation_name) == 0:
+        return columns
+    return [ScalarColumnSpec(name=f"{relation_name}.{column.name}", kind=column.kind, nullable=column.nullable) for column in columns]
 
 
 def _authored_aggregate_prefix_schema(store_id: PrismStoreId, node: PrismNode) -> list[ScalarColumnSpec]:

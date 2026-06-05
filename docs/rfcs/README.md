@@ -9,7 +9,7 @@ InQL uses its **own** RFC series (starting at 000), independent of the [Incan la
 | [000][rfc-000] | Planned     | Language specification — core model, naming, schema shapes, layer boundaries                      |     |
 | [001][rfc-001] | In Progress | Dataset types and carriers (`DataSet[T]`, `BoundedDataSet[T]`, `UnboundedDataSet[T]`)             |     |
 | [002][rfc-002] | In Progress | Apache Substrait — `Rel`-level contract, mapping catalog, binding boundaries                      |     |
-| [003][rfc-003] | Planned     | `query {}` blocks — grammar, typing, Substrait lowering                                           |     |
+| [003][rfc-003] | Implemented | `query {}` blocks — grammar, typing, Substrait lowering                                           |     |
 | [004][rfc-004] | In Progress | Execution context — session, DataFusion, read/transform/write                                     |     |
 | [005][rfc-005] | Blocked     | Pipe-forward relational syntax (`\|>`) — optional surface                                         |     |
 | [006][rfc-006] | Blocked     | Promote unnest/explode to core Substrait lowering — blocked on upstream Substrait standardization |     |
@@ -19,7 +19,7 @@ InQL uses its **own** RFC series (starting at 000), independent of the [Incan la
 | [010][rfc-010] | Draft       | CSV dialect and interpretation contract                                                           |     |
 | [011][rfc-011] | Draft       | Source discovery and parse-unit expansion                                                         |     |
 | [012][rfc-012] | Implemented | Unified scalar expression surface                                                                 |     |
-| [013][rfc-013] | In Progress | Function catalog program                                                                          |     |
+| [013][rfc-013] | Implemented | Function catalog program                                                                          |     |
 | [014][rfc-014] | Implemented | Function registry and catalog governance                                                          |     |
 | [015][rfc-015] | Implemented | Core scalar functions and operators                                                               |     |
 | [016][rfc-016] | Implemented | Core aggregate functions                                                                          |     |

@@ -39,6 +39,11 @@ test: ## Run package tests (`incan test tests`)
 	@echo "\033[1mRunning InQL tests...\033[0m"
 	@$(INCAN) test $(INQL_TEST_DIR)
 
+.PHONY: vocab-companion-test
+vocab-companion-test: ## Run Rust tests for the query-block vocabulary companion
+	@echo "\033[1mRunning query-block vocabulary companion tests...\033[0m"
+	@cargo test --manifest-path vocab_companion/Cargo.toml
+
 .PHONY: test-style
 test-style: ## Validate test style markers (Arrange / Act / Assert) across `tests/*.incn`
 	@echo "\033[1mChecking test style markers...\033[0m"
@@ -62,20 +67,26 @@ test-locked: ## Run tests with `--locked`
 	@$(INCAN) test $(INQL_TEST_DIR) --locked
 
 # =============================================================================
-# Formatting (Incan source — package only)
+# Formatting (Incan source)
 # =============================================================================
 #
-# Scope to `src/`, `tests/`, and `examples/` only. CI checks out the Incan
-# compiler under `./incan/`; formatting `.` would walk that tree and fail on
-# stdlib snapshots and test fixtures that are not meant for `incan fmt`.
+# Scope to InQL-owned source paths. CI checks out the Incan compiler under
+# `./incan/`; formatting `.` would walk that tree and fail on stdlib snapshots
+# and test fixtures that are not meant for `incan fmt`. Standalone example
+# packages are listed by source directory so generated `target/` output stays
+# outside the formatting walk.
 
-INQL_FMT_DIRS := src tests examples
+INQL_FMT_DIRS := src tests examples/advanced_retail_query_blocks/src
+INQL_FMT_FILES := examples/*.incn
 
 .PHONY: fmt
 fmt: ## Format package `.incn` sources (`incan fmt` per directory)
 	@echo "\033[1mFormatting Incan sources (package dirs)...\033[0m"
 	@for d in $(INQL_FMT_DIRS); do \
 	  if [ -d "$$d" ]; then $(INCAN) fmt "$$d"; fi; \
+	done
+	@for f in $(INQL_FMT_FILES); do \
+	  if [ -f "$$f" ]; then $(INCAN) fmt "$$f"; fi; \
 	done
 
 .PHONY: fmt-check
@@ -87,21 +98,27 @@ fmt-check: ## Check formatting without writing (`incan fmt --check` per director
 	    $(INCAN) fmt --check "$$d" || exit $$?; \
 	  fi; \
 	done
+	@for f in $(INQL_FMT_FILES); do \
+	  if [ -f "$$f" ]; then \
+	    echo "\033[1m  -> $$f\033[0m"; \
+	    $(INCAN) fmt --check "$$f" || exit $$?; \
+	  fi; \
+	done
 
 # =============================================================================
 # Aggregates (local gates)
 # =============================================================================
 
 .PHONY: check
-check: fmt-check test-style registry-metadata build test ## Format check, style gate, metadata check, build, and test
+check: fmt-check test-style vocab-companion-test registry-metadata build test ## Format check, style gate, metadata check, build, and test
 	@echo "\033[32m✓ check passed\033[0m"
 
 .PHONY: pre-commit
-pre-commit: fmt-check test-style registry-metadata build test ## Fast gate before commit (same as `check`)
+pre-commit: fmt-check test-style vocab-companion-test registry-metadata build test ## Fast gate before commit (same as `check`)
 	@echo "\033[32m✓ pre-commit gate passed\033[0m"
 
 .PHONY: ci
-ci: fmt-check test-style registry-metadata build test smoke-consumer ## Same steps as GitHub Actions `inql` job
+ci: fmt-check test-style vocab-companion-test registry-metadata build test smoke-consumer ## Same steps as GitHub Actions `inql` job
 	@echo "\033[32m✓ ci gate passed\033[0m"
 
 .PHONY: verify

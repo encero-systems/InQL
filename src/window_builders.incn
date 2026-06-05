@@ -406,10 +406,10 @@ module tests:
     def _call_ranking_null_treatment() -> None:
         row_number().ignore_nulls()
     def test_window_spec_builders_preserve_partition_order_and_frame() -> None:
-        spec = (window().partition_by([col("customer_id")]).order_by([col("amount")]).rows_between(
-            unbounded_preceding(),
-            current_row(),
-        ))
+        spec = (window()
+            .partition_by([col("customer_id")])
+            .order_by([col("amount")])
+            .rows_between(unbounded_preceding(), current_row()))
         assert len(spec.partition_columns) == 1
         assert column_expr_name(spec.partition_columns[0]) == "customer_id"
         assert len(spec.sort_columns) == 1
