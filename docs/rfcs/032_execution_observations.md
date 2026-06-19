@@ -9,8 +9,8 @@
   - InQL RFC 028 (semantic identity and target model)
   - InQL RFC 031 (local inspection APIs and artifacts)
   - InQL RFC 040 (interoperability semantic profiles)
-- **Issue:** [InQL #66](https://github.com/dannys-code-corner/InQL/issues/66)
-- **RFC PR:** [InQL #60](https://github.com/dannys-code-corner/InQL/pull/60)
+- **Issue:** [InQL #66](https://github.com/encero-systems/InQL/issues/66)
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 

@@ -13,7 +13,7 @@
   - Incan RFC 029 (union types and type narrowing)
   - Incan RFC 040 (scoped DSL glyph surfaces)
   - Incan RFC 045 (scoped DSL symbol surfaces)
-- **Issue:** [InQL #25](https://github.com/dannys-code-corner/InQL/issues/25)
+- **Issue:** [InQL #25](https://github.com/encero-systems/InQL/issues/25)
 - **RFC PR:** —
 - **Written against:** Incan v0.3.0
 - **Shipped in:** v0.1

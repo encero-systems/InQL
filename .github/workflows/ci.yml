@@ -42,7 +42,7 @@ jobs:
       - name: Check out Incan
         uses: actions/checkout@v4
         with:
-          repository: dannys-code-corner/incan
+          repository: encero-systems/incan
           ref: ${{ env.INCAN_REF }}
           path: incan
 

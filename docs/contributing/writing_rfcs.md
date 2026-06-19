@@ -2,7 +2,7 @@
 
 This guide is for contributors writing an RFC (design record) in the **InQL** repository.
 
-RFC means “Request for Comments”: a normative design document under [`docs/rfcs/`](../rfcs/README.md), numbered separately from [Incan language RFCs](https://github.com/dannys-code-corner/incan/tree/main/workspaces/docs-site/docs/RFCs).
+RFC means “Request for Comments”: a normative design document under [`docs/rfcs/`](../rfcs/README.md), numbered separately from [Incan language RFCs](https://github.com/encero-systems/incan/tree/main/workspaces/docs-site/docs/RFCs).
 
 !!! warning "Before you start"
 
@@ -12,7 +12,7 @@ Start here:
 
 - [RFC index](../rfcs/README.md)
 - [RFC file template](../rfcs/TEMPLATE.md)
-- [RFC proposal issue](https://github.com/dannys-code-corner/InQL/issues/new?template=rfc_proposal.yml) (optional)
+- [RFC proposal issue](https://github.com/encero-systems/InQL/issues/new?template=rfc_proposal.yml) (optional)
 
 ## When you should write an RFC
 
@@ -87,5 +87,5 @@ Narrative docs and RFCs in this repo should stay compatible with how the Incan p
 - [Incan docs-site contributor loop][incan-docsite-loop] — Divio quadrants, snippets, PR checklist for the Incan docs site.
 - [Incan AGENTS.md — Docs-site workflow][incan-agents-docs-workflow] — prose without hard wrapping, `mkdocs build --strict`, and related expectations.
 
-[incan-docsite-loop]: https://github.com/dannys-code-corner/incan/blob/main/workspaces/docs-site/docs/contributing/tutorials/book/08_docsite_contributor_loop.md
-[incan-agents-docs-workflow]: https://github.com/dannys-code-corner/incan/blob/main/AGENTS.md#docs-site-workflow-mkdocs-material
+[incan-docsite-loop]: https://github.com/encero-systems/incan/blob/main/workspaces/docs-site/docs/contributing/tutorials/book/08_docsite_contributor_loop.md
+[incan-agents-docs-workflow]: https://github.com/encero-systems/incan/blob/main/AGENTS.md#docs-site-workflow-mkdocs-material

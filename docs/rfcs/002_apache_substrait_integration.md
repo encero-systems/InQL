@@ -6,7 +6,7 @@
 - **Related:**
   - InQL RFC 000 (language specification — naming, schema shapes, compilation model)
   - InQL RFC 001 (dataset types — `DataSet[T]` carriers and schema parameter)
-- **Issue:** [InQL #3](https://github.com/dannys-code-corner/InQL/issues/3)
+- **Issue:** [InQL #3](https://github.com/encero-systems/InQL/issues/3)
 - **RFC PR:** -
 - **Written against:** Incan v0.2
 - **Shipped in:** -

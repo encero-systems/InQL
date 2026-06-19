@@ -11,8 +11,8 @@
   - InQL RFC 014 (function registry and catalog governance)
   - InQL RFC 020 (nested data functions)
   - InQL RFC 026 (semi-structured variant logical values)
-- **Issue:** [InQL #39](https://github.com/dannys-code-corner/InQL/issues/39)
-- **RFC PR:** [InQL #49](https://github.com/dannys-code-corner/InQL/pull/49)
+- **Issue:** [InQL #39](https://github.com/encero-systems/InQL/issues/39)
+- **RFC PR:** [InQL #49](https://github.com/encero-systems/InQL/pull/49)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** v0.1
 

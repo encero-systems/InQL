@@ -7,8 +7,8 @@
   - InQL RFC 000 (language specification — naming and query schema; **must** stay consistent)
   - InQL RFC 001 (dataset types — **prerequisite**; `FROM` sources must conform to `DataSet[T]`)
   - InQL RFC 002 (Apache Substrait — **normative `Rel`-level contract** for lowering)
-- **Issue:** [InQL #4](https://github.com/dannys-code-corner/InQL/issues/4)
-- **RFC PR:** [InQL #59](https://github.com/dannys-code-corner/InQL/pull/59)
+- **Issue:** [InQL #4](https://github.com/encero-systems/InQL/issues/4)
+- **RFC PR:** [InQL #59](https://github.com/encero-systems/InQL/pull/59)
 - **Written against:** Incan v0.3
 - **Shipped in:** InQL v0.1
 

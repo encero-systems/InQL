@@ -101,4 +101,4 @@ New RFCs should follow [TEMPLATE.md] (aligned with Incan’s RFC structure, adap
 [rfc-039]: 039_pandas_familiar_exploration_api.md
 [rfc-040]: 040_interoperability_semantic_profiles.md
 [rfc-041]: 041_prism_plan_ingress_frontends.md
-[incan-rfcs]: https://github.com/dannys-code-corner/incan/tree/main/workspaces/docs-site/docs/RFCs
+[incan-rfcs]: https://github.com/encero-systems/incan/tree/main/workspaces/docs-site/docs/RFCs

@@ -11,8 +11,8 @@
   - InQL RFC 030 (Prism lineage graph)
   - InQL RFC 040 (interoperability semantic profiles)
   - InQL RFC 041 (Prism plan ingress and external client frontends)
-- **Issue:** [InQL #65](https://github.com/dannys-code-corner/InQL/issues/65)
-- **RFC PR:** [InQL #60](https://github.com/dannys-code-corner/InQL/pull/60)
+- **Issue:** [InQL #65](https://github.com/encero-systems/InQL/issues/65)
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 
