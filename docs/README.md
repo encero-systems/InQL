@@ -8,6 +8,7 @@ Use the docs tree like this:
 - **Language explanation:** conceptual guidance and usage framing under [language/explanation/][language-explanation]
 - **Architecture:** repository and system boundaries in [architecture.md][architecture]
 - **RFCs:** design records and normative proposals in [rfcs/][rfcs]
+- **Whitepapers:** broader non-normative design papers in [whitepapers/][whitepapers]
 - **Release notes:** shipped and user-visible changes in [release_notes/][release-notes]
 - **Contributing:** contributor workflow, especially RFC process, in [contributing/][contributing]
 
@@ -39,6 +40,7 @@ Use the docs tree like this:
 [language-explanation]: language/explanation/
 [architecture]: architecture.md
 [rfcs]: rfcs/README.md
+[whitepapers]: whitepapers/README.md
 [release-notes]: release_notes/
 [contributing]: contributing/
 [language-overview]: language/README.md
