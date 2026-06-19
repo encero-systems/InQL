@@ -8,7 +8,7 @@
   - InQL RFC 001 (dataset types — carriers and method APIs)
   - InQL RFC 003 (`query {}` — primary clause surface)
   - Incan RFC 040 (Scoped DSL Glyph Surfaces — prerequisite for `|>` support)
-- **Issue:** [InQL #6](https://github.com/dannys-code-corner/InQL/issues/6)
+- **Issue:** [InQL #6](https://github.com/encero-systems/InQL/issues/6)
 - **RFC PR:** -
 - **Written against:** Incan v0.2
 - **Shipped in:** -

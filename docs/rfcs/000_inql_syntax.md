@@ -4,7 +4,7 @@
 - **Created:** 2026-03-18
 - **Author(s):** Danny Meijer
 - **Related:** -
-- **Issue:** [InQL #1](https://github.com/dannys-code-corner/InQL/issues/1)
+- **Issue:** [InQL #1](https://github.com/encero-systems/InQL/issues/1)
 - **RFC PR:** -
 - **Written against:** Incan v0.2
 - **Shipped in:** -

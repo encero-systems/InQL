@@ -232,7 +232,7 @@ If you want the clearest current story, read in this order:
 | Contributing                | [CONTRIBUTING.md][inql-contributing]                       |
 
 <!-- References -->
-[incan-architecture]: https://github.com/dannys-code-corner/incan/blob/main/workspaces/docs-site/docs/contributing/explanation/architecture.md
+[incan-architecture]: https://github.com/encero-systems/incan/blob/main/workspaces/docs-site/docs/contributing/explanation/architecture.md
 [docs-root]: README.md
 [language-root]: language/README.md
 [inql-rfcs]: rfcs/README.md

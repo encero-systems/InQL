@@ -14,8 +14,8 @@
   - InQL RFC 035 (governed attributes and policy checkpoints)
   - InQL RFC 040 (interoperability semantic profiles)
   - InQL RFC 041 (Prism plan ingress and external client frontends)
-- **Issue:** [InQL #70](https://github.com/dannys-code-corner/InQL/issues/70)
-- **RFC PR:** [InQL #60](https://github.com/dannys-code-corner/InQL/pull/60)
+- **Issue:** [InQL #70](https://github.com/encero-systems/InQL/issues/70)
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 

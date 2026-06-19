@@ -9,7 +9,7 @@
   - InQL RFC 003 (`query {}` — lowers through Prism-managed logical work before Substrait emission)
   - InQL RFC 004 (execution context — session executes Prism-backed plans but does not define Prism)
   - InQL RFC 005 (optional pipe-forward — must stay Prism-consistent with equivalent surfaces)
-- **Issue:** [InQL #16](https://github.com/dannys-code-corner/InQL/issues/16)
+- **Issue:** [InQL #16](https://github.com/encero-systems/InQL/issues/16)
 - **RFC PR:** —
 - **Written against:** Incan v0.2
 - **Shipped in:** —

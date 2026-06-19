@@ -11,8 +11,8 @@
   - InQL RFC 031 (local inspection APIs and artifacts)
   - InQL RFC 036 (governed plan bundle)
   - InQL RFC 040 (interoperability semantic profiles)
-- **Issue:** [InQL #71](https://github.com/dannys-code-corner/InQL/issues/71)
-- **RFC PR:** [InQL #60](https://github.com/dannys-code-corner/InQL/pull/60)
+- **Issue:** [InQL #71](https://github.com/encero-systems/InQL/issues/71)
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 

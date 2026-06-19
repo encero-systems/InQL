@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         Use this issue to propose an RFC topic and get early alignment.
-        If accepted, we typically ask for a PR adding an RFC under [`docs/rfcs/`](https://github.com/dannys-code-corner/InQL/tree/main/docs/rfcs): copy [**TEMPLATE.md**](https://github.com/dannys-code-corner/InQL/blob/main/docs/rfcs/TEMPLATE.md), name it `NNN_short_slug.md`, and follow that structure. For workflow and conventions, see [**Writing InQL RFCs**](https://github.com/dannys-code-corner/InQL/blob/main/docs/contributing/writing_rfcs.md).
+        If accepted, we typically ask for a PR adding an RFC under [`docs/rfcs/`](https://github.com/encero-systems/InQL/tree/main/docs/rfcs): copy [**TEMPLATE.md**](https://github.com/encero-systems/InQL/blob/main/docs/rfcs/TEMPLATE.md), name it `NNN_short_slug.md`, and follow that structure. For workflow and conventions, see [**Writing InQL RFCs**](https://github.com/encero-systems/InQL/blob/main/docs/contributing/writing_rfcs.md).
 
         **InQL RFCs** cover the relational layer, dataset carriers, Substrait contract, `query {}` syntax, execution context, and related docs.
         Pure Incan language/compiler changes without InQL impact usually belong in the **Incan** repository instead.

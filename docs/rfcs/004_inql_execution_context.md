@@ -10,7 +10,7 @@
   - InQL RFC 003 (query DSL — `query {}` produces plans this RFC executes)
   - InQL RFC 007 (Prism logical planning and optimization engine)
   - InQL RFC 008 (optimizer boundary, statistics, cost-based optimization, and adaptive execution)
-- **Issue:** [InQL #5](https://github.com/dannys-code-corner/InQL/issues/5)
+- **Issue:** [InQL #5](https://github.com/encero-systems/InQL/issues/5)
 - **RFC PR:** -
 - **Written against:** Incan v0.2
 - **Shipped in:** —

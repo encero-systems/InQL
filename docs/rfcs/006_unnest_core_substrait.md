@@ -7,7 +7,7 @@
   - InQL RFC 002 (Apache Substrait — normative gap classification for unnest; **prerequisite**)
   - InQL RFC 003 (`query {}` — `EXPLODE` clause; no surface change required)
   - InQL RFC 001 (dataset types — `explode` method on `DataSet[T]`; no surface change required)
-- **Issue:** [InQL #14](https://github.com/dannys-code-corner/InQL/issues/14)
+- **Issue:** [InQL #14](https://github.com/encero-systems/InQL/issues/14)
 - **RFC PR:** -
 - **Written against:** Incan v0.2
 - **Shipped in:** -

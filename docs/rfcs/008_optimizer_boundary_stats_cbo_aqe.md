@@ -6,7 +6,7 @@
 - **Related:**
   - InQL RFC 004 (execution context — `Session` remains the execution and backend boundary)
   - InQL RFC 007 (Prism planning engine — this RFC narrows optimizer-boundary ownership without replacing Prism adoption)
-- **Issue:** [InQL #18](https://github.com/dannys-code-corner/InQL/issues/18)
+- **Issue:** [InQL #18](https://github.com/encero-systems/InQL/issues/18)
 - **RFC PR:** —
 - **Written against:** Incan v0.2
 - **Shipped in:** —

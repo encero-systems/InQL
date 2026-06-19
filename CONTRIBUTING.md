@@ -25,7 +25,7 @@ Thank you for your interest in InQL — the typed relational layer for [Incan][i
 2. **Clone this repository**
 
    ```bash
-   git clone https://github.com/dannys-code-corner/InQL
+   git clone https://github.com/encero-systems/InQL
    cd InQL
    ```
 
@@ -124,7 +124,7 @@ Templates apply **type** labels (`bug`, `feature`, `chore`, `documentation`, `RF
 
 ### Triage GitHub App (CI)
 
-The auto-label workflow uses a shared **organization-level GitHub App** installation for `dannys-code-corner`. Configure these **organization Actions secrets** and grant access to this repository:
+The auto-label workflow uses a shared **organization-level GitHub App** installation for `encero-systems`. Configure these **organization Actions secrets** and grant access to this repository:
 
 | Secret | Purpose |
 | ------ | ------- |
@@ -132,7 +132,7 @@ The auto-label workflow uses a shared **organization-level GitHub App** installa
 | `TRIAGE_APP_INSTALLATION_ID` | Installation ID for the **organization-level** app installation |
 | `TRIAGE_APP_PRIVATE_KEY` | App private key (PEM) |
 
-Install the app on the `dannys-code-corner` organization and grant it access to `InQL` (and any future repositories that should share triage automation). Without these secrets the workflow fails at the token step.
+Install the app on the `encero-systems` organization and grant it access to `InQL` (and any future repositories that should share triage automation). Without these secrets the workflow fails at the token step.
 
 ## Pull request guidelines
 
@@ -149,8 +149,8 @@ Open an issue on this repository for InQL-specific design or package questions; 
 
 <!-- References -->
 
-[incan-repo]: https://github.com/dannys-code-corner/incan
-[incan-contributing]: https://github.com/dannys-code-corner/incan/blob/main/CONTRIBUTING.md
+[incan-repo]: https://github.com/encero-systems/incan
+[incan-contributing]: https://github.com/encero-systems/incan/blob/main/CONTRIBUTING.md
 [readme]: README.md
 [agents]: AGENTS.md
 [architecture]: docs/architecture.md
@@ -161,5 +161,5 @@ Open an issue on this repository for InQL-specific design or package questions; 
 [issue-auto-label]: .github/workflows/issue_auto_label.yml
 [pr-template]: .github/pull_request_template.md
 [issue-templates]: .github/ISSUE_TEMPLATE/
-[incan-docsite-loop]: https://github.com/dannys-code-corner/incan/blob/main/workspaces/docs-site/docs/contributing/tutorials/book/08_docsite_contributor_loop.md
-[incan-agents-docs-workflow]: https://github.com/dannys-code-corner/incan/blob/main/AGENTS.md#docs-site-workflow-mkdocs-material
+[incan-docsite-loop]: https://github.com/encero-systems/incan/blob/main/workspaces/docs-site/docs/contributing/tutorials/book/08_docsite_contributor_loop.md
+[incan-agents-docs-workflow]: https://github.com/encero-systems/incan/blob/main/AGENTS.md#docs-site-workflow-mkdocs-material

@@ -10,8 +10,8 @@
   - InQL RFC 013 (function catalog program)
   - InQL RFC 014 (function registry and catalog governance)
   - InQL RFC 020 (nested data functions)
-- **Issue:** [InQL #38](https://github.com/dannys-code-corner/InQL/issues/38)
-- **RFC PR:** [InQL #47](https://github.com/dannys-code-corner/InQL/pull/47)
+- **Issue:** [InQL #38](https://github.com/encero-systems/InQL/issues/38)
+- **RFC PR:** [InQL #47](https://github.com/encero-systems/InQL/pull/47)
 - **Written against:** Incan v0.2
 - **Shipped in:** v0.1
 

@@ -9,8 +9,8 @@
   - InQL RFC 013 (function catalog program)
   - InQL RFC 014 (function registry and catalog governance)
   - InQL RFC 021 (generator and table-valued functions)
-- **Issue:** [InQL #37](https://github.com/dannys-code-corner/InQL/issues/37)
-- **RFC PR:** [InQL #46](https://github.com/dannys-code-corner/InQL/pull/46)
+- **Issue:** [InQL #37](https://github.com/encero-systems/InQL/issues/37)
+- **RFC PR:** [InQL #46](https://github.com/encero-systems/InQL/pull/46)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** v0.1
 

@@ -5,10 +5,10 @@
 - **Author(s):** Danny Meijer
 - **Related:**
   - InQL RFC 000 (language specification — naming, schema shapes, layer boundaries)
-  - Incan compiler — static capability gating enforcement: [incan#187](https://github.com/dannys-code-corner/incan/issues/187)
-  - InQL follow-up when enforcement lands: [InQL #10](https://github.com/dannys-code-corner/InQL/issues/10)
-  - InQL aggregate helper semantics follow-up: [InQL #23](https://github.com/dannys-code-corner/InQL/issues/23)
-- **Issue:** [InQL #2](https://github.com/dannys-code-corner/InQL/issues/2)
+  - Incan compiler — static capability gating enforcement: [incan#187](https://github.com/encero-systems/incan/issues/187)
+  - InQL follow-up when enforcement lands: [InQL #10](https://github.com/encero-systems/InQL/issues/10)
+  - InQL aggregate helper semantics follow-up: [InQL #23](https://github.com/encero-systems/InQL/issues/23)
+- **Issue:** [InQL #2](https://github.com/encero-systems/InQL/issues/2)
 - **RFC PR:** -
 - **Written against:** Incan v0.2
 - **Shipped in:** —

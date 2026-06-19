@@ -2,9 +2,9 @@
 
 <!-- Link references — defined up front so agents see all targets in one scan -->
 
-[incan-repo]: https://github.com/dannys-code-corner/incan-programming-language
-[incan-agents]: https://github.com/dannys-code-corner/incan-programming-language/blob/main/AGENTS.md
-[incan-contributing]: https://github.com/dannys-code-corner/incan-programming-language/blob/main/CONTRIBUTING.md
+[incan-repo]: https://github.com/encero-systems/incan
+[incan-agents]: https://github.com/encero-systems/incan/blob/main/AGENTS.md
+[incan-contributing]: https://github.com/encero-systems/incan/blob/main/CONTRIBUTING.md
 [readme]: README.md
 [contributing]: CONTRIBUTING.md
 [architecture]: docs/architecture.md
@@ -18,8 +18,8 @@
 [lib-incn]: src/lib.incn
 [tests-dir]: tests/
 [release-notes]: docs/release_notes/
-[incan-docsite-loop]: https://github.com/dannys-code-corner/incan-programming-language/blob/main/workspaces/docs-site/docs/contributing/tutorials/book/08_docsite_contributor_loop.md
-[incan-agents-docs-workflow]: https://github.com/dannys-code-corner/incan-programming-language/blob/main/AGENTS.md#docs-site-workflow-mkdocs-material
+[incan-docsite-loop]: https://github.com/encero-systems/incan/blob/main/workspaces/docs-site/docs/contributing/tutorials/book/08_docsite_contributor_loop.md
+[incan-agents-docs-workflow]: https://github.com/encero-systems/incan/blob/main/AGENTS.md#docs-site-workflow-mkdocs-material
 
 **InQL** is the typed **data logic plane** for [Incan][incan-repo]: relational queries, schema-aware table transformations, and streaming-shaped relational work, with a clear split from orchestration and engine-specific runtime in the authoring model. **This repository** holds the InQL **Incan library package** (`.incn` sources) and **normative RFCs** under `docs/rfcs/`. The **Incan compiler** (Rust) that implements parsing, checking, and lowering for InQL surfaces lives in the **Incan** repository.
 
