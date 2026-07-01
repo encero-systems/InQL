@@ -23,6 +23,12 @@
   - InQL RFC 038 (evidence exchange bridges)
   - InQL RFC 040 (interoperability semantic profiles)
   - InQL RFC 041 (Prism plan ingress and external client frontends)
+  - InQL RFC 042 (async verification evidence)
+  - InQL RFC 043 (canonical equality and digest profiles)
+  - InQL RFC 044 (verifier statements and proof artifacts)
+  - InQL RFC 045 (constraint evidence and verification-aware planning)
+  - InQL RFC 046 (data contract ingress and product topology)
+  - InQL RFC 047 (semantic evidence graph and agent query surface)
 - **Issue:** [InQL #61](https://github.com/encero-systems/InQL/issues/61)
 - **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
 - **Written against:** Incan v0.3-era InQL
@@ -30,7 +36,7 @@
 
 ## Summary
 
-This RFC is the umbrella tracking RFC for InQL's relational evidence program. The program defines the local, open semantic evidence contracts that make typed relational computation inspectable before execution and reviewable after execution: stable semantic targets, metadata attachments, Prism lineage, inspection artifacts, execution observations, adapter coverage, quality observations, governed attributes, plan bundles, plan diffs, evidence exchange bridges, interoperability semantic profiles, and Prism plan ingress. This RFC is complete only when the child RFCs are implemented, rejected, or explicitly superseded by design decision.
+This RFC is the umbrella tracking RFC for InQL's relational evidence program. The program defines the local, open semantic evidence contracts that make typed relational computation inspectable before execution and reviewable after execution: stable semantic targets, metadata attachments, Prism lineage, inspection artifacts, execution observations, adapter coverage, quality observations, governed attributes, plan bundles, plan diffs, evidence exchange bridges, interoperability semantic profiles, Prism plan ingress, async verification evidence, canonical equality profiles, verifier statements, proof artifacts, constraint evidence, verification-aware planning, data contract ingress, product topology, semantic evidence graph projections, and agent query surfaces. This RFC is complete only when the child RFCs are implemented, rejected, or explicitly superseded by design decision.
 
 ## Core model
 
@@ -51,7 +57,7 @@ Without this program, lineage, governance, quality, observability, and change-im
 ## Goals
 
 - Establish relational evidence as one coordinated InQL program.
-- Define the child RFC set required for semantic identity, lineage, inspection, observations, coverage, quality, governed attributes, plan bundles, plan diffs, evidence exchange, and interoperability profiles.
+- Define the child RFC set required for semantic identity, lineage, inspection, observations, coverage, quality, governed attributes, plan bundles, plan diffs, evidence exchange, interoperability profiles, verification evidence, canonical equality, verifier statements, proof artifacts, constraint evidence, verification-aware planning, data contract ingress, product topology, semantic evidence graph projections, and agent query surfaces.
 - Keep the program open, local, and backend-neutral.
 - Make Prism-authored relational meaning the source of local lineage and schema-flow evidence.
 - Define target-environment profile evidence without making any external engine, dialect, or interchange format the semantic owner.
@@ -120,6 +126,12 @@ The relational evidence program must consist of the following child RFCs unless 
 - InQL RFC 038 (evidence exchange bridges)
 - InQL RFC 040 (interoperability semantic profiles)
 - InQL RFC 041 (Prism plan ingress and external client frontends)
+- InQL RFC 042 (async verification evidence)
+- InQL RFC 043 (canonical equality and digest profiles)
+- InQL RFC 044 (verifier statements and proof artifacts)
+- InQL RFC 045 (constraint evidence and verification-aware planning)
+- InQL RFC 046 (data contract ingress and product topology)
+- InQL RFC 047 (semantic evidence graph and agent query surface)
 
 This umbrella RFC must not be marked Implemented while any required child RFC remains Draft, Planned, In Progress, Blocked, or otherwise unresolved. A child RFC may be removed from the required completion set only by a design decision recorded in this RFC or by a superseding RFC.
 

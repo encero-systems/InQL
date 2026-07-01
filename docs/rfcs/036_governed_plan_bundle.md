@@ -14,6 +14,12 @@
   - InQL RFC 035 (governed attributes and policy checkpoints)
   - InQL RFC 040 (interoperability semantic profiles)
   - InQL RFC 041 (Prism plan ingress and external client frontends)
+  - InQL RFC 042 (async verification evidence)
+  - InQL RFC 043 (canonical equality and digest profiles)
+  - InQL RFC 044 (verifier statements and proof artifacts)
+  - InQL RFC 045 (constraint evidence and verification-aware planning)
+  - InQL RFC 046 (data contract ingress and product topology)
+  - InQL RFC 047 (semantic evidence graph and agent query surface)
 - **Issue:** [InQL #70](https://github.com/encero-systems/InQL/issues/70)
 - **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
 - **Written against:** Incan v0.3-era InQL
@@ -21,7 +27,7 @@
 
 ## Summary
 
-This RFC defines the governed plan bundle as the local InQL artifact that keeps relational computation and evidence together. A bundle contains a plan reference, schemas, lineage, governed attributes, policy checkpoints, quality assertions, semantic profiles, ingress evidence, client session context, adapter requirements, coverage records, evidence references, and version metadata for the InQL-owned parts of governed relational computation.
+This RFC defines the governed plan bundle as the local InQL artifact that keeps relational computation and evidence together. A bundle contains a plan reference, schemas, lineage, governed attributes, policy checkpoints, quality assertions, verification evidence, canonical equality profiles, verifier statements, proof artifacts, constraint evidence, data contract evidence, product topology, semantic evidence graph projections, semantic profiles, ingress evidence, client session context, adapter requirements, coverage records, evidence references, and version metadata for the InQL-owned parts of governed relational computation.
 
 ## Motivation
 
@@ -30,7 +36,7 @@ Individual evidence artifacts are useful, but many consumers need a coherent han
 ## Goals
 
 - Define a bundle shape for InQL-owned relational evidence.
-- Keep plan, schema, lineage, attributes, policy checkpoints, quality assertions, semantic profiles, ingress evidence, client session context, adapter requirements, coverage, and versions together.
+- Keep plan, schema, lineage, attributes, policy checkpoints, quality assertions, verification evidence, canonical equality profiles, verifier statements, proof artifacts, constraint evidence, data contract evidence, product topology, semantic evidence graph projections, semantic profiles, ingress evidence, client session context, adapter requirements, coverage, and versions together.
 - Support local tooling and downstream generic consumers.
 - Avoid proprietary hosted behavior in the InQL contract.
 
@@ -66,6 +72,13 @@ A governed plan bundle must include:
 - governed attributes
 - policy checkpoint records
 - quality assertions and optional observations
+- verification assertions, runs, observations, and projections when available
+- canonical equality profiles and digest profiles when available
+- verifier statements, proof artifacts, and proof verification observations when available
+- constraint evidence and verification plans when available
+- data contract artifacts, normalized contract evidence, and mapping diagnostics when available
+- product topology evidence and port dependency records when available
+- semantic evidence graph projection manifests, graph artifacts, and graph query result artifacts when available
 - semantic profile records and profile assessments when available
 - ingress origin mappings and frontend coverage when available
 - client session context when it affected plan analysis
@@ -122,7 +135,7 @@ Bundles must be versioned from the start. Early bundles may contain fewer eviden
 ## Unresolved questions
 
 - Should bundles embed artifacts or reference sibling artifact files by default?
-- What is the first stable bundle serialization format?
+- What stable bundle serialization format should bundles use?
 - Which evidence families are required for a bundle to be considered complete?
 
 <!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->

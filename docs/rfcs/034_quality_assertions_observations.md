@@ -11,6 +11,7 @@
   - InQL RFC 027 (relational evidence program)
   - InQL RFC 028 (semantic identity and target model)
   - InQL RFC 032 (execution observations)
+  - InQL RFC 042 (async verification evidence)
 - **Issue:** [InQL #68](https://github.com/encero-systems/InQL/issues/68)
 - **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
 - **Written against:** Incan v0.3-era InQL
@@ -66,6 +67,8 @@ Assertion mode must distinguish observe, require, and quarantine or equivalent p
 A quality observation must include observation identity, assertion identity, execution attempt identity when applicable, status, metrics, diagnostics, and optional redacted sample references.
 
 Observation status must distinguish passed, failed, errored, skipped, and unsupported.
+
+Quality observation status describes the predicate outcome. When a quality observation is used as verification evidence, the verification observation defined by InQL RFC 042 carries the separate assurance label describing whether the predicate result was proven, verified, attested, sampled, waived, or unknown.
 
 Quality assertions may be planned as relational work. They must not change the cardinality or contents of the checked relation unless represented as an explicit transformation requested by the author.
 

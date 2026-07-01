@@ -12,6 +12,10 @@
   - InQL RFC 032 (execution observations)
   - InQL RFC 040 (interoperability semantic profiles)
   - InQL RFC 041 (Prism plan ingress and external client frontends)
+  - InQL RFC 042 (async verification evidence)
+  - InQL RFC 043 (canonical equality and digest profiles)
+  - InQL RFC 044 (verifier statements and proof artifacts)
+  - InQL RFC 045 (constraint evidence and verification-aware planning)
 - **Issue:** [InQL #67](https://github.com/encero-systems/InQL/issues/67)
 - **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
 - **Written against:** Incan v0.3-era InQL
@@ -63,7 +67,7 @@ If coverage is unknown for a requirement whose guarantee level is required, tool
 
 An adapter requirement must include requirement identity, target, capability, guarantee level, reason references, and optional diagnostic text.
 
-Capability names must be stable public vocabulary when they appear in serialized artifacts. Initial capability families should include extension_function, variant_semantics, decimal_semantics, null_semantics, lineage_preservation, audit_emission, row_filter, column_mask, aggregate_threshold, region_binding, and ordered_execution where applicable.
+Capability names must be stable public vocabulary when they appear in serialized artifacts. Initial capability families should include extension_function, variant_semantics, decimal_semantics, null_semantics, lineage_preservation, audit_emission, row_filter, column_mask, aggregate_threshold, region_binding, ordered_execution, snapshot_capture, canonical_digest, cross_relation_reconciliation, incremental_watermark, verification_event_stream, waiver_recording, and cryptographic_query_proof where applicable.
 
 Guarantee level must distinguish required, preferred, and optional requirements.
 
