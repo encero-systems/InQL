@@ -1,0 +1,116 @@
+"""Tests for local plan inspection and first relational evidence records."""
+
+from aggregate_builders import aggregate_as
+from functions import col, eq, str_lit, sum
+from inspect import (
+    EvidenceArtifactStatus,
+    LineageConfidence,
+    LineageGraph,
+    LineageRelationshipKind,
+    LineageTransformationKind,
+    SemanticTargetKind,
+    inspect_lineage,
+    inspect_plan,
+)
+from dataset import LazyFrame, lazy_frame_named_table
+from substrait.schema import RowColumnSpec, SubstraitPrimitiveKind
+from substrait.schema_registry import register_named_table_schema
+
+
+@derive(Clone)
+model Order:
+    customer_id: int
+    amount: int
+    status: str
+
+
+@derive(Clone)
+model CustomerSpend:
+    customer_id: int
+    total_amount: int
+
+
+def _register_order_schema(table_name: str) -> None:
+    """Register the schema used by inspection tests."""
+    mut schema: list[RowColumnSpec] = []
+    schema.append(RowColumnSpec(name="customer_id", kind=SubstraitPrimitiveKind.I64, nullable=false))
+    schema.append(RowColumnSpec(name="amount", kind=SubstraitPrimitiveKind.I64, nullable=false))
+    schema.append(RowColumnSpec(name="status", kind=SubstraitPrimitiveKind.String, nullable=false))
+    register_named_table_schema(table_name, schema)
+
+
+def _spend_summary() -> LazyFrame[Order]:
+    """Build one grouped lazy plan with filter, grouping, and aggregate lineage."""
+    orders: LazyFrame[Order] = lazy_frame_named_table("inspection_orders")
+    return orders
+        .filter(eq(col("status"), str_lit("paid")))
+        .group_by([col("customer_id")])
+        .agg([aggregate_as(sum(col("amount")), "total_amount")])
+
+
+def _has_edge(
+    graph: LineageGraph,
+    relationship: LineageRelationshipKind,
+    transformation: LineageTransformationKind,
+    source_name: str,
+    destination_name: str,
+) -> bool:
+    """Return whether the summary lineage has one expected edge."""
+    for edge in graph.edges:
+        if edge.relationship == relationship and edge.transformation == transformation:
+            if edge.source.name == source_name and edge.destination.name == destination_name:
+                return true
+    return false
+
+
+def test_inspect_plan__exposes_stable_plan_targets_schema_and_artifacts() -> None:
+    """RFC 028/031: inspection exposes semantic targets, output schema, and artifact family status."""
+    # -- Arrange --
+    _register_order_schema("inspection_orders")
+
+    # -- Act --
+    inspection = inspect_plan(_spend_summary())
+
+    # -- Assert --
+    assert inspection.plan_target.kind == SemanticTargetKind.Plan, "inspection should expose a plan semantic target"
+    assert inspection.authored_node_count == 4, "inspection should retain reachable authored Prism node count"
+    assert inspection.rewritten_node_count == 3, "inspection should expose canonical rewritten node count"
+    assert inspection.output_fields[0].kind == SemanticTargetKind.Field, "output fields should be semantic field targets"
+    assert inspection.output_fields[0].name == "customer_id", "group key should remain the first output field"
+    assert inspection.output_fields[1].name == "total_amount", "explicit aggregate alias should become output field target"
+    assert inspection.output_fields[0].target_id != "customer_id", "field identity must not be the display name alone"
+    assert len(inspection.attachments) >= 3, "inspection should emit typed metadata attachments for versions and known schema facts"
+    assert inspection.attachments[0].payload.schema == "inql.metadata.string.v0.1", "metadata payloads should declare a schema"
+    assert inspection.artifacts[0].status == EvidenceArtifactStatus.Computed, "plan-graph artifact family should be computed"
+    assert len(inspection.unsupported_evidence) > 0, "unsupported evidence families should be explicit markers"
+
+
+def test_inspect_lineage__distinguishes_control_grouping_and_value_edges() -> None:
+    """RFC 030: grouped filtered aggregate lineage records distinct relationship kinds."""
+    # -- Arrange --
+    _register_order_schema("inspection_orders")
+
+    # -- Act --
+    summary = _spend_summary()
+    lineage = inspect_lineage(summary)
+    inspection = inspect_plan(summary)
+
+    # -- Assert --
+    assert lineage.plan_id == inspection.plan_id, "lineage should share the inspected plan id"
+    assert len(lineage.edges) >= 3, "summary lineage should include control, grouping, and aggregate value evidence"
+    assert _has_edge(lineage, LineageRelationshipKind.Control, LineageTransformationKind.Filter, "status", "Filter"), "filter predicate should create control lineage to the filtered relation output"
+    assert _has_edge(
+        lineage,
+        LineageRelationshipKind.Grouping,
+        LineageTransformationKind.Identity,
+        "customer_id",
+        "customer_id",
+    ), "group key should create grouping lineage to its output field"
+    assert _has_edge(
+        lineage,
+        LineageRelationshipKind.Value,
+        LineageTransformationKind.Aggregate,
+        "amount",
+        "total_amount",
+    ), "aggregate measure should create value lineage from its input field"
+    assert lineage.edges[0].confidence == LineageConfidence.Exact, "detected direct column dependencies should be exact"

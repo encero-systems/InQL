@@ -33,11 +33,11 @@ InQL uses its **own** RFC series (starting at 000), independent of the [Incan la
 | [024][rfc-024] | Implemented | Function extension policy                                                                         |     |
 | [025][rfc-025] | Implemented | Typed sketch logical values                                                                       |     |
 | [026][rfc-026] | Implemented | Semi-structured variant logical values                                                            |     |
-| [027][rfc-027] | Draft       | Relational evidence program                                                                       |     |
-| [028][rfc-028] | Draft       | Semantic identity and target model                                                                |     |
-| [029][rfc-029] | Draft       | Typed metadata attachments                                                                        |     |
-| [030][rfc-030] | Draft       | Prism lineage graph                                                                               |     |
-| [031][rfc-031] | Draft       | Local inspection APIs and artifacts                                                               |     |
+| [027][rfc-027] | In Progress | Relational evidence program                                                                       |     |
+| [028][rfc-028] | In Progress | Semantic identity and target model                                                                |     |
+| [029][rfc-029] | In Progress | Typed metadata attachments                                                                        |     |
+| [030][rfc-030] | In Progress | Prism lineage graph                                                                               |     |
+| [031][rfc-031] | In Progress | Local inspection APIs and artifacts                                                               |     |
 | [032][rfc-032] | Draft       | Execution observations                                                                            |     |
 | [033][rfc-033] | Draft       | Adapter requirements and coverage                                                                 |     |
 | [034][rfc-034] | Draft       | Quality assertions and observations                                                               |     |

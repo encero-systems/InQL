@@ -1,4 +1,4 @@
-"""Session domain newtypes and internal enums."""
+"""Session domain newtypes and public sink descriptors."""
 
 
 @derive(Clone)
@@ -38,3 +38,30 @@ pub type SinkUri = newtype str:
 pub enum SinkKind(str):
     Csv = "csv"
     Parquet = "parquet"
+
+
+@derive(Clone)
+pub class SinkTarget:
+    """Portable sink descriptor accepted by `Session.write(...)`."""
+
+    pub sink_kind: SinkKind
+    pub uri: str
+
+    def clone(self) -> Self:
+        """Return one cloned sink target descriptor."""
+        return SinkTarget(sink_kind=self.sink_kind, uri=self.uri)
+
+
+pub def csv_sink(uri: str) -> SinkTarget:
+    """Build one CSV sink target descriptor."""
+    return SinkTarget(sink_kind=SinkKind.Csv, uri=uri)
+
+
+pub def parquet_sink(uri: str) -> SinkTarget:
+    """Build one Parquet sink target descriptor."""
+    return SinkTarget(sink_kind=SinkKind.Parquet, uri=uri)
+
+
+pub def sink_kind_name(kind: SinkKind) -> str:
+    """Return one stable sink-kind name for diagnostics and UX."""
+    return kind.value()

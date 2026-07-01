@@ -3,8 +3,8 @@
 from std.testing import assert_is_err, assert_is_ok, fail, parametrize
 from rust::std::path import Path
 from backends import DataFusion, csv_source, datafusion_backend_selection, parquet_source
-from dataset import LazyFrame, lazy_frame_named_table
-from session import Session, SessionError, SessionErrorKind
+from dataset import DataFrame, LazyFrame, lazy_frame_named_table
+from session import Session, SessionError, SessionErrorKind, csv_sink, parquet_sink
 from substrait.inspect import read_kind_name, root_rel
 
 
@@ -372,6 +372,45 @@ def test_session__write_succeeds_for_deferred_lazyframe(sink_kind: str, output_n
     assert Path.new(output_uri).exists() is true, "write should create the requested output artifact"
 
 
+@parametrize("sink_kind, output_name", [("csv", "session_generic_write_csv_output.csv"), ("parquet", "session_generic_write_parquet_output")])
+def test_session__generic_write_succeeds_for_deferred_lazyframe(sink_kind: str, output_name: str) -> None:
+    """Session.write should dispatch deferred LazyFrame writes through typed sink descriptors."""
+    # -- Arrange --
+    mut session = Session.default()
+    output_uri = _target_uri(output_name)
+
+    # -- Act --
+    lazy: LazyFrame[Order] = assert_is_ok(
+        session.read_csv("orders", ORDERS_CSV_FIXTURE),
+        "orders CSV fixture should load",
+    )
+    match sink_kind:
+        "csv" => assert_is_ok(session.write(lazy, csv_sink(output_uri)), "generic CSV write should succeed")
+        "parquet" => assert_is_ok(session.write(lazy, parquet_sink(output_uri)), "generic Parquet write should succeed")
+        _ => fail(f"unexpected sink kind: {sink_kind}")
+
+    # -- Assert --
+    assert Path.new(output_uri).exists() is true, "generic write should create the requested output artifact"
+
+
+def test_session__generic_write_succeeds_for_materialized_dataframe() -> None:
+    """Session.write should accept materialized DataFrame inputs through the same sink descriptor surface."""
+    # -- Arrange --
+    mut session = Session.default()
+    output_uri = _target_uri("session_generic_write_dataframe_output.csv")
+
+    # -- Act --
+    lazy: LazyFrame[Order] = assert_is_ok(
+        session.read_csv("orders", ORDERS_CSV_FIXTURE),
+        "orders CSV fixture should load",
+    )
+    df: DataFrame[Order] = assert_is_ok(session.collect(lazy), "orders collect should succeed before generic write")
+    assert_is_ok(session.write(df, csv_sink(output_uri)), "generic DataFrame CSV write should succeed")
+
+    # -- Assert --
+    assert Path.new(output_uri).exists() is true, "generic DataFrame write should create the requested output artifact"
+
+
 def test_session__write_rejects_empty_sink_uri() -> None:
     """write_csv should reject empty sink URIs with a typed invalid_sink error."""
     # -- Arrange --
@@ -386,6 +425,22 @@ def test_session__write_rejects_empty_sink_uri() -> None:
 
     # -- Assert --
     assert err.kind == SessionErrorKind.InvalidSink, "write_csv should reject empty sink URIs"
+
+
+def test_session__generic_write_rejects_empty_sink_uri() -> None:
+    """Session.write should reject empty sink URIs through the same typed error path as file-specific writes."""
+    # -- Arrange --
+    mut session = Session.default()
+
+    # -- Act --
+    lazy: LazyFrame[Order] = assert_is_ok(
+        session.read_csv("orders", ORDERS_CSV_FIXTURE),
+        "orders CSV fixture should load",
+    )
+    err = assert_is_err(session.write(lazy, csv_sink("")), "empty generic CSV sink URI should fail")
+
+    # -- Assert --
+    assert err.kind == SessionErrorKind.InvalidSink, "generic write should reject empty sink URIs"
 
 
 def test_session__register_rejects_duplicates_with_typed_error() -> None:

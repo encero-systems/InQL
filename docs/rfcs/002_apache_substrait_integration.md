@@ -9,7 +9,7 @@
 - **Issue:** [InQL #3](https://github.com/encero-systems/InQL/issues/3)
 - **RFC PR:** -
 - **Written against:** Incan v0.2
-- **Shipped in:** -
+- **Shipped in:** —
 
 ## Summary
 
@@ -20,7 +20,7 @@ This RFC defines **Apache Substrait** as the **normative logical interchange** f
 1. A **checked** InQL relational tree **must** be expressible as a Substrait **`Plan`** whose executable root is a **`Rel`** tree, optionally a **DAG** via **`ReferenceRel`** when subplans are shared.
 2. **Logical reads** are **`ReadRel`** (or extension leaf relations) carrying **names, virtual rows, or extension payloads** instead of host-specific connection strings or secrets in the normative interchange.
 3. **Scalar and aggregate** computation uses Substrait **expressions** and **aggregate functions**; functions outside the pinned core set **must** use **registered extension URIs** documented with the compiler.
-4. **North-star operator catalog**: InQL capabilities map to logical `Rel` kinds as specified in the [Substrait operator catalog reference][ref-operator-catalog]; **MVP** subsets are implementation choices but **must not** contradict this RFC for operators they expose.
+4. **North-star operator catalog**: InQL capabilities map to logical `Rel` kinds as specified in the [Substrait operator catalog reference][ref-operator-catalog]; implementation subsets are delivery choices but **must not** contradict this RFC for operators they expose.
 
 ## Motivation
 
@@ -41,19 +41,19 @@ Without a dedicated specification, Substrait lowering risks drifting between fro
 - Physical Substrait relations as a normative InQL output — consumers **may** use them; InQL **may** emit them when documented as a non-portable or target-specific mode.
 - ANSI SQL completeness — mapping is capability-based, not a SQL compliance checklist.
 
-## v1 implementation profile (InQL code path)
+## Current implementation profile (InQL package path)
 
-The v1 implementation profile for this RFC is explicitly scoped to InQL package code (`.incn`) and is the contract for current delivery tracking.
+The current implementation profile for this RFC is explicitly scoped to InQL package code (`.incn`) and is the contract for current delivery tracking.
 
 - Core read/query `Rel` coverage is implemented through a thin proto-backed Substrait boundary in InQL package code.
-- Optional mutation relations remain modeled but are not required to be executable in v1.
+- Optional mutation relations remain modeled but are not required to be executable in the current read/query analytical core.
 - Gap and extension semantics are represented as typed contracts in package code and conformance scenarios, rather than ad hoc string payloads.
 - Richer planning semantics remain outside this profile when they logically belong to future `query {}` lowering or Prism.
 
 This profile is reflected by:
 
 - `src/substrait/schema.incn`
-- `src/substrait/plan.incn`
+- `src/substrait/plans.incn`
 - `src/substrait/conformance.incn`
 - `src/substrait/conformance_catalog.incn`
 - `src/substrait/conformance_validate.incn`
@@ -68,7 +68,7 @@ This profile is reflected by:
 | Reference rel | Implemented at the boundary for ordinal preservation only |
 | Project and aggregate | Present as boundary-shape scaffolds; richer expression/grouping semantics remain deferred |
 | Extension URI policy and explode gap encoding | Implemented through a registered package-level URI and documented gap policy |
-| `query {}` lowering parity | Deferred to RFC 003 and Prism-backed lowering |
+| `query {}` lowering parity | Implemented for the current query-block surface through carrier planning paths and the Substrait boundary |
 | Optional mutation profile | Deferred; not required for the v0.1 read/query analytical core |
 
 ## Guide-level explanation
@@ -215,30 +215,30 @@ Non-normative: toolchains **should** maintain golden Substrait plans or equivale
 
 ### Spec / design
 
-- [ ] Substrait revision pinning policy documented in release artifacts and compiler docs.
-- [ ] Normative operator catalog published (including gap annotations).
-- [ ] Extension URI registration conventions documented.
+- [x] Substrait revision pinning policy documented in release artifacts and compiler docs.
+- [x] Normative operator catalog published (including gap annotations).
+- [x] Extension URI registration conventions documented.
 
 ### IR / lowering — core relations
 
-- [ ] `ReadRel` emission: named table, virtual rows, extension sources.
-- [ ] `FilterRel` emission.
-- [ ] `ProjectRel` boundary scaffold emission.
-- [ ] `JoinRel` emission (semi, anti, single, mark variants).
-- [ ] `CrossRel` emission.
-- [ ] `AggregateRel` boundary scaffold emission.
-- [ ] `SortRel` emission.
-- [ ] `FetchRel` emission (limit / offset).
-- [ ] `SetRel` emission (union / intersect / except).
-- [ ] `ReferenceRel` ordinal emission at the Substrait boundary.
-- [ ] Lowering is identical across `query {}`, method chains, and desugared pipe-forward for the same checked tree once RFC 003 and Prism-backed lowering land.
-- [ ] Field references align with RFC 001 `model`-backed schemas and `NamedStruct` indices.
+- [x] `ReadRel` emission: named table, virtual rows, extension sources.
+- [x] `FilterRel` emission.
+- [x] `ProjectRel` boundary scaffold emission.
+- [x] `JoinRel` emission for the current join variant surface.
+- [x] `CrossRel` emission.
+- [x] `AggregateRel` boundary scaffold emission.
+- [x] `SortRel` emission.
+- [x] `FetchRel` emission (limit / offset).
+- [x] `SetRel` emission (union / intersect / except).
+- [x] `ReferenceRel` ordinal emission at the Substrait boundary.
+- [x] Lowering is identical across current `query {}` and method-chain surfaces for the same checked tree.
+- [x] Field references align with RFC 001 `model`-backed schemas and `NamedStruct` indices for registered named-table schema facts.
 
 ### Extensions and read binding
 
-- [ ] Extension URI registration for non-core functions wired in toolchain catalog.
-- [ ] Logical `ReadRel` carries no normative secret material (binding left to execution context).
-- [ ] Documented extension encoding for unnest / explode gap.
+- [x] Extension URI registration for non-core functions wired in toolchain catalog.
+- [x] Logical `ReadRel` carries no normative secret material (binding left to execution context).
+- [x] Documented extension encoding for unnest / explode gap.
 
 ### Optional mutation profile
 
@@ -248,15 +248,15 @@ Non-normative: toolchains **should** maintain golden Substrait plans or equivale
 
 ### Tests
 
-- [ ] Golden Substrait plan fixtures for representative API-lowered (`DataSet[T]`) trees.
-- [ ] Golden Substrait plan fixtures for representative `query {}` trees once that surface lowers through the same boundary.
+- [x] Golden Substrait plan fixtures or equivalent plan-shape tests for representative API-lowered (`DataSet[T]`) trees.
+- [x] Golden Substrait plan fixtures or equivalent plan-shape tests for representative `query {}` trees.
 - [ ] Fixture round-trip tests on Substrait revision bump.
-- [ ] Tests confirm no secret material in emitted `ReadRel` plans.
+- [x] Tests confirm no secret material in emitted `ReadRel` plans.
 
 ### Docs
 
-- [ ] Operator catalog page updated in docs-site.
-- [ ] Release notes entry added.
+- [x] Operator catalog page updated in docs-site.
+- [x] Release notes entry added.
 
 ## Design Decisions
 

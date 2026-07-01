@@ -14,10 +14,10 @@ from backends import (
     default_backend_selection,
     parquet_source,
 )
-from dataset import DataFrame, LazyFrame, lazy_frame_named_table
+from dataset import BoundedDataSet, DataFrame, LazyFrame, lazy_frame_named_table
 pub from session.errors import SessionError, SessionErrorKind, format_session_diagnostic, report_session_error
 from session.errors import invalid_registration, invalid_sink
-from session.domain import LogicalName, SourceUri, SinkUri, SinkKind
+from session.domain import LogicalName, SourceUri, SinkUri, SinkTarget, csv_sink, parquet_sink
 from session.source_formats import planned_schema_columns_for_source
 from session.active import (
     ActiveRegistration,
@@ -193,28 +193,32 @@ pub class Session:
 
     def write_csv[T with Clone](self, data: LazyFrame[T], uri: str) -> Result[None, SessionError]:
         """Execute one lazy plan and write result rows to a CSV sink URI."""
-        return self._write_plan_to_sink(_plan_from_lazy_frame(data)?, uri, SinkKind.Csv)
+        return self.write(data, csv_sink(uri))
 
     def write_parquet[T with Clone](self, data: LazyFrame[T], uri: str) -> Result[None, SessionError]:
         """Execute one lazy plan and write result rows to a Parquet sink URI."""
-        return self._write_plan_to_sink(_plan_from_lazy_frame(data)?, uri, SinkKind.Parquet)
+        return self.write(data, parquet_sink(uri))
 
     def write_csv_df[T with Clone](self, data: DataFrame[T], uri: str) -> Result[None, SessionError]:
         """Write one materialized DataFrame through the Session CSV sink path."""
-        return self._write_plan_to_sink(_plan_from_data_frame(data)?, uri, SinkKind.Csv)
+        return self.write(data, csv_sink(uri))
 
     def write_parquet_df[T with Clone](self, data: DataFrame[T], uri: str) -> Result[None, SessionError]:
         """Write one materialized DataFrame through the Session Parquet sink path."""
-        return self._write_plan_to_sink(_plan_from_data_frame(data)?, uri, SinkKind.Parquet)
+        return self.write(data, parquet_sink(uri))
 
-    def _write_plan_to_sink(self, plan: Plan, uri: str, sink_kind: SinkKind) -> Result[None, SessionError]:
+    def write[T with Clone](self, data: BoundedDataSet[T], target: SinkTarget) -> Result[None, SessionError]:
+        """Execute one bounded dataset and write result rows to a typed sink target."""
+        return self._write_plan_to_sink(_plan_from_bounded_dataset(data)?, target)
+
+    def _write_plan_to_sink(self, plan: Plan, target: SinkTarget) -> Result[None, SessionError]:
         """Run one validated plan through the selected sink writer and normalize runtime/backend errors."""
-        sink_uri = _sink_uri_from_text(uri)?
+        sink_uri = _sink_uri_from_text(target.uri)?
         _validate_named_table_binding(self._registrations, plan)?
         registrations = _to_backend_registrations(self._registrations)
 
         return _write_result_from_backend_result(
-            backend_write_plan(self._backend, registrations, plan, sink_uri.0, sink_kind),
+            backend_write_plan(self._backend, registrations, plan, sink_uri.0, target.sink_kind),
         )
 
 
@@ -309,6 +313,11 @@ def _plan_from_lazy_frame[T with Clone](data: LazyFrame[T]) -> Result[Plan, Sess
 
 def _plan_from_data_frame[T with Clone](data: DataFrame[T]) -> Result[Plan, SessionError]:
     """Return one materialized frame plan through the same structured planning-error envelope."""
+    return data.try_to_substrait_plan().map_err(_session_error_from_lowering_error)
+
+
+def _plan_from_bounded_dataset[T with Clone](data: BoundedDataSet[T]) -> Result[Plan, SessionError]:
+    """Return one bounded carrier plan through the same structured planning-error envelope."""
     return data.try_to_substrait_plan().map_err(_session_error_from_lowering_error)
 
 

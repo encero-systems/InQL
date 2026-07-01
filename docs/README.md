@@ -21,6 +21,7 @@ Use the docs tree like this:
 3. [Execution context (Explanation)][execution-explanation]
 4. [Dataset carriers (Reference)][dataset-reference]
 5. [Execution context (Reference)][execution-reference]
+6. [Local inspection (Reference)][inspection-reference]
 
 ### Understand the system design
 
@@ -48,5 +49,6 @@ Use the docs tree like this:
 [execution-explanation]: language/explanation/execution_context.md
 [dataset-reference]: language/reference/dataset_carriers.md
 [execution-reference]: language/reference/execution_context.md
+[inspection-reference]: language/reference/inspection.md
 [rfcs-index]: rfcs/README.md
 [writing-rfcs]: contributing/writing_rfcs.md
