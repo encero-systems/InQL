@@ -47,7 +47,13 @@ InQL uses its **own** RFC series (starting at 000), independent of the [Incan la
 | [038][rfc-038] | Draft       | Evidence exchange bridges                                                                         |     |
 | [039][rfc-039] | Draft       | Pandas-familiar exploration API                                                                   |     |
 | [040][rfc-040] | Draft       | Interoperability semantic profiles                                                                |     |
-| [041][rfc-041] | Draft       | Prism plan ingress and external client frontends                                                   |     |
+| [041][rfc-041] | Draft       | Prism plan ingress and external client frontends                                                  |     |
+| [042][rfc-042] | Draft       | Async verification evidence                                                                       |     |
+| [043][rfc-043] | Draft       | Canonical equality and digest profiles                                                            |     |
+| [044][rfc-044] | Draft       | Verifier statements and proof artifacts                                                           |     |
+| [045][rfc-045] | Draft       | Constraint evidence and verification-aware planning                                               |     |
+| [046][rfc-046] | Draft       | Data contract ingress and product topology                                                        |     |
+| [047][rfc-047] | Draft       | Semantic evidence graph and agent query surface                                                   |     |
 
 <!-- TODO: #7: auto populate this table (like how we do in incan) -->
 
@@ -101,4 +107,10 @@ New RFCs should follow [TEMPLATE.md] (aligned with Incan’s RFC structure, adap
 [rfc-039]: 039_pandas_familiar_exploration_api.md
 [rfc-040]: 040_interoperability_semantic_profiles.md
 [rfc-041]: 041_prism_plan_ingress_frontends.md
+[rfc-042]: 042_async_verification_evidence.md
+[rfc-043]: 043_canonical_equality_digest_profiles.md
+[rfc-044]: 044_verifier_statements_proof_artifacts.md
+[rfc-045]: 045_constraint_evidence_verification_planning.md
+[rfc-046]: 046_data_contract_ingress.md
+[rfc-047]: 047_semantic_evidence_graph_agent_surface.md
 [incan-rfcs]: https://github.com/encero-systems/incan/tree/main/workspaces/docs-site/docs/RFCs
