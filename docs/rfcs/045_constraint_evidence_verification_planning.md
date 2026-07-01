@@ -15,7 +15,7 @@
   - InQL RFC 043 (canonical equality and digest profiles)
   - InQL RFC 044 (verifier statements and proof artifacts)
 - **Issue:** [InQL #80](https://github.com/encero-systems/InQL/issues/80)
-- **RFC PR:** —
+- **RFC PR:** [InQL #83](https://github.com/encero-systems/InQL/pull/83)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 

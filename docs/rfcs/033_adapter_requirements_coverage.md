@@ -17,7 +17,7 @@
   - InQL RFC 044 (verifier statements and proof artifacts)
   - InQL RFC 045 (constraint evidence and verification-aware planning)
 - **Issue:** [InQL #67](https://github.com/encero-systems/InQL/issues/67)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #83](https://github.com/encero-systems/InQL/pull/83)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 

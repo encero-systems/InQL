@@ -17,7 +17,7 @@
   - InQL RFC 045 (constraint evidence and verification-aware planning)
   - InQL RFC 047 (semantic evidence graph and agent query surface)
 - **Issue:** [InQL #81](https://github.com/encero-systems/InQL/issues/81)
-- **RFC PR:** —
+- **RFC PR:** [InQL #83](https://github.com/encero-systems/InQL/pull/83)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 

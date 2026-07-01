@@ -13,7 +13,7 @@
   - InQL RFC 032 (execution observations)
   - InQL RFC 042 (async verification evidence)
 - **Issue:** [InQL #68](https://github.com/encero-systems/InQL/issues/68)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #83](https://github.com/encero-systems/InQL/pull/83)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 

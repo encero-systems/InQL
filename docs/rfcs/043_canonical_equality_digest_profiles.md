@@ -13,7 +13,7 @@
   - InQL RFC 040 (interoperability semantic profiles)
   - InQL RFC 042 (async verification evidence)
 - **Issue:** [InQL #78](https://github.com/encero-systems/InQL/issues/78)
-- **RFC PR:** —
+- **RFC PR:** [InQL #83](https://github.com/encero-systems/InQL/pull/83)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 

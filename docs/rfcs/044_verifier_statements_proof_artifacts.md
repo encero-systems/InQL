@@ -13,7 +13,7 @@
   - InQL RFC 042 (async verification evidence)
   - InQL RFC 043 (canonical equality and digest profiles)
 - **Issue:** [InQL #79](https://github.com/encero-systems/InQL/issues/79)
-- **RFC PR:** —
+- **RFC PR:** [InQL #83](https://github.com/encero-systems/InQL/pull/83)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 

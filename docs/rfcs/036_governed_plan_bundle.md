@@ -21,7 +21,7 @@
   - InQL RFC 046 (data contract ingress and product topology)
   - InQL RFC 047 (semantic evidence graph and agent query surface)
 - **Issue:** [InQL #70](https://github.com/encero-systems/InQL/issues/70)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #83](https://github.com/encero-systems/InQL/pull/83)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 

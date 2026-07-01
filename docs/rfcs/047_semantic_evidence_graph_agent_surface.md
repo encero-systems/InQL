@@ -22,7 +22,7 @@
   - InQL RFC 045 (constraint evidence and verification-aware planning)
   - InQL RFC 046 (data contract ingress and product topology)
 - **Issue:** [InQL #82](https://github.com/encero-systems/InQL/issues/82)
-- **RFC PR:** —
+- **RFC PR:** [InQL #83](https://github.com/encero-systems/InQL/pull/83)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** —
 
