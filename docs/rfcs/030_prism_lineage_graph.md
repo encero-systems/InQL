@@ -1,6 +1,6 @@
 # InQL RFC 030: Prism lineage graph
 
-- **Status:** Draft
+- **Status:** In Progress
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**

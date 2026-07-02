@@ -81,13 +81,13 @@ session = Session.builder()
 ### Reading data
 
 ```incan
-from pub::inql import Session, LazyFrame
+from pub::inql import Session, LazyFrame, csv_source
 from models import Order
 
 session = Session.default()
 
 # Register a named table (logical name → physical source)
-session.register("orders", "catalog.schema.orders")
+session.register("orders", csv_source("s3://bucket/orders.csv"))
 
 # Create a lazy plan from the registered table
 orders: LazyFrame[Order] = session.table("orders")
@@ -100,7 +100,7 @@ For file-based sources:
 ```incan
 from models import Event
 
-events: LazyFrame[Event] = session.read_parquet("s3://bucket/events/*.parquet")
+events: LazyFrame[Event] = session.read_parquet("events", "s3://bucket/events/*.parquet")
 ```
 
 For inline data:
@@ -146,22 +146,24 @@ materialized: DataFrame[OrderSummary] = session.collect(result)
 ### Writing results
 
 ```incan
-# Write to a registered output target
-session.write(materialized, "catalog.schema.order_summaries")
+from pub::inql import parquet_sink
 
-# Or write to a file
-session.write_parquet(materialized, "s3://bucket/summaries/")
+# Write to a registered output target
+session.write(materialized, parquet_sink("s3://bucket/summaries/"))
+
+# Or write a deferred plan through a file-format convenience helper
+session.write_parquet(result, "s3://bucket/summaries/")
 ```
 
 ### End-to-end example
 
 ```incan
-from pub::inql import Session, LazyFrame, DataFrame
+from pub::inql import Session, LazyFrame, DataFrame, csv_source, parquet_sink
 from pub::inql.functions import count, sum
 from models import Order, OrderSummary
 
 session = Session.default()
-session.register("orders", "catalog.schema.orders")
+session.register("orders", csv_source("s3://bucket/orders.csv"))
 
 orders: LazyFrame[Order] = session.table("orders")
 
@@ -176,7 +178,7 @@ summary: LazyFrame[OrderSummary] = query {
 }
 
 result: DataFrame[OrderSummary] = session.collect(summary)
-session.write(result, "catalog.schema.order_summaries")
+session.write(result, parquet_sink("s3://bucket/summaries/"))
 ```
 
 ## Reference-level explanation
@@ -205,7 +207,7 @@ The intended core session surface for v0.1 is:
 | `session.read_arrow(uri)`          | Create a `LazyFrame[T]` from Arrow IPC input                                  |
 | `session.from_values(rows)`        | Create a `LazyFrame[T]` from inline typed values                              |
 | `session.collect(data)`            | Execute a deferred plan and materialize `DataFrame[T]`                        |
-| `session.write(data, target)`      | Write a dataset to a named or registered target                               |
+| `session.write(data, target)`      | Write bounded data to a typed sink target                                     |
 | `session.write_parquet(data, uri)` | Write bounded data to Parquet output                                          |
 | `session.write_csv(data, uri)`     | Write bounded data to CSV output                                              |
 
@@ -245,12 +247,13 @@ This table defines the intended high-level API shape. The detailed normative rul
 
 |               Method               |        Input        |              Description              |
 | ---------------------------------- | ------------------- | ------------------------------------- |
-| `session.write(data, target)`      | `DataSet[T]`        | Write to a registered or named target |
-| `session.write_parquet(data, uri)` | `BoundedDataSet[T]` | Write to Parquet files                |
-| `session.write_csv(data, uri)`     | `BoundedDataSet[T]` | Write to CSV files                    |
+| `session.write(data, target)`      | `BoundedDataSet[T]` | Write to a typed sink target          |
+| `session.write_parquet(data, uri)` | `LazyFrame[T]`      | Convenience form for Parquet files    |
+| `session.write_csv(data, uri)`     | `LazyFrame[T]`      | Convenience form for CSV files        |
 
 - Write operations **must** execute the plan if the input is a `LazyFrame[T]` (deferred), then write the materialized data.
-- File-format write methods **should** accept `BoundedDataSet[T]` (InQL RFC 001) — not `UnboundedDataSet[T]`, because writing unbounded data to a finite file is not well-defined without windowing or partitioning.
+- `session.write(data, target)` accepts a typed sink descriptor such as `csv_sink(uri)` or `parquet_sink(uri)`. It must not infer format from filename text alone.
+- File-format convenience methods **may** accept only deferred bounded plans when the generic `session.write(data, target)` API covers the broader `BoundedDataSet[T]` surface.
 - Write to streaming sinks (when supported) **may** accept `UnboundedDataSet[T]`.
 
 ### DataFusion as reference backend
@@ -371,7 +374,7 @@ This section tracks the implementation path for this RFC. It is intentionally op
 - [ ] Logical-name schema binding is formalized as an explicit catalog/snapshot model rather than an implicit global registry, with clear overwrite diagnostics for collisions.
 - [ ] Public dataset join typing is aligned with the intended DX for heterogeneous joins, including a real output-schema contract rather than a temporary `Self`-only surface.
 - [ ] `Session.from_values(...)` is implemented as part of the core `Session` API surface described in this RFC.
-- [ ] Generic `Session.write(data, target)` API is implemented (beyond file-specific sink methods).
+- [x] Generic `Session.write(data, target)` API is implemented for the current typed sink descriptors (beyond file-specific sink methods).
 - [ ] Multi-backend implementation beyond DataFusion is shipped through the backend abstraction.
 
 ### Exit criteria for RFC status change

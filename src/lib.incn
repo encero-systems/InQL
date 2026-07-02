@@ -406,6 +406,33 @@ pub from backends import (
     parquet_source,
 )
 pub from metadata import inql_version
+pub from session.domain import SinkKind, SinkTarget, csv_sink, parquet_sink, sink_kind_name
+pub from evidence import (
+    EvidenceArtifactStatus,
+    InspectionArtifact,
+    LineageConfidence,
+    LineageEdge,
+    LineageGraph,
+    LineageRelationshipKind,
+    LineageTransformationKind,
+    MetadataAttachment,
+    MetadataLifecycle,
+    MetadataPayload,
+    MetadataSource,
+    MetadataVisibility,
+    SemanticTarget,
+    SemanticTargetKind,
+    UnsupportedEvidence,
+)
+pub from inspect import (
+    INSPECTION_SCHEMA_VERSION,
+    InspectionNodeKind,
+    LINEAGE_RULE_VERSION,
+    PlanInspection,
+    PlanNodeInspection,
+    inspect_lineage,
+    inspect_plan,
+)
 pub from session.types import Session, SessionBuilder
 pub from session.errors import SessionError, SessionErrorKind, format_session_diagnostic, report_session_error
 pub from substrait.errors import SubstraitLoweringError, SubstraitLoweringErrorKind

@@ -1,6 +1,6 @@
 # InQL RFC 028: Semantic identity and target model
 
-- **Status:** Draft
+- **Status:** In Progress
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**

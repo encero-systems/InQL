@@ -1,6 +1,6 @@
 # InQL RFC 027: Relational evidence program
 
-- **Status:** Draft
+- **Status:** In Progress
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**

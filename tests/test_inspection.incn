@@ -1,0 +1,296 @@
+"""Tests for local plan inspection and first relational evidence records."""
+
+from aggregate_builders import aggregate_as
+from functions import col, desc, eq, explode, row_number, str_lit, sum, window
+from evidence import (
+    EvidenceArtifactStatus,
+    LineageConfidence,
+    LineageGraph,
+    LineageRelationshipKind,
+    LineageTransformationKind,
+    SemanticTargetKind,
+)
+from inspect import InspectionNodeKind, PlanInspection, inspect_lineage, inspect_plan
+from dataset import LazyFrame, lazy_frame_named_table
+from projection_builders import with_column_assignment
+from substrait.schema import RowColumnSpec, SubstraitPrimitiveKind
+from substrait.schema_registry import register_named_table_schema
+
+
+@derive(Clone)
+model Order:
+    """Fixture row shape used by local plan inspection tests."""
+
+    customer_id: int
+    amount: int
+    status: str
+
+
+@derive(Clone)
+model OrderProjection:
+    """Fixture row shape for SELECT projection inspection tests."""
+
+    customer_id: int
+
+
+def _register_order_schema(table_name: str) -> None:
+    """Register the schema used by inspection tests."""
+    mut schema: list[RowColumnSpec] = []
+    schema.append(RowColumnSpec(name="customer_id", kind=SubstraitPrimitiveKind.I64, nullable=false))
+    schema.append(RowColumnSpec(name="amount", kind=SubstraitPrimitiveKind.I64, nullable=false))
+    schema.append(RowColumnSpec(name="status", kind=SubstraitPrimitiveKind.String, nullable=false))
+    register_named_table_schema(table_name, schema)
+
+
+def _spend_summary() -> LazyFrame[Order]:
+    """Build one grouped lazy plan with filter, grouping, and aggregate lineage."""
+    orders: LazyFrame[Order] = lazy_frame_named_table("inspection_orders")
+    return orders
+        .filter(eq(col("status"), str_lit("paid")))
+        .group_by([col("customer_id")])
+        .agg([aggregate_as(sum(col("amount")), "total_amount")])
+
+
+def _has_edge(
+    graph: LineageGraph,
+    relationship: LineageRelationshipKind,
+    transformation: LineageTransformationKind,
+    source_name: str,
+    destination_name: str,
+) -> bool:
+    """Return whether the summary lineage has one expected edge."""
+    for edge in graph.edges:
+        if edge.relationship == relationship and edge.transformation == transformation:
+            if edge.source.name == source_name and edge.destination.name == destination_name:
+                return true
+    return false
+
+
+def _edge_count(
+    graph: LineageGraph,
+    relationship: LineageRelationshipKind,
+    transformation: LineageTransformationKind,
+    source_name: str,
+    destination_name: str,
+) -> int:
+    """Return how many lineage edges match one relationship, transformation, and endpoint name pair."""
+    mut count = 0
+    for edge in graph.edges:
+        if edge.relationship == relationship and edge.transformation == transformation:
+            if edge.source.name == source_name and edge.destination.name == destination_name:
+                count += 1
+    return count
+
+
+def _has_edge_with_confidence(
+    graph: LineageGraph,
+    relationship: LineageRelationshipKind,
+    transformation: LineageTransformationKind,
+    source_name: str,
+    destination_name: str,
+    confidence: LineageConfidence,
+) -> bool:
+    """Return whether one expected edge has the requested confidence class."""
+    for edge in graph.edges:
+        if edge.relationship == relationship and edge.transformation == transformation:
+            if edge.source.name == source_name and edge.destination.name == destination_name:
+                return edge.confidence == confidence
+    return false
+
+
+def _artifact_record_count(inspection_family: str, inspection: PlanInspection) -> int:
+    """Return the record count for one inspection artifact family, or -1 when absent."""
+    for artifact in inspection.artifacts:
+        if artifact.family == inspection_family:
+            return artifact.record_count
+    return -1
+
+
+def test_inspect_plan__exposes_stable_plan_targets_schema_and_artifacts() -> None:
+    """RFC 028/031: inspection exposes semantic targets, output schema, and artifact family status."""
+    # -- Arrange --
+    _register_order_schema("inspection_orders")
+
+    # -- Act --
+    inspection = inspect_plan(_spend_summary())
+
+    # -- Assert --
+    assert inspection.plan_target.kind == SemanticTargetKind.Plan, "inspection should expose a plan semantic target"
+    match inspection.plan_target.node_id:
+        Some(_) =>
+            assert false, "plan targets should not expose a sentinel node id"
+        None => pass
+    assert inspection.authored_node_count == 4, "inspection should retain reachable authored Prism node count"
+    assert inspection.rewritten_node_count == 3, "inspection should expose canonical rewritten node count"
+    assert inspection.authored_nodes[0].kind == InspectionNodeKind.ReadNamedTable, "node inspections should expose typed node kinds"
+    assert inspection.output_fields[0].kind == SemanticTargetKind.Field, "output fields should be semantic field targets"
+    match inspection.output_fields[0].ordinal:
+        Some(ordinal) =>
+            assert ordinal == 0, "field targets should carry structured ordinals"
+        None =>
+            assert false, "field targets should expose their ordinal"
+    assert inspection.output_fields[0].name == "customer_id", "group key should remain the first output field"
+    assert inspection.output_fields[1].name == "total_amount", "explicit aggregate alias should become output field target"
+    assert inspection.output_fields[0].target_id != "customer_id", "field identity must not be the display name alone"
+    assert len(inspection.attachments) >= 3, "inspection should emit typed metadata attachments for versions and known schema facts"
+    assert inspection.attachments[0].payload.schema == "inql.metadata.string.v0.1", "metadata payloads should declare a schema"
+    assert len(inspection.artifacts) == 6, "inspection should expose the full deterministic artifact family set"
+    assert inspection.artifacts[0].family == "plan_graph", "artifact summaries should be deterministic"
+    assert inspection.artifacts[1].family == "lineage_graph", "lineage graph should be the second artifact family"
+    assert inspection.artifacts[2].family == "schema_flow", "schema flow should be the third artifact family"
+    assert inspection.artifacts[3].family == "metadata_attachments", "metadata attachments should be the fourth artifact family"
+    assert inspection.artifacts[4].family == "diagnostics", "diagnostics should be the fifth artifact family"
+    assert inspection.artifacts[5].family == "unsupported_evidence", "unsupported evidence should be the final artifact family"
+    assert inspection.artifacts[0].status == EvidenceArtifactStatus.Computed, "plan-graph artifact family should be computed"
+    assert _artifact_record_count("plan_graph", inspection) == inspection.authored_node_count, "plan-graph count should match authored nodes"
+    assert _artifact_record_count("lineage_graph", inspection) == len(inspection.lineage.edges), "lineage count should match emitted edges"
+    assert _artifact_record_count("schema_flow", inspection) == len(inspection.output_schema), "schema-flow count should match output schema"
+    assert _artifact_record_count("metadata_attachments", inspection) == len(inspection.attachments), "metadata count should match attachments"
+    assert _artifact_record_count("diagnostics", inspection) == 0, "diagnostic count should match the empty diagnostics list"
+    assert _artifact_record_count("unsupported_evidence", inspection) == len(inspection.unsupported_evidence), "unsupported count should match markers"
+    assert len(inspection.unsupported_evidence) == 4, "unsupported evidence families should be explicit markers"
+    assert inspection.unsupported_evidence[0].family == "semantic_profiles", "semantic profile gaps should be explicit"
+    assert inspection.unsupported_evidence[1].family == "ingress_mappings", "ingress mapping gaps should be explicit"
+    assert inspection.unsupported_evidence[2].family == "client_session_context", "session context gaps should be explicit"
+    assert inspection.unsupported_evidence[3].family == "frontend_coverage", "frontend coverage gaps should be explicit"
+
+
+def test_inspect_lineage__distinguishes_control_grouping_and_value_edges() -> None:
+    """RFC 030: grouped filtered aggregate lineage records distinct relationship kinds."""
+    # -- Arrange --
+    _register_order_schema("inspection_orders")
+
+    # -- Act --
+    summary = _spend_summary()
+    lineage = inspect_lineage(summary)
+    inspection = inspect_plan(summary)
+
+    # -- Assert --
+    assert lineage.plan_id == inspection.plan_id, "lineage should share the inspected plan id"
+    assert len(lineage.edges) >= 3, "summary lineage should include control, grouping, and aggregate value evidence"
+    assert _has_edge(
+        lineage,
+        LineageRelationshipKind.Value,
+        LineageTransformationKind.Identity,
+        "inspection_orders",
+        "customer_id",
+    ), "read roots should create value lineage into introduced fields"
+    assert _has_edge(lineage, LineageRelationshipKind.Control, LineageTransformationKind.Filter, "status", "Filter"), "filter predicate should create control lineage to the filtered relation output"
+    assert _has_edge(
+        lineage,
+        LineageRelationshipKind.Grouping,
+        LineageTransformationKind.Identity,
+        "customer_id",
+        "customer_id",
+    ), "group key should create grouping lineage to its output field"
+    assert _has_edge(
+        lineage,
+        LineageRelationshipKind.Value,
+        LineageTransformationKind.Aggregate,
+        "amount",
+        "total_amount",
+    ), "aggregate measure should create value lineage from its input field"
+    assert lineage.edges[0].confidence == LineageConfidence.Exact, "detected direct column dependencies should be exact"
+
+
+def test_inspect_lineage__covers_join_projection_generator_window_sort_and_limit_edges() -> None:
+    """RFC 030: node-specific lineage families stay covered beyond grouped aggregates."""
+    # -- Arrange --
+    _register_order_schema("inspection_orders")
+    _register_order_schema("inspection_orders_left")
+    _register_order_schema("inspection_orders_right")
+    base: LazyFrame[Order] = lazy_frame_named_table("inspection_orders")
+
+    # -- Act --
+    joined = lazy_frame_named_table[Order]("inspection_orders_left").join(
+        lazy_frame_named_table("inspection_orders_right"),
+        eq(col("customer_id"), col("customer_id")),
+    )
+    projected = base.with_column("amount_copy", col("amount"))
+    computed = base.with_column("paid_flag", eq(col("status"), str_lit("paid")))
+    selected: LazyFrame[OrderProjection] = base.select([with_column_assignment("customer_id", col("customer_id"))])
+    generated = base.generate(explode(col("status"), "status_item"))
+    windowed = base.with_window_column("row_num", row_number().over(window().order_by([desc(col("amount"))])))
+    sorted_plan = base.order_by([desc(col("amount"))])
+    limited = base.limit(2)
+
+    # -- Assert --
+    assert _edge_count(
+        inspect_lineage(joined),
+        LineageRelationshipKind.Join,
+        LineageTransformationKind.Join,
+        "customer_id",
+        "Join",
+    ) == 2, "join predicates with matching names should resolve against both sides"
+    assert _has_edge(
+        inspect_lineage(projected),
+        LineageRelationshipKind.Value,
+        LineageTransformationKind.Identity,
+        "amount",
+        "amount_copy",
+    ), "with_column should connect source expression dependencies to replaced/appended fields"
+    assert _has_edge(
+        inspect_lineage(computed),
+        LineageRelationshipKind.Value,
+        LineageTransformationKind.Unknown,
+        "status",
+        "paid_flag",
+    ), "scalar function lineage should preserve dependencies without inventing precise function policy"
+    assert _has_edge(
+        inspect_lineage(selected),
+        LineageRelationshipKind.Value,
+        LineageTransformationKind.Identity,
+        "customer_id",
+        "customer_id",
+    ), "select projection should connect selected output fields to their expressions"
+    assert _has_edge(
+        inspect_lineage(generated),
+        LineageRelationshipKind.Value,
+        LineageTransformationKind.Generator,
+        "status",
+        "status_item",
+    ), "generator output should record value lineage from generator arguments"
+    assert _has_edge(
+        inspect_lineage(windowed),
+        LineageRelationshipKind.Window,
+        LineageTransformationKind.Window,
+        "amount",
+        "row_num",
+    ), "window output should record dependencies from window specification expressions"
+    assert _has_edge(
+        inspect_lineage(sorted_plan),
+        LineageRelationshipKind.Sort,
+        LineageTransformationKind.Expression,
+        "amount",
+        "OrderBy",
+    ), "order_by should record sort-control lineage to the relation output"
+    assert _has_edge(
+        inspect_lineage(limited),
+        LineageRelationshipKind.Value,
+        LineageTransformationKind.Identity,
+        "amount",
+        "amount",
+    ), "limit should preserve passthrough value lineage"
+
+
+def test_inspect_lineage__marks_ambiguous_display_name_bindings_conservative() -> None:
+    """RFC 028/030: name-only duplicate bindings must not be reported as exact field identity."""
+    # -- Arrange --
+    mut schema: list[RowColumnSpec] = []
+    schema.append(RowColumnSpec(name="amount", kind=SubstraitPrimitiveKind.I64, nullable=false))
+    schema.append(RowColumnSpec(name="amount", kind=SubstraitPrimitiveKind.I64, nullable=false))
+    register_named_table_schema("inspection_duplicate_amounts", schema)
+
+    # -- Act --
+    duplicated = lazy_frame_named_table[Order]("inspection_duplicate_amounts").filter(eq(col("amount"), col("amount")))
+    lineage = inspect_lineage(duplicated)
+
+    # -- Assert --
+    assert _has_edge_with_confidence(
+        lineage,
+        LineageRelationshipKind.Control,
+        LineageTransformationKind.Filter,
+        "amount",
+        "Filter",
+        LineageConfidence.Conservative,
+    ), "duplicate display-name bindings should be conservative rather than exact"

@@ -1,6 +1,6 @@
 # InQL RFC 029: Typed metadata attachments
 
-- **Status:** Draft
+- **Status:** In Progress
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**

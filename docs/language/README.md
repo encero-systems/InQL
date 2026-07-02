@@ -25,12 +25,17 @@ This section documents the current InQL package surface.
 - [Substrait operator catalog][substrait-operator-catalog]
 - [Substrait revision and extension policy][substrait-revision-policy]
 
+### Local evidence
+
+- [Local inspection][inspection-reference]
+
 <!-- References -->
 [reference]: reference/
 [explanation]: explanation/
 [dataset-reference]: reference/dataset_carriers.md
 [dataset-explanation]: explanation/dataset_carriers.md
 [query-blocks-reference]: reference/query_blocks.md
+[inspection-reference]: reference/inspection.md
 [execution-reference]: reference/execution_context.md
 [execution-explanation]: explanation/execution_context.md
 [substrait-read-root]: reference/substrait/read_root_binding_contract.md

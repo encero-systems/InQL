@@ -9,7 +9,7 @@
 - **Issue:** [InQL #3](https://github.com/encero-systems/InQL/issues/3)
 - **RFC PR:** -
 - **Written against:** Incan v0.2
-- **Shipped in:** -
+- **Shipped in:** —
 
 ## Summary
 
@@ -20,7 +20,7 @@ This RFC defines **Apache Substrait** as the **normative logical interchange** f
 1. A **checked** InQL relational tree **must** be expressible as a Substrait **`Plan`** whose executable root is a **`Rel`** tree, optionally a **DAG** via **`ReferenceRel`** when subplans are shared.
 2. **Logical reads** are **`ReadRel`** (or extension leaf relations) carrying **names, virtual rows, or extension payloads** instead of host-specific connection strings or secrets in the normative interchange.
 3. **Scalar and aggregate** computation uses Substrait **expressions** and **aggregate functions**; functions outside the pinned core set **must** use **registered extension URIs** documented with the compiler.
-4. **North-star operator catalog**: InQL capabilities map to logical `Rel` kinds as specified in the [Substrait operator catalog reference][ref-operator-catalog]; **MVP** subsets are implementation choices but **must not** contradict this RFC for operators they expose.
+4. **North-star operator catalog**: InQL capabilities map to logical `Rel` kinds as specified in the [Substrait operator catalog reference][ref-operator-catalog]; implementation subsets are delivery choices but **must not** contradict this RFC for operators they expose.
 
 ## Motivation
 
@@ -41,19 +41,19 @@ Without a dedicated specification, Substrait lowering risks drifting between fro
 - Physical Substrait relations as a normative InQL output — consumers **may** use them; InQL **may** emit them when documented as a non-portable or target-specific mode.
 - ANSI SQL completeness — mapping is capability-based, not a SQL compliance checklist.
 
-## v1 implementation profile (InQL code path)
+## Current implementation profile (InQL package path)
 
-The v1 implementation profile for this RFC is explicitly scoped to InQL package code (`.incn`) and is the contract for current delivery tracking.
+The current implementation profile for this RFC is explicitly scoped to InQL package code (`.incn`) and is the contract for current delivery tracking.
 
 - Core read/query `Rel` coverage is implemented through a thin proto-backed Substrait boundary in InQL package code.
-- Optional mutation relations remain modeled but are not required to be executable in v1.
+- Optional mutation relations remain modeled but are not required to be executable in the current read/query analytical core.
 - Gap and extension semantics are represented as typed contracts in package code and conformance scenarios, rather than ad hoc string payloads.
 - Richer planning semantics remain outside this profile when they logically belong to future `query {}` lowering or Prism.
 
 This profile is reflected by:
 
 - `src/substrait/schema.incn`
-- `src/substrait/plan.incn`
+- `src/substrait/plans.incn`
 - `src/substrait/conformance.incn`
 - `src/substrait/conformance_catalog.incn`
 - `src/substrait/conformance_validate.incn`
@@ -68,7 +68,7 @@ This profile is reflected by:
 | Reference rel | Implemented at the boundary for ordinal preservation only |
 | Project and aggregate | Present as boundary-shape scaffolds; richer expression/grouping semantics remain deferred |
 | Extension URI policy and explode gap encoding | Implemented through a registered package-level URI and documented gap policy |
-| `query {}` lowering parity | Deferred to RFC 003 and Prism-backed lowering |
+| `query {}` lowering parity | Current query blocks lower through carrier planning paths; dedicated Substrait plan-shape parity coverage remains follow-up |
 | Optional mutation profile | Deferred; not required for the v0.1 read/query analytical core |
 
 ## Guide-level explanation

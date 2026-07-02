@@ -15,6 +15,7 @@
 - **One naming model** — `.column`, `alias.column`, bare names in the query schema, and ordinary Incan bindings are specified so blocks, chains, and future surfaces stay equivalent where it counts.
 - **A registry-backed function catalog** — Core operators, aggregates, common scalar functions, window helpers, generators, nested-data helpers, and compatibility aliases share one checked helper model and carry portable metadata for Substrait and backend adapters. Typed helpers accept primitives where that is the natural authoring shape, such as `add(col("amount"), 1)`, `substring(col("sku"), 1, 3)`, or `cast(col("amount_text"), float)`, while query-schema validation checks referenced column types during planning and lowering.
 - **Portable logical plans** — Substrait is the normative interchange; read roots stay logical while binding and execution stay in the session layer (see RFCs 002 and 004).
+- **Local plan inspection** — Prism-backed lazy plans can be inspected as structured records with semantic targets, output schema, Prism nodes, lineage edges, artifact-family summaries, and explicit unsupported-evidence markers.
 
 Design is **RFC-driven**; **[docs/rfcs/](docs/rfcs/README.md)** is the source of truth.
 
@@ -36,6 +37,7 @@ Normative proposals live under **[docs/rfcs/](docs/rfcs/README.md)**. InQL’s R
 | **005** | Pipe-forward (`\|>`)                                                                             |
 | **013** | Function catalog program — shared registry, metadata, policy, and implementation plan            |
 | **018** | Common scalar function catalog — math, string, regex, date/time, encoding, and aliases           |
+| **028–031** | First relational evidence spine — semantic targets, attachments, Prism lineage, local inspection |
 
 ## Project layout
 
