@@ -1,6 +1,6 @@
 # InQL RFC 033: Adapter requirements and coverage
 
-- **Status:** Draft
+- **Status:** In Progress
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -55,10 +55,10 @@ for requirement in inspection.adapter_requirements():
     print(requirement.capability, requirement.guarantee_level)
 ```
 
-A session can then report whether the selected adapter covers them:
+A session can then report whether the selected adapter covers explicit requirements:
 
 ```incan
-coverage = session.check_coverage(summary)
+coverage = session.check_coverage([requirement])
 ```
 
 If coverage is unknown for a requirement whose guarantee level is required, tools should not present that as enforced behavior.
@@ -103,6 +103,10 @@ Function registry entries, semi-structured functions, extensions, quality assert
 ### Compatibility / migration
 
 Existing adapters may initially report unknown coverage for capabilities they do not declare. Consumers must distinguish unknown from covered.
+
+The first implementation provides the adapter requirement and coverage record vocabulary plus
+`Session.check_coverage(requirements)`. Requirement inference from arbitrary inspection records remains part of the
+remaining RFC 033 work; the current API evaluates requirements that callers pass explicitly.
 
 ## Alternatives considered
 

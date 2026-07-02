@@ -45,6 +45,37 @@ All read APIs return `LazyFrame[T]`. They create deferred logical work; they do 
 - `execute(...)` proves the plan can bind, lower, and run.
 - `collect(...)` performs that same work and materializes a local `DataFrame[T]`.
 
+## Execution observations
+
+Observed execution methods preserve the ordinary session contracts while also returning runtime evidence. They are the
+author-facing surface for RFC 032 execution observations.
+
+| API                              | Returns                  | Role                                                                 |
+| -------------------------------- | ------------------------ | -------------------------------------------------------------------- |
+| `session.execute_observed(data)` | `ObservedLazyFrame[T]`   | Execute and return `data`, `observation`, and `error` fields         |
+| `session.collect_observed(data)` | `ObservedDataFrame[T]`   | Collect and return `data`, `observation`, and `error` fields         |
+| `session.write_observed(data, target)` | `ObservedWrite`    | Write and return `observation` plus an optional `error`              |
+
+The ordinary `execute`, `collect`, and `write` methods use the same execution path internally and keep returning
+`Result[...]` values for compact application code. Use the observed variants when an audit, governance, debugging, or
+verification flow needs a durable execution attempt record.
+
+An `ExecutionObservation` records the operation, status, backend name, optional adapter version, requested and observed
+semantic profile IDs, plan target, execution-attempt target, client-session context target, Unix nanosecond wall-clock
+start/end values from `std.datetime.runtime.SystemTime`, monotonic duration nanoseconds from
+`std.datetime.runtime.Instant`, row count or byte count when materialization supplies them, optional trace IDs,
+diagnostics, and linked coverage records when present. Observation records do not contain row payloads or backend logs
+by default.
+
+```incan
+observed = session.collect_observed(summary)
+
+assert observed.observation.status == ExecutionObservationStatus.Success
+match observed.data:
+    Some(df) => println(df.preview_text())
+    None => println(observed.observation.diagnostics[0].message)
+```
+
 ## Write surface
 
 | API                                      | Returns                      | Notes                                                |
@@ -56,6 +87,19 @@ All read APIs return `LazyFrame[T]`. They create deferred logical work; they do 
 | `session.write_parquet(data, uri)`       | `Result[None, SessionError]` | Convenience form for Parquet sinks                   |
 
 These writes are Session-owned. They do not bypass the execution context even when the input is deferred.
+
+## Adapter coverage
+
+`session.check_coverage(requirements)` accepts explicit `AdapterRequirement` records and returns one
+`AdapterCoverageRecord` per requirement. This is the current RFC 033 coverage surface. It does not infer requirements
+from every plan shape yet; callers must pass the requirements they want evaluated.
+
+Coverage states are conservative:
+
+- `covered` means the selected adapter is known to cover that requirement family.
+- `partially_covered` means support depends on the concrete function, plan shape, or restriction.
+- `uncovered` means the selected adapter is known not to provide that guarantee.
+- `unknown` means InQL has not classified coverage; consumers must not treat it as enforced behavior.
 
 ## Active-session convenience
 

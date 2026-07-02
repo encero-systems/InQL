@@ -1,0 +1,185 @@
+"""Tests for RFC 032 execution observations and RFC 033 adapter coverage records."""
+
+from std.testing import assert_is_ok, fail, fail_t, parametrize
+from rust::std::path import Path
+from dataset import LazyFrame, lazy_frame_named_table
+from evidence import (
+    AdapterCoverageState,
+    AdapterRequirement,
+    AdapterRequirementCapability,
+    AdapterRequirementGuarantee,
+    ExecutionObservationStatus,
+    ExecutionOperationKind,
+    SemanticTargetKind,
+)
+from session import Session, SessionErrorKind, csv_sink
+
+
+@derive(Clone)
+model Order:
+    """Fixture row shape used by observed session execution tests."""
+
+    id: int
+
+
+const TESTS_DIR: str = "tests/"
+const FIXTURE_DIR: str = TESTS_DIR + "fixtures/"
+const TARGET_DIR: str = TESTS_DIR + "target/"
+const ORDERS_CSV_FIXTURE: str = FIXTURE_DIR + "orders.csv"
+
+
+def _target_uri(name: str) -> str:
+    """Return one test-target output URI."""
+    return TARGET_DIR + name
+
+
+def _capability_from_name(name: str) -> AdapterRequirementCapability:
+    """Return the adapter capability enum value for one parametrized test name."""
+    match name:
+        "row_filter" => return AdapterRequirementCapability.RowFilter
+        "extension_function" => return AdapterRequirementCapability.ExtensionFunction
+        "lineage_preservation" => return AdapterRequirementCapability.LineagePreservation
+        "cryptographic_query_proof" => return AdapterRequirementCapability.CryptographicQueryProof
+        _ => return fail_t(f"unexpected capability: {name}")
+
+
+def _coverage_state_from_name(name: str) -> AdapterCoverageState:
+    """Return the adapter coverage state enum value for one parametrized test name."""
+    match name:
+        "covered" => return AdapterCoverageState.Covered
+        "partially_covered" => return AdapterCoverageState.PartiallyCovered
+        "uncovered" => return AdapterCoverageState.Uncovered
+        "unknown" => return AdapterCoverageState.Unknown
+        _ => return fail_t(f"unexpected coverage state: {name}")
+
+
+def test_collect_observed__records_success_attempt_and_row_count() -> None:
+    """collect_observed should return a DataFrame plus a successful execution observation."""
+    # -- Arrange --
+    mut session = Session.default()
+    lazy: LazyFrame[Order] = assert_is_ok(
+        session.read_csv("orders", ORDERS_CSV_FIXTURE),
+        "orders CSV fixture should load",
+    )
+
+    # -- Act --
+    observed = session.collect_observed(lazy)
+
+    # -- Assert --
+    match observed.data:
+        Some(df) =>
+            observation = observed.observation
+            assert observation.operation == ExecutionOperationKind.Collect, "collect observation should record collect operation"
+            assert observation.status == ExecutionObservationStatus.Success, "collect observation should be successful"
+            assert observation.backend_name == "datafusion", "collect observation should record the selected backend"
+            assert len(observation.context_targets) == 1, "collect observation should expose session context"
+            assert observation.context_targets[0].kind == SemanticTargetKind.ClientSession, "session context should use the client-session target kind"
+            assert observation.plan_target.kind == SemanticTargetKind.Plan, "collect observation should anchor to a plan"
+            assert observation.plan_target.target_id.startswith("prism:store-"), "lazy collect observations should reuse Prism plan ids"
+            assert observation.attempt_target.kind == SemanticTargetKind.ExecutionAttempt, "collect observation should expose an execution-attempt target"
+            assert observation.started_at_unix_nanoseconds != 0, "collect observation should record a wall-clock start"
+            assert observation.ended_at_unix_nanoseconds != 0, "collect observation should record a wall-clock end"
+            assert observation.duration_nanoseconds >= 0, "collect observation should record monotonic elapsed time"
+            assert len(observation.trace_ids) == 0, "collect observation should expose empty trace IDs when no telemetry bridge is configured"
+            assert len(observation.diagnostics) == 0, "successful collect should not emit diagnostics"
+            match observation.adapter_version:
+                Some(_) => fail("default DataFusion observation should not invent an adapter version")
+                None => pass
+            match observation.requested_semantic_profile_id:
+                Some(_) => fail("collect should not invent a requested semantic profile")
+                None => pass
+            match observation.observed_semantic_profile_id:
+                Some(_) => fail("collect should not invent an observed semantic profile")
+                None => pass
+            match observation.byte_count:
+                Some(_) => fail("collect should not invent byte-count evidence")
+                None => pass
+            match observation.row_count:
+                Some(row_count) =>
+                    assert row_count == df.row_count(), "collect observation row count should match the DataFrame"
+                None => fail("successful collect should include row-count evidence")
+        None => fail("collect_observed should include data on success")
+
+
+def test_collect_observed__records_failure_diagnostic() -> None:
+    """collect_observed should expose failure evidence when execution rejects the plan."""
+    # -- Arrange --
+    session = Session.default()
+    lazy: LazyFrame[Order] = lazy_frame_named_table("missing_observed_orders")
+
+    # -- Act --
+    observed = session.collect_observed(lazy)
+
+    # -- Assert --
+    match observed.data:
+        Some(_) => fail("failed collect_observed should not include a DataFrame")
+        None => pass
+    match observed.error:
+        Some(err) =>
+            assert err.kind == SessionErrorKind.UnknownTable, "missing table should remain a typed session error"
+        None => fail("failed collect_observed should expose the SessionError")
+    observation = observed.observation
+    assert observation.operation == ExecutionOperationKind.Collect, "failed collect observation should record collect operation"
+    assert observation.status == ExecutionObservationStatus.Failure, "failed collect observation should record failure"
+    assert len(observation.diagnostics) == 1, "failed collect should include one structured diagnostic"
+    assert observation.diagnostics[0].code == "unknown_table", "diagnostic code should mirror the SessionError kind"
+    match observation.row_count:
+        Some(_) => fail("failed collect should not report row-count evidence")
+        None => pass
+
+
+def test_write_observed__records_success_attempt() -> None:
+    """write_observed should write the sink and return successful execution observation evidence."""
+    # -- Arrange --
+    mut session = Session.default()
+    output_uri = _target_uri("observed_write_output.csv")
+    lazy: LazyFrame[Order] = assert_is_ok(
+        session.read_csv("orders", ORDERS_CSV_FIXTURE),
+        "orders CSV fixture should load",
+    )
+
+    # -- Act --
+    observed = session.write_observed(lazy, csv_sink(output_uri))
+
+    # -- Assert --
+    match observed.error:
+        Some(err) => fail(f"write_observed should succeed: {err.error_message()}")
+        None => pass
+    assert observed.observation.operation == ExecutionOperationKind.Write, "write observation should record write operation"
+    assert observed.observation.status == ExecutionObservationStatus.Success, "write observation should record success"
+    assert observed.observation.attempt_target.kind == SemanticTargetKind.ExecutionAttempt, "write observation should expose an execution-attempt target"
+    assert Path.new(output_uri).exists() is true, "write_observed should create the requested output artifact"
+
+
+@parametrize("capability_name, expected_state_name, expected_diagnostics", [("row_filter", "covered", 0), ("extension_function", "partially_covered", 1), ("lineage_preservation", "uncovered", 1), ("cryptographic_query_proof", "unknown", 1)])
+def test_check_coverage__classifies_explicit_adapter_requirements(
+    capability_name: str,
+    expected_state_name: str,
+    expected_diagnostics: int,
+) -> None:
+    """check_coverage should classify explicit requirements without fabricating plan requirements."""
+    # -- Arrange --
+    mut session = Session.default()
+    lazy: LazyFrame[Order] = assert_is_ok(
+        session.read_csv("orders", ORDERS_CSV_FIXTURE),
+        "orders CSV fixture should load",
+    )
+    observed = session.collect_observed(lazy)
+    capability = _capability_from_name(capability_name)
+    expected_state = _coverage_state_from_name(expected_state_name)
+    requirement = AdapterRequirement(
+        requirement_id=f"req:{capability.value()}",
+        target=observed.observation.plan_target,
+        capability=capability,
+        guarantee=AdapterRequirementGuarantee.Required,
+        reason="test requirement",
+        evidence_refs=[],
+    )
+
+    # -- Act --
+    records = session.check_coverage([requirement])
+
+    # -- Assert --
+    assert len(records) == 1, "check_coverage should return one record per explicit requirement"
+    assert records[0].state == expected_state, "coverage state should match the conservative DataFusion mapping"
+    assert len(records[0].diagnostics) == expected_diagnostics, "non-covered coverage states should include diagnostics"

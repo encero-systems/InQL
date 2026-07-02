@@ -1,6 +1,7 @@
 """Public Session API and execution-context types."""
 
 from rust::substrait::proto import Plan
+from std.datetime.runtime import Instant, SystemTime
 from backends import (
     BackendSelection,
     DataFusion,
@@ -15,6 +16,19 @@ from backends import (
     parquet_source,
 )
 from dataset import BoundedDataSet, DataFrame, LazyFrame, lazy_frame_named_table
+from evidence import (
+    AdapterCoverageRecord,
+    AdapterCoverageState,
+    AdapterRequirement,
+    AdapterRequirementCapability,
+    ExecutionDiagnostic,
+    ExecutionDiagnosticSeverity,
+    ExecutionObservation,
+    ExecutionObservationStatus,
+    ExecutionOperationKind,
+    SemanticTarget,
+    SemanticTargetKind,
+)
 pub from session.errors import SessionError, SessionErrorKind, format_session_diagnostic, report_session_error
 from session.errors import invalid_registration, invalid_sink
 from session.domain import LogicalName, SourceUri, SinkUri, SinkTarget, csv_sink, parquet_sink
@@ -30,9 +44,17 @@ from session.active import (
 )
 from session.backend_dispatch import backend_collect_plan, backend_execute_plan, backend_write_plan
 from session.backend_types import BackendError, BackendErrorKind, BackendRegistration
+from prism import prism_plan_id
 from substrait.errors import SubstraitLoweringError, SubstraitLoweringErrorKind
 from substrait.schema_registry import register_named_table_schema
-from substrait.inspect import relation_output_columns, root_rel, read_named_table_name
+from substrait.inspect import relation_output_columns, root_rel, read_kind_name, read_named_table_name
+
+
+model _ExecutionClockStart:
+    """Wall-clock and monotonic clock snapshot for one observed Session operation."""
+
+    started_at_unix_nanoseconds: int
+    started_monotonic: Instant
 
 
 @derive(Clone)
@@ -43,6 +65,29 @@ pub class SessionRegistration:
     def clone(self) -> Self:
         """Return one cloned Session registration entry."""
         return SessionRegistration(logical_name=self.logical_name, source=self.source)
+
+
+pub class ObservedLazyFrame[T with Clone]:
+    """Observed `Session.execute(...)` result with data on success and diagnostics on failure."""
+
+    pub data: Option[LazyFrame[T]]
+    pub observation: ExecutionObservation
+    pub error: Option[SessionError]
+
+
+pub class ObservedDataFrame[T with Clone]:
+    """Observed `Session.collect(...)` result with data on success and diagnostics on failure."""
+
+    pub data: Option[DataFrame[T]]
+    pub observation: ExecutionObservation
+    pub error: Option[SessionError]
+
+
+pub class ObservedWrite:
+    """Observed `Session.write(...)` result with diagnostics when the write fails."""
+
+    pub observation: ExecutionObservation
+    pub error: Option[SessionError]
 
 
 pub class Session:
@@ -166,30 +211,153 @@ pub class Session:
 
     def execute[T with Clone](self, data: LazyFrame[T]) -> Result[LazyFrame[T], SessionError]:
         """Validate and execute one lazy plan while preserving deferred carrier shape."""
-        plan = _plan_from_lazy_frame(data)?
-        _validate_named_table_binding(self._registrations, plan)?
+        observed = self.execute_observed(data)
+        match observed.data:
+            Some(frame) => return Ok(frame)
+            None => return Err(_observed_error_or_internal(observed.error))
 
-        match backend_execute_plan(self._backend, _to_backend_registrations(self._registrations), plan):
-            Ok(_) => return Ok(data)
-            Err(err) => return Err(_session_error_from_backend_error(err))
+    def execute_observed[T with Clone](self, data: LazyFrame[T]) -> ObservedLazyFrame[T]:
+        """Execute one lazy plan and return structured observation evidence for success or failure."""
+        clock = _start_execution_clock()
+        backend_name = self.backend_name()
+        plan_target = _lazy_frame_plan_target(data.clone())
+        # Keep lowering and validation failures anchored to the authored Prism plan target. Backend errors still attach
+        # to the same target, but they are produced after the adapter attempt has started.
+        match _plan_from_lazy_frame(data.clone()):
+            Err(err) =>
+                return ObservedLazyFrame(
+                    data=None,
+                    observation=_failure_observation(
+                        plan_target,
+                        ExecutionOperationKind.Execute,
+                        backend_name,
+                        clock,
+                        err.clone(),
+                    ),
+                    error=Some(err),
+                )
+            Ok(plan) =>
+                match _validate_named_table_binding(self._registrations, plan.clone()):
+                    Err(err) =>
+                        return ObservedLazyFrame(
+                            data=None,
+                            observation=_failure_observation(
+                                plan_target,
+                                ExecutionOperationKind.Execute,
+                                backend_name,
+                                clock,
+                                err.clone(),
+                            ),
+                            error=Some(err),
+                        )
+                    Ok(_) =>
+                        match backend_execute_plan(self._backend, _to_backend_registrations(self._registrations), plan):
+                            Ok(_) =>
+                                return ObservedLazyFrame(
+                                    data=Some(data),
+                                    observation=_success_observation(
+                                        plan_target,
+                                        ExecutionOperationKind.Execute,
+                                        backend_name,
+                                        clock,
+                                        None,
+                                    ),
+                                    error=None,
+                                )
+                            Err(err) =>
+                                session_err = _session_error_from_backend_error(err)
+                                return ObservedLazyFrame(
+                                    data=None,
+                                    observation=_failure_observation(
+                                        plan_target,
+                                        ExecutionOperationKind.Execute,
+                                        backend_name,
+                                        clock,
+                                        session_err.clone(),
+                                    ),
+                                    error=Some(session_err),
+                                )
 
     def collect[T with Clone](self, data: LazyFrame[T]) -> Result[DataFrame[T], SessionError]:
         """Validate and execute one lazy plan, returning a structured materialized DataFrame."""
-        plan = _plan_from_lazy_frame(data)?
-        rel = root_rel(plan.clone())
-        _validate_named_table_binding(self._registrations, plan)?
+        observed = self.collect_observed(data)
+        match observed.data:
+            Some(frame) => return Ok(frame)
+            None => return Err(_observed_error_or_internal(observed.error))
 
-        match backend_collect_plan(self._backend, _to_backend_registrations(self._registrations), plan):
-            Ok(materialization) =>
-                return Ok(
-                    DataFrame(
-                        _type_witness=_empty_type_witness(),
-                        _materialization=materialization,
-                        _substrait_rel=rel,
-                        _planned_columns=relation_output_columns(rel.clone()),
+    def collect_observed[T with Clone](self, data: LazyFrame[T]) -> ObservedDataFrame[T]:
+        """Collect one lazy plan and return structured observation evidence for success or failure."""
+        clock = _start_execution_clock()
+        backend_name = self.backend_name()
+        plan_target = _lazy_frame_plan_target(data.clone())
+        # Materialization is the first point where row counts are available, so only successful collects record them.
+        match _plan_from_lazy_frame(data):
+            Err(err) =>
+                return ObservedDataFrame(
+                    data=None,
+                    observation=_failure_observation(
+                        plan_target,
+                        ExecutionOperationKind.Collect,
+                        backend_name,
+                        clock,
+                        err.clone(),
                     ),
+                    error=Some(err),
                 )
-            Err(err) => return Err(_session_error_from_backend_error(err))
+            Ok(plan) =>
+                rel = root_rel(plan.clone())
+                match _validate_named_table_binding(self._registrations, plan.clone()):
+                    Err(err) =>
+                        return ObservedDataFrame(
+                            data=None,
+                            observation=_failure_observation(
+                                plan_target,
+                                ExecutionOperationKind.Collect,
+                                backend_name,
+                                clock,
+                                err.clone(),
+                            ),
+                            error=Some(err),
+                        )
+                    Ok(_) =>
+                        match backend_collect_plan(self._backend, _to_backend_registrations(self._registrations), plan):
+                            Ok(materialization) =>
+                                row_count = materialization.row_count
+                                return ObservedDataFrame(
+                                    data=Some(
+                                        DataFrame(
+                                            _type_witness=_empty_type_witness(),
+                                            _materialization=materialization,
+                                            _substrait_rel=rel,
+                                            _planned_columns=relation_output_columns(rel.clone()),
+                                        ),
+                                    ),
+                                    observation=_success_observation(
+                                        plan_target,
+                                        ExecutionOperationKind.Collect,
+                                        backend_name,
+                                        clock,
+                                        Some(row_count),
+                                    ),
+                                    error=None,
+                                )
+                            Err(err) =>
+                                session_err = _session_error_from_backend_error(err)
+                                return ObservedDataFrame(
+                                    data=None,
+                                    observation=_failure_observation(
+                                        plan_target,
+                                        ExecutionOperationKind.Collect,
+                                        backend_name,
+                                        clock,
+                                        session_err.clone(),
+                                    ),
+                                    error=Some(session_err),
+                                )
+
+    def check_coverage(self, requirements: list[AdapterRequirement]) -> list[AdapterCoverageRecord]:
+        """Return adapter coverage records for explicit semantic requirements without inventing requirements."""
+        return [_coverage_record_for_requirement(requirement, self.backend_name()) for requirement in requirements]
 
     def write_csv[T with Clone](self, data: LazyFrame[T], uri: str) -> Result[None, SessionError]:
         """Execute one lazy plan and write result rows to a CSV sink URI."""
@@ -201,17 +369,97 @@ pub class Session:
 
     def write[T with Clone](self, data: BoundedDataSet[T], target: SinkTarget) -> Result[None, SessionError]:
         """Execute one bounded dataset and write result rows to a typed sink target."""
-        return self._write_plan_to_sink(_plan_from_bounded_dataset(data)?, target)
+        observed = self.write_observed(data, target)
+        match observed.error:
+            Some(err) => return Err(err)
+            None => return Ok(None)
+
+    def write_observed[T with Clone](self, data: BoundedDataSet[T], target: SinkTarget) -> ObservedWrite:
+        """Write one bounded dataset and return structured observation evidence for success or failure."""
+        clock = _start_execution_clock()
+        backend_name = self.backend_name()
+        match _plan_from_bounded_dataset(data):
+            Err(err) =>
+                plan_target = _unavailable_plan_target(ExecutionOperationKind.Write, clock.started_at_unix_nanoseconds)
+                return ObservedWrite(
+                    observation=_failure_observation(
+                        plan_target,
+                        ExecutionOperationKind.Write,
+                        backend_name,
+                        clock,
+                        err.clone(),
+                    ),
+                    error=Some(err),
+                )
+            Ok(plan) => return self._write_plan_to_sink_observed(plan, target, clock)
 
     def _write_plan_to_sink(self, plan: Plan, target: SinkTarget) -> Result[None, SessionError]:
         """Run one validated plan through the selected sink writer and normalize runtime/backend errors."""
-        sink_uri = _sink_uri_from_text(target.uri)?
-        _validate_named_table_binding(self._registrations, plan)?
-        registrations = _to_backend_registrations(self._registrations)
+        observed = self._write_plan_to_sink_observed(plan, target, _start_execution_clock())
+        match observed.error:
+            Some(err) => return Err(err)
+            None => return Ok(None)
 
-        return _write_result_from_backend_result(
-            backend_write_plan(self._backend, registrations, plan, sink_uri.0, target.sink_kind),
-        )
+    def _write_plan_to_sink_observed(
+        self,
+        plan: Plan,
+        target: SinkTarget,
+        clock: _ExecutionClockStart,
+    ) -> ObservedWrite:
+        """Run one validated write and preserve execution evidence for the write path."""
+        backend_name = self.backend_name()
+        plan_target = _substrait_plan_target(plan.clone())
+        match _sink_uri_from_text(target.uri):
+            Err(err) =>
+                return ObservedWrite(
+                    observation=_failure_observation(
+                        plan_target,
+                        ExecutionOperationKind.Write,
+                        backend_name,
+                        clock,
+                        err.clone(),
+                    ),
+                    error=Some(err),
+                )
+            Ok(sink_uri) =>
+                match _validate_named_table_binding(self._registrations, plan.clone()):
+                    Err(err) =>
+                        return ObservedWrite(
+                            observation=_failure_observation(
+                                plan_target,
+                                ExecutionOperationKind.Write,
+                                backend_name,
+                                clock,
+                                err.clone(),
+                            ),
+                            error=Some(err),
+                        )
+                    Ok(_) =>
+                        registrations = _to_backend_registrations(self._registrations)
+                        match backend_write_plan(self._backend, registrations, plan, sink_uri.0, target.sink_kind):
+                            Ok(_) =>
+                                return ObservedWrite(
+                                    observation=_success_observation(
+                                        plan_target,
+                                        ExecutionOperationKind.Write,
+                                        backend_name,
+                                        clock,
+                                        None,
+                                    ),
+                                    error=None,
+                                )
+                            Err(err) =>
+                                session_err = _session_error_from_backend_error(err)
+                                return ObservedWrite(
+                                    observation=_failure_observation(
+                                        plan_target,
+                                        ExecutionOperationKind.Write,
+                                        backend_name,
+                                        clock,
+                                        session_err.clone(),
+                                    ),
+                                    error=Some(session_err),
+                                )
 
 
 pub class SessionBuilder:
@@ -230,6 +478,272 @@ pub class SessionBuilder:
     def build(self) -> Session:
         """Build one Session from the current builder backend selection."""
         return Session(_backend=self._backend.clone(), _registrations=[])
+
+
+def _start_execution_clock() -> _ExecutionClockStart:
+    """Capture wall-clock and monotonic starts for one execution observation."""
+    return _ExecutionClockStart(
+        started_at_unix_nanoseconds=SystemTime.now().unix_nanoseconds(),
+        started_monotonic=Instant.now(),
+    )
+
+
+def _lazy_frame_plan_target[T with Clone](data: LazyFrame[T]) -> SemanticTarget:
+    """Build the same Prism plan target used by local inspection for a lazy frame."""
+    plan_id = prism_plan_id(data._cursor.store_id, data._cursor.tip_id)
+    return SemanticTarget(
+        kind=SemanticTargetKind.Plan,
+        target_id=plan_id,
+        plan_id=plan_id,
+        scope_id="plan",
+        path=plan_id,
+        name="plan",
+        node_id=None,
+        ordinal=None,
+    )
+
+
+def _substrait_plan_target(plan: Plan) -> SemanticTarget:
+    """Build a fallback plan target for bounded carriers that no longer expose a Prism cursor."""
+    rel = root_rel(plan.clone())
+    source_name = read_named_table_name(rel.clone())
+    root_kind = read_kind_name(rel.clone())
+    output_columns = relation_output_columns(rel.clone())
+    joined_columns = ",".join(output_columns)
+    target_id = f"substrait:root:{root_kind}:{source_name}:{joined_columns}"
+    return SemanticTarget(
+        kind=SemanticTargetKind.Plan,
+        target_id=target_id,
+        plan_id=target_id,
+        scope_id="substrait-plan",
+        path=f"root/{root_kind}",
+        name=_substrait_target_name(source_name, root_kind),
+        node_id=None,
+        ordinal=None,
+    )
+
+
+def _substrait_target_name(source_name: str, root_kind: str) -> str:
+    """Choose the most specific fallback target name available for one Substrait root."""
+    if len(source_name) > 0:
+        return source_name
+    return root_kind
+
+
+def _unavailable_plan_target(operation: ExecutionOperationKind, started_at_unix_nanoseconds: int) -> SemanticTarget:
+    """Build an explicit unavailable-plan target when lowering fails before a plan exists."""
+    target_id = f"plan:unavailable:{operation.value()}:{started_at_unix_nanoseconds}"
+    return SemanticTarget(
+        kind=SemanticTargetKind.Plan,
+        target_id=target_id,
+        plan_id=target_id,
+        scope_id="plan-unavailable",
+        path=f"unavailable/{operation.value()}",
+        name="plan_unavailable",
+        node_id=None,
+        ordinal=None,
+    )
+
+
+def _success_observation(
+    plan_target: SemanticTarget,
+    operation: ExecutionOperationKind,
+    backend_name: str,
+    clock: _ExecutionClockStart,
+    row_count: Option[int],
+) -> ExecutionObservation:
+    """Build a success observation with the operation-specific materialization facts available so far."""
+    return _execution_observation(
+        plan_target,
+        operation,
+        ExecutionObservationStatus.Success,
+        backend_name,
+        clock,
+        row_count,
+        [],
+        [],
+    )
+
+
+def _failure_observation(
+    plan_target: SemanticTarget,
+    operation: ExecutionOperationKind,
+    backend_name: str,
+    clock: _ExecutionClockStart,
+    err: SessionError,
+) -> ExecutionObservation:
+    """Build a failure observation with one normalized SessionError diagnostic."""
+    return _execution_observation(
+        plan_target.clone(),
+        operation,
+        ExecutionObservationStatus.Failure,
+        backend_name,
+        clock,
+        None,
+        [_execution_diagnostic_from_session_error(plan_target, err)],
+        [],
+    )
+
+
+def _execution_observation(
+    plan_target: SemanticTarget,
+    operation: ExecutionOperationKind,
+    status: ExecutionObservationStatus,
+    backend_name: str,
+    clock: _ExecutionClockStart,
+    row_count: Option[int],
+    diagnostics: list[ExecutionDiagnostic],
+    coverage_records: list[AdapterCoverageRecord],
+) -> ExecutionObservation:
+    """Build one completed execution observation from a start-clock snapshot and terminal status."""
+    ended_at_unix_nanoseconds = SystemTime.now().unix_nanoseconds()
+    attempt_target = _execution_attempt_target(
+        plan_target.clone(),
+        operation.clone(),
+        backend_name,
+        clock.started_at_unix_nanoseconds,
+    )
+    return ExecutionObservation(
+        observation_id=attempt_target.target_id,
+        attempt_target=attempt_target,
+        plan_target=plan_target,
+        context_targets=[_client_session_target(plan_target.clone(), backend_name)],
+        operation=operation,
+        status=status,
+        backend_name=backend_name,
+        adapter_version=None,
+        requested_semantic_profile_id=None,
+        observed_semantic_profile_id=None,
+        started_at_unix_nanoseconds=clock.started_at_unix_nanoseconds,
+        ended_at_unix_nanoseconds=ended_at_unix_nanoseconds,
+        duration_nanoseconds=clock.started_monotonic.elapsed().total_nanoseconds(),
+        row_count=row_count,
+        byte_count=None,
+        trace_ids=[],
+        diagnostics=diagnostics,
+        coverage_records=coverage_records,
+        evidence_refs=[],
+    )
+
+
+def _client_session_target(plan_target: SemanticTarget, backend_name: str) -> SemanticTarget:
+    """Build a redacted session-context target for one observed execution attempt."""
+    target_id = f"{plan_target.target_id}:client-session:{backend_name}"
+    return SemanticTarget(
+        kind=SemanticTargetKind.ClientSession,
+        target_id=target_id,
+        plan_id=plan_target.plan_id,
+        scope_id=plan_target.scope_id,
+        path=f"{plan_target.path}/client-session/{backend_name}",
+        name=f"session:{backend_name}",
+        node_id=None,
+        ordinal=None,
+    )
+
+
+def _execution_attempt_target(
+    plan_target: SemanticTarget,
+    operation: ExecutionOperationKind,
+    backend_name: str,
+    started_at_unix_nanoseconds: int,
+) -> SemanticTarget:
+    """Build the semantic target for one concrete execution attempt."""
+    operation_name = operation.value()
+    target_id = f"{plan_target.target_id}:execution-attempt:{operation_name}:{backend_name}:{started_at_unix_nanoseconds}"
+    return SemanticTarget(
+        kind=SemanticTargetKind.ExecutionAttempt,
+        target_id=target_id,
+        plan_id=plan_target.plan_id,
+        scope_id=plan_target.scope_id,
+        path=f"{plan_target.path}/execution-attempt/{operation_name}",
+        name=f"{operation_name}:{backend_name}",
+        node_id=None,
+        ordinal=None,
+    )
+
+
+def _execution_diagnostic_from_session_error(plan_target: SemanticTarget, err: SessionError) -> ExecutionDiagnostic:
+    """Convert one SessionError into an execution diagnostic anchored to the plan target."""
+    return ExecutionDiagnostic(
+        severity=ExecutionDiagnosticSeverity.Error,
+        code=err.kind.value(),
+        message=err.message,
+        target=Some(plan_target),
+    )
+
+
+def _coverage_record_for_requirement(requirement: AdapterRequirement, backend_name: str) -> AdapterCoverageRecord:
+    """Build one conservative adapter coverage record for an explicit requirement."""
+    state = _coverage_state_for_requirement(requirement.capability.clone(), backend_name)
+    return AdapterCoverageRecord(
+        coverage_id=f"{requirement.requirement_id}:coverage:{backend_name}",
+        requirement=requirement.clone(),
+        adapter_name=backend_name,
+        adapter_version=None,
+        semantic_profile_id=None,
+        state=state.clone(),
+        diagnostics=_coverage_diagnostics(requirement, backend_name, state),
+        evidence_refs=[],
+    )
+
+
+def _coverage_state_for_requirement(
+    capability: AdapterRequirementCapability,
+    backend_name: str,
+) -> AdapterCoverageState:
+    """Return the known adapter coverage state for one capability family."""
+    if backend_name != "datafusion":
+        return AdapterCoverageState.Unknown
+    match capability:
+        AdapterRequirementCapability.RowFilter => return AdapterCoverageState.Covered
+        AdapterRequirementCapability.OrderedExecution => return AdapterCoverageState.Covered
+        AdapterRequirementCapability.NullSemantics => return AdapterCoverageState.Covered
+        AdapterRequirementCapability.ExtensionFunction => return AdapterCoverageState.PartiallyCovered
+        AdapterRequirementCapability.LineagePreservation => return AdapterCoverageState.Uncovered
+        AdapterRequirementCapability.AuditEmission => return AdapterCoverageState.Uncovered
+        _ => return AdapterCoverageState.Unknown
+
+
+def _coverage_diagnostics(
+    requirement: AdapterRequirement,
+    backend_name: str,
+    state: AdapterCoverageState,
+) -> list[ExecutionDiagnostic]:
+    """Return diagnostics that explain non-covered adapter coverage states."""
+    match state:
+        AdapterCoverageState.Covered => return []
+        AdapterCoverageState.PartiallyCovered =>
+            return [ExecutionDiagnostic(
+                severity=ExecutionDiagnosticSeverity.Warning,
+                code="adapter_coverage.partial",
+                message=f"{backend_name} coverage for {requirement.capability.value()} is function- or plan-shape-specific",
+                target=Some(requirement.target),
+            )]
+        AdapterCoverageState.Uncovered =>
+            return [ExecutionDiagnostic(
+                severity=ExecutionDiagnosticSeverity.Error,
+                code="adapter_coverage.uncovered",
+                message=f"{backend_name} does not currently cover {requirement.capability.value()} as an adapter guarantee",
+                target=Some(requirement.target),
+            )]
+        AdapterCoverageState.Unknown =>
+            return [ExecutionDiagnostic(
+                severity=ExecutionDiagnosticSeverity.Warning,
+                code="adapter_coverage.unknown",
+                message=f"{backend_name} coverage for {requirement.capability.value()} has not been classified",
+                target=Some(requirement.target),
+            )]
+
+
+def _observed_error_or_internal(error: Option[SessionError]) -> SessionError:
+    """Return an observed error or a defensive internal execution error for impossible observed-result shapes."""
+    match error:
+        Some(err) => return err
+        None =>
+            return SessionError(
+                kind=SessionErrorKind.BackendExecutionError,
+                message="observed execution ended without data or error",
+            )
 
 
 def _active_state_from_session(session: Session) -> ActiveSessionState:
