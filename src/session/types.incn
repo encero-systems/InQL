@@ -199,14 +199,6 @@ pub class Session:
         """Execute one lazy plan and write result rows to a Parquet sink URI."""
         return self.write(data, parquet_sink(uri))
 
-    def write_csv_df[T with Clone](self, data: DataFrame[T], uri: str) -> Result[None, SessionError]:
-        """Write one materialized DataFrame through the Session CSV sink path."""
-        return self.write(data, csv_sink(uri))
-
-    def write_parquet_df[T with Clone](self, data: DataFrame[T], uri: str) -> Result[None, SessionError]:
-        """Write one materialized DataFrame through the Session Parquet sink path."""
-        return self.write(data, parquet_sink(uri))
-
     def write[T with Clone](self, data: BoundedDataSet[T], target: SinkTarget) -> Result[None, SessionError]:
         """Execute one bounded dataset and write result rows to a typed sink target."""
         return self._write_plan_to_sink(_plan_from_bounded_dataset(data)?, target)

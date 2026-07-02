@@ -54,8 +54,6 @@ All read APIs return `LazyFrame[T]`. They create deferred logical work; they do 
 | `session.write(data, target)`            | `Result[None, SessionError]` | Execute deferred input if needed, then write target  |
 | `session.write_csv(data, uri)`           | `Result[None, SessionError]` | Convenience form for CSV sinks                       |
 | `session.write_parquet(data, uri)`       | `Result[None, SessionError]` | Convenience form for Parquet sinks                   |
-| `session.write_csv_df(data, uri)`        | `Result[None, SessionError]` | Compatibility form for materialized CSV writes       |
-| `session.write_parquet_df(data, uri)`    | `Result[None, SessionError]` | Compatibility form for materialized Parquet writes   |
 
 These writes are Session-owned. They do not bypass the execution context even when the input is deferred.
 
