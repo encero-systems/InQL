@@ -96,10 +96,8 @@ This RFC is additive. Existing exact aggregates must not change semantics when a
 ## Alternatives considered
 
 - **Treat sketches as binary values.** Rejected because it loses type safety and merge compatibility.
-- **Expose Spark sketch names directly as core functions.** Rejected because many sketch families are specialist
-  extensions and require explicit state contracts.
-- **Let backends choose approximate execution for exact aggregates.** Rejected because approximate results must be an
-  author-visible choice.
+- **Expose Spark sketch names directly as core functions.** Rejected because many sketch families are specialist extensions and require explicit state contracts.
+- **Let backends choose approximate execution for exact aggregates.** Rejected because approximate results must be an author-visible choice.
 
 ## Drawbacks
 
@@ -110,51 +108,35 @@ This RFC is additive. Existing exact aggregates must not change semantics when a
 ## Layers affected
 
 - **InQL specification** — approximate and sketch functions must be separate from exact aggregate semantics.
-- **InQL library package** — public helpers should expose approximate aggregate and sketch-state types only when
-  contracts are explicit.
+- **InQL library package** — public helpers should expose approximate aggregate and sketch-state types only when contracts are explicit.
 - **Incan compiler** — typechecking must validate sketch family compatibility and aggregate positions.
-- **Execution / interchange** — Prism and Substrait lowering must preserve approximate parameters, sketch state types,
-  and merge semantics or reject unsupported functions.
+- **Execution / interchange** — Prism and Substrait lowering must preserve approximate parameters, sketch state types, and merge semantics or reject unsupported functions.
 - **Documentation** — docs must label approximate functions clearly and explain accuracy parameters.
 
 ## Design Decisions
 
 ### Resolved
 
-- `approx_count_distinct(expr)` is an aggregate measure, not a scalar expression, and its helper name makes approximate
-  execution an explicit author choice.
-- `approx_count_distinct` is registered as approximate metadata with HyperLogLog-family semantics, mergeability, and an
-  approximate cardinality-result interpretation.
-- `approx_count_distinct` follows InQL's registered unary Substrait extension mapping. It does not expose a
-  user-tunable relative-error parameter because the portable mapping does not carry one.
-- `approx_percentile(expr, percentile, accuracy=10000)` is an aggregate measure with t-digest-family approximation
-  metadata. The helper validates literal percentile and accuracy arguments before building the measure.
-- `approx_percentile` output names include both percentile and accuracy parameters, so multiple percentile estimates over
-  the same input expression remain distinct through Prism and Substrait inspection.
-- DataFusion's implementation is named `approx_distinct`; InQL keeps the InQL Substrait function name in emitted
-  function metadata and rewrites only the DataFusion consumer declaration at the backend adapter boundary.
-- DataFusion's approximate percentile implementation is named `approx_percentile_cont`; InQL uses the same adapter-only
-  declaration rewrite and keeps `approx_percentile` as the portable Substrait extension name.
-- `approx_count_distinct` allows aggregate-local filters and rejects an extra `distinct()` modifier because distinct
-  estimation is already the helper's semantics.
-- `approx_percentile` allows aggregate-local filters and rejects `distinct()` and ordered input because those modifiers
-  are not part of the portable percentile aggregate contract.
-- Sketch-state construction, merge, estimate, serialization, and deserialization helpers are delegated to InQL RFC 025.
-  They are not exposed as lowerable RFC 023 functions because exposing those helpers as ordinary strings or binary values
-  would violate the compatibility rules this RFC is meant to protect.
+- `approx_count_distinct(expr)` is an aggregate measure, not a scalar expression, and its helper name makes approximate execution an explicit author choice.
+- `approx_count_distinct` is registered as approximate metadata with HyperLogLog-family semantics, mergeability, and an approximate cardinality-result interpretation.
+- `approx_count_distinct` follows InQL's registered unary Substrait extension mapping. It does not expose a user-tunable relative-error parameter because the portable mapping does not carry one.
+- `approx_percentile(expr, percentile, accuracy=10000)` is an aggregate measure with t-digest-family approximation metadata. The helper validates literal percentile and accuracy arguments before building the measure.
+- `approx_percentile` output names include both percentile and accuracy parameters, so multiple percentile estimates over the same input expression remain distinct through Prism and Substrait inspection.
+- DataFusion's implementation is named `approx_distinct`; InQL keeps the InQL Substrait function name in emitted function metadata and rewrites only the DataFusion consumer declaration at the backend adapter boundary.
+- DataFusion's approximate percentile implementation is named `approx_percentile_cont`; InQL uses the same adapter-only declaration rewrite and keeps `approx_percentile` as the portable Substrait extension name.
+- `approx_count_distinct` allows aggregate-local filters and rejects an extra `distinct()` modifier because distinct estimation is already the helper's semantics.
+- `approx_percentile` allows aggregate-local filters and rejects `distinct()` and ordered input because those modifiers are not part of the portable percentile aggregate contract.
+- Sketch-state construction, merge, estimate, serialization, and deserialization helpers are delegated to InQL RFC 025. They are not exposed as lowerable RFC 023 functions because exposing those helpers as ordinary strings or binary values would violate the compatibility rules this RFC is meant to protect.
 
 ### Remaining
 
-- InQL RFC 025 defines the follow-up design space for typed sketch state, portable serialization formats, and named
-  merge/estimate helpers. That work must not retrofit RFC 023 by treating untyped binary payloads as sketch values.
-- A future backend-capability layer may expose backend-specific approximation knobs as engine-specific functions or
-  options when they cannot be represented by the portable helper signatures.
+- InQL RFC 025 defines the follow-up design space for typed sketch state, portable serialization formats, and named merge/estimate helpers. That work must not retrofit RFC 023 by treating untyped binary payloads as sketch values.
+- A future backend-capability layer may expose backend-specific approximation knobs as engine-specific functions or options when they cannot be represented by the portable helper signatures.
 
 ## Implementation Plan
 
 1. Add registry approximation metadata with exact-helper defaults.
-2. Add `approx_count_distinct(expr)` and `approx_percentile(expr, percentile, accuracy=10000)` under a logical approximate
-   function family.
+2. Add `approx_count_distinct(expr)` and `approx_percentile(expr, percentile, accuracy=10000)` under a logical approximate function family.
 3. Add stable Substrait anchors and keep emitted function metadata on InQL extension names.
 4. Add DataFusion adapter-local declaration rewrites to the first backend's implementation names.
 5. Add focused helper, registry, Substrait lowering, Prism, and DataFusion-backed session tests with materialized output.
@@ -171,5 +153,4 @@ This RFC is additive. Existing exact aggregates must not change semantics when a
 - [x] DataFusion adapter-local approximate aggregate mappings added.
 - [x] Focused helper, registry, Substrait lowering, Prism, and DataFusion-backed session tests added.
 - [x] User-facing approximate-function docs, aggregate-builder docs, and release notes added.
-- [x] Sketch-state logical types and sketch merge/estimate/serialization helpers delegated to InQL RFC 025 rather than
-      exposed as untyped lowerable functions.
+- [x] Sketch-state logical types and sketch merge/estimate/serialization helpers delegated to InQL RFC 025 rather than exposed as untyped lowerable functions.

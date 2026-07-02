@@ -59,14 +59,10 @@ grouped = orders.group_by([col("customer_id")]).agg([
 - `count(...)` accepts zero or one expression; passing multiple expressions is an error.
 - `count_expr(expr)` is a compatibility spelling for `count(expr)`.
 - `count_distinct(expr)` is compatibility sugar for `count(expr).distinct()`.
-- `count_if(predicate)` is compatibility sugar for `count().filter(predicate)`. Rows where the predicate is false or
-  null do not contribute to the aggregate.
+- `count_if(predicate)` is compatibility sugar for `count().filter(predicate)`. Rows where the predicate is false or null do not contribute to the aggregate.
 - `sum`, `avg`, `min`, and `max` skip null values. They return backend-null results when no non-null input value exists.
-- `approx_count_distinct` and `approx_percentile` are approximate aggregate choices. They allow aggregate-local filters
-  but reject extra `DISTINCT` and ordered input in the portable contract.
-- `approx_percentile` output names include percentile and accuracy parameters so two percentile estimates over the same
-  expression do not collapse into the same output column name.
-- `hll_sketch` and `hll_merge` are aggregate-shaped typed sketch helpers. They produce typed sketch state and preserve
-  sketch family, value domain, precision, and format metadata through the registry and Substrait boundary.
+- `approx_count_distinct` and `approx_percentile` are approximate aggregate choices. They allow aggregate-local filters but reject extra `DISTINCT` and ordered input in the portable contract.
+- `approx_percentile` output names include percentile and accuracy parameters so two percentile estimates over the same expression do not collapse into the same output column name.
+- `hll_sketch` and `hll_merge` are aggregate-shaped typed sketch helpers. They produce typed sketch state and preserve sketch family, value domain, precision, and format metadata through the registry and Substrait boundary.
 - Unsupported aggregate modifiers fail at lowering or backend planning; they are not ignored.
 - Future `.column` sugar and scoped aggregate symbols should lower to this same surface rather than replacing its semantics.

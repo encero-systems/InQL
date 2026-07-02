@@ -81,12 +81,7 @@ Quality observations, adapter coverage records, semantic profile records, and ev
 
 Existing session execution remains valid. Implementations may initially emit partial observations, but unsupported fields must be explicit rather than silently omitted when consumers request them.
 
-The first implementation adds observed variants for `execute`, `collect`, and `write` while preserving the ordinary
-`Result[...]`-returning session APIs. Observed variants return success and failure observations. Wall-clock fields are
-Unix nanoseconds from Incan's `std.datetime.runtime.SystemTime`, and duration uses monotonic elapsed nanoseconds from
-`std.datetime.runtime.Instant`. The model exposes adapter version, requested and observed semantic profile IDs, byte
-count, and trace IDs explicitly; the initial DataFusion path reports `None` or empty values for those fields rather than
-fabricating unavailable evidence.
+The first implementation adds observed variants for `execute`, `collect`, and `write` while preserving the ordinary `Result[...]`-returning session APIs. Observed variants return success and failure observations. Wall-clock fields are Unix nanoseconds from Incan's `std.datetime.runtime.SystemTime`, and duration uses monotonic elapsed nanoseconds from `std.datetime.runtime.Instant`. The model exposes adapter version, requested and observed semantic profile IDs, byte count, and trace IDs explicitly; the initial DataFusion path reports `None` or empty values for those fields rather than fabricating unavailable evidence.
 
 ## Alternatives considered
 

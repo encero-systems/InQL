@@ -109,8 +109,7 @@ Existing `sum` and `count` helpers should be treated as compatibility-compatible
 
 - Null and empty-input behavior can surprise authors coming from APIs that default missing sums to zero.
 - Result type policy for numeric aggregates is a cross-cutting dependency on scalar numeric types.
-- Supporting both `count()` and `count(expr)` makes one helper carry row-count and expression-count semantics, so
-  tests must keep both call shapes covered.
+- Supporting both `count()` and `count(expr)` makes one helper carry row-count and expression-count semantics, so tests must keep both call shapes covered.
 
 ## Layers affected
 

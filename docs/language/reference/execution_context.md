@@ -47,8 +47,7 @@ All read APIs return `LazyFrame[T]`. They create deferred logical work; they do 
 
 ## Execution observations
 
-Observed execution methods preserve the ordinary session contracts while also returning runtime evidence. They are the
-author-facing surface for RFC 032 execution observations.
+Observed execution methods preserve the ordinary session contracts while also returning runtime evidence. They are the author-facing surface for RFC 032 execution observations.
 
 | API                              | Returns                  | Role                                                                 |
 | -------------------------------- | ------------------------ | -------------------------------------------------------------------- |
@@ -56,16 +55,9 @@ author-facing surface for RFC 032 execution observations.
 | `session.collect_observed(data)` | `ObservedDataFrame[T]`   | Collect and return `data`, `observation`, and `error` fields         |
 | `session.write_observed(data, target)` | `ObservedWrite`    | Write and return `observation` plus an optional `error`              |
 
-The ordinary `execute`, `collect`, and `write` methods use the same execution path internally and keep returning
-`Result[...]` values for compact application code. Use the observed variants when an audit, governance, debugging, or
-verification flow needs a durable execution attempt record.
+The ordinary `execute`, `collect`, and `write` methods use the same execution path internally and keep returning `Result[...]` values for compact application code. Use the observed variants when an audit, governance, debugging, or verification flow needs a durable execution attempt record.
 
-An `ExecutionObservation` records the operation, status, backend name, optional adapter version, requested and observed
-semantic profile IDs, plan target, execution-attempt target, client-session context target, Unix nanosecond wall-clock
-start/end values from `std.datetime.runtime.SystemTime`, monotonic duration nanoseconds from
-`std.datetime.runtime.Instant`, row count or byte count when materialization supplies them, optional trace IDs,
-diagnostics, and linked coverage records when present. Observation records do not contain row payloads or backend logs
-by default.
+An `ExecutionObservation` records the operation, status, backend name, optional adapter version, requested and observed semantic profile IDs, plan target, execution-attempt target, client-session context target, Unix nanosecond wall-clock start/end values from `std.datetime.runtime.SystemTime`, monotonic duration nanoseconds from `std.datetime.runtime.Instant`, row count or byte count when materialization supplies them, optional trace IDs, diagnostics, and linked coverage records when present. Observation records do not contain row payloads or backend logs by default.
 
 ```incan
 observed = session.collect_observed(summary)
@@ -90,9 +82,7 @@ These writes are Session-owned. They do not bypass the execution context even wh
 
 ## Adapter coverage
 
-`session.check_coverage(requirements)` accepts explicit `AdapterRequirement` records and returns one
-`AdapterCoverageRecord` per requirement. This is the current RFC 033 coverage surface. It does not infer requirements
-from every plan shape yet; callers must pass the requirements they want evaluated.
+`session.check_coverage(requirements)` accepts explicit `AdapterRequirement` records and returns one `AdapterCoverageRecord` per requirement. This is the current RFC 033 coverage surface. It does not infer requirements from every plan shape yet; callers must pass the requirements they want evaluated.
 
 Coverage states are conservative:
 

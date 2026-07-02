@@ -104,9 +104,7 @@ Function registry entries, semi-structured functions, extensions, quality assert
 
 Existing adapters may initially report unknown coverage for capabilities they do not declare. Consumers must distinguish unknown from covered.
 
-The first implementation provides the adapter requirement and coverage record vocabulary plus
-`Session.check_coverage(requirements)`. Requirement inference from arbitrary inspection records remains part of the
-remaining RFC 033 work; the current API evaluates requirements that callers pass explicitly.
+The first implementation provides the adapter requirement and coverage record vocabulary plus `Session.check_coverage(requirements)`. Requirement inference from arbitrary inspection records remains part of the remaining RFC 033 work; the current API evaluates requirements that callers pass explicitly.
 
 ## Alternatives considered
 

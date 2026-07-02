@@ -23,10 +23,8 @@ This RFC defines typed sketch logical values for InQL. Sketch helpers must not b
 1. A sketch value has a logical type, even if its runtime representation is opaque to InQL.
 2. Sketch construction is aggregate-shaped when it summarizes many input rows into one sketch state.
 3. Sketch merge is valid only for compatible sketch values.
-4. Sketch estimate, quantile, serialization, and deserialization helpers must preserve sketch-family semantics instead of
-   treating sketch payloads as generic bytes.
-5. Backend adapters may implement, emulate, or reject sketch operations, but they must not redefine ordinary binary or
-   string expressions as sketch states.
+4. Sketch estimate, quantile, serialization, and deserialization helpers must preserve sketch-family semantics instead of treating sketch payloads as generic bytes.
+5. Backend adapters may implement, emulate, or reject sketch operations, but they must not redefine ordinary binary or string expressions as sketch states.
 
 ## Motivation
 
@@ -38,11 +36,9 @@ If InQL accepts untyped sketch blobs, it cannot reject invalid operations such a
 
 - Define sketch logical values as first-class typed values.
 - Define the metadata required to compare sketch compatibility before execution.
-- Define how sketch construction, merge, estimate, serialization, and deserialization helpers interact with the function
-  registry.
+- Define how sketch construction, merge, estimate, serialization, and deserialization helpers interact with the function registry.
 - Keep sketch state backend-neutral in InQL semantics while allowing backend-specific execution support.
-- Provide a design home for HyperLogLog, KLL, theta, count-min, and bitmap-style sketch families without forcing all
-  families into the first implementation.
+- Provide a design home for HyperLogLog, KLL, theta, count-min, and bitmap-style sketch families without forcing all families into the first implementation.
 
 ## Non-Goals
 
@@ -82,8 +78,7 @@ A sketch logical value must carry at least:
 
 - sketch family identity, such as HyperLogLog, KLL, theta, count-min, or bitmap;
 - input value domain, such as string identifiers, integer identifiers, numeric values, or categorical values;
-- family parameters that affect merge compatibility, such as precision, accuracy, nominal entries, width/depth, seed, or
-  ordering policy;
+- family parameters that affect merge compatibility, such as precision, accuracy, nominal entries, width/depth, seed, or ordering policy;
 - format identity and version when the value can be serialized;
 - nullability and ordinary column-position metadata needed by existing InQL expression and relation surfaces.
 
@@ -127,15 +122,12 @@ The implemented first family is HyperLogLog:
 - `sketch_value(...)` accepts the standard scalar value-or-column input surface before attaching sketch metadata.
 - `hll_sketch(...)` is an aggregate measure that produces typed HyperLogLog state from scalar values or expressions.
 - `hll_merge(...)` is an aggregate measure over existing typed HyperLogLog state.
-- `hll_estimate(...)`, `hll_serialize(...)`, and `hll_deserialize(...)` are scalar helpers over typed sketch state or
-  explicit serialized payloads.
+- `hll_estimate(...)`, `hll_serialize(...)`, and `hll_deserialize(...)` are scalar helpers over typed sketch state or explicit serialized payloads.
 - `hll_deserialize(...)` accepts the standard string value-or-column input surface for explicit payloads.
-- The public `SketchFamily` API exposes HyperLogLog in this implementation; additional families should add their own
-  family-specific type builders, serialization formats, registry policies, and tests rather than sharing HLL metadata.
+- The public `SketchFamily` API exposes HyperLogLog in this implementation; additional families should add their own family-specific type builders, serialization formats, registry policies, and tests rather than sharing HLL metadata.
 - Function registry entries expose typed sketch policy metadata and Substrait extension mappings.
 - Substrait lowering carries sketch family, value domain, precision, and format in function options.
-- The DataFusion adapter rejects typed sketch execution with a backend planning diagnostic. This is an adapter
-  capability boundary, not an InQL semantic limitation.
+- The DataFusion adapter rejects typed sketch execution with a backend planning diagnostic. This is an adapter capability boundary, not an InQL semantic limitation.
 
 ### Compatibility / migration
 
@@ -143,48 +135,33 @@ This RFC is additive. RFC 023 approximate scalar-result aggregates remain valid.
 
 ## Alternatives considered
 
-- **Treat sketches as bytes.** Rejected because it prevents typechecking merge compatibility and moves semantic errors
-  into backend runtime failures.
-- **Expose only scalar approximate aggregates.** Rejected as a complete long-term answer because stored and mergeable
-  sketches are a legitimate analytics need, especially for pre-aggregated data.
-- **Copy one backend's sketch catalog directly.** Rejected because InQL needs backend-neutral semantics and capability
-  reporting.
-- **Make sketch values ordinary structs.** Rejected unless the struct carries a distinct logical type; ordinary structs
-  do not by themselves encode family-specific compatibility rules.
+- **Treat sketches as bytes.** Rejected because it prevents typechecking merge compatibility and moves semantic errors into backend runtime failures.
+- **Expose only scalar approximate aggregates.** Rejected as a complete long-term answer because stored and mergeable sketches are a legitimate analytics need, especially for pre-aggregated data.
+- **Copy one backend's sketch catalog directly.** Rejected because InQL needs backend-neutral semantics and capability reporting.
+- **Make sketch values ordinary structs.** Rejected unless the struct carries a distinct logical type; ordinary structs do not by themselves encode family-specific compatibility rules.
 
 ## Drawbacks
 
 - Sketch logical values add a new kind of type metadata to expression and relation planning.
 - Cross-backend support will be uneven because sketch algorithms and serialized formats vary.
-- Documentation must be careful not to overpromise statistical guarantees that depend on algorithm parameters and backend
-  implementations.
+- Documentation must be careful not to overpromise statistical guarantees that depend on algorithm parameters and backend implementations.
 - Serialization compatibility can become a long-term maintenance burden if exposed too early.
 
 ## Layers affected
 
-- **InQL specification** — sketch values must be distinguished from ordinary scalar, binary, string, map, and struct
-  values.
-- **InQL library package** — public sketch helpers must register family, domain, parameter, merge, estimate, and
-  serialization metadata.
-- **Incan compiler** — typechecking and diagnostics may need enough type information to represent sketch-valued
-  expressions, reject invalid operations, and preserve metadata through public helper signatures.
-- **Execution / interchange** — Substrait lowering and backend adapters must preserve sketch logical type identity or
-  reject unsupported sketch operations before execution.
-- **Documentation** — function references and RFCs must present sketch helpers as typed approximate state, not as
-  backend-specific blobs.
+- **InQL specification** — sketch values must be distinguished from ordinary scalar, binary, string, map, and struct values.
+- **InQL library package** — public sketch helpers must register family, domain, parameter, merge, estimate, and serialization metadata.
+- **Incan compiler** — typechecking and diagnostics may need enough type information to represent sketch-valued expressions, reject invalid operations, and preserve metadata through public helper signatures.
+- **Execution / interchange** — Substrait lowering and backend adapters must preserve sketch logical type identity or reject unsupported sketch operations before execution.
+- **Documentation** — function references and RFCs must present sketch helpers as typed approximate state, not as backend-specific blobs.
 
 ## Design decisions
 
 ### Resolved
 
-- The first public type spelling is explicit library metadata: `SketchLogicalType`, `SketchExpr`, `hll_type(...)`,
-  `sketch_value(...)`, and `sketch_col(...)`.
-- Public sketch helpers use the same typed value-or-column input conventions as the post-RFC018 scalar catalog: source
-  values are accepted as primitive values or scalar expressions, while serialized sketch payloads use the string
-  value-or-column surface.
+- The first public type spelling is explicit library metadata: `SketchLogicalType`, `SketchExpr`, `hll_type(...)`, `sketch_value(...)`, and `sketch_col(...)`.
+- Public sketch helpers use the same typed value-or-column input conventions as the post-RFC018 scalar catalog: source values are accepted as primitive values or scalar expressions, while serialized sketch payloads use the string value-or-column surface.
 - HyperLogLog is the first implemented sketch family because it cleanly extends the distinct-count approximation surface.
 - HyperLogLog merge compatibility is defined by family, value domain, precision, and serialization format.
-- Serialized sketch format identity is explicit and portable at the InQL logical layer. RFC 025 defines
-  `inql_hll_v1` as the first format identity without promising bit-for-bit compatibility with every backend runtime.
-- Sketch values may be represented in authoring expressions today through `SketchExpr`. Broader table-schema logical
-  typing is left to RFC 026 and later schema work rather than hiding sketch state as strings or bytes.
+- Serialized sketch format identity is explicit and portable at the InQL logical layer. RFC 025 defines `inql_hll_v1` as the first format identity without promising bit-for-bit compatibility with every backend runtime.
+- Sketch values may be represented in authoring expressions today through `SketchExpr`. Broader table-schema logical typing is left to RFC 026 and later schema work rather than hiding sketch state as strings or bytes.

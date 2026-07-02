@@ -363,11 +363,9 @@ This should lower through InQL planning into an InQL-DB physical plan that can c
 
 Vector search is not enough for agentic retrieval.
 
-InQL-DB should support governed RAG stores as a first-class data pattern: retrieval tables where every returned item
-carries provenance, approval state, corpus version, retrieval evidence, and policy compatibility metadata.
+InQL-DB should support governed RAG stores as a first-class data pattern: retrieval tables where every returned item carries provenance, approval state, corpus version, retrieval evidence, and policy compatibility metadata.
 
-This matters for advisory systems such as Hees.ai, where the retrieval layer is part of the safety model. A retrieved
-entry is not merely text. It is an approved evidence unit with constraints.
+This matters for advisory systems such as Hees.ai, where the retrieval layer is part of the safety model. A retrieved entry is not merely text. It is an approved evidence unit with constraints.
 
 A vector index answers:
 
@@ -455,8 +453,7 @@ This makes RAG auditable rather than merely semantic.
 
 ## HyperQuant evidence-provider ledger
 
-HyperQuant should be treated as an evidence-provider implementation behind InQL-DB and Hees.ai storage contracts, not as
-the semantic owner of retrieval behavior.
+HyperQuant should be treated as an evidence-provider implementation behind InQL-DB and Hees.ai storage contracts, not as the semantic owner of retrieval behavior.
 
 The storage problem is not only vector search. HyperQuant needs a durable audit ledger for evidence-provider runs:
 
@@ -469,9 +466,7 @@ query + package/policy/corpus/index context
   -> provider run id and fingerprint
 ```
 
-This distinction matters because governed systems must explain more than the nearest neighbors. They must explain what
-was considered, what was eligible, what was rejected, and which package, policy, corpus, index, and provider versions
-controlled the run.
+This distinction matters because governed systems must explain more than the nearest neighbors. They must explain what was considered, what was eligible, what was rejected, and which package, policy, corpus, index, and provider versions controlled the run.
 
 InQL-DB should support these logical records:
 
@@ -521,9 +516,7 @@ model EvidenceProviderFingerprint:
     result_fingerprint: str
 ```
 
-Eligible evidence and rejected evidence may be represented as filtered views over `EvidenceCandidate`, or as separate
-physical tables if the storage engine needs different retention or indexing behavior. The important contract is that
-rejected evidence is first-class data, not a log message.
+Eligible evidence and rejected evidence may be represented as filtered views over `EvidenceCandidate`, or as separate physical tables if the storage engine needs different retention or indexing behavior. The important contract is that rejected evidence is first-class data, not a log message.
 
 For federated domain runtimes, InQL-DB should also support a run-level grouping record:
 
@@ -545,9 +538,7 @@ The governing rule is:
 Vectors nominate evidence. They do not authorize evidence.
 ```
 
-Vector similarity, quantized indexes, and approximate-nearest-neighbor search can propose candidates. Package, policy,
-corpus, authority, and admissibility rules decide whether those candidates may become evidence. InQL-DB must preserve
-that boundary in storage so later inspection can distinguish retrieval mechanics from governance decisions.
+Vector similarity, quantized indexes, and approximate-nearest-neighbor search can propose candidates. Package, policy, corpus, authority, and admissibility rules decide whether those candidates may become evidence. InQL-DB must preserve that boundary in storage so later inspection can distinguish retrieval mechanics from governance decisions.
 
 ## CLI
 
@@ -630,8 +621,7 @@ Recommended RFC sequence:
    Define vector physical type, distance functions, index files, transactionally visible indexes, and query lowering.
 
 6. **HyperQuant evidence-provider ledger RFC**
-   Define evidence-provider runs, candidate evidence, rejected evidence, provider fingerprints, index provenance,
-   federated evidence-run grouping, and replay/debug contracts.
+   Define evidence-provider runs, candidate evidence, rejected evidence, provider fingerprints, index provenance, federated evidence-run grouping, and replay/debug contracts.
 
 7. **CLI RFC**
    Define `inql db` commands and diagnostics.
