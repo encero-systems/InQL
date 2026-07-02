@@ -68,7 +68,7 @@ pub class SessionRegistration:
 
 
 pub class ObservedLazyFrame[T with Clone]:
-    """Observed `Session.execute(...)` result with data on success and diagnostics on failure."""
+    """`Session.execute_observed(...)` result with data on success and diagnostics on failure."""
 
     pub data: Option[LazyFrame[T]]
     pub observation: ExecutionObservation
@@ -76,7 +76,7 @@ pub class ObservedLazyFrame[T with Clone]:
 
 
 pub class ObservedDataFrame[T with Clone]:
-    """Observed `Session.collect(...)` result with data on success and diagnostics on failure."""
+    """`Session.collect_observed(...)` result with data on success and diagnostics on failure."""
 
     pub data: Option[DataFrame[T]]
     pub observation: ExecutionObservation
@@ -84,7 +84,7 @@ pub class ObservedDataFrame[T with Clone]:
 
 
 pub class ObservedWrite:
-    """Observed `Session.write(...)` result with diagnostics when the write fails."""
+    """`Session.write_observed(...)` result with diagnostics when the write fails."""
 
     pub observation: ExecutionObservation
     pub error: Option[SessionError]
@@ -820,11 +820,6 @@ def _plan_from_lazy_frame[T with Clone](data: LazyFrame[T]) -> Result[Plan, Sess
 def _plan_from_bounded_dataset[T with Clone](data: BoundedDataSet[T]) -> Result[Plan, SessionError]:
     """Return one bounded carrier plan through the same structured planning-error envelope."""
     return data.try_to_substrait_plan().map_err(_session_error_from_lowering_error)
-
-
-def _write_result_from_backend_result(write_result: Result[None, BackendError]) -> Result[None, SessionError]:
-    """Normalize one backend write result into the Session-facing write result contract."""
-    return write_result.map_err(_session_error_from_backend_error)
 
 
 def _invalid_registration_from_validation_error(err: ValidationError) -> SessionError:

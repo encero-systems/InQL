@@ -53,6 +53,36 @@ def _coverage_state_from_name(name: str) -> AdapterCoverageState:
         _ => return fail_t(f"unexpected coverage state: {name}")
 
 
+def test_execute_observed__records_success_attempt_without_materialization() -> None:
+    """execute_observed should validate and execute a lazy plan without inventing materialization facts."""
+    # -- Arrange --
+    mut session = Session.default()
+    lazy: LazyFrame[Order] = assert_is_ok(
+        session.read_csv("orders", ORDERS_CSV_FIXTURE),
+        "orders CSV fixture should load",
+    )
+
+    # -- Act --
+    observed = session.execute_observed(lazy)
+
+    # -- Assert --
+    match observed.error:
+        Some(err) => fail(f"execute_observed should succeed: {err.error_message()}")
+        None => pass
+    match observed.data:
+        Some(frame) =>
+            assert len(frame.planned_columns()) > 0, "execute_observed should preserve the deferred carrier"
+        None => fail("execute_observed should include the lazy frame on success")
+    observation = observed.observation
+    assert observation.operation == ExecutionOperationKind.Execute, "execute observation should record execute operation"
+    assert observation.status == ExecutionObservationStatus.Success, "execute observation should record success"
+    assert observation.plan_target.target_id.startswith("prism:store-"), "lazy execute observations should reuse Prism plan ids"
+    assert observation.attempt_target.kind == SemanticTargetKind.ExecutionAttempt, "execute observation should expose an execution-attempt target"
+    match observation.row_count:
+        Some(_) => fail("execute should not invent row-count evidence")
+        None => pass
+
+
 def test_collect_observed__records_success_attempt_and_row_count() -> None:
     """collect_observed should return a DataFrame plus a successful execution observation."""
     # -- Arrange --
