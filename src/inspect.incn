@@ -474,20 +474,20 @@ def _join_predicate_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode)
 def _project_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
     """Return add-or-replace projection lineage over the current schema bindings."""
     mut edges = _passthrough_value_edges(plan_id, store_id, node)
+    project_output_schema = authored_output_schema(store_id, node.node_id)
     for assignment in node.projection_assignments:
-        project_output_idx = _field_index(authored_output_schema(store_id, node.node_id), assignment.output_name)
+        project_output_idx = _field_index(project_output_schema, assignment.output_name)
         if project_output_idx >= 0:
-            project_destination = _field_target(plan_id, node.node_id, project_output_idx, assignment.output_name)
             edges.extend(
-                _dependency_edges(
+                _field_edges_from_expression(
                     plan_id,
                     store_id,
                     node.input_ids[0],
                     node.node_id,
-                    [assignment.expr],
-                    project_destination,
+                    assignment.expr,
+                    project_output_idx,
+                    assignment.output_name,
                     LineageRelationshipKind.Value,
-                    _expression_transformation(assignment.expr),
                 ),
             )
     return edges
@@ -497,17 +497,16 @@ def _select_project_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode)
     """Return exclusive SELECT projection lineage."""
     mut edges: list[LineageEdge] = []
     for idx, assignment in enumerate(node.projection_assignments):
-        select_destination = _field_target(plan_id, node.node_id, idx, assignment.output_name)
         edges.extend(
-            _dependency_edges(
+            _field_edges_from_expression(
                 plan_id,
                 store_id,
                 node.input_ids[0],
                 node.node_id,
-                [assignment.expr],
-                select_destination,
+                assignment.expr,
+                idx,
+                assignment.output_name,
                 LineageRelationshipKind.Value,
-                _expression_transformation(assignment.expr),
             ),
         )
     return edges
@@ -516,22 +515,44 @@ def _select_project_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode)
 def _group_by_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
     """Return grouping lineage from group expressions to grouped output fields."""
     mut edges: list[LineageEdge] = []
+    group_output_schema = authored_output_schema(store_id, node.node_id)
     for idx, expr in enumerate(node.group_columns):
-        output_name = authored_output_schema(store_id, node.node_id)[idx].name
-        group_destination = _field_target(plan_id, node.node_id, idx, output_name)
         edges.extend(
-            _dependency_edges(
+            _field_edges_from_expression(
                 plan_id,
                 store_id,
                 node.input_ids[0],
                 node.node_id,
-                [expr],
-                group_destination,
+                expr,
+                idx,
+                group_output_schema[idx].name,
                 LineageRelationshipKind.Grouping,
-                _expression_transformation(expr),
             ),
         )
     return edges
+
+
+def _field_edges_from_expression(
+    plan_id: str,
+    store_id: PrismStoreId,
+    source_node_id: int,
+    evidence_node_id: int,
+    expr: ColumnExpr,
+    output_idx: int,
+    output_name: str,
+    relationship: LineageRelationshipKind,
+) -> list[LineageEdge]:
+    """Connect one scalar expression to one output field target."""
+    return _dependency_edges(
+        plan_id,
+        store_id,
+        source_node_id,
+        evidence_node_id,
+        [expr],
+        _field_target(plan_id, evidence_node_id, output_idx, output_name),
+        relationship,
+        _expression_transformation(expr),
+    )
 
 
 def _aggregate_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
@@ -570,20 +591,19 @@ def _aggregate_grouping_prefix_edges(
     for idx in range(grouping_prefix_count):
         if idx < len(group_columns):
             output_name = authored_output_schema(store_id, node.node_id)[idx].name
-            prefix_destination = _field_target(plan_id, node.node_id, idx, output_name)
             mut source_input_id = node.input_ids[0]
             if aggregate_input_node.kind == PrismNodeKind.GroupBy:
                 source_input_id = aggregate_input_node.input_ids[0]
             edges.extend(
-                _dependency_edges(
+                _field_edges_from_expression(
                     plan_id,
                     store_id,
                     source_input_id,
                     node.node_id,
-                    [group_columns[idx]],
-                    prefix_destination,
+                    group_columns[idx],
+                    idx,
+                    output_name,
                     LineageRelationshipKind.Grouping,
-                    _expression_transformation(group_columns[idx]),
                 ),
             )
     return edges
