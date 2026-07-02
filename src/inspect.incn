@@ -343,29 +343,18 @@ def _lineage_graph_for_authored_plan(plan_id: str, store_id: PrismStoreId, autho
 
 def _lineage_edges_for_node(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
     """Return semantic lineage edges for one authored Prism node."""
-    if node.kind == PrismNodeKind.ReadNamedTable:
-        return _read_root_edges(plan_id, store_id, node)
-    if node.kind == PrismNodeKind.Filter:
-        return _filter_edges(plan_id, store_id, node)
-    if node.kind == PrismNodeKind.Join:
-        return _join_edges(plan_id, store_id, node)
-    if node.kind == PrismNodeKind.Project:
-        return _project_edges(plan_id, store_id, node)
-    if node.kind == PrismNodeKind.SelectProject:
-        return _select_project_edges(plan_id, store_id, node)
-    if node.kind == PrismNodeKind.GroupBy:
-        return _group_by_edges(plan_id, store_id, node)
-    if node.kind == PrismNodeKind.Aggregate:
-        return _aggregate_edges(plan_id, store_id, node)
-    if node.kind == PrismNodeKind.Generate:
-        return _generate_edges(plan_id, store_id, node)
-    if node.kind == PrismNodeKind.Window:
-        return _window_edges(plan_id, store_id, node)
-    if node.kind == PrismNodeKind.OrderBy:
-        return _order_by_edges(plan_id, store_id, node)
-    if node.kind == PrismNodeKind.Limit:
-        return _passthrough_value_edges(plan_id, store_id, node)
-    return []
+    match node.kind:
+        PrismNodeKind.ReadNamedTable => return _read_root_edges(plan_id, store_id, node)
+        PrismNodeKind.Filter => return _filter_edges(plan_id, store_id, node)
+        PrismNodeKind.Join => return _join_edges(plan_id, store_id, node)
+        PrismNodeKind.Project => return _project_edges(plan_id, store_id, node)
+        PrismNodeKind.SelectProject => return _select_project_edges(plan_id, store_id, node)
+        PrismNodeKind.GroupBy => return _group_by_edges(plan_id, store_id, node)
+        PrismNodeKind.Aggregate => return _aggregate_edges(plan_id, store_id, node)
+        PrismNodeKind.Generate => return _generate_edges(plan_id, store_id, node)
+        PrismNodeKind.Window => return _window_edges(plan_id, store_id, node)
+        PrismNodeKind.OrderBy => return _order_by_edges(plan_id, store_id, node)
+        PrismNodeKind.Limit => return _passthrough_value_edges(plan_id, store_id, node)
 
 
 def _read_root_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
