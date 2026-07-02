@@ -1,0 +1,202 @@
+"""Shared relational evidence record types used by inspection and future governance surfaces."""
+
+
+@derive(Clone)
+pub enum SemanticTargetKind(str):
+    """Semantic target categories shared by evidence APIs."""
+
+    Plan = "plan"
+    IngressRequest = "ingress_request"
+    ClientSession = "client_session"
+    IngressNode = "ingress_node"
+    IngressExpression = "ingress_expression"
+    AnalyzerBinding = "analyzer_binding"
+    AuthoredPrismNode = "authored_prism_node"
+    RewrittenPrismNode = "rewritten_prism_node"
+    RelationOutput = "relation_output"
+    Field = "field"
+    ScalarExpression = "scalar_expression"
+    AggregateMeasure = "aggregate_measure"
+    WindowExpression = "window_expression"
+    GeneratorOutput = "generator_output"
+    ReadRoot = "read_root"
+    QualityAssertion = "quality_assertion"
+    QualityObservation = "quality_observation"
+    PolicyDecision = "policy_decision"
+    AdapterRequirement = "adapter_requirement"
+    CoverageRecord = "coverage_record"
+    SemanticProfile = "semantic_profile"
+    ProfileAssessment = "profile_assessment"
+    ExecutionAttempt = "execution_attempt"
+
+
+@derive(Clone)
+pub enum MetadataLifecycle(str):
+    """Lifecycle phase for one metadata attachment."""
+
+    Authored = "authored"
+    Planned = "planned"
+    Analyzed = "analyzed"
+    Rewritten = "rewritten"
+    Lowered = "lowered"
+    Bound = "bound"
+    Executed = "executed"
+    Exported = "exported"
+    Imported = "imported"
+
+
+@derive(Clone)
+pub enum MetadataSource(str):
+    """Source family for one metadata attachment."""
+
+    InQL = "inql"
+    User = "user"
+    Prism = "prism"
+    Session = "session"
+    Adapter = "adapter"
+    FunctionRegistry = "function_registry"
+    QualityEngine = "quality_engine"
+    PolicyEngine = "policy_engine"
+    ExternalCatalog = "external_catalog"
+    ImportedArtifact = "imported_artifact"
+
+
+@derive(Clone)
+pub enum MetadataVisibility(str):
+    """Visibility policy for one metadata attachment."""
+
+    Public = "public"
+    Internal = "internal"
+    Sensitive = "sensitive"
+    Redacted = "redacted"
+
+
+@derive(Clone)
+pub enum LineageRelationshipKind(str):
+    """Relationship kinds in an evidence lineage graph."""
+
+    Value = "value"
+    Control = "control"
+    Grouping = "grouping"
+    Join = "join"
+    Sort = "sort"
+    Window = "window"
+    Policy = "policy"
+    Quality = "quality"
+
+
+@derive(Clone)
+pub enum LineageTransformationKind(str):
+    """Transformation kinds attached to lineage edges."""
+
+    Identity = "identity"
+    Expression = "expression"
+    Aggregate = "aggregate"
+    Window = "window"
+    Generator = "generator"
+    Filter = "filter"
+    Join = "join"
+    Mask = "mask"
+    FormatParse = "format_parse"
+    NestedAccess = "nested_access"
+    SemiStructuredAccess = "semi_structured_access"
+    Opaque = "opaque"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub enum LineageConfidence(str):
+    """Confidence classes for lineage extraction."""
+
+    Exact = "exact"
+    Conservative = "conservative"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub enum EvidenceArtifactStatus(str):
+    """Whether one evidence artifact family was computed or explicitly unavailable."""
+
+    Computed = "computed"
+    Unsupported = "unsupported"
+
+
+@derive(Clone)
+pub model SemanticTarget:
+    """
+    One stable local evidence anchor for a plan, node, relation output, field, or expression.
+
+    `node_id` and `ordinal` are optional because not every semantic target is tied to a Prism node or field slot.
+    Target identity must come from `target_id`; positions are only structured context for consumers that can use them.
+    """
+
+    pub kind: SemanticTargetKind
+    pub target_id: str
+    pub plan_id: str
+    pub scope_id: str
+    pub path: str
+    pub name: str
+    pub node_id: Option[int]
+    pub ordinal: Option[int]
+
+
+@derive(Clone)
+pub model MetadataPayload:
+    """Schema-versioned typed payload stored as a compact string value for this evidence slice."""
+
+    pub schema: str
+    pub value: str
+
+
+@derive(Clone)
+pub model MetadataAttachment:
+    """Typed metadata attachment anchored to one semantic target."""
+
+    pub target: SemanticTarget
+    pub namespace: str
+    pub key: str
+    pub payload: MetadataPayload
+    pub lifecycle: MetadataLifecycle
+    pub source: MetadataSource
+    pub visibility: MetadataVisibility
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model LineageEdge:
+    """One lineage edge between semantic targets."""
+
+    pub source: SemanticTarget
+    pub destination: SemanticTarget
+    pub relationship: LineageRelationshipKind
+    pub transformation: LineageTransformationKind
+    pub expression_ref: str
+    pub confidence: LineageConfidence
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model LineageGraph:
+    """Lineage graph returned by local plan inspection and future evidence collectors."""
+
+    pub plan_id: str
+    pub rule_version: str
+    pub edges: list[LineageEdge]
+
+
+@derive(Clone)
+pub model InspectionArtifact:
+    """One deterministic local artifact-family summary."""
+
+    pub family: str
+    pub schema_version: str
+    pub status: EvidenceArtifactStatus
+    pub record_count: int
+
+
+@derive(Clone)
+pub model UnsupportedEvidence:
+    """Explicit marker for evidence families that an inspection path cannot compute."""
+
+    pub family: str
+    pub reason: str

@@ -1,7 +1,24 @@
 """Structured local plan inspection over Prism-backed lazy plans."""
 
-from aggregate_builders import AggregateMeasure, aggregate_measure_output_name
+from aggregate_builders import AggregateMeasure
 from dataset import LazyFrame
+from evidence import (
+    EvidenceArtifactStatus,
+    InspectionArtifact,
+    LineageConfidence,
+    LineageEdge,
+    LineageGraph,
+    LineageRelationshipKind,
+    LineageTransformationKind,
+    MetadataAttachment,
+    MetadataLifecycle,
+    MetadataPayload,
+    MetadataSource,
+    MetadataVisibility,
+    SemanticTarget,
+    SemanticTargetKind,
+    UnsupportedEvidence,
+)
 from metadata import inql_version
 from prism.output_columns import authored_output_schema, rewritten_output_schema
 from prism.rewrite import derive_rewritten_view, rewrite_explain
@@ -9,6 +26,7 @@ from prism.store import node_at, reachable_node_ids
 from prism.types import PrismNode, PrismNodeKind, PrismOptimizedView, PrismStoreId
 from projection_builders import ColumnExpr, ColumnRefExpr, ScalarFunctionApplicationExpr, untyped_column_expr
 from scalar_schema import ScalarColumnSpec
+from std.collections import OrderedSet
 from window_builders import WindowProjection
 
 pub const INSPECTION_SCHEMA_VERSION: str = "inql.inspection.v0.1"
@@ -16,209 +34,30 @@ pub const LINEAGE_RULE_VERSION: str = "inql.lineage.prism.v0.1"
 
 
 @derive(Clone)
-pub enum SemanticTargetKind(str):
-    """Semantic target categories shared by the first evidence APIs."""
+pub enum InspectionNodeKind(str):
+    """Public node-kind names used in local plan inspection records."""
 
-    Plan = "plan"
-    IngressRequest = "ingress_request"
-    ClientSession = "client_session"
-    IngressNode = "ingress_node"
-    IngressExpression = "ingress_expression"
-    AnalyzerBinding = "analyzer_binding"
-    AuthoredPrismNode = "authored_prism_node"
-    RewrittenPrismNode = "rewritten_prism_node"
-    RelationOutput = "relation_output"
-    Field = "field"
-    ScalarExpression = "scalar_expression"
-    AggregateMeasure = "aggregate_measure"
-    WindowExpression = "window_expression"
-    GeneratorOutput = "generator_output"
-    ReadRoot = "read_root"
-    QualityAssertion = "quality_assertion"
-    QualityObservation = "quality_observation"
-    PolicyDecision = "policy_decision"
-    AdapterRequirement = "adapter_requirement"
-    CoverageRecord = "coverage_record"
-    SemanticProfile = "semantic_profile"
-    ProfileAssessment = "profile_assessment"
-    ExecutionAttempt = "execution_attempt"
-
-
-@derive(Clone)
-pub enum MetadataLifecycle(str):
-    """Lifecycle phase for one metadata attachment."""
-
-    Authored = "authored"
-    Planned = "planned"
-    Analyzed = "analyzed"
-    Rewritten = "rewritten"
-    Lowered = "lowered"
-    Bound = "bound"
-    Executed = "executed"
-    Exported = "exported"
-    Imported = "imported"
-
-
-@derive(Clone)
-pub enum MetadataSource(str):
-    """Source family for one metadata attachment."""
-
-    InQL = "inql"
-    User = "user"
-    Prism = "prism"
-    Session = "session"
-    Adapter = "adapter"
-    FunctionRegistry = "function_registry"
-    QualityEngine = "quality_engine"
-    PolicyEngine = "policy_engine"
-    ExternalCatalog = "external_catalog"
-    ImportedArtifact = "imported_artifact"
-
-
-@derive(Clone)
-pub enum MetadataVisibility(str):
-    """Visibility policy for one metadata attachment."""
-
-    Public = "public"
-    Internal = "internal"
-    Sensitive = "sensitive"
-    Redacted = "redacted"
-
-
-@derive(Clone)
-pub enum LineageRelationshipKind(str):
-    """Relationship kinds in the Prism lineage graph."""
-
-    Value = "value"
-    Control = "control"
-    Grouping = "grouping"
-    Join = "join"
-    Sort = "sort"
-    Window = "window"
-    Policy = "policy"
-    Quality = "quality"
-
-
-@derive(Clone)
-pub enum LineageTransformationKind(str):
-    """Transformation kinds attached to lineage edges."""
-
-    Identity = "identity"
-    Expression = "expression"
-    Aggregate = "aggregate"
-    Window = "window"
-    Generator = "generator"
-    Filter = "filter"
-    Join = "join"
-    Mask = "mask"
-    FormatParse = "format_parse"
-    NestedAccess = "nested_access"
-    SemiStructuredAccess = "semi_structured_access"
-    Opaque = "opaque"
-    Unknown = "unknown"
-
-
-@derive(Clone)
-pub enum LineageConfidence(str):
-    """Confidence classes for lineage extraction."""
-
-    Exact = "exact"
-    Conservative = "conservative"
-    Unknown = "unknown"
-
-
-@derive(Clone)
-pub enum EvidenceArtifactStatus(str):
-    """Whether one inspection artifact family was computed or explicitly unavailable."""
-
-    Computed = "computed"
-    Unsupported = "unsupported"
-
-
-@derive(Clone)
-pub model SemanticTarget:
-    """One stable local evidence anchor for a plan, node, relation output, field, or expression."""
-
-    pub kind: SemanticTargetKind
-    pub target_id: str
-    pub plan_id: str
-    pub scope_id: str
-    pub path: str
-    pub name: str
-    pub node_id: int
-    pub ordinal: int
-
-
-@derive(Clone)
-pub model MetadataPayload:
-    """Schema-versioned typed payload stored as a compact string value for the first attachment slice."""
-
-    pub schema: str
-    pub value: str
-
-
-@derive(Clone)
-pub model MetadataAttachment:
-    """Typed metadata attachment anchored to one semantic target."""
-
-    pub target: SemanticTarget
-    pub namespace: str
-    pub key: str
-    pub payload: MetadataPayload
-    pub lifecycle: MetadataLifecycle
-    pub source: MetadataSource
-    pub visibility: MetadataVisibility
-    pub evidence_refs: list[str]
-
-
-@derive(Clone)
-pub model LineageEdge:
-    """One lineage edge between semantic targets."""
-
-    pub source: SemanticTarget
-    pub destination: SemanticTarget
-    pub relationship: LineageRelationshipKind
-    pub transformation: LineageTransformationKind
-    pub expression_ref: str
-    pub confidence: LineageConfidence
-    pub evidence_refs: list[str]
-
-
-@derive(Clone)
-pub model LineageGraph:
-    """Lineage graph returned by local plan inspection."""
-
-    pub plan_id: str
-    pub rule_version: str
-    pub edges: list[LineageEdge]
+    ReadNamedTable = "ReadNamedTable"
+    Filter = "Filter"
+    Join = "Join"
+    Project = "Project"
+    SelectProject = "SelectProject"
+    GroupBy = "GroupBy"
+    Aggregate = "Aggregate"
+    Generate = "Generate"
+    Window = "Window"
+    OrderBy = "OrderBy"
+    Limit = "Limit"
 
 
 @derive(Clone)
 pub model PlanNodeInspection:
-    """Inspectable Prism node record with stable node target and output schema facts."""
+    """Inspectable Prism node record with typed node kind, stable target, and output schema facts."""
 
     pub target: SemanticTarget
-    pub kind: str
+    pub kind: InspectionNodeKind
     pub input_target_ids: list[str]
     pub output_fields: list[SemanticTarget]
-
-
-@derive(Clone)
-pub model InspectionArtifact:
-    """One deterministic local artifact-family summary."""
-
-    pub family: str
-    pub schema_version: str
-    pub status: EvidenceArtifactStatus
-    pub record_count: int
-
-
-@derive(Clone)
-pub model UnsupportedEvidence:
-    """Explicit marker for evidence families that this inspection slice cannot compute yet."""
-
-    pub family: str
-    pub reason: str
 
 
 @derive(Clone)
@@ -244,21 +83,97 @@ pub model PlanInspection:
     pub diagnostics: list[str]
 
 
+model _SchemaSnapshot:
+    """Cached output schema for one inspected Prism node."""
+
+    node_id: int
+    schema: list[ScalarColumnSpec]
+
+
+class _AuthoredInspectionContext:
+    """Plan-local cache for authored Prism schema lookups."""
+
+    store_id: PrismStoreId
+    schemas: list[_SchemaSnapshot]
+
+    @staticmethod
+    def new(store_id: PrismStoreId, node_ids: list[int]) -> Self:
+        """Return an authored inspection context with reachable node schemas precomputed."""
+        mut schemas: list[_SchemaSnapshot] = []
+        for node_id in node_ids:
+            schemas.append(_SchemaSnapshot(node_id=node_id, schema=authored_output_schema(store_id, node_id)))
+        return _AuthoredInspectionContext(store_id=store_id, schemas=schemas)
+
+    def node(self, node_id: int) -> PrismNode:
+        """Return one authored Prism node."""
+        return node_at(self.store_id, node_id)
+
+    def schema(self, node_id: int) -> list[ScalarColumnSpec]:
+        """Return a cached authored output schema."""
+        for snapshot in self.schemas:
+            if snapshot.node_id == node_id:
+                return snapshot.schema
+        return authored_output_schema(self.store_id, node_id)
+
+
+class _RewrittenInspectionContext:
+    """Plan-local cache for rewritten Prism schema lookups."""
+
+    view: PrismOptimizedView
+    schemas: list[_SchemaSnapshot]
+
+    @staticmethod
+    def new(view: PrismOptimizedView) -> Self:
+        """Return a rewritten inspection context with rewritten node schemas precomputed."""
+        mut schemas: list[_SchemaSnapshot] = []
+        for node in view.nodes:
+            schemas.append(_SchemaSnapshot(node_id=node.node_id, schema=rewritten_output_schema(view, node.node_id)))
+        return _RewrittenInspectionContext(view=view, schemas=schemas)
+
+    def schema(self, node_id: int) -> list[ScalarColumnSpec]:
+        """Return a cached rewritten output schema."""
+        for snapshot in self.schemas:
+            if snapshot.node_id == node_id:
+                return snapshot.schema
+        return rewritten_output_schema(self.view, node_id)
+
+    def node_count(self) -> int:
+        """Return the rewritten node count for inspection summaries."""
+        return len(self.view.nodes)
+
+    def nodes(self) -> list[PrismNode]:
+        """Return rewritten Prism nodes in stable rewritten order."""
+        return self.view.nodes
+
+    def origin_node_id(self, rewritten_node_id: int) -> int:
+        """Return the authored origin node id for one rewritten node."""
+        return self.view.origin_node_ids[rewritten_node_id]
+
+
 pub def inspect_plan[T with Clone](data: LazyFrame[T]) -> PlanInspection:
-    """Inspect one lazy plan without executing it or binding a backend."""
+    """
+    Inspect one lazy plan without executing it or binding a backend.
+
+    The returned record contains plan-local semantic targets, authored and rewritten Prism node summaries, output
+    schema facts, typed metadata attachments, lineage edges, artifact-family summaries, and explicit unsupported
+    evidence markers. Target identifiers are stable for the inspected Prism store/tip snapshot, but they are not global
+    catalog identifiers.
+    """
     store_id = data._cursor.store_id
     tip_id = data._cursor.tip_id
     plan_id = _plan_id(store_id, tip_id)
-    plan_target = _semantic_target(SemanticTargetKind.Plan, plan_id, plan_id, "plan", plan_id, "plan", -1, -1)
+    plan_target = _semantic_target(SemanticTargetKind.Plan, plan_id, plan_id, "plan", plan_id, "plan", None, None)
     authored_ids = reachable_node_ids(store_id, tip_id)
+    authored_context = _AuthoredInspectionContext.new(store_id, authored_ids)
     rewritten_view = derive_rewritten_view(store_id, tip_id)
+    rewritten_context = _RewrittenInspectionContext.new(rewritten_view)
     explain = rewrite_explain(store_id, tip_id)
-    tip_output_schema = authored_output_schema(store_id, tip_id)
+    tip_output_schema = authored_context.schema(tip_id)
     output_fields = _field_targets_for_schema(plan_id, tip_id, tip_output_schema)
-    lineage = _lineage_graph_for_authored_plan(plan_id, store_id, authored_ids)
+    lineage = _lineage_graph_for_authored_plan(plan_id, authored_context, authored_ids)
     attachments = _metadata_attachments(plan_target, output_fields, tip_output_schema)
-    authored_nodes = _authored_node_inspections(plan_id, store_id, authored_ids)
-    rewritten_nodes = _rewritten_node_inspections(plan_id, rewritten_view)
+    authored_nodes = _authored_node_inspections(plan_id, authored_context, authored_ids)
+    rewritten_nodes = _rewritten_node_inspections(plan_id, rewritten_context)
     unsupported = _unsupported_evidence_markers()
     artifacts = _artifact_summaries(
         len(authored_nodes),
@@ -272,9 +187,9 @@ pub def inspect_plan[T with Clone](data: LazyFrame[T]) -> PlanInspection:
         inql_version=inql_version(),
         plan_id=plan_id,
         plan_target=plan_target,
-        root_target=_authored_node_target(plan_id, node_at(store_id, tip_id)),
+        root_target=_authored_node_target(plan_id, authored_context.node(tip_id)),
         authored_node_count=len(authored_ids),
-        rewritten_node_count=len(rewritten_view.nodes),
+        rewritten_node_count=rewritten_context.node_count(),
         rewrite_rule_names=explain.applied_rule_names,
         output_schema=tip_output_schema,
         output_fields=output_fields,
@@ -290,74 +205,93 @@ pub def inspect_plan[T with Clone](data: LazyFrame[T]) -> PlanInspection:
 
 pub def inspect_lineage[T with Clone](data: LazyFrame[T]) -> LineageGraph:
     """Return the Prism lineage graph for one lazy plan."""
-    return inspect_plan(data).lineage
+    store_id = data._cursor.store_id
+    tip_id = data._cursor.tip_id
+    authored_ids = reachable_node_ids(store_id, tip_id)
+    context = _AuthoredInspectionContext.new(store_id, authored_ids)
+    return _lineage_graph_for_authored_plan(_plan_id(store_id, tip_id), context, authored_ids)
 
 
 def _authored_node_inspections(
     plan_id: str,
-    store_id: PrismStoreId,
+    context: _AuthoredInspectionContext,
     authored_ids: list[int],
 ) -> list[PlanNodeInspection]:
     """Build authored Prism node inspection records for reachable nodes."""
     mut records: list[PlanNodeInspection] = []
     for node_id in authored_ids:
-        node = node_at(store_id, node_id)
+        node = context.node(node_id)
         records.append(
             PlanNodeInspection(
                 target=_authored_node_target(plan_id, node),
-                kind=node.kind.value(),
+                kind=_inspection_node_kind(node.kind),
                 input_target_ids=[_authored_node_id(plan_id, input_id) for input_id in node.input_ids],
-                output_fields=_field_targets_for_schema(plan_id, node_id, authored_output_schema(store_id, node_id)),
+                output_fields=_field_targets_for_schema(plan_id, node_id, context.schema(node_id)),
             ),
         )
     return records
 
 
-def _rewritten_node_inspections(plan_id: str, view: PrismOptimizedView) -> list[PlanNodeInspection]:
+def _rewritten_node_inspections(plan_id: str, context: _RewrittenInspectionContext) -> list[PlanNodeInspection]:
     """Build rewritten Prism node inspection records for the canonical rewritten view."""
     mut records: list[PlanNodeInspection] = []
-    for node in view.nodes:
+    for node in context.nodes():
         records.append(
             PlanNodeInspection(
-                target=_rewritten_node_target(plan_id, node, view.origin_node_ids[node.node_id]),
-                kind=node.kind.value(),
+                target=_rewritten_node_target(plan_id, node, context.origin_node_id(node.node_id)),
+                kind=_inspection_node_kind(node.kind),
                 input_target_ids=[_rewritten_node_id(plan_id, input_id) for input_id in node.input_ids],
-                output_fields=_field_targets_for_schema(
-                    plan_id,
-                    node.node_id,
-                    rewritten_output_schema(view, node.node_id),
-                ),
+                output_fields=_field_targets_for_schema(plan_id, node.node_id, context.schema(node.node_id)),
             ),
         )
     return records
 
 
-def _lineage_graph_for_authored_plan(plan_id: str, store_id: PrismStoreId, authored_ids: list[int]) -> LineageGraph:
+def _inspection_node_kind(kind: PrismNodeKind) -> InspectionNodeKind:
+    """Map internal Prism node kinds into the public inspection vocabulary."""
+    match kind:
+        PrismNodeKind.ReadNamedTable => return InspectionNodeKind.ReadNamedTable
+        PrismNodeKind.Filter => return InspectionNodeKind.Filter
+        PrismNodeKind.Join => return InspectionNodeKind.Join
+        PrismNodeKind.Project => return InspectionNodeKind.Project
+        PrismNodeKind.SelectProject => return InspectionNodeKind.SelectProject
+        PrismNodeKind.GroupBy => return InspectionNodeKind.GroupBy
+        PrismNodeKind.Aggregate => return InspectionNodeKind.Aggregate
+        PrismNodeKind.Generate => return InspectionNodeKind.Generate
+        PrismNodeKind.Window => return InspectionNodeKind.Window
+        PrismNodeKind.OrderBy => return InspectionNodeKind.OrderBy
+        PrismNodeKind.Limit => return InspectionNodeKind.Limit
+
+
+def _lineage_graph_for_authored_plan(
+    plan_id: str,
+    context: _AuthoredInspectionContext,
+    authored_ids: list[int],
+) -> LineageGraph:
     """Extract a conservative first lineage graph from authored Prism nodes."""
     mut edges: list[LineageEdge] = []
     for node_id in authored_ids:
-        node = node_at(store_id, node_id)
-        edges.extend(_lineage_edges_for_node(plan_id, store_id, node))
+        edges.extend(_lineage_edges_for_node(plan_id, context, context.node(node_id)))
     return LineageGraph(plan_id=plan_id, rule_version=LINEAGE_RULE_VERSION, edges=edges)
 
 
-def _lineage_edges_for_node(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
+def _lineage_edges_for_node(plan_id: str, context: _AuthoredInspectionContext, node: PrismNode) -> list[LineageEdge]:
     """Return semantic lineage edges for one authored Prism node."""
     match node.kind:
-        PrismNodeKind.ReadNamedTable => return _read_root_edges(plan_id, store_id, node)
-        PrismNodeKind.Filter => return _filter_edges(plan_id, store_id, node)
-        PrismNodeKind.Join => return _join_edges(plan_id, store_id, node)
-        PrismNodeKind.Project => return _project_edges(plan_id, store_id, node)
-        PrismNodeKind.SelectProject => return _select_project_edges(plan_id, store_id, node)
-        PrismNodeKind.GroupBy => return _group_by_edges(plan_id, store_id, node)
-        PrismNodeKind.Aggregate => return _aggregate_edges(plan_id, store_id, node)
-        PrismNodeKind.Generate => return _generate_edges(plan_id, store_id, node)
-        PrismNodeKind.Window => return _window_edges(plan_id, store_id, node)
-        PrismNodeKind.OrderBy => return _order_by_edges(plan_id, store_id, node)
-        PrismNodeKind.Limit => return _passthrough_value_edges(plan_id, store_id, node)
+        PrismNodeKind.ReadNamedTable => return _read_root_edges(plan_id, context, node)
+        PrismNodeKind.Filter => return _filter_edges(plan_id, context, node)
+        PrismNodeKind.Join => return _join_edges(plan_id, context, node)
+        PrismNodeKind.Project => return _project_edges(plan_id, context, node)
+        PrismNodeKind.SelectProject => return _select_project_edges(plan_id, context, node)
+        PrismNodeKind.GroupBy => return _group_by_edges(plan_id, context, node)
+        PrismNodeKind.Aggregate => return _aggregate_edges(plan_id, context, node)
+        PrismNodeKind.Generate => return _generate_edges(plan_id, context, node)
+        PrismNodeKind.Window => return _window_edges(plan_id, context, node)
+        PrismNodeKind.OrderBy => return _order_by_edges(plan_id, context, node)
+        PrismNodeKind.Limit => return _passthrough_value_edges(plan_id, context, node)
 
 
-def _read_root_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
+def _read_root_edges(plan_id: str, context: _AuthoredInspectionContext, node: PrismNode) -> list[LineageEdge]:
     """Attach read-root targets to the fields introduced by a read node."""
     source = _semantic_target(
         SemanticTargetKind.ReadRoot,
@@ -366,23 +300,23 @@ def _read_root_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> l
         "read_root",
         f"read_root/{node.named_table}",
         node.named_table,
-        node.node_id,
-        -1,
+        Some(node.node_id),
+        None,
     )
     mut edges: list[LineageEdge] = []
-    for field in _field_targets_for_schema(plan_id, node.node_id, authored_output_schema(store_id, node.node_id)):
+    for field in _field_targets_for_schema(plan_id, node.node_id, context.schema(node.node_id)):
         edges.append(_edge(source, field, LineageRelationshipKind.Value, LineageTransformationKind.Identity))
     return edges
 
 
-def _filter_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
+def _filter_edges(plan_id: str, context: _AuthoredInspectionContext, node: PrismNode) -> list[LineageEdge]:
     """Return passthrough value lineage plus control lineage from the predicate."""
-    mut edges = _passthrough_value_edges(plan_id, store_id, node)
+    mut edges = _passthrough_value_edges(plan_id, context, node)
     relation_output = _relation_output_target(plan_id, node)
     edges.extend(
         _dependency_edges(
             plan_id,
-            store_id,
+            context,
             node.input_ids[0],
             node.node_id,
             [node.filter_predicate],
@@ -394,12 +328,12 @@ def _filter_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list
     return edges
 
 
-def _join_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
+def _join_edges(plan_id: str, context: _AuthoredInspectionContext, node: PrismNode) -> list[LineageEdge]:
     """Return join predicate lineage and value passthrough lineage from both sides."""
     mut edges: list[LineageEdge] = []
-    join_output_schema = authored_output_schema(store_id, node.node_id)
-    left_schema = authored_output_schema(store_id, node.input_ids[0])
-    right_schema = authored_output_schema(store_id, node.input_ids[1])
+    join_output_schema = context.schema(node.node_id)
+    left_schema = context.schema(node.input_ids[0])
+    right_schema = context.schema(node.input_ids[1])
     for idx, column in enumerate(left_schema):
         edges.append(
             _edge(
@@ -420,22 +354,24 @@ def _join_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[L
                 LineageTransformationKind.Identity,
             ),
         )
-    edges.extend(_join_predicate_edges(plan_id, store_id, node))
+    edges.extend(_join_predicate_edges(plan_id, context, node))
     return edges
 
 
-def _join_predicate_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
+def _join_predicate_edges(plan_id: str, context: _AuthoredInspectionContext, node: PrismNode) -> list[LineageEdge]:
     """Resolve join predicate dependencies against both join inputs."""
     relation_output = _relation_output_target(plan_id, node)
     left_input_id = node.input_ids[0]
     right_input_id = node.input_ids[1]
-    left_schema = authored_output_schema(store_id, left_input_id)
-    right_schema = authored_output_schema(store_id, right_input_id)
+    left_schema = context.schema(left_input_id)
+    right_schema = context.schema(right_input_id)
     mut edges: list[LineageEdge] = []
     for name in _dependency_names([node.join_predicate]):
         left_idx = _field_index(left_schema, name)
         right_idx = _field_index(right_schema, name)
-        if left_idx >= 0:
+        left_count = _field_match_count(left_schema, name)
+        right_count = _field_match_count(right_schema, name)
+        if left_count == 1:
             edges.append(
                 _dependency_edge(
                     _field_target(plan_id, left_input_id, left_idx, name),
@@ -446,7 +382,18 @@ def _join_predicate_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode)
                     LineageConfidence.Exact,
                 ),
             )
-        if right_idx >= 0:
+        elif left_count > 1:
+            edges.append(
+                _dependency_edge(
+                    _field_target(plan_id, left_input_id, -1, name),
+                    relation_output,
+                    LineageRelationshipKind.Join,
+                    LineageTransformationKind.Join,
+                    _expression_ref(plan_id, node.node_id, name),
+                    LineageConfidence.Conservative,
+                ),
+            )
+        if right_count == 1:
             edges.append(
                 _dependency_edge(
                     _field_target(plan_id, right_input_id, right_idx, name),
@@ -457,7 +404,18 @@ def _join_predicate_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode)
                     LineageConfidence.Exact,
                 ),
             )
-        if left_idx < 0 and right_idx < 0:
+        elif right_count > 1:
+            edges.append(
+                _dependency_edge(
+                    _field_target(plan_id, right_input_id, -1, name),
+                    relation_output,
+                    LineageRelationshipKind.Join,
+                    LineageTransformationKind.Join,
+                    _expression_ref(plan_id, node.node_id, name),
+                    LineageConfidence.Conservative,
+                ),
+            )
+        if left_count == 0 and right_count == 0:
             edges.append(
                 _dependency_edge(
                     _field_target(plan_id, left_input_id, -1, name),
@@ -471,17 +429,17 @@ def _join_predicate_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode)
     return edges
 
 
-def _project_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
+def _project_edges(plan_id: str, context: _AuthoredInspectionContext, node: PrismNode) -> list[LineageEdge]:
     """Return add-or-replace projection lineage over the current schema bindings."""
-    mut edges = _passthrough_value_edges(plan_id, store_id, node)
-    project_output_schema = authored_output_schema(store_id, node.node_id)
+    mut edges = _passthrough_value_edges(plan_id, context, node)
+    project_output_schema = context.schema(node.node_id)
     for assignment in node.projection_assignments:
         project_output_idx = _field_index(project_output_schema, assignment.output_name)
         if project_output_idx >= 0:
             edges.extend(
                 _field_edges_from_expression(
                     plan_id,
-                    store_id,
+                    context,
                     node.input_ids[0],
                     node.node_id,
                     assignment.expr,
@@ -493,14 +451,14 @@ def _project_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> lis
     return edges
 
 
-def _select_project_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
+def _select_project_edges(plan_id: str, context: _AuthoredInspectionContext, node: PrismNode) -> list[LineageEdge]:
     """Return exclusive SELECT projection lineage."""
     mut edges: list[LineageEdge] = []
     for idx, assignment in enumerate(node.projection_assignments):
         edges.extend(
             _field_edges_from_expression(
                 plan_id,
-                store_id,
+                context,
                 node.input_ids[0],
                 node.node_id,
                 assignment.expr,
@@ -512,15 +470,15 @@ def _select_project_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode)
     return edges
 
 
-def _group_by_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
+def _group_by_edges(plan_id: str, context: _AuthoredInspectionContext, node: PrismNode) -> list[LineageEdge]:
     """Return grouping lineage from group expressions to grouped output fields."""
     mut edges: list[LineageEdge] = []
-    group_output_schema = authored_output_schema(store_id, node.node_id)
+    group_output_schema = context.schema(node.node_id)
     for idx, expr in enumerate(node.group_columns):
         edges.extend(
             _field_edges_from_expression(
                 plan_id,
-                store_id,
+                context,
                 node.input_ids[0],
                 node.node_id,
                 expr,
@@ -534,7 +492,7 @@ def _group_by_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> li
 
 def _field_edges_from_expression(
     plan_id: str,
-    store_id: PrismStoreId,
+    context: _AuthoredInspectionContext,
     source_node_id: int,
     evidence_node_id: int,
     expr: ColumnExpr,
@@ -545,7 +503,7 @@ def _field_edges_from_expression(
     """Connect one scalar expression to one output field target."""
     return _dependency_edges(
         plan_id,
-        store_id,
+        context,
         source_node_id,
         evidence_node_id,
         [expr],
@@ -555,13 +513,13 @@ def _field_edges_from_expression(
     )
 
 
-def _aggregate_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
+def _aggregate_edges(plan_id: str, context: _AuthoredInspectionContext, node: PrismNode) -> list[LineageEdge]:
     """Return grouping-prefix and aggregate-measure lineage."""
     mut edges: list[LineageEdge] = []
-    aggregate_output_schema = authored_output_schema(store_id, node.node_id)
+    aggregate_output_schema = context.schema(node.node_id)
     grouping_prefix_count = len(aggregate_output_schema) - len(node.aggregate_measures)
     if grouping_prefix_count > 0:
-        edges.extend(_aggregate_grouping_prefix_edges(plan_id, store_id, node, grouping_prefix_count))
+        edges.extend(_aggregate_grouping_prefix_edges(plan_id, context, node, grouping_prefix_count))
     for idx, measure in enumerate(node.aggregate_measures):
         measure_output_idx = grouping_prefix_count + idx
         measure_destination = _field_target(
@@ -570,18 +528,18 @@ def _aggregate_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> l
             measure_output_idx,
             aggregate_output_schema[measure_output_idx].name,
         )
-        edges.extend(_aggregate_measure_edges(plan_id, store_id, node, measure, measure_destination))
+        edges.extend(_aggregate_measure_edges(plan_id, context, node, measure, measure_destination))
     return edges
 
 
 def _aggregate_grouping_prefix_edges(
     plan_id: str,
-    store_id: PrismStoreId,
+    context: _AuthoredInspectionContext,
     node: PrismNode,
     grouping_prefix_count: int,
 ) -> list[LineageEdge]:
     """Preserve grouping lineage for grouped aggregate prefix fields."""
-    aggregate_input_node = node_at(store_id, node.input_ids[0])
+    aggregate_input_node = context.node(node.input_ids[0])
     mut group_columns: list[ColumnExpr] = []
     if len(node.group_columns) > 0:
         group_columns = node.group_columns
@@ -590,14 +548,14 @@ def _aggregate_grouping_prefix_edges(
     mut edges: list[LineageEdge] = []
     for idx in range(grouping_prefix_count):
         if idx < len(group_columns):
-            output_name = authored_output_schema(store_id, node.node_id)[idx].name
+            output_name = context.schema(node.node_id)[idx].name
             mut source_input_id = node.input_ids[0]
             if aggregate_input_node.kind == PrismNodeKind.GroupBy:
                 source_input_id = aggregate_input_node.input_ids[0]
             edges.extend(
                 _field_edges_from_expression(
                     plan_id,
-                    store_id,
+                    context,
                     source_input_id,
                     node.node_id,
                     group_columns[idx],
@@ -611,17 +569,18 @@ def _aggregate_grouping_prefix_edges(
 
 def _aggregate_measure_edges(
     plan_id: str,
-    store_id: PrismStoreId,
+    context: _AuthoredInspectionContext,
     node: PrismNode,
     measure: AggregateMeasure,
     destination: SemanticTarget,
 ) -> list[LineageEdge]:
     """Return lineage edges for one aggregate measure output."""
+    aggregate_input_id = _aggregate_input_id(context, node)
     if measure.has_expr:
         return _dependency_edges(
             plan_id,
-            store_id,
-            _aggregate_input_id(store_id, node),
+            context,
+            aggregate_input_id,
             node.node_id,
             measure.arguments,
             destination,
@@ -629,28 +588,28 @@ def _aggregate_measure_edges(
             LineageTransformationKind.Aggregate,
         )
     return [_edge(
-        _relation_output_target(plan_id, node_at(store_id, _aggregate_input_id(store_id, node))),
+        _relation_output_target(plan_id, context.node(aggregate_input_id)),
         destination,
         LineageRelationshipKind.Value,
         LineageTransformationKind.Aggregate,
     )]
 
 
-def _aggregate_input_id(store_id: PrismStoreId, node: PrismNode) -> int:
+def _aggregate_input_id(context: _AuthoredInspectionContext, node: PrismNode) -> int:
     """Return the scalar-input node id for aggregate measures, skipping explicit GroupBy scaffolding."""
-    aggregate_input_node = node_at(store_id, node.input_ids[0])
+    aggregate_input_node = context.node(node.input_ids[0])
     if aggregate_input_node.kind == PrismNodeKind.GroupBy:
         return aggregate_input_node.input_ids[0]
     return node.input_ids[0]
 
 
-def _generate_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
+def _generate_edges(plan_id: str, context: _AuthoredInspectionContext, node: PrismNode) -> list[LineageEdge]:
     """Return generator lineage and preserved input field lineage."""
-    mut edges = _passthrough_value_edges(plan_id, store_id, node)
+    mut edges = _passthrough_value_edges(plan_id, context, node)
     if len(node.generator_applications) == 0:
         return edges
     generator = node.generator_applications[0]
-    generator_output_schema = authored_output_schema(store_id, node.node_id)
+    generator_output_schema = context.schema(node.node_id)
     for output_name in generator.output_columns:
         generator_output_idx = _field_index(generator_output_schema, output_name)
         if generator_output_idx >= 0:
@@ -658,7 +617,7 @@ def _generate_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> li
             edges.extend(
                 _dependency_edges(
                     plan_id,
-                    store_id,
+                    context,
                     node.input_ids[0],
                     node.node_id,
                     generator.arguments,
@@ -670,22 +629,22 @@ def _generate_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> li
     return edges
 
 
-def _window_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
+def _window_edges(plan_id: str, context: _AuthoredInspectionContext, node: PrismNode) -> list[LineageEdge]:
     """Return passthrough value lineage plus window-output dependency edges."""
-    mut edges = _passthrough_value_edges(plan_id, store_id, node)
+    mut edges = _passthrough_value_edges(plan_id, context, node)
     for projection in node.window_projections:
-        edges.extend(_window_projection_edges(plan_id, store_id, node, projection))
+        edges.extend(_window_projection_edges(plan_id, context, node, projection))
     return edges
 
 
 def _window_projection_edges(
     plan_id: str,
-    store_id: PrismStoreId,
+    context: _AuthoredInspectionContext,
     node: PrismNode,
     projection: WindowProjection,
 ) -> list[LineageEdge]:
     """Return lineage edges for one named window output column."""
-    window_output_idx = _field_index(authored_output_schema(store_id, node.node_id), projection.output_name)
+    window_output_idx = _field_index(context.schema(node.node_id), projection.output_name)
     if window_output_idx < 0:
         return []
     window_destination = _field_target(plan_id, node.node_id, window_output_idx, projection.output_name)
@@ -695,7 +654,7 @@ def _window_projection_edges(
     expressions.extend(projection.application.spec.sort_columns)
     return _dependency_edges(
         plan_id,
-        store_id,
+        context,
         node.input_ids[0],
         node.node_id,
         expressions,
@@ -705,13 +664,13 @@ def _window_projection_edges(
     )
 
 
-def _order_by_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
+def _order_by_edges(plan_id: str, context: _AuthoredInspectionContext, node: PrismNode) -> list[LineageEdge]:
     """Return passthrough value lineage plus sort dependency edges."""
-    mut edges = _passthrough_value_edges(plan_id, store_id, node)
+    mut edges = _passthrough_value_edges(plan_id, context, node)
     edges.extend(
         _dependency_edges(
             plan_id,
-            store_id,
+            context,
             node.input_ids[0],
             node.node_id,
             node.sort_columns,
@@ -723,10 +682,10 @@ def _order_by_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> li
     return edges
 
 
-def _passthrough_value_edges(plan_id: str, store_id: PrismStoreId, node: PrismNode) -> list[LineageEdge]:
+def _passthrough_value_edges(plan_id: str, context: _AuthoredInspectionContext, node: PrismNode) -> list[LineageEdge]:
     """Return identity value lineage for node kinds that preserve field slots."""
-    passthrough_input_schema = authored_output_schema(store_id, node.input_ids[0])
-    passthrough_output_schema = authored_output_schema(store_id, node.node_id)
+    passthrough_input_schema = context.schema(node.input_ids[0])
+    passthrough_output_schema = context.schema(node.node_id)
     mut edges: list[LineageEdge] = []
     for idx, column in enumerate(passthrough_input_schema):
         if idx < len(passthrough_output_schema):
@@ -743,7 +702,7 @@ def _passthrough_value_edges(plan_id: str, store_id: PrismStoreId, node: PrismNo
 
 def _dependency_edges(
     plan_id: str,
-    store_id: PrismStoreId,
+    context: _AuthoredInspectionContext,
     source_node_id: int,
     evidence_node_id: int,
     expressions: list[ColumnExpr],
@@ -752,14 +711,15 @@ def _dependency_edges(
     transformation: LineageTransformationKind,
 ) -> list[LineageEdge]:
     """Build lineage edges from scalar column dependencies to one destination target."""
-    source_schema = authored_output_schema(store_id, source_node_id)
+    source_schema = context.schema(source_node_id)
     mut edges: list[LineageEdge] = []
     for name in _dependency_names(expressions):
-        source_idx = _field_index(source_schema, name)
-        source = _field_target(plan_id, source_node_id, source_idx, name)
+        mut source_idx = _field_index(source_schema, name)
         mut confidence = LineageConfidence.Exact
-        if source_idx < 0:
+        if _field_match_count(source_schema, name) != 1:
+            source_idx = -1
             confidence = LineageConfidence.Conservative
+        source = _field_target(plan_id, source_node_id, source_idx, name)
         edges.append(
             _dependency_edge(
                 source,
@@ -775,12 +735,11 @@ def _dependency_edges(
 
 def _dependency_names(expressions: list[ColumnExpr]) -> list[str]:
     """Return unique column-reference names found across expression dependencies."""
-    mut dependency_names: list[str] = []
+    mut dependency_names = OrderedSet[str]()
     for expr in expressions:
         for dependency_name in _expr_dependency_names(expr):
-            if not _text_list_contains(dependency_names, dependency_name):
-                dependency_names.append(dependency_name)
-    return dependency_names
+            dependency_names.add(dependency_name)
+    return dependency_names.to_list()
 
 
 def _expr_dependency_names(expr: ColumnExpr) -> list[str]:
@@ -788,21 +747,12 @@ def _expr_dependency_names(expr: ColumnExpr) -> list[str]:
     match untyped_column_expr(expr):
         ColumnRefExpr(column) => return [column.column_name]
         ScalarFunctionApplicationExpr(application) =>
-            mut names: list[str] = []
+            mut names = OrderedSet[str]()
             for argument in application.arguments:
                 for dependency_name in _expr_dependency_names(argument):
-                    if not _text_list_contains(names, dependency_name):
-                        names.append(dependency_name)
-            return names
+                    names.add(dependency_name)
+            return names.to_list()
         _ => return []
-
-
-def _text_list_contains(values: list[str], value: str) -> bool:
-    """Return whether a string list contains the given value."""
-    for existing in values:
-        if existing == value:
-            return true
-    return false
 
 
 def _field_targets_for_schema(plan_id: str, node_id: int, schema: list[ScalarColumnSpec]) -> list[SemanticTarget]:
@@ -812,7 +762,11 @@ def _field_targets_for_schema(plan_id: str, node_id: int, schema: list[ScalarCol
 
 def _field_target(plan_id: str, node_id: int, ordinal: int, name: str) -> SemanticTarget:
     """Build one field semantic target."""
-    ordinal_text = str(ordinal)
+    mut ordinal_text = str(ordinal)
+    mut ordinal_value: Option[int] = Some(ordinal)
+    if ordinal < 0:
+        ordinal_text = str("unknown")
+        ordinal_value = None
     return _semantic_target(
         SemanticTargetKind.Field,
         plan_id,
@@ -820,8 +774,8 @@ def _field_target(plan_id: str, node_id: int, ordinal: int, name: str) -> Semant
         f"authored-node:{node_id}",
         f"authored/{node_id}/field/{ordinal_text}",
         name,
-        node_id,
-        ordinal,
+        Some(node_id),
+        ordinal_value,
     )
 
 
@@ -834,8 +788,8 @@ def _relation_output_target(plan_id: str, node: PrismNode) -> SemanticTarget:
         f"authored-node:{node.node_id}",
         f"authored/{node.node_id}/output",
         node.kind.value(),
-        node.node_id,
-        -1,
+        Some(node.node_id),
+        None,
     )
 
 
@@ -848,8 +802,8 @@ def _authored_node_target(plan_id: str, node: PrismNode) -> SemanticTarget:
         "authored",
         f"authored/{node.node_id}",
         node.kind.value(),
-        node.node_id,
-        -1,
+        Some(node.node_id),
+        None,
     )
 
 
@@ -862,8 +816,8 @@ def _rewritten_node_target(plan_id: str, node: PrismNode, origin_node_id: int) -
         "rewritten",
         f"rewritten/{node.node_id}/origin/{origin_node_id}",
         node.kind.value(),
-        node.node_id,
-        -1,
+        Some(node.node_id),
+        None,
     )
 
 
@@ -874,8 +828,8 @@ def _semantic_target(
     scope_id: str,
     path: str,
     name: str,
-    node_id: int,
-    ordinal: int,
+    node_id: Option[int],
+    ordinal: Option[int],
 ) -> SemanticTarget:
     """Build one semantic target under the provided local plan id."""
     return SemanticTarget(
@@ -1039,10 +993,20 @@ def _unsupported_evidence_markers() -> list[UnsupportedEvidence]:
 
 
 def _expression_transformation(expr: ColumnExpr) -> LineageTransformationKind:
-    """Classify a scalar expression as identity or expression lineage."""
+    """Classify direct references precisely and leave scalar function lineage policy conservative."""
     match untyped_column_expr(expr):
         ColumnRefExpr(_) => return LineageTransformationKind.Identity
+        ScalarFunctionApplicationExpr(_) => return LineageTransformationKind.Unknown
         _ => return LineageTransformationKind.Expression
+
+
+def _field_match_count(schema: list[ScalarColumnSpec], name: str) -> int:
+    """Return how many fields in one schema have the provided display name."""
+    mut count = 0
+    for column in schema:
+        if column.name == name:
+            count += 1
+    return count
 
 
 def _field_index(schema: list[ScalarColumnSpec], name: str) -> int:

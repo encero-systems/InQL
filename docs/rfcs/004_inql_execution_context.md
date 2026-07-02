@@ -151,8 +151,8 @@ from pub::inql import parquet_sink
 # Write to a registered output target
 session.write(materialized, parquet_sink("s3://bucket/summaries/"))
 
-# Or write to a file
-session.write_parquet(materialized, "s3://bucket/summaries/")
+# Or write a deferred plan through a file-format convenience helper
+session.write_parquet(result, "s3://bucket/summaries/")
 ```
 
 ### End-to-end example
@@ -248,12 +248,12 @@ This table defines the intended high-level API shape. The detailed normative rul
 |               Method               |        Input        |              Description              |
 | ---------------------------------- | ------------------- | ------------------------------------- |
 | `session.write(data, target)`      | `BoundedDataSet[T]` | Write to a typed sink target          |
-| `session.write_parquet(data, uri)` | `BoundedDataSet[T]` | Write to Parquet files                |
-| `session.write_csv(data, uri)`     | `BoundedDataSet[T]` | Write to CSV files                    |
+| `session.write_parquet(data, uri)` | `LazyFrame[T]`      | Convenience form for Parquet files    |
+| `session.write_csv(data, uri)`     | `LazyFrame[T]`      | Convenience form for CSV files        |
 
 - Write operations **must** execute the plan if the input is a `LazyFrame[T]` (deferred), then write the materialized data.
 - `session.write(data, target)` accepts a typed sink descriptor such as `csv_sink(uri)` or `parquet_sink(uri)`. It must not infer format from filename text alone.
-- File-format write methods **should** accept `BoundedDataSet[T]` (InQL RFC 001) — not `UnboundedDataSet[T]`, because writing unbounded data to a finite file is not well-defined without windowing or partitioning.
+- File-format convenience methods **may** accept only deferred bounded plans when the generic `session.write(data, target)` API covers the broader `BoundedDataSet[T]` surface.
 - Write to streaming sinks (when supported) **may** accept `UnboundedDataSet[T]`.
 
 ### DataFusion as reference backend

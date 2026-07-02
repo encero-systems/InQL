@@ -68,7 +68,7 @@ This profile is reflected by:
 | Reference rel | Implemented at the boundary for ordinal preservation only |
 | Project and aggregate | Present as boundary-shape scaffolds; richer expression/grouping semantics remain deferred |
 | Extension URI policy and explode gap encoding | Implemented through a registered package-level URI and documented gap policy |
-| `query {}` lowering parity | Implemented for the current query-block surface through carrier planning paths and the Substrait boundary |
+| `query {}` lowering parity | Current query blocks lower through carrier planning paths; dedicated Substrait plan-shape parity coverage remains follow-up |
 | Optional mutation profile | Deferred; not required for the v0.1 read/query analytical core |
 
 ## Guide-level explanation
@@ -215,30 +215,30 @@ Non-normative: toolchains **should** maintain golden Substrait plans or equivale
 
 ### Spec / design
 
-- [x] Substrait revision pinning policy documented in release artifacts and compiler docs.
-- [x] Normative operator catalog published (including gap annotations).
-- [x] Extension URI registration conventions documented.
+- [ ] Substrait revision pinning policy documented in release artifacts and compiler docs.
+- [ ] Normative operator catalog published (including gap annotations).
+- [ ] Extension URI registration conventions documented.
 
 ### IR / lowering — core relations
 
-- [x] `ReadRel` emission: named table, virtual rows, extension sources.
-- [x] `FilterRel` emission.
-- [x] `ProjectRel` boundary scaffold emission.
-- [x] `JoinRel` emission for the current join variant surface.
-- [x] `CrossRel` emission.
-- [x] `AggregateRel` boundary scaffold emission.
-- [x] `SortRel` emission.
-- [x] `FetchRel` emission (limit / offset).
-- [x] `SetRel` emission (union / intersect / except).
-- [x] `ReferenceRel` ordinal emission at the Substrait boundary.
-- [x] Lowering is identical across current `query {}` and method-chain surfaces for the same checked tree.
-- [x] Field references align with RFC 001 `model`-backed schemas and `NamedStruct` indices for registered named-table schema facts.
+- [ ] `ReadRel` emission: named table, virtual rows, extension sources.
+- [ ] `FilterRel` emission.
+- [ ] `ProjectRel` boundary scaffold emission.
+- [ ] `JoinRel` emission (semi, anti, single, mark variants).
+- [ ] `CrossRel` emission.
+- [ ] `AggregateRel` boundary scaffold emission.
+- [ ] `SortRel` emission.
+- [ ] `FetchRel` emission (limit / offset).
+- [ ] `SetRel` emission (union / intersect / except).
+- [ ] `ReferenceRel` ordinal emission at the Substrait boundary.
+- [ ] Lowering is identical across `query {}`, method chains, and desugared pipe-forward for the same checked tree once RFC 003 and Prism-backed lowering land.
+- [ ] Field references align with RFC 001 `model`-backed schemas and `NamedStruct` indices.
 
 ### Extensions and read binding
 
-- [x] Extension URI registration for non-core functions wired in toolchain catalog.
-- [x] Logical `ReadRel` carries no normative secret material (binding left to execution context).
-- [x] Documented extension encoding for unnest / explode gap.
+- [ ] Extension URI registration for non-core functions wired in toolchain catalog.
+- [ ] Logical `ReadRel` carries no normative secret material (binding left to execution context).
+- [ ] Documented extension encoding for unnest / explode gap.
 
 ### Optional mutation profile
 
@@ -248,15 +248,15 @@ Non-normative: toolchains **should** maintain golden Substrait plans or equivale
 
 ### Tests
 
-- [x] Golden Substrait plan fixtures or equivalent plan-shape tests for representative API-lowered (`DataSet[T]`) trees.
-- [x] Golden Substrait plan fixtures or equivalent plan-shape tests for representative `query {}` trees.
+- [ ] Golden Substrait plan fixtures for representative API-lowered (`DataSet[T]`) trees.
+- [ ] Golden Substrait plan fixtures for representative `query {}` trees once that surface lowers through the same boundary.
 - [ ] Fixture round-trip tests on Substrait revision bump.
-- [x] Tests confirm no secret material in emitted `ReadRel` plans.
+- [ ] Tests confirm no secret material in emitted `ReadRel` plans.
 
 ### Docs
 
-- [x] Operator catalog page updated in docs-site.
-- [x] Release notes entry added.
+- [ ] Operator catalog page updated in docs-site.
+- [ ] Release notes entry added.
 
 ## Design Decisions
 

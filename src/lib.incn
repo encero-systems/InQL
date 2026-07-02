@@ -407,26 +407,29 @@ pub from backends import (
 )
 pub from metadata import inql_version
 pub from session.domain import SinkKind, SinkTarget, csv_sink, parquet_sink, sink_kind_name
-pub from inspect import (
+pub from evidence import (
     EvidenceArtifactStatus,
-    INSPECTION_SCHEMA_VERSION,
     InspectionArtifact,
     LineageConfidence,
     LineageEdge,
     LineageGraph,
     LineageRelationshipKind,
     LineageTransformationKind,
-    LINEAGE_RULE_VERSION,
     MetadataAttachment,
     MetadataLifecycle,
     MetadataPayload,
     MetadataSource,
     MetadataVisibility,
-    PlanInspection,
-    PlanNodeInspection,
     SemanticTarget,
     SemanticTargetKind,
     UnsupportedEvidence,
+)
+pub from inspect import (
+    INSPECTION_SCHEMA_VERSION,
+    InspectionNodeKind,
+    LINEAGE_RULE_VERSION,
+    PlanInspection,
+    PlanNodeInspection,
     inspect_lineage,
     inspect_plan,
 )

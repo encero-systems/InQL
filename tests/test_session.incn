@@ -393,11 +393,12 @@ def test_session__generic_write_succeeds_for_deferred_lazyframe(sink_kind: str, 
     assert Path.new(output_uri).exists() is true, "generic write should create the requested output artifact"
 
 
-def test_session__generic_write_succeeds_for_materialized_dataframe() -> None:
+@parametrize("sink_kind, output_name", [("csv", "session_generic_write_dataframe_output.csv"), ("parquet", "session_generic_write_dataframe_parquet_output")])
+def test_session__generic_write_succeeds_for_materialized_dataframe(sink_kind: str, output_name: str) -> None:
     """Session.write should accept materialized DataFrame inputs through the same sink descriptor surface."""
     # -- Arrange --
     mut session = Session.default()
-    output_uri = _target_uri("session_generic_write_dataframe_output.csv")
+    output_uri = _target_uri(output_name)
 
     # -- Act --
     lazy: LazyFrame[Order] = assert_is_ok(
@@ -405,7 +406,13 @@ def test_session__generic_write_succeeds_for_materialized_dataframe() -> None:
         "orders CSV fixture should load",
     )
     df: DataFrame[Order] = assert_is_ok(session.collect(lazy), "orders collect should succeed before generic write")
-    assert_is_ok(session.write(df, csv_sink(output_uri)), "generic DataFrame CSV write should succeed")
+    match sink_kind:
+        "csv" => assert_is_ok(session.write(df, csv_sink(output_uri)), "generic DataFrame CSV write should succeed")
+        "parquet" => assert_is_ok(
+            session.write(df, parquet_sink(output_uri)),
+            "generic DataFrame Parquet write should succeed",
+        )
+        _ => fail(f"unexpected sink kind: {sink_kind}")
 
     # -- Assert --
     assert Path.new(output_uri).exists() is true, "generic DataFrame write should create the requested output artifact"

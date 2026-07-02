@@ -11,16 +11,17 @@ inspection = inspect_plan(summary)
 lineage = inspect_lineage(summary)
 ```
 
-`inspect_plan(data)` returns a `PlanInspection` record. `inspect_lineage(data)` returns the `LineageGraph` from the same inspection path.
+`inspect_plan(data)` returns a `PlanInspection` record. `inspect_lineage(data)` returns the lineage graph directly from the same Prism-authored plan state when callers do not need the full inspection record.
 
 ## Evidence records
 
-The inspection surface exposes these core record families:
+The inspection surface consumes shared evidence record families and adds the local `PlanInspection` wrapper around them:
 
 | Record | Purpose |
 | ------ | ------- |
 | `SemanticTarget` | Stable local anchor for a plan, Prism node, relation output, field, read root, or future evidence family. |
 | `PlanInspection` | Top-level inspection result with schema version, InQL version, plan target, output schema, output fields, Prism nodes, lineage, artifacts, diagnostics, and unsupported-evidence markers. |
+| `InspectionNodeKind` | Typed public node-kind vocabulary for authored and rewritten Prism node inspection records. |
 | `LineageGraph` | Plan-local lineage graph with a rule version and typed lineage edges. |
 | `LineageEdge` | Source-to-destination edge with relationship kind, transformation kind, confidence, expression reference, and evidence references. |
 | `MetadataAttachment` | Typed attachment record for schema-versioned metadata payloads. The first inspection slice emits public version attachments and concrete output-field primitive-kind attachments when known. |
@@ -29,7 +30,7 @@ The inspection surface exposes these core record families:
 
 ## Target identity
 
-Semantic targets use deterministic local IDs scoped to one Prism store/tip snapshot. Field targets include the node id and ordinal as well as the display name, so duplicate names and aliases are not treated as identity by name alone.
+Semantic targets use deterministic local IDs scoped to one Prism store/tip snapshot. Field targets include the node id and ordinal as well as the display name, so duplicate names and aliases are not treated as identity by name alone. `node_id` and `ordinal` are optional fields: plan-level targets do not carry Prism positions, relation-output targets carry a node id without a field ordinal, and field targets carry both.
 
 Plan IDs are local evidence IDs, not global catalog identities. They are stable for one inspected lazy plan value and should not be treated as organization-wide asset identifiers.
 
@@ -47,7 +48,7 @@ The first Prism lineage extractor records:
 - window lineage from function arguments, partition expressions, and ordering expressions to window outputs
 - sort lineage from ordering expressions to sorted relation outputs
 
-Lineage confidence is `Exact` when the extractor can resolve a dependency to a known input field, and `Conservative` when the dependency name cannot be matched in the current schema. Unsupported lineage is not represented as an empty graph; unsupported evidence families are listed separately.
+Lineage confidence is `Exact` when the extractor can resolve a dependency to exactly one known input field, and `Conservative` when the dependency name cannot be matched or is ambiguous in the current schema. Scalar function calls preserve argument dependencies, but their transformation kind is `Unknown` unless the node kind supplies a more specific relationship such as filter, join, aggregate, generator, window, or sort. Unsupported lineage is not represented as an empty graph; unsupported evidence families are listed separately.
 
 ## Example
 
