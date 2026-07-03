@@ -211,6 +211,7 @@ DataFusion is the implemented execution backend. `Session` stores a backend kind
 ## Related docs
 
 - For the conceptual model behind this surface, see [Execution context (Explanation)](../explanation/execution_context.md)
+- For task-oriented examples, see [Capture execution observations and adapter coverage](../how-to/execution_observations.md)
 - For carrier semantics, see [Dataset carriers (Reference)](dataset_carriers.md)
 - For execution observation design, see [RFC 032][rfc-032]
 - For adapter requirement and coverage design, see [RFC 033][rfc-033]

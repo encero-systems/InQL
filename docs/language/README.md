@@ -3,6 +3,7 @@
 This section documents the current InQL package surface.
 
 - Use [reference/][reference] for API shape, signatures, and current behavior contracts.
+- Use [how-to/][how-to] for concrete task workflows.
 - Use [explanation/][explanation] for mental models, usage framing, and tradeoffs.
 
 ## Current entry points
@@ -15,6 +16,7 @@ This section documents the current InQL package surface.
 
 ### Execution and materialization
 
+- [Capture execution observations and adapter coverage (How-to)][execution-observations-how-to]
 - [Execution context (Reference)][execution-reference]
 - [Execution context (Explanation)][execution-explanation]
 
@@ -31,6 +33,7 @@ This section documents the current InQL package surface.
 
 <!-- References -->
 [reference]: reference/
+[how-to]: how-to/
 [explanation]: explanation/
 [dataset-reference]: reference/dataset_carriers.md
 [dataset-explanation]: explanation/dataset_carriers.md
@@ -38,6 +41,7 @@ This section documents the current InQL package surface.
 [inspection-reference]: reference/inspection.md
 [execution-reference]: reference/execution_context.md
 [execution-explanation]: explanation/execution_context.md
+[execution-observations-how-to]: how-to/execution_observations.md
 [substrait-read-root]: reference/substrait/read_root_binding_contract.md
 [substrait-conformance]: reference/substrait/conformance.md
 [substrait-operator-catalog]: reference/substrait/operator_catalog.md
