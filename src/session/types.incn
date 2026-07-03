@@ -351,7 +351,19 @@ pub class Session:
         """Run one validated write and preserve execution evidence for the write path."""
         backend_name = self.backend_name()
         plan_target = _substrait_plan_target(plan.clone())
-        match _sink_uri_from_text(target.uri):
+        write_result = _write_validated_plan(self._backend, self._registrations, plan, target)
+        match write_result:
+            Ok(_) =>
+                return ObservedWrite(
+                    observation=_success_observation(
+                        plan_target,
+                        ExecutionOperationKind.Write,
+                        backend_name,
+                        clock,
+                        None,
+                    ),
+                    error=None,
+                )
             Err(err) =>
                 return ObservedWrite(
                     observation=_failure_observation(
@@ -363,45 +375,6 @@ pub class Session:
                     ),
                     error=Some(err),
                 )
-            Ok(sink_uri) =>
-                match _validate_named_table_binding(self._registrations, plan.clone()):
-                    Err(err) =>
-                        return ObservedWrite(
-                            observation=_failure_observation(
-                                plan_target,
-                                ExecutionOperationKind.Write,
-                                backend_name,
-                                clock,
-                                err.clone(),
-                            ),
-                            error=Some(err),
-                        )
-                    Ok(_) =>
-                        registrations = _to_backend_registrations(self._registrations)
-                        match backend_write_plan(self._backend, registrations, plan, sink_uri.0, target.sink_kind):
-                            Ok(_) =>
-                                return ObservedWrite(
-                                    observation=_success_observation(
-                                        plan_target,
-                                        ExecutionOperationKind.Write,
-                                        backend_name,
-                                        clock,
-                                        None,
-                                    ),
-                                    error=None,
-                                )
-                            Err(err) =>
-                                session_err = _session_error_from_backend_error(err)
-                                return ObservedWrite(
-                                    observation=_failure_observation(
-                                        plan_target,
-                                        ExecutionOperationKind.Write,
-                                        backend_name,
-                                        clock,
-                                        session_err.clone(),
-                                    ),
-                                    error=Some(session_err),
-                                )
 
 
 pub class SessionBuilder:
@@ -787,6 +760,20 @@ def _collect_validated_plan[T with Clone](
         _session_error_from_backend_error,
     )?
     return Ok(_data_frame_from_materialization[T](plan, materialization))
+
+
+def _write_validated_plan(
+    backend: BackendSelection,
+    registrations: list[SessionRegistration],
+    plan: Plan,
+    target: SinkTarget,
+) -> Result[None, SessionError]:
+    """Validate sink and table bindings, then write one plan through the selected backend."""
+    sink_uri = _sink_uri_from_text(target.uri)?
+    _validate_named_table_binding(registrations, plan.clone())?
+    return backend_write_plan(backend, _to_backend_registrations(registrations), plan, sink_uri.0, target.sink_kind).map_err(
+        _session_error_from_backend_error,
+    )
 
 
 def _data_frame_from_materialization[T with Clone](
