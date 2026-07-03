@@ -106,15 +106,6 @@ Observation records do not contain row payloads or backend logs by default. The 
 | `message`  | `str`                         | Human-readable diagnostic message            |
 | `target`   | `Option[SemanticTarget]`      | Semantic target associated with the diagnostic |
 
-```incan
-observed = session.collect_observed(summary)
-
-assert observed.observation.status == ExecutionObservationStatus.Success
-match observed.data:
-    Some(df) => println(df.preview_text())
-    None => println(observed.observation.diagnostics[0].message)
-```
-
 ## Write surface
 
 | API                                      | Returns                      | Notes                                                |

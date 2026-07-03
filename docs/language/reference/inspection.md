@@ -50,26 +50,10 @@ The first Prism lineage extractor records:
 
 Lineage confidence is `Exact` when the extractor can resolve a dependency to exactly one known input field, and `Conservative` when the dependency name cannot be matched or is ambiguous in the current schema. Scalar function calls preserve argument dependencies, but their transformation kind is `Unknown` unless the node kind supplies a more specific relationship such as filter, join, aggregate, generator, window, or sort. Unsupported lineage is not represented as an empty graph; unsupported evidence families are listed separately.
 
-## Example
-
-```incan
-from pub::inql import LazyFrame, aggregate_as, col, eq, inspect_plan, str_lit, sum
-from models import Order
-
-def inspect_paid_spend(orders: LazyFrame[Order]) -> None:
-    summary = orders
-        .filter(eq(col("status"), str_lit("paid")))
-        .group_by([col("customer_id")])
-        .agg([aggregate_as(sum(col("amount")), "total_amount")])
-
-    inspection = inspect_plan(summary)
-    assert inspection.output_fields[0].name == "customer_id"
-    assert inspection.output_fields[1].name == "total_amount"
-    assert len(inspection.lineage.edges) > 0
-```
-
 ## Current limits
 
 Inspection is read-only and plan-local. It does not execute the plan, inspect DataFusion physical plans, read catalog metadata, emit files, or make governance decisions.
 
 The first implementation computes local Prism plan graph, schema flow, lineage graph, public version/schema metadata attachments, diagnostics shape, and unsupported-evidence markers. Session execution observations and explicit adapter coverage checks are exposed through the execution context rather than through plan inspection. Semantic profiles, ingress mappings, client-session context, frontend coverage, quality observations, policy checkpoints, governed bundles, and external exchange bridges remain owned by their RFCs and are not silently inferred by this API.
+
+For a task-oriented workflow, see [Inspect a plan and lineage graph](../how-to/inspect_plan_lineage.md).

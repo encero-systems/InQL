@@ -2,22 +2,6 @@
 
 Generators are relation-shaping operations. They are registry-backed like scalar and aggregate helpers, but they return `GeneratorApplication` values and must be applied through a relation method such as `generate(...)`.
 
-```incan
-from pub::inql import LazyFrame
-from pub::inql.functions import array, col, explode, inline, lit, named_struct
-from models import Order
-
-def order_lines(orders: LazyFrame[Order]) -> LazyFrame[Order]:
-    return orders.generate(explode(col("line_items"), "line_item"))
-
-def fixed_items(orders: LazyFrame[Order]) -> LazyFrame[Order]:
-    rows = array([
-        named_struct(["sku", "quantity"], [lit("A"), lit(1)]),
-        named_struct(["sku", "quantity"], [lit("B"), lit(2)]),
-    ])
-    return orders.generate(inline(rows, ["sku", "quantity"]))
-```
-
 The explicit generator surface currently includes:
 
 | Function | Output aliases | Relation effect |
@@ -34,3 +18,5 @@ The explicit generator surface currently includes:
 Generator applications preserve input columns and append generated columns in declaration order. Generated aliases are required, must be non-empty, and must not collide with existing input columns.
 
 Nested scalar helpers such as `array_flatten(...)` remain scalar expressions. They do not expand rows and are documented on the [nested data functions](nested.md) page. The relation-shaping `flatten(...)` helper is intentionally separate.
+
+For task-oriented usage, see [Expand rows with generators](../../how-to/generator_rows.md).

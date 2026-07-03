@@ -33,29 +33,10 @@ The format catalog includes deterministic hashes, URL helpers, JSON helpers, and
 | `from_csv[Model](expr)` | Parse a CSV row string into a logical map keyed by fields from an Incan model type. |
 | `to_csv(expr)` | Serialize a scalar or JSON array/object payload as a CSV row string. |
 
-```incan
-from pub::inql.functions import col, from_csv, from_json, get_json_object, parse_url, sha2, to_json
-
-model EventPayload:
-    type_ as "type": str
-
-model CsvRow:
-    id: int
-    status: str
-
-projected = (
-    events
-        .with_column("user_hash", sha2(col("user_id"), 256))
-        .with_column("campaign", parse_url(col("landing_page"), "utm_campaign"))
-        .with_column("event_type", get_json_object(col("payload"), "$.type"))
-        .with_column("payload_obj", from_json[EventPayload](col("payload")))
-        .with_column("row_fields", from_csv[CsvRow](col("csv_line")))
-        .with_column("payload_out", to_json(col("event_type")))
-)
-```
-
 Hash helpers operate on UTF-8 string bytes and return lowercase hexadecimal strings. `sha2(...)` accepts `224`, `256`, `384`, and `512`; other digest lengths are rejected during expression construction.
 
 JSON helpers validate, normalize, and project payload text. CSV parsing returns logical map values instead of JSON text. Explicit-schema JSON and CSV helpers derive their schema from Incan model type parameters. These helpers do not read external files or return typed variant values. Use [Variant functions](variants.md) when a plan needs semi-structured kind inspection.
 
 The DataFusion adapter executes the full RFC 022 catalog with native DataFusion functions where available and Incan-authored adapter callbacks for helpers that DataFusion does not expose natively.
+
+For task-oriented usage, see [Normalize semi-structured fields](../../how-to/normalize_semistructured_fields.md).

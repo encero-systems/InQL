@@ -37,23 +37,10 @@ Generator or table-valued operations such as row-expanding `explode(...)` are se
 | `map_entries(map_expr)` | Return map entries. |
 | `named_struct(field_names, values)` | Build a struct expression with explicit field names. |
 
-## Example
-
-```incan
-from pub::inql.functions import array, array_contains, cardinality, col, element_at, lit
-
-projected = (
-    events
-        .with_column("tags", array([lit("paid"), col("source")]))
-        .with_column("tag_count", cardinality(col("tags")))
-        .with_column("has_paid_tag", array_contains(col("tags"), "paid"))
-        .with_column("first_tag", element_at(col("tags"), 1))
-)
-```
-
 ## Semantics
 
 - Array indexing is one-based for `element_at(...)`, `array_position(...)`, and `array_slice(...)`.
 - `element_at(...)` currently maps to the portable array-element adapter path. Out-of-range behavior follows the current backend adapter's recoverable result until InQL has a richer static/runtime error-policy split for strict versus try-style element access.
 - `array_flatten(...)` is intentionally named to stay distinct from the relation-shaping generator `flatten(...)`.
 - Grouping or ordering by nested values is not documented as portable until equality and ordering semantics for arrays, maps, and structs are specified.
+- For task-oriented usage, see [Work with nested row values](../../how-to/nested_row_values.md).

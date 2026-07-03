@@ -15,20 +15,9 @@ Current filter authoring uses the shared scalar-expression builder model.
 | `str_lit`      | `def str_lit(value: str) -> StringLiteralExpr`                            | Typed string literal helper.                                           |
 | `bool_lit`     | `def bool_lit(value: bool) -> BoolLiteralExpr`                            | Typed boolean literal helper.                                          |
 
-## Example
-
-```incan
-from pub::inql.functions import col, eq, gt
-
-filtered = (
-    orders
-        .filter(gt(col("amount"), 100))
-        .filter(eq(col("status"), "open"))
-)
-```
-
 ## Notes
 
 - Filter predicates are scalar expressions, not a separate predicate-only builder hierarchy.
 - Primitive values are accepted where predicate helper signatures use value-or-column aliases. Use `lit(...)` or typed literal helpers when a broad `ColumnExpr` is required explicitly.
 - Boolean composition belongs to the broader scalar-function surface.
+- For task-oriented usage, see [Build deferred dataset transformations](../../how-to/dataset_transformations.md).
