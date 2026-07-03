@@ -46,6 +46,7 @@ from session.backend_dispatch import backend_collect_plan, backend_execute_plan,
 from session.backend_types import BackendError, BackendErrorKind, BackendRegistration
 from dataset.materialization import DataFrameMaterialization
 from prism import prism_plan_id
+from prism.types import PrismStoreId
 from substrait.errors import SubstraitLoweringError, SubstraitLoweringErrorKind
 from substrait.schema_registry import register_named_table_schema
 from substrait.inspect import relation_output_columns, root_rel, read_kind_name, read_named_table_name
@@ -221,7 +222,7 @@ pub class Session:
         """Execute one lazy plan and return structured observation evidence for success or failure."""
         clock = _start_execution_clock()
         backend_name = self.backend_name()
-        plan_target = _lazy_frame_plan_target(data.clone())
+        plan_target = _lazy_frame_plan_target(data._cursor.store_id, data._cursor.tip_id)
         # Keep lowering and validation failures anchored to the authored Prism plan target. Backend errors still attach
         # to the same target, but they are produced after the adapter attempt has started.
         execute_result = _plan_from_lazy_frame(data.clone()).and_then(
@@ -264,7 +265,7 @@ pub class Session:
         """Collect one lazy plan and return structured observation evidence for success or failure."""
         clock = _start_execution_clock()
         backend_name = self.backend_name()
-        plan_target = _lazy_frame_plan_target(data.clone())
+        plan_target = _lazy_frame_plan_target(data._cursor.store_id, data._cursor.tip_id)
         # Materialization is the first point where row counts are available, so only successful collects record them.
         collect_result = _plan_from_lazy_frame(data).and_then(
             (plan) => _collect_validated_plan[T](self._backend, self._registrations, plan),
@@ -429,9 +430,9 @@ def _start_execution_clock() -> _ExecutionClockStart:
     )
 
 
-def _lazy_frame_plan_target[T with Clone](data: LazyFrame[T]) -> SemanticTarget:
+def _lazy_frame_plan_target(store_id: PrismStoreId, tip_id: int) -> SemanticTarget:
     """Build the same Prism plan target used by local inspection for a lazy frame."""
-    plan_id = prism_plan_id(data._cursor.store_id, data._cursor.tip_id)
+    plan_id = prism_plan_id(store_id, tip_id)
     return SemanticTarget(
         kind=SemanticTargetKind.Plan,
         target_id=plan_id,
