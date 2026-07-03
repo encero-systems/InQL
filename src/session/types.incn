@@ -225,7 +225,7 @@ pub class Session:
         plan_target = _lazy_frame_plan_target(data._cursor.store_id, data._cursor.tip_id)
         # Keep lowering and validation failures anchored to the authored Prism plan target. Backend errors still attach
         # to the same target, but they are produced after the adapter attempt has started.
-        execute_result = _plan_from_lazy_frame(data.clone()).and_then(
+        execute_result = _plan_from_lazy_frame(data).and_then(
             (plan) => _execute_validated_plan(self._backend, self._registrations, plan),
         )
         match execute_result:
