@@ -44,6 +44,7 @@ from session.active import (
 )
 from session.backend_dispatch import backend_collect_plan, backend_execute_plan, backend_write_plan
 from session.backend_types import BackendError, BackendErrorKind, BackendRegistration
+from dataset.materialization import DataFrameMaterialization
 from prism import prism_plan_id
 from substrait.errors import SubstraitLoweringError, SubstraitLoweringErrorKind
 from substrait.schema_registry import register_named_table_schema
@@ -223,7 +224,22 @@ pub class Session:
         plan_target = _lazy_frame_plan_target(data.clone())
         # Keep lowering and validation failures anchored to the authored Prism plan target. Backend errors still attach
         # to the same target, but they are produced after the adapter attempt has started.
-        match _plan_from_lazy_frame(data.clone()):
+        execute_result = _plan_from_lazy_frame(data.clone()).and_then(
+            (plan) => _execute_validated_plan(self._backend, self._registrations, plan),
+        )
+        match execute_result:
+            Ok(_) =>
+                return ObservedLazyFrame(
+                    data=Some(data),
+                    observation=_success_observation(
+                        plan_target,
+                        ExecutionOperationKind.Execute,
+                        backend_name,
+                        clock,
+                        None,
+                    ),
+                    error=None,
+                )
             Err(err) =>
                 return ObservedLazyFrame(
                     data=None,
@@ -236,47 +252,6 @@ pub class Session:
                     ),
                     error=Some(err),
                 )
-            Ok(plan) =>
-                match _validate_named_table_binding(self._registrations, plan.clone()):
-                    Err(err) =>
-                        return ObservedLazyFrame(
-                            data=None,
-                            observation=_failure_observation(
-                                plan_target,
-                                ExecutionOperationKind.Execute,
-                                backend_name,
-                                clock,
-                                err.clone(),
-                            ),
-                            error=Some(err),
-                        )
-                    Ok(_) =>
-                        match backend_execute_plan(self._backend, _to_backend_registrations(self._registrations), plan):
-                            Ok(_) =>
-                                return ObservedLazyFrame(
-                                    data=Some(data),
-                                    observation=_success_observation(
-                                        plan_target,
-                                        ExecutionOperationKind.Execute,
-                                        backend_name,
-                                        clock,
-                                        None,
-                                    ),
-                                    error=None,
-                                )
-                            Err(err) =>
-                                session_err = _session_error_from_backend_error(err)
-                                return ObservedLazyFrame(
-                                    data=None,
-                                    observation=_failure_observation(
-                                        plan_target,
-                                        ExecutionOperationKind.Execute,
-                                        backend_name,
-                                        clock,
-                                        session_err.clone(),
-                                    ),
-                                    error=Some(session_err),
-                                )
 
     def collect[T with Clone](self, data: LazyFrame[T]) -> Result[DataFrame[T], SessionError]:
         """Validate and execute one lazy plan, returning a structured materialized DataFrame."""
@@ -291,7 +266,23 @@ pub class Session:
         backend_name = self.backend_name()
         plan_target = _lazy_frame_plan_target(data.clone())
         # Materialization is the first point where row counts are available, so only successful collects record them.
-        match _plan_from_lazy_frame(data):
+        collect_result = _plan_from_lazy_frame(data).and_then(
+            (plan) => _collect_validated_plan[T](self._backend, self._registrations, plan),
+        )
+        match collect_result:
+            Ok(frame) =>
+                row_count = frame.row_count()
+                return ObservedDataFrame(
+                    data=Some(frame),
+                    observation=_success_observation(
+                        plan_target,
+                        ExecutionOperationKind.Collect,
+                        backend_name,
+                        clock,
+                        Some(row_count),
+                    ),
+                    error=None,
+                )
             Err(err) =>
                 return ObservedDataFrame(
                     data=None,
@@ -304,56 +295,6 @@ pub class Session:
                     ),
                     error=Some(err),
                 )
-            Ok(plan) =>
-                rel = root_rel(plan.clone())
-                match _validate_named_table_binding(self._registrations, plan.clone()):
-                    Err(err) =>
-                        return ObservedDataFrame(
-                            data=None,
-                            observation=_failure_observation(
-                                plan_target,
-                                ExecutionOperationKind.Collect,
-                                backend_name,
-                                clock,
-                                err.clone(),
-                            ),
-                            error=Some(err),
-                        )
-                    Ok(_) =>
-                        match backend_collect_plan(self._backend, _to_backend_registrations(self._registrations), plan):
-                            Ok(materialization) =>
-                                row_count = materialization.row_count
-                                return ObservedDataFrame(
-                                    data=Some(
-                                        DataFrame(
-                                            _type_witness=_empty_type_witness(),
-                                            _materialization=materialization,
-                                            _substrait_rel=rel,
-                                            _planned_columns=relation_output_columns(rel.clone()),
-                                        ),
-                                    ),
-                                    observation=_success_observation(
-                                        plan_target,
-                                        ExecutionOperationKind.Collect,
-                                        backend_name,
-                                        clock,
-                                        Some(row_count),
-                                    ),
-                                    error=None,
-                                )
-                            Err(err) =>
-                                session_err = _session_error_from_backend_error(err)
-                                return ObservedDataFrame(
-                                    data=None,
-                                    observation=_failure_observation(
-                                        plan_target,
-                                        ExecutionOperationKind.Collect,
-                                        backend_name,
-                                        clock,
-                                        session_err.clone(),
-                                    ),
-                                    error=Some(session_err),
-                                )
 
     def check_coverage(self, requirements: list[AdapterRequirement]) -> list[AdapterCoverageRecord]:
         """Return adapter coverage records for explicit semantic requirements without inventing requirements."""
@@ -820,6 +761,45 @@ def _plan_from_lazy_frame[T with Clone](data: LazyFrame[T]) -> Result[Plan, Sess
 def _plan_from_bounded_dataset[T with Clone](data: BoundedDataSet[T]) -> Result[Plan, SessionError]:
     """Return one bounded carrier plan through the same structured planning-error envelope."""
     return data.try_to_substrait_plan().map_err(_session_error_from_lowering_error)
+
+
+def _execute_validated_plan(
+    backend: BackendSelection,
+    registrations: list[SessionRegistration],
+    plan: Plan,
+) -> Result[None, SessionError]:
+    """Validate bindings for one plan, then execute it through the selected backend."""
+    _validate_named_table_binding(registrations, plan.clone())?
+    return backend_execute_plan(backend, _to_backend_registrations(registrations), plan).map_err(
+        _session_error_from_backend_error,
+    )
+
+
+def _collect_validated_plan[T with Clone](
+    backend: BackendSelection,
+    registrations: list[SessionRegistration],
+    plan: Plan,
+) -> Result[DataFrame[T], SessionError]:
+    """Validate bindings for one plan, then collect it into a materialized DataFrame."""
+    _validate_named_table_binding(registrations, plan.clone())?
+    materialization = backend_collect_plan(backend, _to_backend_registrations(registrations), plan.clone()).map_err(
+        _session_error_from_backend_error,
+    )?
+    return Ok(_data_frame_from_materialization[T](plan, materialization))
+
+
+def _data_frame_from_materialization[T with Clone](
+    plan: Plan,
+    materialization: DataFrameMaterialization,
+) -> DataFrame[T]:
+    """Build one collected DataFrame from backend materialization plus the executed logical plan."""
+    rel = root_rel(plan)
+    return DataFrame(
+        _type_witness=_empty_type_witness(),
+        _materialization=materialization,
+        _substrait_rel=rel,
+        _planned_columns=relation_output_columns(rel.clone()),
+    )
 
 
 def _invalid_registration_from_validation_error(err: ValidationError) -> SessionError:
