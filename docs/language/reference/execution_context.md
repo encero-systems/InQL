@@ -120,11 +120,15 @@ These writes are Session-owned. They do not bypass the execution context even wh
 
 ## Adapter coverage
 
-`session.check_coverage(requirements)` accepts explicit `AdapterRequirement` records and returns one `AdapterCoverageRecord` per requirement. It does not infer requirements from every plan shape yet; callers must pass the requirements they want evaluated.
+`session.check_coverage(requirements)` accepts explicit `AdapterRequirement` records and returns one `AdapterCoverageRecord` per requirement. `session.check_inspection_coverage(inspection)` evaluates the requirements inferred by local plan inspection, and `session.check_plan_coverage(data)` runs inspection first and then evaluates those inferred requirements.
 
-| API                                    | Input                      | Returns                       |
-| -------------------------------------- | -------------------------- | ----------------------------- |
-| `session.check_coverage(requirements)` | `list[AdapterRequirement]` | `list[AdapterCoverageRecord]` |
+Plan inference is evidence-backed rather than policy-complete. The current implementation infers requirements for baseline null semantics, row filters, ordered execution, extension functions, variant semantics, and lineage-preservation evidence when those facts appear in the inspected plan. Requirements such as audit emission, masking, region binding, cryptographic proof, waiver recording, and other organization policy capabilities still need explicit `AdapterRequirement` records until their owning surfaces add evidence that can be inspected.
+
+| API                                             | Input                      | Returns                       |
+| ----------------------------------------------- | -------------------------- | ----------------------------- |
+| `session.check_coverage(requirements)`          | `list[AdapterRequirement]` | `list[AdapterCoverageRecord]` |
+| `session.check_inspection_coverage(inspection)` | `PlanInspection`           | `list[AdapterCoverageRecord]` |
+| `session.check_plan_coverage(data)`             | `LazyFrame[T]`             | `list[AdapterCoverageRecord]` |
 
 ### `AdapterRequirement`
 

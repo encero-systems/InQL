@@ -1,6 +1,6 @@
 # Capture execution observations and adapter coverage
 
-This how-to shows how to collect runtime evidence for a Session operation and how to ask the selected adapter whether it covers explicit requirements.
+This how-to shows how to collect runtime evidence for a Session operation and how to ask the selected adapter whether it covers plan-inferred or caller-provided requirements.
 
 Use the observed Session methods when you need an auditable execution attempt record. Use `check_coverage(...)` when a tool, policy, or review step already knows which adapter capability needs to be checked.
 
@@ -59,9 +59,31 @@ match write_attempt.error:
 
 The write result has no `data` field. The output artifact is the sink side effect; the returned value carries the observation and optional error.
 
+## Check inferred adapter requirements
+
+Use `check_plan_coverage(...)` when you want InQL to inspect a lazy plan and evaluate the adapter requirements that are visible in that plan evidence.
+
+```incan
+from pub::inql import AdapterCoverageState
+from pub::inql.functions import col, desc, eq
+
+review = orders
+    .filter(eq(col("status"), "paid"))
+    .order_by([desc(col("amount"))])
+
+coverage = session.check_plan_coverage(review)
+
+for record in coverage:
+    match record.state:
+        AdapterCoverageState.Covered => pass
+        AdapterCoverageState.PartiallyCovered => println(record.diagnostics[0].message)
+        AdapterCoverageState.Uncovered => println(record.diagnostics[0].message)
+        AdapterCoverageState.Unknown => println(record.diagnostics[0].message)
+```
+
 ## Check explicit adapter requirements
 
-`check_coverage(...)` does not infer requirements from a plan yet. Build the requirements that matter to the policy or workflow, then ask the selected adapter for coverage records.
+Use `check_coverage(...)` when the requirement comes from a policy, workflow, or review step rather than directly from the inspected plan shape. Build the requirements that matter, then ask the selected adapter for coverage records.
 
 ```incan
 from pub::inql import (
@@ -97,6 +119,7 @@ Treat `Unknown` as non-enforcing. It means InQL has not classified that adapter 
 - Use `execute_observed(...)` for a validation/checkpoint boundary without local materialization.
 - Use `collect_observed(...)` when a local `DataFrame[T]` and row count are part of the evidence you need.
 - Use `write_observed(...)` when the sink write is the operation being audited.
-- Use `check_coverage(...)` for explicit adapter requirements; do not use it as a plan-requirement discovery API.
+- Use `check_plan_coverage(...)` or `check_inspection_coverage(...)` for adapter requirements inferred from local plan evidence.
+- Use `check_coverage(...)` for explicit adapter requirements that come from policy or workflow context outside the plan.
 
 For the complete field and enum reference, see [Execution context (Reference)](../reference/execution_context.md).

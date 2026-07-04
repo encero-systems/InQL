@@ -3,7 +3,10 @@
 from std.testing import assert_is_ok, fail, fail_t, parametrize
 from rust::std::path import Path
 from dataset import LazyFrame, lazy_frame_named_table
+from functions import col, desc, eq, parse_variant_json, str_lit, typeof
+from inspect import inspect_plan
 from evidence import (
+    AdapterCoverageRecord,
     AdapterCoverageState,
     AdapterRequirement,
     AdapterRequirementCapability,
@@ -22,10 +25,25 @@ model Order:
     id: int
 
 
+@derive(Clone)
+model OrderLine:
+    """Fixture row shape used by plan-driven coverage tests."""
+
+    order_id: int
+    line_id: int
+    sku: str
+    qty: int
+    unit_price: float
+    currency: str
+    status: str
+    created_at: str
+
+
 const TESTS_DIR: str = "tests/"
 const FIXTURE_DIR: str = TESTS_DIR + "fixtures/"
 const TARGET_DIR: str = TESTS_DIR + "target/"
 const ORDERS_CSV_FIXTURE: str = FIXTURE_DIR + "orders.csv"
+const ORDER_LINES_CSV_FIXTURE: str = FIXTURE_DIR + "order_lines.csv"
 
 
 def _target_uri(name: str) -> str:
@@ -51,6 +69,17 @@ def _coverage_state_from_name(name: str) -> AdapterCoverageState:
         "uncovered" => return AdapterCoverageState.Uncovered
         "unknown" => return AdapterCoverageState.Unknown
         _ => return fail_t(f"unexpected coverage state: {name}")
+
+
+def _coverage_state_for_capability(
+    records: list[AdapterCoverageRecord],
+    capability: AdapterRequirementCapability,
+) -> AdapterCoverageState:
+    """Return the coverage state for one capability, failing when absent."""
+    for record in records:
+        if record.requirement.capability == capability:
+            return record.state
+    return fail_t(f"missing coverage record for {capability.value()}")
 
 
 def test_execute_observed__records_success_attempt_without_materialization() -> None:
@@ -213,3 +242,32 @@ def test_check_coverage__classifies_explicit_adapter_requirements(
     assert len(records) == 1, "check_coverage should return one record per explicit requirement"
     assert records[0].state == expected_state, "coverage state should match the conservative DataFusion mapping"
     assert len(records[0].diagnostics) == expected_diagnostics, "non-covered coverage states should include diagnostics"
+
+
+def test_check_inspection_and_plan_coverage__evaluate_inferred_requirements() -> None:
+    """RFC 033: Session should evaluate coverage from inspection-inferred plan requirements."""
+    # -- Arrange --
+    mut session = Session.default()
+    lazy: LazyFrame[OrderLine] = assert_is_ok(
+        session.read_csv("order_lines_coverage", ORDER_LINES_CSV_FIXTURE),
+        "order-lines CSV fixture should load",
+    )
+    checked_plan = lazy
+        .filter(eq(col("status"), str_lit("open")))
+        .with_column("status_kind", typeof(parse_variant_json(col("status"))))
+        .order_by([desc(col("qty"))])
+    inspection = inspect_plan(checked_plan)
+
+    # -- Act --
+    inspection_records = session.check_inspection_coverage(inspection)
+    plan_records = session.check_plan_coverage(checked_plan)
+
+    # -- Assert --
+    assert len(inspection.adapter_requirements) > 0, "inspection should infer adapter requirements from the plan"
+    assert len(inspection_records) == len(inspection.adapter_requirements), "inspection coverage should evaluate every inferred requirement"
+    assert len(plan_records) == len(inspection_records), "plan coverage should inspect then evaluate the same inferred requirements"
+    assert _coverage_state_for_capability(inspection_records, AdapterRequirementCapability.RowFilter) == AdapterCoverageState.Covered, "DataFusion should cover row-filter requirements"
+    assert _coverage_state_for_capability(inspection_records, AdapterRequirementCapability.OrderedExecution) == AdapterCoverageState.Covered, "DataFusion should cover ordered execution requirements"
+    assert _coverage_state_for_capability(inspection_records, AdapterRequirementCapability.ExtensionFunction) == AdapterCoverageState.PartiallyCovered, "extension-function requirements should stay partial rather than silently covered"
+    assert _coverage_state_for_capability(inspection_records, AdapterRequirementCapability.VariantSemantics) == AdapterCoverageState.Unknown, "unknown variant coverage must not be treated as covered"
+    assert _coverage_state_for_capability(inspection_records, AdapterRequirementCapability.LineagePreservation) == AdapterCoverageState.Uncovered, "uncovered lineage preservation must remain explicit"
