@@ -194,9 +194,7 @@ pub async def datafusion_collect_materialization_async(
 
     df = await _dataframe_from_plan(ctx, plan)?
     batches = await _collect_dataframe_batches(df.clone())?
-    rendered = (await df.to_string()).map_err(
-        (err) => backend_error(BackendErrorKind.BackendExecutionError, err.to_string()),
-    )?
+    rendered = await _render_dataframe_preview(df)?
     mut row_count = 0
     for batch in batches:
         row_count += _rust_usize_to_int(batch.num_rows())?
@@ -215,10 +213,7 @@ pub async def datafusion_write_csv_async(
     await _register_sources(ctx, registrations)?
 
     df = await _dataframe_from_plan(ctx, plan)?
-    (await df.write_csv(uri, DataFrameWriteOptions.new(), None)).map_err(
-        (err) => backend_error(BackendErrorKind.BackendSinkError, err.to_string()),
-    )?
-    return Ok(None)
+    return await _write_dataframe_csv(df, uri)
 
 
 pub async def datafusion_write_parquet_async(
@@ -233,10 +228,7 @@ pub async def datafusion_write_parquet_async(
     await _register_sources(ctx, registrations)?
 
     df = await _dataframe_from_plan(ctx, plan)?
-    (await df.write_parquet(uri, DataFrameWriteOptions.new(), None)).map_err(
-        (err) => backend_error(BackendErrorKind.BackendSinkError, err.to_string()),
-    )?
-    return Ok(None)
+    return await _write_dataframe_parquet(df, uri)
 
 
 async def _dataframe_from_plan(ctx: SessionContext, plan: Plan) -> Result[RustDataFrame, BackendError]:
@@ -347,13 +339,24 @@ async def _dataframe_from_standard_plan(ctx: SessionContext, plan: Plan) -> Resu
         None => pass
 
     consumer_plan = _consumer_plan_from_current_plan(plan)?
-    state = ctx.state()
-    logical_plan = (await from_substrait_plan(state, consumer_plan)).map_err(
-        (err) => backend_error(BackendErrorKind.BackendPlanningError, err.to_string()),
-    )?
-    return (await ctx.execute_logical_plan(logical_plan)).map_err(
-        (err) => backend_error(BackendErrorKind.BackendExecutionError, err.to_string()),
-    )
+    return await _dataframe_from_consumer_plan(ctx, consumer_plan)
+
+
+async def _dataframe_from_consumer_plan(
+    ctx: SessionContext,
+    consumer_plan: ConsumerPlan,
+) -> Result[RustDataFrame, BackendError]:
+    """Build a DataFusion frame from a consumer plan without leaking adapter errors into callers."""
+    match await from_substrait_plan(ctx.state(), consumer_plan):
+        Ok(logical_plan) => return await _execute_logical_plan(ctx, logical_plan)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
+
+
+async def _execute_logical_plan(ctx: SessionContext, logical_plan: LogicalPlan) -> Result[RustDataFrame, BackendError]:
+    """Execute one DataFusion logical plan while preserving InQL's backend error envelope."""
+    match await ctx.execute_logical_plan(logical_plan):
+        Ok(df) => return Ok(df)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
 
 
 async def _dataframe_from_window_rel(
@@ -1051,21 +1054,32 @@ async def _register_materialized_dataframe(
     batches = await _collect_dataframe_batches(df.clone())?
     if len(batches) == 0:
         # Empty generator output still needs a registered relation for the rewritten temp ReadRel to resolve.
-        ctx
-            .register_table(f"{table_name}", df.into_view())
-            .map_err((err) => backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))?
-        return Ok(None)
+        return _register_materialized_view(ctx, table_name, df)
     _register_materialized_schema_from_batch(f"{table_name}", batches[0])
     schema = batches[0].schema()
     # Non-empty outputs are frozen into a MemTable so the stock consumer reads a concrete table instead of an
     # InQL-specific generator extension relation.
-    table = MemTable
-        .try_new(schema, [batches])
-        .map_err((err) => backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))?
-    ctx
-        .register_table(f"{table_name}", Arc.new(table))
-        .map_err((err) => backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))?
-    return Ok(None)
+    match MemTable.try_new(schema, [batches]):
+        Ok(table) => return _register_materialized_memtable(ctx, table_name, table)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
+
+
+def _register_materialized_view(ctx: SessionContext, table_name: str, df: RustDataFrame) -> Result[None, BackendError]:
+    """Register an empty materialized relation through DataFusion's view provider."""
+    match ctx.register_table(f"{table_name}", df.into_view()):
+        Ok(_) => return Ok(None)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
+
+
+def _register_materialized_memtable(
+    ctx: SessionContext,
+    table_name: str,
+    table: MemTable,
+) -> Result[None, BackendError]:
+    """Register a non-empty materialized relation through a concrete DataFusion MemTable."""
+    match ctx.register_table(f"{table_name}", Arc.new(table)):
+        Ok(_) => return Ok(None)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
 
 
 def _register_materialized_schema_from_batch(table_name: str, batch: RecordBatch) -> None:
@@ -1586,9 +1600,9 @@ def _decode_generator_payload(extension: ExtensionSingleRel) -> Result[Generator
     """Decode one InQL generator extension payload."""
     match extension.detail:
         Some(detail) =>
-            return decode_generator_extension_payload(detail.value).map_err(
-                (message) => backend_error(BackendErrorKind.BackendPlanningError, message),
-            )
+            match decode_generator_extension_payload(detail.value):
+                Ok(payload) => return Ok(payload)
+                Err(message) => return Err(backend_error(BackendErrorKind.BackendPlanningError, message))
         None =>
             return Err(backend_error(BackendErrorKind.BackendPlanningError, "generator extension is missing detail"))
 
@@ -1637,6 +1651,27 @@ async def _collect_dataframe_batches(df: RustDataFrame) -> Result[list[RecordBat
         Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
 
 
+async def _render_dataframe_preview(df: RustDataFrame) -> Result[str, BackendError]:
+    """Render one DataFusion preview table while preserving InQL's backend error envelope."""
+    match await df.to_string():
+        Ok(rendered) => return Ok(rendered)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
+
+
+async def _write_dataframe_csv(df: RustDataFrame, uri: str) -> Result[None, BackendError]:
+    """Write one DataFusion frame to CSV while preserving InQL's sink error envelope."""
+    match await df.write_csv(uri, DataFrameWriteOptions.new(), None):
+        Ok(_) => return Ok(None)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendSinkError, err.to_string()))
+
+
+async def _write_dataframe_parquet(df: RustDataFrame, uri: str) -> Result[None, BackendError]:
+    """Write one DataFusion frame to Parquet while preserving InQL's sink error envelope."""
+    match await df.write_parquet(uri, DataFrameWriteOptions.new(), None):
+        Ok(_) => return Ok(None)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendSinkError, err.to_string()))
+
+
 def _unnest_plan_builder(
     logical_plan: LogicalPlan,
     datafusion_columns: list[Column],
@@ -1655,6 +1690,17 @@ def _build_logical_plan(builder: LogicalPlanBuilder) -> Result[LogicalPlan, Back
         Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
 
 
+def _rename_generator_output_column(
+    df: RustDataFrame,
+    source_name: str,
+    output_name: str,
+) -> Result[RustDataFrame, BackendError]:
+    """Rename one generated DataFusion output column while preserving InQL's planning error envelope."""
+    match df.with_column_renamed(source_name, output_name):
+        Ok(next_df) => return Ok(next_df)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
+
+
 def _rename_flat_generator_outputs(
     df: RustDataFrame,
     temp_columns: list[str],
@@ -1665,9 +1711,7 @@ def _rename_flat_generator_outputs(
         return Err(backend_error(BackendErrorKind.BackendPlanningError, "generator payload/output arity mismatch"))
     mut current = df
     for idx, output_column in enumerate(output_columns):
-        current = current
-            .with_column_renamed(temp_columns[idx], output_column)
-            .map_err((err) => backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))?
+        current = _rename_generator_output_column(current, temp_columns[idx], output_column)?
     return Ok(current)
 
 
@@ -1682,9 +1726,7 @@ def _rename_struct_generator_outputs(
     # generator output aliases.
     for output_column in output_columns:
         field_name = f"{temp_column}.{output_column}"
-        current = current
-            .with_column_renamed(field_name, output_column)
-            .map_err((err) => backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))?
+        current = _rename_generator_output_column(current, field_name, output_column)?
     return Ok(current)
 
 
@@ -1726,22 +1768,19 @@ async def _register_one(ctx: SessionContext, logical_name: str, source: TableSou
     match datafusion_registration_for_source(source):
         DataFusionSourceRegistration.Csv =>
             csv_opts = CsvReadOptions.new().has_header(true)
-            (await ctx.register_csv(logical_name, source.uri, csv_opts)).map_err(
-                (err) => backend_error(BackendErrorKind.BackendRegistrationError, err.to_string()),
-            )?
-            return Ok(None)
+            match await ctx.register_csv(logical_name, source.uri, csv_opts):
+                Ok(_) => return Ok(None)
+                Err(err) => return Err(backend_error(BackendErrorKind.BackendRegistrationError, err.to_string()))
         DataFusionSourceRegistration.Parquet =>
             parquet_opts = ParquetReadOptions.default()
-            (await ctx.register_parquet(logical_name, source.uri, parquet_opts)).map_err(
-                (err) => backend_error(BackendErrorKind.BackendRegistrationError, err.to_string()),
-            )?
-            return Ok(None)
+            match await ctx.register_parquet(logical_name, source.uri, parquet_opts):
+                Ok(_) => return Ok(None)
+                Err(err) => return Err(backend_error(BackendErrorKind.BackendRegistrationError, err.to_string()))
         DataFusionSourceRegistration.Arrow =>
             arrow_opts = ArrowReadOptions.default()
-            (await ctx.register_arrow(logical_name, source.uri, arrow_opts)).map_err(
-                (err) => backend_error(BackendErrorKind.BackendRegistrationError, err.to_string()),
-            )?
-            return Ok(None)
+            match await ctx.register_arrow(logical_name, source.uri, arrow_opts):
+                Ok(_) => return Ok(None)
+                Err(err) => return Err(backend_error(BackendErrorKind.BackendRegistrationError, err.to_string()))
 
 
 def datafusion_registration_for_source(source: TableSource) -> DataFusionSourceRegistration:
@@ -1755,9 +1794,9 @@ def datafusion_registration_for_source(source: TableSource) -> DataFusionSourceR
 def _consumer_plan_from_current_plan(plan: Plan) -> Result[ConsumerPlan, BackendError]:
     """Decode the producer-side plan bytes into DataFusion's consumer Plan type."""
     encoded = _datafusion_producer_plan(plan).encode_to_vec()
-    return ConsumerPlan
-        .decode(encoded.as_slice())
-        .map_err((err) => backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
+    match ConsumerPlan.decode(encoded.as_slice()):
+        Ok(decoded) => return Ok(decoded)
+        Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
 
 
 def _datafusion_producer_plan(plan: Plan) -> Plan:
