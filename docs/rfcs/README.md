@@ -38,8 +38,8 @@ InQL uses its **own** RFC series (starting at 000), independent of the [Incan la
 | [029][rfc-029] | In Progress | Typed metadata attachments                                                                        |     |
 | [030][rfc-030] | In Progress | Prism lineage graph                                                                               |     |
 | [031][rfc-031] | In Progress | Local inspection APIs and artifacts                                                               |     |
-| [032][rfc-032] | Draft       | Execution observations                                                                            |     |
-| [033][rfc-033] | Draft       | Adapter requirements and coverage                                                                 |     |
+| [032][rfc-032] | In Progress | Execution observations                                                                            |     |
+| [033][rfc-033] | In Progress | Adapter requirements and coverage                                                                 |     |
 | [034][rfc-034] | Draft       | Quality assertions and observations                                                               |     |
 | [035][rfc-035] | Draft       | Governed attributes and policy checkpoints                                                        |     |
 | [036][rfc-036] | Draft       | Governed plan bundle                                                                              |     |

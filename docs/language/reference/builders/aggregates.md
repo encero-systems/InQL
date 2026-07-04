@@ -31,27 +31,6 @@ Aggregate measures support method-style modifiers:
 | `filter` | `measure.filter(predicate: ColumnExpr) -> AggregateMeasure` | Apply an aggregate-local boolean predicate before aggregation. |
 | `order_by` | `measure.order_by(ordering: list[ColumnExpr]) -> AggregateMeasure` | Record ordered aggregate input. Core aggregates reject ordered input until an order-sensitive aggregate lands. |
 
-## Example
-
-```incan
-from pub::inql.functions import add, approx_count_distinct, approx_percentile, avg, col, count, count_distinct, count_if, eq, hll_sketch, lit, max, min, str_lit, sum
-
-grouped = orders.group_by([col("customer_id")]).agg([
-    sum(add(col("amount"), 5)),
-    count(),
-    count(col("discount_code")),
-    count_distinct(col("product_id")),
-    count_if(eq(col("status"), str_lit("paid"))),
-    sum(col("amount")).filter(eq(col("status"), str_lit("paid"))),
-    avg(col("amount")),
-    min(col("created_at")),
-    max(col("created_at")),
-    approx_count_distinct(col("user_id")),
-    approx_percentile(col("latency_ms"), 0.95),
-    hll_sketch(col("user_id"), precision=14),
-])
-```
-
 ## Notes
 
 - Aggregate inputs use the same scalar-expression model as filters, projections, and grouping keys.
@@ -59,14 +38,11 @@ grouped = orders.group_by([col("customer_id")]).agg([
 - `count(...)` accepts zero or one expression; passing multiple expressions is an error.
 - `count_expr(expr)` is a compatibility spelling for `count(expr)`.
 - `count_distinct(expr)` is compatibility sugar for `count(expr).distinct()`.
-- `count_if(predicate)` is compatibility sugar for `count().filter(predicate)`. Rows where the predicate is false or
-  null do not contribute to the aggregate.
+- `count_if(predicate)` is compatibility sugar for `count().filter(predicate)`. Rows where the predicate is false or null do not contribute to the aggregate.
 - `sum`, `avg`, `min`, and `max` skip null values. They return backend-null results when no non-null input value exists.
-- `approx_count_distinct` and `approx_percentile` are approximate aggregate choices. They allow aggregate-local filters
-  but reject extra `DISTINCT` and ordered input in the portable contract.
-- `approx_percentile` output names include percentile and accuracy parameters so two percentile estimates over the same
-  expression do not collapse into the same output column name.
-- `hll_sketch` and `hll_merge` are aggregate-shaped typed sketch helpers. They produce typed sketch state and preserve
-  sketch family, value domain, precision, and format metadata through the registry and Substrait boundary.
+- `approx_count_distinct` and `approx_percentile` are approximate aggregate choices. They allow aggregate-local filters but reject extra `DISTINCT` and ordered input in the portable contract.
+- `approx_percentile` output names include percentile and accuracy parameters so two percentile estimates over the same expression do not collapse into the same output column name.
+- `hll_sketch` and `hll_merge` are aggregate-shaped typed sketch helpers. They produce typed sketch state and preserve sketch family, value domain, precision, and format metadata through the registry and Substrait boundary.
 - Unsupported aggregate modifiers fail at lowering or backend planning; they are not ignored.
 - Future `.column` sugar and scoped aggregate symbols should lower to this same surface rather than replacing its semantics.
+- For task-oriented usage, see [Build deferred dataset transformations](../../how-to/dataset_transformations.md).

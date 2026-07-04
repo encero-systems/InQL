@@ -45,6 +45,67 @@ All read APIs return `LazyFrame[T]`. They create deferred logical work; they do 
 - `execute(...)` proves the plan can bind, lower, and run.
 - `collect(...)` performs that same work and materializes a local `DataFrame[T]`.
 
+## Execution observations
+
+Observed execution methods preserve the ordinary session contracts while also returning runtime evidence. The ordinary `execute`, `collect`, and `write` methods use the same execution path internally and keep returning `Result[...]` values for compact application code.
+
+| API                                      | Input               | Returns                | Success data                       | Failure data                      |
+| ---------------------------------------- | ------------------- | ---------------------- | ---------------------------------- | --------------------------------- |
+| `session.execute_observed(data)`         | `LazyFrame[T]`      | `ObservedLazyFrame[T]` | `data=Some(LazyFrame[T])`          | `data=None`, `error=Some(...)`    |
+| `session.collect_observed(data)`         | `LazyFrame[T]`      | `ObservedDataFrame[T]` | `data=Some(DataFrame[T])`          | `data=None`, `error=Some(...)`    |
+| `session.write_observed(data, target)`   | `BoundedDataSet[T]` | `ObservedWrite`        | `error=None`                       | `error=Some(...)`                 |
+
+### Observed result records
+
+| Record                 | Fields                                      |
+| ---------------------- | ------------------------------------------- |
+| `ObservedLazyFrame[T]` | `data: Option[LazyFrame[T]]`, `observation: ExecutionObservation`, `error: Option[SessionError]` |
+| `ObservedDataFrame[T]` | `data: Option[DataFrame[T]]`, `observation: ExecutionObservation`, `error: Option[SessionError]` |
+| `ObservedWrite`        | `observation: ExecutionObservation`, `error: Option[SessionError]` |
+
+### `ExecutionObservation`
+
+| Field                                   | Type                          | Meaning                                                        |
+| --------------------------------------- | ----------------------------- | -------------------------------------------------------------- |
+| `observation_id`                        | `str`                         | Stable local identifier for this observation attempt           |
+| `attempt_target`                        | `SemanticTarget`              | Semantic target for the concrete execution attempt             |
+| `plan_target`                           | `SemanticTarget`              | Semantic target for the plan being attempted                   |
+| `context_targets`                       | `list[SemanticTarget]`        | Session or binding context targets attached to the attempt     |
+| `operation`                             | `ExecutionOperationKind`      | Operation family: `execute`, `collect`, or `write`             |
+| `status`                                | `ExecutionObservationStatus`  | Terminal status                                                |
+| `backend_name`                          | `str`                         | Selected backend name, currently `datafusion` by default       |
+| `adapter_version`                       | `Option[str]`                 | Adapter version when reported by the backend                   |
+| `requested_semantic_profile_id`         | `Option[str]`                 | Requested semantic profile identity when one is bound          |
+| `observed_semantic_profile_id`          | `Option[str]`                 | Observed semantic profile identity when the adapter reports one |
+| `started_at_unix_nanoseconds`           | `int`                         | Wall-clock start timestamp from `std.datetime.runtime.SystemTime` |
+| `ended_at_unix_nanoseconds`             | `int`                         | Wall-clock end timestamp from `std.datetime.runtime.SystemTime` |
+| `duration_nanoseconds`                  | `int`                         | Monotonic elapsed duration from `std.datetime.runtime.Instant` |
+| `row_count`                             | `Option[int]`                 | Materialized row count when the operation supplies one         |
+| `byte_count`                            | `Option[int]`                 | Byte count when the operation supplies one                     |
+| `trace_ids`                             | `list[str]`                   | Optional external trace or telemetry correlation IDs           |
+| `diagnostics`                           | `list[ExecutionDiagnostic]`   | Structured diagnostics attached to the attempt                 |
+| `coverage_records`                      | `list[AdapterCoverageRecord]` | Adapter coverage records linked to the attempt                 |
+| `evidence_refs`                         | `list[str]`                   | Additional evidence artifact references                        |
+
+Observation records do not contain row payloads or backend logs by default. The first DataFusion-backed implementation reports unavailable adapter-version, semantic-profile, byte-count, and trace evidence as `None` or `[]` rather than fabricating values.
+
+### Execution enums
+
+| Enum                          | Values                                           |
+| ----------------------------- | ------------------------------------------------ |
+| `ExecutionOperationKind`      | `Execute`, `Collect`, `Write`                    |
+| `ExecutionObservationStatus`  | `Success`, `Failure`, `Cancelled`, `Skipped`, `Unsupported` |
+| `ExecutionDiagnosticSeverity` | `Info`, `Warning`, `Error`                       |
+
+### `ExecutionDiagnostic`
+
+| Field      | Type                          | Meaning                                      |
+| ---------- | ----------------------------- | -------------------------------------------- |
+| `severity` | `ExecutionDiagnosticSeverity` | Diagnostic severity                          |
+| `code`     | `str`                         | Stable diagnostic code                       |
+| `message`  | `str`                         | Human-readable diagnostic message            |
+| `target`   | `Option[SemanticTarget]`      | Semantic target associated with the diagnostic |
+
 ## Write surface
 
 | API                                      | Returns                      | Notes                                                |
@@ -56,6 +117,62 @@ All read APIs return `LazyFrame[T]`. They create deferred logical work; they do 
 | `session.write_parquet(data, uri)`       | `Result[None, SessionError]` | Convenience form for Parquet sinks                   |
 
 These writes are Session-owned. They do not bypass the execution context even when the input is deferred.
+
+## Adapter coverage
+
+`session.check_coverage(requirements)` accepts explicit `AdapterRequirement` records and returns one `AdapterCoverageRecord` per requirement. It does not infer requirements from every plan shape yet; callers must pass the requirements they want evaluated.
+
+| API                                    | Input                      | Returns                       |
+| -------------------------------------- | -------------------------- | ----------------------------- |
+| `session.check_coverage(requirements)` | `list[AdapterRequirement]` | `list[AdapterCoverageRecord]` |
+
+### `AdapterRequirement`
+
+| Field            | Type                           | Meaning                                            |
+| ---------------- | ------------------------------ | -------------------------------------------------- |
+| `requirement_id` | `str`                          | Stable local requirement identifier                |
+| `target`         | `SemanticTarget`               | Semantic target that requires the capability       |
+| `capability`     | `AdapterRequirementCapability` | Required adapter capability family                 |
+| `guarantee`      | `AdapterRequirementGuarantee`  | Requirement strength: required, preferred, optional |
+| `reason`         | `str`                          | Human-readable reason for the requirement          |
+| `evidence_refs`  | `list[str]`                    | Evidence artifacts that justify the requirement    |
+
+### `AdapterCoverageRecord`
+
+| Field                 | Type                         | Meaning                                              |
+| --------------------- | ---------------------------- | ---------------------------------------------------- |
+| `coverage_id`         | `str`                        | Stable local coverage-record identifier              |
+| `requirement`         | `AdapterRequirement`         | Requirement that was evaluated                       |
+| `adapter_name`        | `str`                        | Adapter that was evaluated                           |
+| `adapter_version`     | `Option[str]`                | Adapter version when reported                        |
+| `semantic_profile_id` | `Option[str]`                | Semantic profile identity when relevant              |
+| `state`               | `AdapterCoverageState`       | Coverage result                                      |
+| `diagnostics`         | `list[ExecutionDiagnostic]`  | Diagnostics explaining partial, uncovered, or unknown coverage |
+| `evidence_refs`       | `list[str]`                  | Evidence artifacts that support the coverage answer  |
+
+### Adapter requirement enums
+
+| Enum                          | Values |
+| ----------------------------- | ------ |
+| `AdapterRequirementGuarantee` | `Required`, `Preferred`, `Optional` |
+| `AdapterCoverageState`        | `Covered`, `PartiallyCovered`, `Uncovered`, `Unknown` |
+| `AdapterRequirementCapability` | `ExtensionFunction`, `VariantSemantics`, `DecimalSemantics`, `NullSemantics`, `LineagePreservation`, `AuditEmission`, `RowFilter`, `ColumnMask`, `AggregateThreshold`, `RegionBinding`, `OrderedExecution`, `SnapshotCapture`, `CanonicalDigest`, `CrossRelationReconciliation`, `IncrementalWatermark`, `VerificationEventStream`, `WaiverRecording`, `CryptographicQueryProof` |
+
+Coverage states are conservative. `Covered` means the selected adapter is known to cover that requirement family. `PartiallyCovered` means support depends on the concrete function, plan shape, or restriction. `Uncovered` means the selected adapter is known not to provide that guarantee. `Unknown` means InQL has not classified coverage; consumers must not treat it as enforced behavior.
+
+### Current DataFusion coverage classification
+
+| Capability                              | State              |
+| --------------------------------------- | ------------------ |
+| `RowFilter`                             | `Covered`          |
+| `OrderedExecution`                      | `Covered`          |
+| `NullSemantics`                         | `Covered`          |
+| `ExtensionFunction`                     | `PartiallyCovered` |
+| `LineagePreservation`                   | `Uncovered`        |
+| `AuditEmission`                         | `Uncovered`        |
+| Any other `AdapterRequirementCapability` | `Unknown`          |
+
+For non-DataFusion backends, the current implementation returns `Unknown` for every capability until that adapter declares coverage metadata.
 
 ## Active-session convenience
 
@@ -85,6 +202,11 @@ DataFusion is the implemented execution backend. `Session` stores a backend kind
 ## Related docs
 
 - For the conceptual model behind this surface, see [Execution context (Explanation)](../explanation/execution_context.md)
+- For task-oriented examples, see [Capture execution observations and adapter coverage](../how-to/execution_observations.md)
 - For carrier semantics, see [Dataset carriers (Reference)](dataset_carriers.md)
+- For execution observation design, see [RFC 032][rfc-032]
+- For adapter requirement and coverage design, see [RFC 033][rfc-033]
 
 [rfc-004]: ../../rfcs/004_inql_execution_context.md
+[rfc-032]: ../../rfcs/032_execution_observations.md
+[rfc-033]: ../../rfcs/033_adapter_requirements_coverage.md

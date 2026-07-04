@@ -26,20 +26,9 @@ def with_column(self, name: str, expr: ColumnExpr) -> Self
 - missing name: append at end
 - existing name: replace in place
 
-## Example
-
-```incan
-from pub::inql.functions import add, col, mul
-
-projected = (
-    orders
-        .with_column("amount_x2", mul(col("amount"), 2))
-        .with_column("amount_plus_one", add(col("amount"), 1))
-)
-```
-
 ## Capability notes
 
 - `with_column(...)` is the explicit computed-column entrypoint.
 - Projection-list selection, query-block projection sugar, and alias-free symbolic surfaces lower to this scalar-expression model when exposed.
 - Numeric, string, and boolean helpers accept primitive values where their public signatures use value-or-column aliases. Use `lit(...)` for broad scalar-expression positions that specifically require a `ColumnExpr`.
+- For task-oriented usage, see [Build deferred dataset transformations](../../how-to/dataset_transformations.md).

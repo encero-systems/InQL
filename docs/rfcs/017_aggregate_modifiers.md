@@ -115,7 +115,5 @@ Existing aggregate helpers remain valid. New compatibility helpers such as `coun
 
 ### Resolved
 
-- `count_if(predicate)` follows aggregate `FILTER` semantics: rows where the predicate is false or null do not
-  contribute to the aggregate.
-- The initial modifier contract records ordered aggregate input but no current core aggregate allows it. Ordered input
-  is rejected explicitly until an order-sensitive aggregate such as `listagg` or ordered percentile functions lands.
+- `count_if(predicate)` follows aggregate `FILTER` semantics: rows where the predicate is false or null do not contribute to the aggregate.
+- The initial modifier contract records ordered aggregate input but no current core aggregate allows it. Ordered input is rejected explicitly until an order-sensitive aggregate such as `listagg` or ordered percentile functions lands.

@@ -119,9 +119,7 @@ The implemented public model is:
 - `VariantKind`, `VariantEncoding`, `VariantParseMode`, `VariantLogicalType`, and `VariantExpr`.
 - Metadata helpers: `variant_type(...)`, `variant_col(...)`, `variant_value(...)`, and `variant_types_compatible(...)`.
 - Parse/access helpers: `parse_variant_json(...)`, `try_parse_variant_json(...)`, and `variant_get(...)`.
-- Inspection helpers: `typeof(...)` returns `StringColumnExpr`; predicates such as `is_null_value(...)`,
-  `is_boolean(...)`, `is_integer(...)`, `is_float(...)`, `is_string(...)`, `is_timestamp(...)`, `is_array(...)`, and
-  `is_object(...)` return `BoolColumnExpr`.
+- Inspection helpers: `typeof(...)` returns `StringColumnExpr`; predicates such as `is_null_value(...)`, `is_boolean(...)`, `is_integer(...)`, `is_float(...)`, `is_string(...)`, `is_timestamp(...)`, `is_array(...)`, and `is_object(...)` return `BoolColumnExpr`.
 
 Each public helper is registry-backed with explicit variant policy metadata. Variant helpers lower through InQL-owned Substrait extension mappings and carry variant kind, encoding, and parse mode as scalar function options where needed.
 
@@ -150,10 +148,6 @@ Each public helper is registry-backed with explicit variant policy metadata. Var
 ## Design Decisions
 
 - The public type spellings are `VariantLogicalType` and `VariantExpr`.
-- Variant-returning JSON parsing uses new helper names, `parse_variant_json(...)` and `try_parse_variant_json(...)`, so
-  RFC 022 string-backed JSON helpers remain stable.
-- The shipped kind set is the JSON-compatible family plus timestamp: null, boolean, integer, float, string, timestamp,
-  array, and object. Decimal, binary, date, and interval are not part of this RFC's public variant-kind contract.
-- Variant path access uses `$`-rooted literal paths or string-producing dynamic path expressions through
-  `variant_get(...)`; missing-path runtime behavior is an execution contract for adapters and must not collapse SQL null
-  and variant null.
+- Variant-returning JSON parsing uses new helper names, `parse_variant_json(...)` and `try_parse_variant_json(...)`, so RFC 022 string-backed JSON helpers remain stable.
+- The shipped kind set is the JSON-compatible family plus timestamp: null, boolean, integer, float, string, timestamp, array, and object. Decimal, binary, date, and interval are not part of this RFC's public variant-kind contract.
+- Variant path access uses `$`-rooted literal paths or string-producing dynamic path expressions through `variant_get(...)`; missing-path runtime behavior is an execution contract for adapters and must not collapse SQL null and variant null.

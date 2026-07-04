@@ -122,6 +122,78 @@ pub enum EvidenceArtifactStatus(str):
 
 
 @derive(Clone)
+pub enum ExecutionOperationKind(str):
+    """Session operation families that can emit execution observations."""
+
+    Execute = "execute"
+    Collect = "collect"
+    Write = "write"
+
+
+@derive(Clone)
+pub enum ExecutionObservationStatus(str):
+    """Terminal status for one observed execution attempt."""
+
+    Success = "success"
+    Failure = "failure"
+    Cancelled = "cancelled"
+    Skipped = "skipped"
+    Unsupported = "unsupported"
+
+
+@derive(Clone)
+pub enum ExecutionDiagnosticSeverity(str):
+    """Severity class for one structured execution diagnostic."""
+
+    Info = "info"
+    Warning = "warning"
+    Error = "error"
+
+
+@derive(Clone)
+pub enum AdapterRequirementCapability(str):
+    """Adapter capability families that can be required by a semantic plan or evidence policy."""
+
+    ExtensionFunction = "extension_function"
+    VariantSemantics = "variant_semantics"
+    DecimalSemantics = "decimal_semantics"
+    NullSemantics = "null_semantics"
+    LineagePreservation = "lineage_preservation"
+    AuditEmission = "audit_emission"
+    RowFilter = "row_filter"
+    ColumnMask = "column_mask"
+    AggregateThreshold = "aggregate_threshold"
+    RegionBinding = "region_binding"
+    OrderedExecution = "ordered_execution"
+    SnapshotCapture = "snapshot_capture"
+    CanonicalDigest = "canonical_digest"
+    CrossRelationReconciliation = "cross_relation_reconciliation"
+    IncrementalWatermark = "incremental_watermark"
+    VerificationEventStream = "verification_event_stream"
+    WaiverRecording = "waiver_recording"
+    CryptographicQueryProof = "cryptographic_query_proof"
+
+
+@derive(Clone)
+pub enum AdapterRequirementGuarantee(str):
+    """How strongly one semantic target depends on an adapter capability."""
+
+    Required = "required"
+    Preferred = "preferred"
+    Optional = "optional"
+
+
+@derive(Clone)
+pub enum AdapterCoverageState(str):
+    """Adapter coverage state for one explicit requirement."""
+
+    Covered = "covered"
+    PartiallyCovered = "partially_covered"
+    Uncovered = "uncovered"
+    Unknown = "unknown"
+
+
+@derive(Clone)
 pub model SemanticTarget:
     """
     One stable local evidence anchor for a plan, node, relation output, field, or expression.
@@ -138,6 +210,72 @@ pub model SemanticTarget:
     pub name: str
     pub node_id: Option[int]
     pub ordinal: Option[int]
+
+
+@derive(Clone)
+pub model ExecutionDiagnostic:
+    """One structured diagnostic attached to an execution observation or coverage record."""
+
+    pub severity: ExecutionDiagnosticSeverity
+    pub code: str
+    pub message: str
+    pub target: Option[SemanticTarget]
+
+
+@derive(Clone)
+pub model AdapterRequirement:
+    """One explicit adapter capability requirement anchored to a semantic target."""
+
+    pub requirement_id: str
+    pub target: SemanticTarget
+    pub capability: AdapterRequirementCapability
+    pub guarantee: AdapterRequirementGuarantee
+    pub reason: str
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model AdapterCoverageRecord:
+    """One adapter coverage answer for an explicit adapter requirement."""
+
+    pub coverage_id: str
+    pub requirement: AdapterRequirement
+    pub adapter_name: str
+    pub adapter_version: Option[str]
+    pub semantic_profile_id: Option[str]
+    pub state: AdapterCoverageState
+    pub diagnostics: list[ExecutionDiagnostic]
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model ExecutionObservation:
+    """
+    Runtime evidence for one session execution attempt.
+
+    Wall-clock timestamps are Unix nanoseconds from `std.datetime.runtime.SystemTime`; duration is monotonic elapsed
+    nanoseconds from `std.datetime.runtime.Instant`, so consumers can sort attempts and measure runtime separately.
+    """
+
+    pub observation_id: str
+    pub attempt_target: SemanticTarget
+    pub plan_target: SemanticTarget
+    pub context_targets: list[SemanticTarget]
+    pub operation: ExecutionOperationKind
+    pub status: ExecutionObservationStatus
+    pub backend_name: str
+    pub adapter_version: Option[str]
+    pub requested_semantic_profile_id: Option[str]
+    pub observed_semantic_profile_id: Option[str]
+    pub started_at_unix_nanoseconds: int
+    pub ended_at_unix_nanoseconds: int
+    pub duration_nanoseconds: int
+    pub row_count: Option[int]
+    pub byte_count: Option[int]
+    pub trace_ids: list[str]
+    pub diagnostics: list[ExecutionDiagnostic]
+    pub coverage_records: list[AdapterCoverageRecord]
+    pub evidence_refs: list[str]
 
 
 @derive(Clone)

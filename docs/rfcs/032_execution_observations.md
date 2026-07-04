@@ -1,6 +1,6 @@
 # InQL RFC 032: Execution observations
 
-- **Status:** Draft
+- **Status:** In Progress
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -42,11 +42,11 @@ After a plan executes, users and tools need evidence about what was attempted an
 An author can collect data and then inspect the observation:
 
 ```incan
-result = session.collect(summary)
-observation = result.execution_observation()
+observed = session.collect_observed(summary)
+observation = observed.observation
 
-assert observation.plan_id == inspect_plan(summary).plan_id
-assert observation.status == "success"
+assert observation.plan_target.target_id == inspect_plan(summary).plan_id
+assert observation.status == ExecutionObservationStatus.Success
 ```
 
 Execution evidence explains the run. It does not replace plan inspection.
@@ -80,6 +80,8 @@ Quality observations, adapter coverage records, semantic profile records, and ev
 ### Compatibility / migration
 
 Existing session execution remains valid. Implementations may initially emit partial observations, but unsupported fields must be explicit rather than silently omitted when consumers request them.
+
+The first implementation adds observed variants for `execute`, `collect`, and `write` while preserving the ordinary `Result[...]`-returning session APIs. Observed variants return success and failure observations. Wall-clock fields are Unix nanoseconds from Incan's `std.datetime.runtime.SystemTime`, and duration uses monotonic elapsed nanoseconds from `std.datetime.runtime.Instant`. The model exposes adapter version, requested and observed semantic profile IDs, byte count, and trace IDs explicitly; the initial DataFusion path reports `None` or empty values for those fields rather than fabricating unavailable evidence.
 
 ## Alternatives considered
 

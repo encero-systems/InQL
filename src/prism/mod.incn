@@ -345,6 +345,11 @@ pub def prism_cursor_output_columns[T with Clone](cursor: PrismCursor[T]) -> lis
     return cursor.planned_columns()
 
 
+pub def prism_plan_id(store_id: PrismStoreId, tip_id: int) -> str:
+    """Return the stable local evidence plan id for one authored Prism tip."""
+    return f"prism:store-{store_id.0}:tip-{tip_id}"
+
+
 pub def lower_prism_tip(store_id: PrismStoreId, tip_id: int) -> Rel:
     """Lower one authored Prism tip through canonical rewrite view to the `Rel` boundary."""
     return lower_prism_tip_impl(store_id, tip_id)

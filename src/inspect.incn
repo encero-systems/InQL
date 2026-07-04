@@ -20,6 +20,7 @@ from evidence import (
     UnsupportedEvidence,
 )
 from metadata import inql_version
+from prism import prism_plan_id
 from prism.output_columns import authored_output_schema, rewritten_output_schema
 from prism.rewrite import derive_rewritten_view, rewrite_explain
 from prism.store import node_at, reachable_node_ids
@@ -1019,7 +1020,7 @@ def _field_index(schema: list[ScalarColumnSpec], name: str) -> int:
 
 def _plan_id(store_id: PrismStoreId, tip_id: int) -> str:
     """Build a local deterministic plan id for one Prism store/tip snapshot."""
-    return f"prism:store-{store_id.0}:tip-{tip_id}"
+    return prism_plan_id(store_id, tip_id)
 
 
 def _target_id(plan_id: str, kind: str, path: str) -> str:

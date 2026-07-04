@@ -70,6 +70,26 @@ The ergonomic split is:
 
 This keeps materialization convenient while leaving sink ownership explicit at the session boundary.
 
+## Runtime evidence is separate from plan evidence
+
+Plan inspection explains the relational work InQL has authored. Execution observations explain a concrete runtime attempt to run that work through a Session and backend adapter.
+
+That split matters because the same plan can be attempted more than once, with different backends, bindings, diagnostics, timings, or trace IDs. The plan target remains the semantic anchor. The execution attempt target records what happened in one runtime lifecycle event.
+
+Observed Session methods keep this separation explicit:
+
+- `execute_observed(...)` records an execution checkpoint without local materialization.
+- `collect_observed(...)` records a materialization attempt and can include row count evidence.
+- `write_observed(...)` records a sink-write attempt.
+
+The compact `execute(...)`, `collect(...)`, and `write(...)` methods still return `Result[...]` values for application code that does not need an evidence record.
+
+## Adapter coverage is explicit evidence
+
+Adapter coverage answers a different question from execution success. Execution success says the selected backend accepted and ran a plan attempt. Coverage says whether the selected adapter is known to provide a named capability or guarantee.
+
+The current coverage API is deliberately explicit: callers pass `AdapterRequirement` records to `session.check_coverage(...)`. InQL does not yet infer all requirements from arbitrary plan shapes. Unknown coverage is therefore not a soft success; it means InQL does not have evidence that the adapter enforces that capability.
+
 ## Typical flow
 
 ```incan
@@ -112,3 +132,5 @@ The materialized carrier exposes structured collection metadata:
 - preview text
 
 For exact API shape, see [Execution context (Reference)](../reference/execution_context.md).
+
+For a task-oriented workflow, see [Capture execution observations and adapter coverage](../how-to/execution_observations.md).

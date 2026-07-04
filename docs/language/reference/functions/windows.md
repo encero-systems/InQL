@@ -2,24 +2,6 @@
 
 Window helpers are relation-aware. A window function application produces one output value per input row while reading a partition of related rows. It is not an ordinary scalar expression and must be placed through a projection-like dataset method.
 
-```incan
-from pub::inql import LazyFrame
-from pub::inql.functions import col, current_row, desc, lag, rank, sum, unbounded_preceding, window
-from models import Order
-
-def ranked_orders(orders: LazyFrame[Order]) -> LazyFrame[Order]:
-    spec = window().partition_by([col("customer_id")]).order_by([desc(col("amount"))])
-    return (
-        orders
-            .with_window_column("customer_rank", rank().over(spec))
-            .with_window_column("previous_amount", lag(col("amount")).over(spec))
-            .with_window_column(
-                "running_amount",
-                sum(col("amount")).over(spec.rows_between(unbounded_preceding(), current_row())),
-            )
-    )
-```
-
 The window helper surface includes:
 
 | Function | Meaning | Placement |
@@ -40,3 +22,5 @@ The window helper surface includes:
 `WindowSpec.partition_by(...)` replaces the partition expressions. `WindowSpec.order_by(...)` replaces the ordering expressions. `WindowSpec.rows_between(...)` and `WindowSpec.range_between(...)` replace the frame. Ranking, distribution, offset, and value helpers require explicit ordering; missing ordering is rejected during logical lowering.
 
 `with_window_column(name, application)` preserves input columns and adds or replaces `name` using add-or-replace projection semantics. Compatible adjacent window projections lower through Substrait `ConsistentPartitionWindowRel` with registry-backed function anchors, frame bounds, invocation metadata, null-treatment options, and output aliases. The DataFusion session backend executes the portable window helpers through the Substrait adapter boundary.
+
+For task-oriented usage, see [Add window columns](../../how-to/window_columns.md).

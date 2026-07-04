@@ -20,6 +20,7 @@ pub enum SessionErrorKind(str):
     UnknownScalarColumn = "unknown_scalar_column"
 
 
+@derive(Clone)
 pub model SessionError:
     """Typed error envelope for Session-facing APIs."""
 
