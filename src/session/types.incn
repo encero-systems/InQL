@@ -2,6 +2,7 @@
 
 from rust::substrait::proto import Plan
 from std.datetime.runtime import Instant, SystemTime
+from aggregate_builders import aggregate_as
 from backends import (
     BackendSelection,
     DataFusion,
@@ -45,8 +46,21 @@ from session.active import (
 from session.backend_dispatch import backend_collect_plan, backend_execute_plan, backend_write_plan
 from session.backend_types import BackendError, BackendErrorKind, BackendRegistration
 from dataset.materialization import DataFrameMaterialization
+from functions.operators.gt import gt
+from functions.operators.lt import lt
+from functions.aggregates.count import count
+from functions.predicates.is_null import is_null
 from inspect import PlanInspection, inspect_plan
 from prism import prism_plan_id
+from projection_builders import col
+from quality import (
+    QualityAssertion,
+    QualityAssertionKind,
+    QualityMetric,
+    QualityObservation,
+    QualityObservationStatus,
+    quality_metric,
+)
 from prism.types import PrismStoreId
 from substrait.errors import SubstraitLoweringError, SubstraitLoweringErrorKind
 from substrait.schema_registry import register_named_table_schema
@@ -58,6 +72,13 @@ model _ExecutionClockStart:
 
     started_at_unix_nanoseconds: int
     started_monotonic: Instant
+
+
+model _QualityCountEvidence:
+    """Structured row-count evidence from one observed collect call."""
+
+    row_count: int
+    observation: ExecutionObservation
 
 
 @derive(Clone)
@@ -309,6 +330,23 @@ pub class Session:
     def check_plan_coverage[T with Clone](self, data: LazyFrame[T]) -> list[AdapterCoverageRecord]:
         """Inspect one lazy plan and return adapter coverage records for inferred requirements."""
         return self.check_inspection_coverage(inspect_plan(data))
+
+    def observe_quality[T with Clone](
+        self,
+        data: LazyFrame[T],
+        assertions: list[QualityAssertion],
+    ) -> list[QualityObservation]:
+        """Evaluate relation, field, and group quality assertions against one lazy plan without filtering it."""
+        return [_observe_quality_assertion(self, data.clone(), assertion) for assertion in assertions]
+
+    def observe_quality_pair[T with Clone, U with Clone](
+        self,
+        left: LazyFrame[T],
+        right: LazyFrame[U],
+        assertions: list[QualityAssertion],
+    ) -> list[QualityObservation]:
+        """Evaluate explicit cross-relation quality assertions against two lazy plans."""
+        return [_observe_cross_relation_quality_assertion(self, left.clone(), right.clone(), assertion) for assertion in assertions]
 
     def write_csv[T with Clone](self, data: LazyFrame[T], uri: str) -> Result[None, SessionError]:
         """Execute one lazy plan and write result rows to a CSV sink URI."""
@@ -657,6 +695,401 @@ def _coverage_diagnostics(
                 message=f"{backend_name} coverage for {requirement.capability.value()} has not been classified",
                 target=Some(requirement.target),
             )]
+
+
+def _observe_quality_assertion[T with Clone](
+    session: Session,
+    data: LazyFrame[T],
+    assertion: QualityAssertion,
+) -> QualityObservation:
+    """Evaluate one single-relation quality assertion through ordinary session execution."""
+    match assertion.kind:
+        QualityAssertionKind.RowCount => return _observe_row_count_quality(session, data, assertion)
+        QualityAssertionKind.NullRate => return _observe_null_rate_quality(session, data, assertion)
+        QualityAssertionKind.Unique => return _observe_unique_quality(session, data, assertion)
+        QualityAssertionKind.GroupRowCount => return _observe_group_row_count_quality(session, data, assertion)
+        QualityAssertionKind.CrossRelationRowCountEqual =>
+            return _unsupported_quality_observation(
+                assertion,
+                [],
+                "cross-relation assertions require observe_quality_pair(...)",
+            )
+
+
+def _observe_cross_relation_quality_assertion[T with Clone, U with Clone](
+    session: Session,
+    left: LazyFrame[T],
+    right: LazyFrame[U],
+    assertion: QualityAssertion,
+) -> QualityObservation:
+    """Evaluate one explicit cross-relation quality assertion through ordinary session execution."""
+    match assertion.kind:
+        QualityAssertionKind.CrossRelationRowCountEqual =>
+            return _observe_cross_relation_row_count_equal(session, left, right, assertion)
+        _ =>
+            return _unsupported_quality_observation(
+                assertion,
+                [],
+                "single-relation assertions require observe_quality(...)",
+            )
+
+
+def _observe_row_count_quality[T with Clone](
+    session: Session,
+    data: LazyFrame[T],
+    assertion: QualityAssertion,
+) -> QualityObservation:
+    """Evaluate a relation row-count threshold assertion."""
+    match _observe_row_count_quality_result(session, data, assertion):
+        Ok(observation) => return observation
+        Err(observation) => return observation
+
+
+def _observe_row_count_quality_result[T with Clone](
+    session: Session,
+    data: LazyFrame[T],
+    assertion: QualityAssertion,
+) -> Result[QualityObservation, QualityObservation]:
+    """Evaluate relation row-count quality through the shared row-count evidence path."""
+    evidence = _quality_row_count_evidence(session, data, assertion.clone(), [])?
+    row_count = evidence.row_count
+    status = _quality_status_from_bool(_count_threshold_passes(row_count, assertion.min_count, assertion.max_count))
+    return Ok(
+        _quality_observation_from_status(
+            assertion,
+            evidence.observation.plan_target.clone(),
+            [evidence.observation],
+            status,
+            [_count_metric("row_count", row_count)],
+            [],
+        ),
+    )
+
+
+def _observe_null_rate_quality[T with Clone](
+    session: Session,
+    data: LazyFrame[T],
+    assertion: QualityAssertion,
+) -> QualityObservation:
+    """Evaluate a field null-rate assertion by counting total and null-matching rows."""
+    match _observe_null_rate_quality_result(session, data, assertion):
+        Ok(observation) => return observation
+        Err(observation) => return observation
+
+
+def _observe_null_rate_quality_result[T with Clone](
+    session: Session,
+    data: LazyFrame[T],
+    assertion: QualityAssertion,
+) -> Result[QualityObservation, QualityObservation]:
+    """Evaluate null-rate quality and use Result propagation for observed-collect failures."""
+    if let Some(max_rate) = assertion.max_rate:
+        total = _quality_row_count_evidence(session, data.clone(), assertion.clone(), [])?
+        nulls = _quality_row_count_evidence(
+            session,
+            data.filter(is_null(assertion.expression)),
+            assertion.clone(),
+            [total.observation.clone()],
+        )?
+        null_rate = _rate_value(nulls.row_count, total.row_count)
+        mut metrics: list[QualityMetric] = []
+        metrics.append(_count_metric("row_count", total.row_count))
+        metrics.append(_count_metric("null_count", nulls.row_count))
+        metrics.append(_rate_metric("null_rate", null_rate))
+        return Ok(
+            _quality_observation_from_status(
+                assertion,
+                total.observation.plan_target.clone(),
+                [total.observation, nulls.observation],
+                _quality_status_from_bool(null_rate <= max_rate),
+                metrics,
+                [],
+            ),
+        )
+    return Err(_unsupported_quality_observation(assertion, [], "null_rate requires a max_rate threshold"))
+
+
+def _observe_unique_quality[T with Clone](
+    session: Session,
+    data: LazyFrame[T],
+    assertion: QualityAssertion,
+) -> QualityObservation:
+    """Evaluate a field uniqueness assertion by counting duplicate groups."""
+    match _observe_unique_quality_result(session, data, assertion):
+        Ok(observation) => return observation
+        Err(observation) => return observation
+
+
+def _observe_unique_quality_result[T with Clone](
+    session: Session,
+    data: LazyFrame[T],
+    assertion: QualityAssertion,
+) -> Result[QualityObservation, QualityObservation]:
+    """Evaluate uniqueness quality through the shared row-count evidence path."""
+    duplicate_groups = data
+        .group_by([assertion.expression])
+        .agg([aggregate_as(count(), "quality_group_row_count")])
+        .filter(gt(col("quality_group_row_count"), 1))
+    evidence = _quality_row_count_evidence(session, duplicate_groups, assertion.clone(), [])?
+    return Ok(
+        _quality_observation_from_status(
+            assertion,
+            evidence.observation.plan_target.clone(),
+            [evidence.observation],
+            _quality_status_from_bool(evidence.row_count == 0),
+            [_count_metric("duplicate_group_count", evidence.row_count)],
+            [],
+        ),
+    )
+
+
+def _observe_group_row_count_quality[T with Clone](
+    session: Session,
+    data: LazyFrame[T],
+    assertion: QualityAssertion,
+) -> QualityObservation:
+    """Evaluate a group row-count assertion by counting groups outside the declared thresholds."""
+    match _observe_group_row_count_quality_result(session, data, assertion):
+        Ok(observation) => return observation
+        Err(observation) => return observation
+
+
+def _observe_group_row_count_quality_result[T with Clone](
+    session: Session,
+    data: LazyFrame[T],
+    assertion: QualityAssertion,
+) -> Result[QualityObservation, QualityObservation]:
+    """Evaluate group row-count quality and use Result propagation for threshold probe failures."""
+    grouped = data.group_by(assertion.group_by).agg([aggregate_as(count(), "quality_group_row_count")])
+    too_small_count = _failing_group_count_below_min(session, grouped.clone(), assertion.clone(), assertion.min_count)?
+    too_large_count = _failing_group_count_above_max(session, grouped, assertion.clone(), assertion.max_count)?
+    failing_group_count = too_small_count + too_large_count
+    plan_target = _lazy_frame_plan_target(data._cursor.store_id, data._cursor.tip_id)
+    return Ok(
+        _quality_observation_from_status(
+            assertion,
+            plan_target,
+            [],
+            _quality_status_from_bool(failing_group_count == 0),
+            [_count_metric("failing_group_count", failing_group_count)],
+            [],
+        ),
+    )
+
+
+def _observe_cross_relation_row_count_equal[T with Clone, U with Clone](
+    session: Session,
+    left: LazyFrame[T],
+    right: LazyFrame[U],
+    assertion: QualityAssertion,
+) -> QualityObservation:
+    """Evaluate cross-relation row-count equality by collecting both explicit inputs."""
+    match _observe_cross_relation_row_count_equal_result(session, left, right, assertion):
+        Ok(observation) => return observation
+        Err(observation) => return observation
+
+
+def _observe_cross_relation_row_count_equal_result[T with Clone, U with Clone](
+    session: Session,
+    left: LazyFrame[T],
+    right: LazyFrame[U],
+    assertion: QualityAssertion,
+) -> Result[QualityObservation, QualityObservation]:
+    """Evaluate cross-relation row-count equality with explicit observed-collect evidence."""
+    left_count = _quality_row_count_evidence(session, left, assertion.clone(), [])?
+    right_count = _quality_row_count_evidence(session, right, assertion.clone(), [left_count.observation.clone()])?
+    mut metrics: list[QualityMetric] = []
+    metrics.append(_count_metric("left_row_count", left_count.row_count))
+    metrics.append(_count_metric("right_row_count", right_count.row_count))
+    return Ok(
+        _quality_observation_from_status(
+            assertion,
+            left_count.observation.plan_target.clone(),
+            [left_count.observation, right_count.observation],
+            _quality_status_from_bool(left_count.row_count == right_count.row_count),
+            metrics,
+            [],
+        ),
+    )
+
+
+def _quality_row_count_evidence[T with Clone](
+    session: Session,
+    data: LazyFrame[T],
+    assertion: QualityAssertion,
+    previous_observations: list[ExecutionObservation],
+) -> Result[_QualityCountEvidence, QualityObservation]:
+    """Collect one relation and return row-count evidence or an errored quality observation."""
+    observed = session.collect_observed(data)
+    match observed.data:
+        Some(frame) => return Ok(_QualityCountEvidence(row_count=frame.row_count(), observation=observed.observation))
+        None =>
+            mut execution_observations: list[ExecutionObservation] = []
+            execution_observations.extend(previous_observations)
+            execution_observations.append(observed.observation)
+            return Err(_errored_quality_observation(assertion, execution_observations))
+
+
+def _failing_group_count_below_min[T with Clone](
+    session: Session,
+    grouped: LazyFrame[T],
+    assertion: QualityAssertion,
+    min_count: Option[int],
+) -> Result[int, QualityObservation]:
+    """Return how many groups are below the minimum threshold, or an errored observation encoded by the caller."""
+    if let Some(value) = min_count:
+        observed = session.collect_observed(grouped.filter(lt(col("quality_group_row_count"), value)))
+        match observed.data:
+            Some(frame) => return Ok(frame.row_count())
+            None => return Err(_errored_quality_observation(assertion, [observed.observation]))
+    return Ok(0)
+
+
+def _failing_group_count_above_max[T with Clone](
+    session: Session,
+    grouped: LazyFrame[T],
+    assertion: QualityAssertion,
+    max_count: Option[int],
+) -> Result[int, QualityObservation]:
+    """Return how many groups are above the maximum threshold, or an errored observation encoded by the caller."""
+    if let Some(value) = max_count:
+        observed = session.collect_observed(grouped.filter(gt(col("quality_group_row_count"), value)))
+        match observed.data:
+            Some(frame) => return Ok(frame.row_count())
+            None => return Err(_errored_quality_observation(assertion, [observed.observation]))
+    return Ok(0)
+
+
+def _quality_observation_from_status(
+    assertion: QualityAssertion,
+    plan_target: SemanticTarget,
+    execution_observations: list[ExecutionObservation],
+    status: QualityObservationStatus,
+    metrics: list[QualityMetric],
+    diagnostics: list[ExecutionDiagnostic],
+) -> QualityObservation:
+    """Build one quality observation anchored to a concrete plan target."""
+    target = _quality_observation_target(assertion.clone(), plan_target)
+    execution_ids = [observation.observation_id for observation in execution_observations]
+    mut evidence_refs: list[str] = []
+    evidence_refs.extend(assertion.evidence_refs)
+    evidence_refs.extend(execution_ids)
+    return QualityObservation(
+        observation_id=target.target_id,
+        target=target,
+        assertion=assertion,
+        execution_observation_ids=execution_ids,
+        status=status,
+        metrics=metrics,
+        diagnostics=diagnostics,
+        redacted_sample_refs=[],
+        evidence_refs=evidence_refs,
+    )
+
+
+def _errored_quality_observation(
+    assertion: QualityAssertion,
+    execution_observations: list[ExecutionObservation],
+) -> QualityObservation:
+    """Build an errored quality observation from failed execution evidence."""
+    diagnostics = _quality_diagnostics_from_executions(execution_observations)
+    return _quality_observation_from_status(
+        assertion,
+        _plan_target_for_quality_error(execution_observations),
+        execution_observations,
+        QualityObservationStatus.Errored,
+        [],
+        diagnostics,
+    )
+
+
+def _unsupported_quality_observation(
+    assertion: QualityAssertion,
+    execution_observations: list[ExecutionObservation],
+    message: str,
+) -> QualityObservation:
+    """Build an unsupported quality observation for a declaration/API mismatch."""
+    diagnostic = ExecutionDiagnostic(
+        severity=ExecutionDiagnosticSeverity.Warning,
+        code="quality.unsupported",
+        message=message,
+        target=Some(assertion.target.clone()),
+    )
+    return _quality_observation_from_status(
+        assertion,
+        assertion.target.clone(),
+        execution_observations,
+        QualityObservationStatus.Unsupported,
+        [],
+        [diagnostic],
+    )
+
+
+def _quality_observation_target(assertion: QualityAssertion, plan_target: SemanticTarget) -> SemanticTarget:
+    """Build one semantic target for a quality observation attached to a concrete plan."""
+    target_id = f"{plan_target.target_id}:quality-observation:{assertion.assertion_id}"
+    return SemanticTarget(
+        kind=SemanticTargetKind.QualityObservation,
+        target_id=target_id,
+        plan_id=plan_target.plan_id,
+        scope_id=assertion.scope.value(),
+        path=f"{plan_target.path}/quality/{assertion.name}",
+        name=assertion.name,
+        node_id=None,
+        ordinal=None,
+    )
+
+
+def _quality_diagnostics_from_executions(
+    execution_observations: list[ExecutionObservation],
+) -> list[ExecutionDiagnostic]:
+    """Flatten diagnostics from the execution observations that produced a quality error."""
+    mut diagnostics: list[ExecutionDiagnostic] = []
+    for observation in execution_observations:
+        diagnostics.extend(observation.diagnostics)
+    return diagnostics
+
+
+def _plan_target_for_quality_error(execution_observations: list[ExecutionObservation]) -> SemanticTarget:
+    """Choose the best plan target available for an errored quality observation."""
+    if len(execution_observations) > 0:
+        return execution_observations[0].plan_target
+    return _unavailable_plan_target(ExecutionOperationKind.Collect, SystemTime.now().unix_nanoseconds())
+
+
+def _count_threshold_passes(value: int, min_count: Option[int], max_count: Option[int]) -> bool:
+    """Return whether one count value satisfies optional inclusive thresholds."""
+    if let Some(minimum) = min_count:
+        if value < minimum:
+            return false
+    if let Some(maximum) = max_count:
+        if value > maximum:
+            return false
+    return true
+
+
+def _quality_status_from_bool(passed: bool) -> QualityObservationStatus:
+    """Convert a predicate result into a quality observation status."""
+    if passed:
+        return QualityObservationStatus.Passed
+    return QualityObservationStatus.Failed
+
+
+def _count_metric(name: str, value: int) -> QualityMetric:
+    """Build one count-valued quality metric."""
+    return quality_metric(name, f"{value}", "count")
+
+
+def _rate_metric(name: str, value: float) -> QualityMetric:
+    """Build one rate-valued quality metric."""
+    return quality_metric(name, f"{value}", "ratio")
+
+
+def _rate_value(numerator: int, denominator: int) -> float:
+    """Return a ratio value, treating an empty relation as rate zero."""
+    if denominator <= 0:
+        return 0.0
+    return (1.0 * numerator) / denominator
 
 
 def _observed_error_or_internal(error: Option[SessionError]) -> SessionError:

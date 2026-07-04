@@ -26,11 +26,12 @@ Use the docs tree like this:
 7. [Expand rows with generators (How-to)][generator-rows-how-to]
 8. [Add window columns (How-to)][window-columns-how-to]
 9. [Capture execution observations and adapter coverage (How-to)][execution-observations-how-to]
-10. [Dataset carriers (Reference)][dataset-reference]
-11. [Dataset methods (Reference)][dataset-methods-reference]
-12. [Execution context (Reference)][execution-reference]
-13. [Inspect a plan and lineage graph (How-to)][inspect-plan-lineage-how-to]
-14. [Local inspection (Reference)][inspection-reference]
+10. [Observe data quality checks (How-to)][quality-observations-how-to]
+11. [Dataset carriers (Reference)][dataset-reference]
+12. [Dataset methods (Reference)][dataset-methods-reference]
+13. [Execution context (Reference)][execution-reference]
+14. [Inspect a plan and lineage graph (How-to)][inspect-plan-lineage-how-to]
+15. [Local inspection (Reference)][inspection-reference]
 
 ### Understand the system design
 
@@ -66,6 +67,7 @@ Use the docs tree like this:
 [normalize-semistructured-fields-how-to]: language/how-to/normalize_semistructured_fields.md
 [execution-reference]: language/reference/execution_context.md
 [execution-observations-how-to]: language/how-to/execution_observations.md
+[quality-observations-how-to]: language/how-to/quality_observations.md
 [inspect-plan-lineage-how-to]: language/how-to/inspect_plan_lineage.md
 [inspection-reference]: language/reference/inspection.md
 [rfcs-index]: rfcs/README.md

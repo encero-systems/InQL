@@ -1,0 +1,286 @@
+"""Quality assertion declarations and observation records."""
+
+from evidence import ExecutionDiagnostic, SemanticTarget, SemanticTargetKind
+from projection_builders import ColumnExpr, col, scalar_expr_output_name
+
+
+@derive(Clone)
+pub enum QualityAssertionKind(str):
+    """Built-in quality assertion families supported by the first quality observation surface."""
+
+    RowCount = "row_count"
+    NullRate = "null_rate"
+    Unique = "unique"
+    GroupRowCount = "group_row_count"
+    CrossRelationRowCountEqual = "cross_relation_row_count_equal"
+
+
+@derive(Clone)
+pub enum QualityAssertionScope(str):
+    """Relational scope of one quality assertion."""
+
+    Relation = "relation"
+    Field = "field"
+    Group = "group"
+    CrossRelation = "cross_relation"
+
+
+@derive(Clone)
+pub enum QualityAssertionMode(str):
+    """Policy-neutral handling intent for a quality assertion."""
+
+    Observe = "observe"
+    Require = "require"
+    Quarantine = "quarantine"
+
+
+@derive(Clone)
+pub enum QualityAssertionSeverity(str):
+    """Author-facing severity label for quality diagnostics."""
+
+    Info = "info"
+    Warning = "warning"
+    Error = "error"
+
+
+@derive(Clone)
+pub enum QualityObservationStatus(str):
+    """Runtime outcome for one quality assertion observation."""
+
+    Passed = "passed"
+    Failed = "failed"
+    Errored = "errored"
+    Skipped = "skipped"
+    Unsupported = "unsupported"
+
+
+@derive(Clone)
+pub model QualityMetric:
+    """One compact metric emitted by a quality observation."""
+
+    pub name: str
+    pub value: str
+    pub unit: str
+
+
+@derive(Clone)
+pub model QualityAssertion:
+    """
+    One typed relational quality assertion declaration.
+
+    `expression` and `group_by` carry ordinary InQL scalar expressions so assertions can be planned as relational work.
+    Count thresholds use integer fields, and rate thresholds use the `max_rate` field where applicable.
+    """
+
+    pub assertion_id: str
+    pub name: str
+    pub kind: QualityAssertionKind
+    pub target: SemanticTarget
+    pub expression: ColumnExpr
+    pub group_by: list[ColumnExpr]
+    pub min_count: Option[int]
+    pub max_count: Option[int]
+    pub max_rate: Option[float]
+    pub severity: QualityAssertionSeverity
+    pub mode: QualityAssertionMode
+    pub scope: QualityAssertionScope
+    pub evidence_refs: list[str]
+
+    def with_mode(self, mode: QualityAssertionMode) -> Self:
+        """Return this assertion with a different policy-neutral handling mode."""
+        return _quality_assertion_with_policy(self, mode, self.severity)
+
+    def with_severity(self, severity: QualityAssertionSeverity) -> Self:
+        """Return this assertion with a different diagnostic severity."""
+        return _quality_assertion_with_policy(self, self.mode, severity)
+
+    def require(self) -> Self:
+        """Return this assertion with required handling intent."""
+        return self.with_mode(QualityAssertionMode.Require)
+
+    def quarantine(self) -> Self:
+        """Return this assertion with quarantine handling intent."""
+        return self.with_mode(QualityAssertionMode.Quarantine)
+
+
+@derive(Clone)
+pub model QualityObservation:
+    """Runtime evidence produced by evaluating one quality assertion."""
+
+    pub observation_id: str
+    pub target: SemanticTarget
+    pub assertion: QualityAssertion
+    pub execution_observation_ids: list[str]
+    pub status: QualityObservationStatus
+    pub metrics: list[QualityMetric]
+    pub diagnostics: list[ExecutionDiagnostic]
+    pub redacted_sample_refs: list[str]
+    pub evidence_refs: list[str]
+
+
+pub def row_count(min_count: Option[int] = None, max_count: Option[int] = None) -> QualityAssertion:
+    """Declare a relation-scoped row-count threshold assertion."""
+    return _quality_assertion(
+        QualityAssertionKind.RowCount,
+        "row_count",
+        QualityAssertionScope.Relation,
+        col(""),
+        [],
+        min_count,
+        max_count,
+        None,
+        QualityAssertionMode.Observe,
+        QualityAssertionSeverity.Error,
+    )
+
+
+pub def null_rate(field: ColumnExpr, max_rate: float) -> QualityAssertion:
+    """Declare a field-scoped null-rate threshold assertion."""
+    field_name = scalar_expr_output_name(field, "expr")
+    return _quality_assertion(
+        QualityAssertionKind.NullRate,
+        f"null_rate:{field_name}",
+        QualityAssertionScope.Field,
+        field,
+        [],
+        None,
+        None,
+        Some(max_rate),
+        QualityAssertionMode.Observe,
+        QualityAssertionSeverity.Error,
+    )
+
+
+pub def unique(field: ColumnExpr) -> QualityAssertion:
+    """Declare a field-scoped uniqueness assertion."""
+    field_name = scalar_expr_output_name(field, "expr")
+    return _quality_assertion(
+        QualityAssertionKind.Unique,
+        f"unique:{field_name}",
+        QualityAssertionScope.Field,
+        field,
+        [],
+        None,
+        None,
+        None,
+        QualityAssertionMode.Observe,
+        QualityAssertionSeverity.Error,
+    )
+
+
+pub def group_row_count(
+    group_by: list[ColumnExpr],
+    min_count: int = 1,
+    max_count: Option[int] = None,
+) -> QualityAssertion:
+    """Declare a group-scoped row-count threshold assertion."""
+    group_name = _group_name(group_by)
+    return _quality_assertion(
+        QualityAssertionKind.GroupRowCount,
+        f"group_row_count:{group_name}",
+        QualityAssertionScope.Group,
+        col(""),
+        group_by,
+        Some(min_count),
+        max_count,
+        None,
+        QualityAssertionMode.Observe,
+        QualityAssertionSeverity.Error,
+    )
+
+
+pub def cross_relation_row_count_equal() -> QualityAssertion:
+    """Declare an explicit cross-relation row-count equality assertion."""
+    return _quality_assertion(
+        QualityAssertionKind.CrossRelationRowCountEqual,
+        "cross_relation_row_count_equal",
+        QualityAssertionScope.CrossRelation,
+        col(""),
+        [],
+        None,
+        None,
+        None,
+        QualityAssertionMode.Observe,
+        QualityAssertionSeverity.Error,
+    )
+
+
+pub def quality_metric(name: str, value: str, unit: str = "") -> QualityMetric:
+    """Build one compact quality metric value."""
+    return QualityMetric(name=name, value=value, unit=unit)
+
+
+def _quality_assertion(
+    kind: QualityAssertionKind,
+    name: str,
+    scope: QualityAssertionScope,
+    expression: ColumnExpr,
+    group_by: list[ColumnExpr],
+    min_count: Option[int],
+    max_count: Option[int],
+    max_rate: Option[float],
+    mode: QualityAssertionMode,
+    severity: QualityAssertionSeverity,
+) -> QualityAssertion:
+    """Build one quality assertion and its declaration target from the public helper inputs."""
+    assertion_id = f"quality:{kind.value()}:{name}"
+    return QualityAssertion(
+        assertion_id=assertion_id,
+        name=name,
+        kind=kind,
+        target=_quality_assertion_target(assertion_id, scope, name),
+        expression=expression,
+        group_by=group_by,
+        min_count=min_count,
+        max_count=max_count,
+        max_rate=max_rate,
+        severity=severity,
+        mode=mode,
+        scope=scope,
+        evidence_refs=[],
+    )
+
+
+def _quality_assertion_target(assertion_id: str, scope: QualityAssertionScope, name: str) -> SemanticTarget:
+    """Build the semantic target for a declared quality assertion before it is attached to a concrete plan."""
+    return SemanticTarget(
+        kind=SemanticTargetKind.QualityAssertion,
+        target_id=assertion_id,
+        plan_id="quality:declaration",
+        scope_id=scope.value(),
+        path=f"quality/{scope.value()}/{name}",
+        name=name,
+        node_id=None,
+        ordinal=None,
+    )
+
+
+def _quality_assertion_with_policy(
+    assertion: QualityAssertion,
+    mode: QualityAssertionMode,
+    severity: QualityAssertionSeverity,
+) -> QualityAssertion:
+    """Return one assertion with only mode/severity changed."""
+    return QualityAssertion(
+        assertion_id=assertion.assertion_id,
+        name=assertion.name,
+        kind=assertion.kind,
+        target=assertion.target,
+        expression=assertion.expression,
+        group_by=assertion.group_by,
+        min_count=assertion.min_count,
+        max_count=assertion.max_count,
+        max_rate=assertion.max_rate,
+        severity=severity,
+        mode=mode,
+        scope=assertion.scope,
+        evidence_refs=assertion.evidence_refs,
+    )
+
+
+def _group_name(group_by: list[ColumnExpr]) -> str:
+    """Return a stable compact name for one group expression list."""
+    names = [scalar_expr_output_name(expr, "expr") for expr in group_by]
+    if len(names) == 0:
+        return "all"
+    return ",".join(names)

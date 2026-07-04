@@ -1,6 +1,6 @@
 # InQL RFC 034: Quality assertions and observations
 
-- **Status:** Draft
+- **Status:** Implemented
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -11,11 +11,12 @@
   - InQL RFC 027 (relational evidence program)
   - InQL RFC 028 (semantic identity and target model)
   - InQL RFC 032 (execution observations)
+  - InQL RFC 033 (adapter requirements and coverage)
   - InQL RFC 042 (async verification evidence)
 - **Issue:** [InQL #68](https://github.com/encero-systems/InQL/issues/68)
 - **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #83](https://github.com/encero-systems/InQL/pull/83)
 - **Written against:** Incan v0.3-era InQL
-- **Shipped in:** —
+- **Shipped in:** v0.1
 
 ## Summary
 
@@ -46,8 +47,8 @@ Authors can declare checks and execute them through a session:
 
 ```incan
 checks = [
-    row_count(min=1),
-    null_rate(col("customer_id"), max=0.0),
+    row_count(min_count=Some(1)),
+    null_rate(col("customer_id"), max_rate=0.0),
     unique(col("order_id")),
 ]
 
@@ -92,6 +93,24 @@ Future `query {}` or pipeline syntax may lower to the same assertion model. The 
 
 Existing filters and projections are unaffected. Users must opt into quality assertions separately.
 
+The first implementation adds relation, field, group, and explicit cross-relation assertion declarations plus session observation APIs. It includes `row_count(...)`, `null_rate(...)`, `unique(...)`, `group_row_count(...)`, and `cross_relation_row_count_equal()` helpers. `Session.observe_quality(...)` evaluates relation, field, and group assertions against one lazy relation; `Session.observe_quality_pair(...)` evaluates explicit cross-relation assertions against two lazy relations. Observations reference the execution observation IDs used to compute them. Failed quality checks report `QualityObservationStatus.Failed`; they do not throw, filter rows, quarantine records, or change relation cardinality.
+
+## Implementation plan
+
+The implemented scope adds typed `QualityAssertion`, `QualityObservation`, `QualityMetric`, and quality enum records; helper APIs for the first assertion families; policy-neutral assertion mode/severity metadata; session evaluation APIs; concrete DataFusion-backed execution tests; reference documentation; and a task-oriented how-to guide. The evaluator uses ordinary InQL relation plans and structured materialization row counts, including aggregate/filter plans for field and group checks. It does not scrape preview text and does not push enforcement behavior into `Session`.
+
+## Progress checklist
+
+- [x] Define quality assertion identity, scope, mode, severity, predicate/metric, and evidence fields.
+- [x] Define quality observation identity, status, metrics, diagnostics, redacted sample references, execution references, and evidence references.
+- [x] Support relation, field, group, and explicit cross-relation scopes.
+- [x] Add helper declarations for row-count thresholds, null-rate thresholds, uniqueness, group row-count thresholds, and cross-relation row-count equality.
+- [x] Add `Session.observe_quality(...)` and `Session.observe_quality_pair(...)`.
+- [x] Preserve the rule that quality checks do not silently filter or mutate the checked relation.
+- [x] Return unsupported observations for API/scope mismatches instead of treating them as passed.
+- [x] Add DataFusion-backed tests that assert concrete pass/fail/unsupported observations and emitted metrics.
+- [x] Update release notes, reference docs, and how-to docs.
+
 ## Alternatives considered
 
 - **Treat every quality check as a filter.** Rejected because observations and transformations are different semantics.
@@ -111,10 +130,12 @@ Existing filters and projections are unaffected. Users must opt into quality ass
 - **Execution / interchange** — quality plans may lower to backend-executable relational work.
 - **Documentation** — docs must distinguish checks, filters, and pipeline gates.
 
-## Unresolved questions
+## Design decisions
 
-- Which quality helpers belong in the first release?
-- Should quality observations always require a Session, or can some be evaluated against in-memory data carriers directly?
-- How should redacted sample references be represented?
+### Resolved
 
-<!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->
+The first release helper set is `row_count(...)`, `null_rate(...)`, `unique(...)`, `group_row_count(...)`, and `cross_relation_row_count_equal()`. This set is intentionally small but covers the RFC's required scopes: relation, field, group, and explicit cross-relation inputs. Broader expectation-suite compatibility, row-level validation, accepted-value catalogs, distribution checks, and external sampling policies remain future surfaces rather than hidden behavior in the first implementation.
+
+Quality observations require a `Session` in the first implementation because the supported checks are relational execution evidence. Even when a check can be reduced to a row count, the observation should reference the execution attempts used to compute it. Direct in-memory carrier evaluation can be added later if `DataFrame` exposes structured row values as evidence rather than rendered preview text.
+
+Redacted sample references are represented as `list[str]` on `QualityObservation`. The first implementation leaves the list empty. If a later sampling or quarantine surface stores samples, observations can reference those artifacts without embedding row payloads, credentials, or sensitive values in the observation record.

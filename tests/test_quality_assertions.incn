@@ -1,0 +1,205 @@
+"""Tests for RFC 034 quality assertions and observations."""
+
+from std.testing import assert_is_ok, fail_t
+from dataset import LazyFrame
+from functions import col
+from quality import (
+    QualityAssertionKind,
+    QualityAssertionMode,
+    QualityAssertionScope,
+    QualityObservation,
+    QualityObservationStatus,
+    cross_relation_row_count_equal,
+    group_row_count,
+    null_rate,
+    row_count,
+    unique,
+)
+from session import Session
+
+
+@derive(Clone)
+model Order:
+    """Fixture row shape for small row-count checks."""
+
+    id: int
+
+
+@derive(Clone)
+model OrderLine:
+    """Fixture row shape for field, group, and cross-relation quality checks."""
+
+    order_id: int
+    line_id: int
+    sku: str
+    qty: int
+    unit_price: float
+    currency: str
+    status: str
+    created_at: str
+
+
+@derive(Clone)
+model AggregateOrder:
+    """Fixture row shape with the same row count as `orders.csv`."""
+
+    customer_id: str
+    amount: int
+
+
+const ORDERS_CSV_FIXTURE: str = "tests/fixtures/orders.csv"
+const ORDER_LINES_CSV_FIXTURE: str = "tests/fixtures/order_lines.csv"
+const AGGREGATE_ORDERS_CSV_FIXTURE: str = "tests/fixtures/aggregate_orders.csv"
+
+
+def _read_orders(mut session: Session) -> LazyFrame[Order]:
+    """Read the small orders fixture or fail the test."""
+    return assert_is_ok(session.read_csv("quality_orders", ORDERS_CSV_FIXTURE), "orders CSV fixture should load")
+
+
+def _read_order_lines(mut session: Session) -> LazyFrame[OrderLine]:
+    """Read the order-lines fixture or fail the test."""
+    return assert_is_ok(
+        session.read_csv("quality_order_lines", ORDER_LINES_CSV_FIXTURE),
+        "order-lines CSV fixture should load",
+    )
+
+
+def _read_aggregate_orders(mut session: Session) -> LazyFrame[AggregateOrder]:
+    """Read the aggregate-orders fixture or fail the test."""
+    return assert_is_ok(
+        session.read_csv("quality_aggregate_orders", AGGREGATE_ORDERS_CSV_FIXTURE),
+        "aggregate-orders CSV fixture should load",
+    )
+
+
+def _single_observation(observations: list[QualityObservation]) -> QualityObservation:
+    """Return exactly one quality observation from a session call."""
+    if len(observations) != 1:
+        return fail_t(f"expected one quality observation, got {len(observations)}")
+    return observations[0]
+
+
+def _metric_value(observation: QualityObservation, name: str) -> str:
+    """Return one metric value by name or fail the test."""
+    for metric in observation.metrics:
+        if metric.name == name:
+            return metric.value
+    return fail_t(f"missing quality metric: {name}")
+
+
+def test_quality_assertion_helpers__create_semantic_targets() -> None:
+    """Quality helper declarations should expose assertion kind, scope, and target metadata."""
+    # -- Arrange --
+
+    # -- Act --
+    relation_assertion = row_count(min_count=Some(1))
+    field_assertion = null_rate(col("status"), max_rate=0.0)
+    group_assertion = group_row_count([col("status")], 1, Some(3))
+    cross_assertion = cross_relation_row_count_equal()
+
+    # -- Assert --
+    assert relation_assertion.kind == QualityAssertionKind.RowCount, "row_count should declare row-count assertions"
+    assert relation_assertion.scope == QualityAssertionScope.Relation, "row_count should be relation-scoped"
+    assert field_assertion.scope == QualityAssertionScope.Field, "null_rate should be field-scoped"
+    assert field_assertion.name == "null_rate:status", "field quality assertions should carry stable field names"
+    assert group_assertion.scope == QualityAssertionScope.Group, "group_row_count should be group-scoped"
+    assert len(group_assertion.group_by) == 1, "group_row_count should retain grouping expressions"
+    assert cross_assertion.scope == QualityAssertionScope.CrossRelation, "cross-relation helper should declare cross-relation scope"
+    assert relation_assertion.require().mode == QualityAssertionMode.Require, "policy intent should be explicit on the assertion value"
+
+
+def test_observe_quality__records_row_count_pass_and_fail() -> None:
+    """Relation row-count assertions should pass and fail from structured materialization row counts."""
+    # -- Arrange --
+    mut session = Session.default()
+    orders = _read_orders(session)
+
+    # -- Act --
+    pass_observation = _single_observation(session.observe_quality(orders.clone(), [row_count(min_count=Some(1))]))
+    fail_observation = _single_observation(session.observe_quality(orders, [row_count(min_count=Some(4))]))
+
+    # -- Assert --
+    assert pass_observation.status == QualityObservationStatus.Passed, "row-count minimum should pass for three rows"
+    assert fail_observation.status == QualityObservationStatus.Failed, "row-count minimum should fail when threshold is too high"
+    assert _metric_value(pass_observation, "row_count") == "3", "row-count metric should use the collected row count"
+    assert len(pass_observation.execution_observation_ids) == 1, "quality observations should reference execution attempts"
+
+
+def test_observe_quality__records_field_null_rate_and_unique_status() -> None:
+    """Field assertions should execute through filter and group plans instead of filtering the checked relation."""
+    # -- Arrange --
+    mut session = Session.default()
+    order_lines = _read_order_lines(session)
+
+    # -- Act --
+    null_observation = _single_observation(
+        session.observe_quality(order_lines.clone(), [null_rate(col("status"), max_rate=0.0)]),
+    )
+    unique_pass = _single_observation(session.observe_quality(order_lines.clone(), [unique(col("sku"))]))
+    unique_fail = _single_observation(session.observe_quality(order_lines, [unique(col("order_id"))]))
+
+    # -- Assert --
+    assert null_observation.status == QualityObservationStatus.Passed, "fixture statuses should have no nulls"
+    assert _metric_value(null_observation, "null_count") == "0", "null-rate metric should expose null count"
+    assert unique_pass.status == QualityObservationStatus.Passed, "SKU values should be unique in the fixture"
+    assert unique_fail.status == QualityObservationStatus.Failed, "order_id should fail uniqueness because 1001 appears twice"
+    assert _metric_value(unique_fail, "duplicate_group_count") == "1", "uniqueness should count duplicate groups"
+
+
+def test_observe_quality__records_group_threshold_failures() -> None:
+    """Group row-count assertions should report failing groups rather than filtering the source relation."""
+    # -- Arrange --
+    mut session = Session.default()
+    order_lines = _read_order_lines(session)
+
+    # -- Act --
+    pass_observation = _single_observation(
+        session.observe_quality(order_lines.clone(), [group_row_count([col("status")], 1, Some(3))]),
+    )
+    fail_observation = _single_observation(
+        session.observe_quality(order_lines, [group_row_count([col("status")], 1, Some(2))]),
+    )
+
+    # -- Assert --
+    assert pass_observation.status == QualityObservationStatus.Passed, "all status groups should have at most three rows"
+    assert fail_observation.status == QualityObservationStatus.Failed, "the open status group should violate max_count=2"
+    assert _metric_value(fail_observation, "failing_group_count") == "1", "group quality should count failing groups"
+
+
+def test_observe_quality_pair__records_cross_relation_row_count_equality() -> None:
+    """Cross-relation assertions should require explicit left and right relation inputs."""
+    # -- Arrange --
+    mut session = Session.default()
+    orders = _read_orders(session)
+    aggregate_orders = _read_aggregate_orders(session)
+    order_lines = _read_order_lines(session)
+
+    # -- Act --
+    pass_observation = _single_observation(
+        session.observe_quality_pair(orders.clone(), aggregate_orders, [cross_relation_row_count_equal()]),
+    )
+    fail_observation = _single_observation(
+        session.observe_quality_pair(orders, order_lines, [cross_relation_row_count_equal()]),
+    )
+
+    # -- Assert --
+    assert pass_observation.status == QualityObservationStatus.Passed, "orders and aggregate_orders both have three rows"
+    assert fail_observation.status == QualityObservationStatus.Failed, "orders and order_lines have different row counts"
+    assert _metric_value(fail_observation, "left_row_count") == "3", "cross-relation observation should expose left count"
+    assert _metric_value(fail_observation, "right_row_count") == "5", "cross-relation observation should expose right count"
+    assert len(fail_observation.execution_observation_ids) == 2, "cross-relation observations should reference both execution attempts"
+
+
+def test_observe_quality__does_not_silently_accept_cross_relation_assertions() -> None:
+    """Using a cross-relation assertion with the single-relation API should produce unsupported evidence."""
+    # -- Arrange --
+    mut session = Session.default()
+    orders = _read_orders(session)
+
+    # -- Act --
+    observation = _single_observation(session.observe_quality(orders, [cross_relation_row_count_equal()]))
+
+    # -- Assert --
+    assert observation.status == QualityObservationStatus.Unsupported, "API mismatch should be explicit unsupported evidence"
+    assert len(observation.diagnostics) == 1, "unsupported quality observations should explain the mismatch"

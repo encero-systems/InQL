@@ -434,6 +434,22 @@ pub from evidence import (
     SemanticTargetKind,
     UnsupportedEvidence,
 )
+pub from quality import (
+    QualityAssertion,
+    QualityAssertionKind,
+    QualityAssertionMode,
+    QualityAssertionScope,
+    QualityAssertionSeverity,
+    QualityMetric,
+    QualityObservation,
+    QualityObservationStatus,
+    cross_relation_row_count_equal,
+    group_row_count,
+    null_rate,
+    quality_metric,
+    row_count,
+    unique,
+)
 pub from inspect import (
     INSPECTION_SCHEMA_VERSION,
     InspectionNodeKind,

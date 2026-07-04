@@ -22,6 +22,7 @@ This section documents the current InQL package surface.
 ### Execution and materialization
 
 - [Capture execution observations and adapter coverage (How-to)][execution-observations-how-to]
+- [Observe data quality checks (How-to)][quality-observations-how-to]
 - [Execution context (Reference)][execution-reference]
 - [Execution context (Explanation)][execution-explanation]
 
@@ -43,6 +44,7 @@ This section documents the current InQL package surface.
 
 - [Inspect a plan and lineage graph (How-to)][inspect-plan-lineage-how-to]
 - [Local inspection][inspection-reference]
+- [Quality assertions and observations][quality-reference]
 
 <!-- References -->
 [reference]: reference/
@@ -64,7 +66,9 @@ This section documents the current InQL package surface.
 [execution-reference]: reference/execution_context.md
 [execution-explanation]: explanation/execution_context.md
 [execution-observations-how-to]: how-to/execution_observations.md
+[quality-observations-how-to]: how-to/quality_observations.md
 [inspect-plan-lineage-how-to]: how-to/inspect_plan_lineage.md
+[quality-reference]: reference/quality.md
 [substrait-read-root]: reference/substrait/read_root_binding_contract.md
 [substrait-conformance]: reference/substrait/conformance.md
 [substrait-operator-catalog]: reference/substrait/operator_catalog.md

@@ -557,7 +557,7 @@ def _replace_materialized_generator_children(rel: Rel, path: str) -> Rel:
         Some(RelType.Fetch(fetch_rel)) => return _replace_fetch_generator_child(rel, fetch_rel.as_ref().clone(), path)
         Some(RelType.Window(window_rel)) =>
             return _replace_window_generator_child(rel, window_rel.as_ref().clone(), path)
-        Some(RelType.Set(set_rel)) => return _replace_set_generator_children(set_rel, path)
+        Some(RelType.Set(_)) => return _replace_set_generator_children(rel, path)
         Some(RelType.ExtensionSingle(extension_rel)) =>
             return _replace_extension_generator_child(rel, extension_rel.as_ref().clone(), path)
         _ => return rel
@@ -737,24 +737,27 @@ def _replace_window_generator_child(original: Rel, window: ConsistentPartitionWi
     return original
 
 
-def _replace_set_generator_children(set_rel: SetRel, path: str) -> Rel:
+def _replace_set_generator_children(original: Rel, path: str) -> Rel:
     """Rebuild a SetRel with every input child rewritten."""
-    mut inputs: list[Rel] = []
-    for idx, input in enumerate(set_rel.inputs):
-        rewritten = _replace_materialized_generator_relations(input, f"{path}_set_{idx}")
-        inputs.append(rewritten.clone())
-    return Rel(
-        rel_type=Some(
-            RelType.Set(
-                SetRel(
-                    common=set_rel.common,
-                    inputs=inputs,
-                    op=set_rel.op,
-                    advanced_extension=set_rel.advanced_extension,
+    match original.rel_type:
+        Some(RelType.Set(set_rel)) =>
+            mut inputs: list[Rel] = []
+            for idx, input in enumerate(set_rel.inputs):
+                rewritten = _replace_materialized_generator_relations(input, f"{path}_set_{idx}")
+                inputs.append(rewritten.clone())
+            return Rel(
+                rel_type=Some(
+                    RelType.Set(
+                        SetRel(
+                            common=set_rel.common,
+                            inputs=inputs,
+                            op=set_rel.op,
+                            advanced_extension=set_rel.advanced_extension,
+                        ),
+                    ),
                 ),
-            ),
-        ),
-    )
+            )
+        _ => return original
 
 
 def _replace_extension_generator_child(original: Rel, extension: ExtensionSingleRel, path: str) -> Rel:
@@ -835,7 +838,7 @@ def _replace_materialized_window_children(rel: Rel, path: str) -> Rel:
             return _replace_aggregate_window_child(rel, aggregate_rel.as_ref().clone(), path)
         Some(RelType.Sort(sort_rel)) => return _replace_sort_window_child(rel, sort_rel.as_ref().clone(), path)
         Some(RelType.Fetch(fetch_rel)) => return _replace_fetch_window_child(rel, fetch_rel.as_ref().clone(), path)
-        Some(RelType.Set(set_rel)) => return _replace_set_window_children(set_rel, path)
+        Some(RelType.Set(_)) => return _replace_set_window_children(rel, path)
         Some(RelType.ExtensionSingle(extension_rel)) =>
             return _replace_extension_window_child(rel, extension_rel.as_ref().clone(), path)
         _ => return rel
@@ -1000,24 +1003,27 @@ def _replace_fetch_window_child(original: Rel, fetch: FetchRel, path: str) -> Re
         None => return original
 
 
-def _replace_set_window_children(set_rel: SetRel, path: str) -> Rel:
+def _replace_set_window_children(original: Rel, path: str) -> Rel:
     """Rebuild a SetRel with every input child rewritten."""
-    mut inputs: list[Rel] = []
-    for idx, input in enumerate(set_rel.inputs):
-        rewritten = _replace_materialized_window_relations(input, f"{path}_set_{idx}")
-        inputs.append(rewritten.clone())
-    return Rel(
-        rel_type=Some(
-            RelType.Set(
-                SetRel(
-                    common=set_rel.common,
-                    inputs=inputs,
-                    op=set_rel.op,
-                    advanced_extension=set_rel.advanced_extension,
+    match original.rel_type:
+        Some(RelType.Set(set_rel)) =>
+            mut inputs: list[Rel] = []
+            for idx, input in enumerate(set_rel.inputs):
+                rewritten = _replace_materialized_window_relations(input, f"{path}_set_{idx}")
+                inputs.append(rewritten.clone())
+            return Rel(
+                rel_type=Some(
+                    RelType.Set(
+                        SetRel(
+                            common=set_rel.common,
+                            inputs=inputs,
+                            op=set_rel.op,
+                            advanced_extension=set_rel.advanced_extension,
+                        ),
+                    ),
                 ),
-            ),
-        ),
-    )
+            )
+        _ => return original
 
 
 def _replace_extension_window_child(original: Rel, extension: ExtensionSingleRel, path: str) -> Rel:
