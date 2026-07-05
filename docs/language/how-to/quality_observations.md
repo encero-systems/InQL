@@ -27,12 +27,27 @@ The helper options are deliberately small:
 
 Use `.require()`, `.quarantine()`, `.with_mode(...)`, or `.with_severity(...)` when a caller needs to record intended handling. Session observation still reports evidence rather than enforcing policy. For example, a failed required check returns a `Failed` observation; it does not throw merely because the assertion mode is `Require`.
 
-## Prepare the relation
-
-There is no quality-specific vocab clause in this slice. Quality assertions are ordinary Incan helper values. The useful vocab sugar is the existing `query { ... }` block for shaping the relation before you observe it.
+You can also declare the same checks with the `quality` vocab surface after importing `pub::inql`. A `quality` block returns a `list[QualityAssertion]`; it does not execute checks by itself.
 
 ```incan
-from pub::inql import LazyFrame, Session, col, group_row_count, null_rate, row_count, unique
+max_customer_null_rate = 0.0
+
+checks = quality {
+    row_count(Some(1)).require()
+    null_rate(.customer_id, max_customer_null_rate)
+    unique(.order_id).require()
+    group_row_count([.region], 1, Some(10000)).quarantine()
+}
+```
+
+Use leading-dot field references inside `quality` blocks when the assertion should refer to a field expression. The block lowers those field references to ordinary `col("...")` expressions before the session observes the checks.
+
+## Prepare the relation
+
+Quality syntax composes with query syntax. Use `query { ... }` to shape the relation you want to check, then pass that relation and the `quality { ... }` assertions to `session.observe_quality(...)`.
+
+```incan
+from pub::inql import LazyFrame, Session
 from models import Order
 
 session = Session.default()
@@ -48,17 +63,17 @@ paid_orders = query {
         .amount as amount
 }
 
-checks = [
-    row_count(min_count=Some(1)),
-    null_rate(col("customer_id"), max_rate=0.0),
-    unique(col("order_id")),
-    group_row_count([col("region")], min_count=1, max_count=Some(10000)),
-]
+max_customer_null_rate = 0.0
+checks = quality:
+    row_count(Some(1))
+    null_rate(.customer_id, max_customer_null_rate)
+    unique(.order_id)
+    group_row_count([.region], 1, Some(10000))
 
 observations = session.observe_quality(paid_orders, checks)
 ```
 
-Inside `query { ... }`, leading-dot field references such as `.status` and `.order_id` use query-block resolution. In the assertion declarations, use ordinary InQL expressions such as `col("customer_id")` because those declarations are normal Incan code, not query clauses.
+Inside `query { ... }`, leading-dot field references such as `.status` and `.order_id` use query-block resolution. Inside `quality { ... }` or `quality:`, leading-dot field references use quality assertion resolution and lower to `col("...")`. Outside those vocab blocks, use ordinary InQL expressions such as `col("customer_id")`.
 
 ## Read the output
 

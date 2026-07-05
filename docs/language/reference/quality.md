@@ -16,6 +16,26 @@ Quality assertions are declarations. They do not filter, quarantine, or mutate t
 
 The first implementation evaluates these helpers through ordinary InQL plans and `Session.collect_observed(...)`. Row-count checks use structured materialization row counts. Field and group checks build filter and aggregate plans and evaluate the resulting row counts. They do not scrape rendered preview text.
 
+## Quality syntax
+
+Importing `pub::inql` activates `quality { ... }` and expression-position `quality:` syntax. Both forms return `list[QualityAssertion]`.
+
+```incan
+checks = quality {
+    row_count(Some(1)).require()
+    unique(.order_id)
+    group_row_count([.region], 1, Some(10000)).quarantine()
+}
+```
+
+```incan
+checks = quality:
+    row_count(Some(1))
+    unique(.order_id)
+```
+
+Each body item must be an assertion expression. Brace syntax uses newline-separated assertion expressions, not comma-separated list items. Leading-dot field references are valid inside quality blocks and lower to ordinary `col("field")` expressions. The syntax only declares assertions; call `session.observe_quality(...)` or `session.observe_quality_pair(...)` to evaluate them.
+
 ## Policy intent
 
 `QualityAssertion.mode` records handling intent for callers that choose to enforce checks outside the assertion semantics. The first implementation keeps session evaluation policy-neutral: `observe_quality(...)` reports `Passed`, `Failed`, `Errored`, or `Unsupported` for the built-in session checks; it does not throw on failed required checks. `Skipped` is part of the status vocabulary for caller-owned or future evaluators that intentionally bypass a check.

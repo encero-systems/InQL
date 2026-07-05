@@ -1,13 +1,14 @@
 use incan_vocab::{
-    DesugarError, DesugarOutput, IncanBinaryOp, IncanExpr, IncanScopedSurfacePayload, IncanUnaryOp,
-    VocabBodyItem, VocabClause, VocabClauseBody, VocabDeclaration, VocabDesugarer,
+    DesugarError, DesugarOutput, IncanBinaryOp, IncanExpr, IncanScopedSurfacePayload,
+    IncanStatement, IncanUnaryOp, VocabBodyItem, VocabClause, VocabClauseBody,
+    VocabDeclaration, VocabDesugarer,
     VocabExpressionItem, VocabFieldSpec, VocabSyntaxNode,
 };
 
-use crate::{QUERY_FIELD_DESCRIPTOR, QUERY_KW};
+use crate::{helper_exported, QUERY_FIELD_DESCRIPTOR, QUALITY_KW, QUERY_KW};
 
 #[derive(Default)]
-pub struct InqlQueryDesugarer;
+pub struct InqlVocabDesugarer;
 
 struct PendingJoin {
     source: IncanExpr,
@@ -15,15 +16,17 @@ struct PendingJoin {
     method_name: &'static str,
 }
 
-impl VocabDesugarer for InqlQueryDesugarer {
+impl VocabDesugarer for InqlVocabDesugarer {
     fn desugar(&self, node: &VocabSyntaxNode) -> Result<DesugarOutput, DesugarError> {
         let declaration = match node {
-            VocabSyntaxNode::Declaration(declaration) if declaration.keyword == QUERY_KW => {
+            VocabSyntaxNode::Declaration(declaration)
+                if matches!(declaration.keyword.as_str(), QUERY_KW | QUALITY_KW) =>
+            {
                 declaration
             }
             VocabSyntaxNode::Declaration(_) => {
                 return Err(DesugarError::new(
-                    "InQL query desugarer expected a `query:` declaration",
+                    "InQL desugarer expected a `query:` or `quality:` declaration",
                 ));
             }
             _ => {
@@ -32,7 +35,130 @@ impl VocabDesugarer for InqlQueryDesugarer {
                 ))
             }
         };
-        Ok(DesugarOutput::Expression(lower_query(declaration)?))
+        match declaration.keyword.as_str() {
+            QUERY_KW => Ok(DesugarOutput::Expression(lower_query(declaration)?)),
+            QUALITY_KW => Ok(DesugarOutput::Expression(lower_quality(declaration)?)),
+            _ => Err(DesugarError::new(
+                "InQL desugarer received an unsupported declaration keyword",
+            )),
+        }
+    }
+}
+
+fn lower_quality(declaration: &VocabDeclaration) -> Result<IncanExpr, DesugarError> {
+    if !declaration.head.header_args.is_empty() || declaration.head.name.is_some() {
+        return Err(DesugarError::new(
+            "quality blocks do not accept header arguments",
+        ));
+    }
+
+    let mut assertions = Vec::new();
+    for item in &declaration.body {
+        match item {
+            VocabBodyItem::Statement(IncanStatement::Expr(expr)) => {
+                assertions.push(lower_quality_expr(expr)?);
+            }
+            VocabBodyItem::Statement(IncanStatement::Pass) => {}
+            VocabBodyItem::Statement(_) => {
+                return Err(DesugarError::new(
+                    "quality blocks accept assertion expressions, not statements",
+                ));
+            }
+            VocabBodyItem::Clause(clause) => {
+                return Err(DesugarError::new(format!(
+                    "quality blocks do not support `{}` clauses",
+                    clause_spelling(clause),
+                )));
+            }
+            VocabBodyItem::Declaration(_) => {
+                return Err(DesugarError::new(
+                    "quality blocks do not support nested declarations",
+                ));
+            }
+            _ => {
+                return Err(DesugarError::new(
+                    "quality blocks do not support this body item",
+                ));
+            }
+        }
+    }
+    Ok(IncanExpr::List(assertions))
+}
+
+fn lower_quality_expr(expr: &IncanExpr) -> Result<IncanExpr, DesugarError> {
+    match expr {
+        IncanExpr::ScopedSurface(surface) if surface.descriptor_key == QUERY_FIELD_DESCRIPTOR => {
+            if let IncanScopedSurfacePayload::LeadingDotPath { segments, .. } = &surface.payload {
+                return Ok(helper_call("col", vec![IncanExpr::Str(segments.join("."))]));
+            }
+            Err(DesugarError::new(
+                "quality field shorthand expected a leading-dot path",
+            ))
+        }
+        IncanExpr::CurrentField(field) => Ok(helper_call("col", vec![IncanExpr::Str(field.clone())])),
+        IncanExpr::RelationField { relation, field } => Ok(helper_call(
+            "col",
+            vec![IncanExpr::Str(format!("{relation}.{field}"))],
+        )),
+        IncanExpr::List(items) => Ok(IncanExpr::List(
+            items
+                .iter()
+                .map(lower_quality_expr)
+                .collect::<Result<Vec<_>, _>>()?,
+        )),
+        IncanExpr::Tuple(items) => Ok(IncanExpr::Tuple(
+            items
+                .iter()
+                .map(lower_quality_expr)
+                .collect::<Result<Vec<_>, _>>()?,
+        )),
+        IncanExpr::Dict(items) => Ok(IncanExpr::Dict(
+            items
+                .iter()
+                .map(|(key, value)| Ok((lower_quality_expr(key)?, lower_quality_expr(value)?)))
+                .collect::<Result<Vec<_>, DesugarError>>()?,
+        )),
+        IncanExpr::Binary(left, op, right) => Ok(helper_call(
+            binary_helper(*op)?,
+            vec![lower_quality_expr(left)?, lower_quality_expr(right)?],
+        )),
+        IncanExpr::Unary(op, inner) => Ok(helper_call(unary_helper(*op)?, vec![lower_quality_expr(inner)?])),
+        IncanExpr::Call { callee, args } => lower_quality_call(callee, args),
+        IncanExpr::Field { object, field } => Ok(IncanExpr::Field {
+            object: Box::new(lower_quality_expr(object)?),
+            field: field.clone(),
+        }),
+        _ => Ok(expr.clone()),
+    }
+}
+
+fn lower_quality_call(callee: &IncanExpr, args: &[IncanExpr]) -> Result<IncanExpr, DesugarError> {
+    let lowered_args = args
+        .iter()
+        .map(lower_quality_expr)
+        .collect::<Result<Vec<_>, _>>()?;
+    match callee {
+        IncanExpr::Name(name) => {
+            let helper = helper_name(name);
+            if helper_exported(helper) {
+                return Ok(helper_call(helper, lowered_args));
+            }
+            Ok(IncanExpr::Call {
+                callee: Box::new(callee.clone()),
+                args: lowered_args,
+            })
+        }
+        IncanExpr::Field { object, field } => Ok(IncanExpr::Call {
+            callee: Box::new(IncanExpr::Field {
+                object: Box::new(lower_quality_expr(object)?),
+                field: field.clone(),
+            }),
+            args: lowered_args,
+        }),
+        _ => Ok(IncanExpr::Call {
+            callee: Box::new(lower_quality_expr(callee)?),
+            args: lowered_args,
+        }),
     }
 }
 

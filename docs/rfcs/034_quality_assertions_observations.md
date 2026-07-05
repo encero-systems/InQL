@@ -14,13 +14,13 @@
   - InQL RFC 033 (adapter requirements and coverage)
   - InQL RFC 042 (async verification evidence)
 - **Issue:** [InQL #68](https://github.com/encero-systems/InQL/issues/68)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #83](https://github.com/encero-systems/InQL/pull/83)
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #83](https://github.com/encero-systems/InQL/pull/83); [InQL #88](https://github.com/encero-systems/InQL/pull/88)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** v0.1
 
 ## Summary
 
-This RFC defines InQL quality assertions and quality observations. Quality assertions are typed relational checks over datasets, fields, groups, or explicit multi-relation inputs. Quality observations are runtime results produced by executing those assertions. A quality assertion is not an ordinary filter unless the author explicitly asks to filter rows.
+This RFC defines InQL quality assertions, quality assertion syntax, and quality observations. Quality assertions are typed relational checks over datasets, fields, groups, or explicit multi-relation inputs. Quality observations are runtime results produced by executing those assertions. A quality assertion is not an ordinary filter unless the author explicitly asks to filter rows.
 
 ## Motivation
 
@@ -33,6 +33,7 @@ Data quality needs to participate in typed relational planning without collapsin
 - Distinguish assertion declaration from runtime result.
 - Support relation, field, group, and explicit cross-relation scopes.
 - Preserve the rule that quality does not silently change relation cardinality.
+- Provide `quality { ... }` and expression-position `quality:` syntax for declaring assertion lists without creating a second semantic model.
 
 ## Non-Goals
 
@@ -51,6 +52,18 @@ checks = [
     null_rate(col("customer_id"), max_rate=0.0),
     unique(col("order_id")),
 ]
+
+observations = session.observe_quality(orders, checks)
+```
+
+Authors can also use the `quality` vocab surface when they want assertion declarations to read as a compact block. A `quality` block produces a `list[QualityAssertion]`; it does not execute the assertions by itself:
+
+```incan
+checks = quality {
+    row_count(Some(1)).require()
+    unique(.order_id)
+    group_row_count([.region], 1, Some(10000)).quarantine()
+}
 
 observations = session.observe_quality(orders, checks)
 ```
@@ -79,7 +92,16 @@ Quality expressions must use ordinary InQL scalar, aggregate, and grouping seman
 
 ### Syntax
 
-This RFC introduces no new block syntax. Helper APIs are sufficient for the first version.
+This RFC introduces `quality { ... }` and expression-position `quality:` syntax for declaring a `list[QualityAssertion]`. The syntax is activated by importing `pub::inql`, like `query { ... }`.
+
+```incan
+checks = quality:
+    row_count(Some(1))
+    unique(.order_id).require()
+    group_row_count([.region], 1, Some(10000))
+```
+
+Each body item must be an assertion expression. Brace syntax uses newline-separated assertion expressions; it is not a comma-separated list literal. Leading-dot field references are valid inside quality assertion expressions and lower to ordinary `col("field")` expressions. `quality` syntax must lower to the same `QualityAssertion` helper values as ordinary Incan code. It must not observe, enforce, filter, quarantine, or mutate a relation by itself.
 
 ### Semantics
 
@@ -87,17 +109,17 @@ Quality assertions produce observations. They may inform session failure, warnin
 
 ### Interaction with other InQL surfaces
 
-Future `query {}` or pipeline syntax may lower to the same assertion model. The assertion model must not become method-chain specific.
+`quality` syntax lowers to the same assertion model as helper calls. It may be used next to `query {}` blocks by shaping a relation with `query {}` and declaring checks with `quality {}` before passing both to a `Session` observation API. Future pipeline syntax may lower to the same assertion model, but the assertion model must not become method-chain, query-block, or quality-block specific.
 
 ### Compatibility / migration
 
 Existing filters and projections are unaffected. Users must opt into quality assertions separately.
 
-The first implementation adds relation, field, group, and explicit cross-relation assertion declarations plus session observation APIs. It includes `row_count(...)`, `null_rate(...)`, `unique(...)`, `group_row_count(...)`, and `cross_relation_row_count_equal()` helpers. `Session.observe_quality(...)` evaluates relation, field, and group assertions against one lazy relation; `Session.observe_quality_pair(...)` evaluates explicit cross-relation assertions against two lazy relations. Observations reference the execution observation IDs used to compute them. Failed quality checks report `QualityObservationStatus.Failed`; they do not throw, filter rows, quarantine records, or change relation cardinality.
+The first implementation adds relation, field, group, and explicit cross-relation assertion declarations plus session observation APIs. It includes `row_count(...)`, `null_rate(...)`, `unique(...)`, `group_row_count(...)`, and `cross_relation_row_count_equal()` helpers, plus `quality { ... }` and `quality:` syntax that lower to assertion lists. `Session.observe_quality(...)` evaluates relation, field, and group assertions against one lazy relation; `Session.observe_quality_pair(...)` evaluates explicit cross-relation assertions against two lazy relations. Observations reference the execution observation IDs used to compute them. Failed quality checks report `QualityObservationStatus.Failed`; they do not throw, filter rows, quarantine records, or change relation cardinality.
 
 ## Implementation plan
 
-The implemented scope adds typed `QualityAssertion`, `QualityObservation`, `QualityMetric`, and quality enum records; helper APIs for the first assertion families; policy-neutral assertion mode/severity metadata; session evaluation APIs; concrete DataFusion-backed execution tests; reference documentation; and a task-oriented how-to guide. The evaluator uses ordinary InQL relation plans and structured materialization row counts, including aggregate/filter plans for field and group checks. It does not scrape preview text and does not push enforcement behavior into `Session`.
+The implemented scope adds typed `QualityAssertion`, `QualityObservation`, `QualityMetric`, and quality enum records; helper APIs for the first assertion families; `quality` vocab syntax for assertion-list declarations; policy-neutral assertion mode/severity metadata; session evaluation APIs; concrete DataFusion-backed execution tests; reference documentation; and a task-oriented how-to guide. The evaluator uses ordinary InQL relation plans and structured materialization row counts, including aggregate/filter plans for field and group checks. It does not scrape preview text and does not push enforcement behavior into `Session`.
 
 ## Progress checklist
 
@@ -105,6 +127,7 @@ The implemented scope adds typed `QualityAssertion`, `QualityObservation`, `Qual
 - [x] Define quality observation identity, status, metrics, diagnostics, redacted sample references, execution references, and evidence references.
 - [x] Support relation, field, group, and explicit cross-relation scopes.
 - [x] Add helper declarations for row-count thresholds, null-rate thresholds, uniqueness, group row-count thresholds, and cross-relation row-count equality.
+- [x] Add `quality { ... }` and `quality:` syntax that lowers to assertion lists.
 - [x] Add `Session.observe_quality(...)` and `Session.observe_quality_pair(...)`.
 - [x] Preserve the rule that quality checks do not silently filter or mutate the checked relation.
 - [x] Return unsupported observations for API/scope mismatches instead of treating them as passed.
@@ -115,7 +138,7 @@ The implemented scope adds typed `QualityAssertion`, `QualityObservation`, `Qual
 
 - **Treat every quality check as a filter.** Rejected because observations and transformations are different semantics.
 - **Leave quality entirely to external tools.** Rejected because typed relational checks need InQL schema and expression semantics.
-- **Introduce syntax first.** Rejected because APIs and evidence contracts should settle before syntax.
+- **Make `quality` syntax execute checks directly.** Rejected because declaration and observation are separate semantics. The syntax produces assertion values; session APIs produce runtime observations.
 
 ## Drawbacks
 
@@ -126,7 +149,7 @@ The implemented scope adds typed `QualityAssertion`, `QualityObservation`, `Qual
 ## Layers affected
 
 - **InQL specification** — quality assertion and observation semantics become normative.
-- **InQL library package** — public helper APIs and session observation APIs are affected.
+- **InQL library package** — public helper APIs, quality vocab syntax, and session observation APIs are affected.
 - **Execution / interchange** — quality plans may lower to backend-executable relational work.
 - **Documentation** — docs must distinguish checks, filters, and pipeline gates.
 
@@ -139,3 +162,5 @@ The first release helper set is `row_count(...)`, `null_rate(...)`, `unique(...)
 Quality observations require a `Session` in the first implementation because the supported checks are relational execution evidence. Even when a check can be reduced to a row count, the observation should reference the execution attempts used to compute it. Direct in-memory carrier evaluation can be added later if `DataFrame` exposes structured row values as evidence rather than rendered preview text.
 
 Redacted sample references are represented as `list[str]` on `QualityObservation`. The first implementation leaves the list empty. If a later sampling or quarantine surface stores samples, observations can reference those artifacts without embedding row payloads, credentials, or sensitive values in the observation record.
+
+`quality` syntax is declaration syntax, not execution syntax. It exists to make assertion lists readable while preserving one semantic model: helper calls create `QualityAssertion` values, `quality` blocks create lists of those values, and `Session` methods create `QualityObservation` evidence.
