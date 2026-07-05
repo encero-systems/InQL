@@ -1,6 +1,6 @@
 # InQL RFC 033: Adapter requirements and coverage
 
-- **Status:** In Progress
+- **Status:** Implemented
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -17,9 +17,9 @@
   - InQL RFC 044 (verifier statements and proof artifacts)
   - InQL RFC 045 (constraint evidence and verification-aware planning)
 - **Issue:** [InQL #67](https://github.com/encero-systems/InQL/issues/67)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #83](https://github.com/encero-systems/InQL/pull/83)
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #83](https://github.com/encero-systems/InQL/pull/83); [InQL #86](https://github.com/encero-systems/InQL/pull/86); [InQL #87](https://github.com/encero-systems/InQL/pull/87)
 - **Written against:** Incan v0.3-era InQL
-- **Shipped in:** —
+- **Shipped in:** v0.1
 
 ## Summary
 
@@ -106,6 +106,22 @@ Existing adapters may initially report unknown coverage for capabilities they do
 
 The first implementation provides the adapter requirement and coverage record vocabulary plus `Session.check_coverage(requirements)` for caller-provided requirements. The RFC 033 completion slice adds inspection-inferred requirements for plan evidence that InQL can observe directly, including baseline null semantics, row filters, ordered execution, extension functions, variant semantics, and lineage-preservation evidence. `Session.check_inspection_coverage(inspection)` and `Session.check_plan_coverage(data)` evaluate those inferred requirements through the same adapter coverage model. Policy requirements that are not visible in plan evidence, such as masking, audit emission, region binding, waiver recording, and cryptographic proofs, still need explicit requirement records or their owning future surfaces.
 
+## Implementation plan
+
+The implemented scope adds the adapter requirement and coverage vocabulary, explicit caller-provided coverage checks, inspection-inferred plan requirements, and plan/inspection coverage APIs. Requirement inference is intentionally evidence-driven: it can infer requirements from Prism plan shape, scalar function registry metadata, ordering, filters, lineage, and supported variant-aware function metadata, but it does not invent policy requirements such as masking, regional binding, audit emission, waivers, or cryptographic proofs without an owning semantic surface.
+
+## Progress checklist
+
+- [x] Define adapter requirement identity, target, capability, guarantee, reason references, and diagnostic fields.
+- [x] Define adapter coverage state, adapter identity, semantic profile, evidence references, and diagnostic fields.
+- [x] Add explicit `Session.check_coverage(requirements)` evaluation for caller-provided requirements.
+- [x] Infer requirements from local plan inspection evidence where InQL owns the semantics.
+- [x] Add `Session.check_inspection_coverage(inspection)` and `Session.check_plan_coverage(data)`.
+- [x] Keep unknown and uncovered coverage distinct from covered behavior.
+- [x] Keep backend inability in coverage or execution evidence, not as a normal Substrait-level state.
+- [x] Document the reference API and task-oriented coverage workflow.
+- [x] Add tests for explicit coverage, inspection-inferred coverage, unknown coverage, and concrete DataFusion-backed coverage states.
+
 ## Alternatives considered
 
 - **Fail only at backend runtime.** Rejected because users need pre-execution visibility when possible.
@@ -125,10 +141,12 @@ The first implementation provides the adapter requirement and coverage record vo
 - **Execution / interchange** — adapters must report capability evidence honestly.
 - **Documentation** — docs must explain that unknown coverage is not enforcement.
 
-## Unresolved questions
+## Design decisions
 
-- Which capability families are mandatory in the first implementation?
-- Should coverage checks be available without binding physical sources?
-- How should adapter-specific diagnostics be normalized?
+### Resolved
 
-<!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->
+The first implementation must cover the capability families that are directly visible from current InQL evidence: null semantics, row filters, ordered execution, extension functions, variant semantics, and lineage preservation. The broader public vocabulary remains available for explicit requirements and future owning surfaces, but InQL must not infer masking, audit emission, regional binding, waiver recording, cryptographic proof, or similar governance requirements until those surfaces produce evidence.
+
+Coverage checks are available without binding physical sources when the requirement evidence is already present in a `PlanInspection` or caller-provided requirement list. Execution still validates bindings separately. This keeps pre-execution coverage useful without pretending that plan inspection can prove physical source availability.
+
+Adapter-specific diagnostics are normalized as coverage record diagnostics plus evidence references. A backend can report adapter-specific detail in diagnostic text, but consumers must key behavior off coverage state, requirement capability, guarantee level, adapter identity, semantic profile, and evidence references rather than parsing backend log strings.

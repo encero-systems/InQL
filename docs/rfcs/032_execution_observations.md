@@ -1,6 +1,6 @@
 # InQL RFC 032: Execution observations
 
-- **Status:** In Progress
+- **Status:** Implemented
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -10,9 +10,9 @@
   - InQL RFC 031 (local inspection APIs and artifacts)
   - InQL RFC 040 (interoperability semantic profiles)
 - **Issue:** [InQL #66](https://github.com/encero-systems/InQL/issues/66)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #85](https://github.com/encero-systems/InQL/pull/85); [InQL #87](https://github.com/encero-systems/InQL/pull/87)
 - **Written against:** Incan v0.3-era InQL
-- **Shipped in:** —
+- **Shipped in:** v0.1
 
 ## Summary
 
@@ -83,6 +83,20 @@ Existing session execution remains valid. Implementations may initially emit par
 
 The first implementation adds observed variants for `execute`, `collect`, and `write` while preserving the ordinary `Result[...]`-returning session APIs. Observed variants return success and failure observations. Wall-clock fields are Unix nanoseconds from Incan's `std.datetime.runtime.SystemTime`, and duration uses monotonic elapsed nanoseconds from `std.datetime.runtime.Instant`. The model exposes adapter version, requested and observed semantic profile IDs, byte count, and trace IDs explicitly; the initial DataFusion path reports `None` or empty values for those fields rather than fabricating unavailable evidence.
 
+## Implementation plan
+
+The implemented scope adds typed execution observation records, observed `Session.execute_observed`, `Session.collect_observed`, and `Session.write_observed` APIs, observation-backed result carriers, diagnostic capture for success and failure paths, and session-level coverage integration so execution evidence can refer to adapter coverage records without making coverage checks part of the execution semantics themselves. The first implementation deliberately keeps telemetry provider export out of scope; local structured observations are the source of truth and trace identifiers remain optional correlation values.
+
+## Progress checklist
+
+- [x] Define execution observation status, operation, diagnostic, timing, adapter, semantic-profile, trace, and metric fields.
+- [x] Add observed execution, collection, and write APIs while preserving existing session APIs.
+- [x] Emit success and failure observations with structured diagnostics.
+- [x] Keep row payloads, credentials, backend logs, and sensitive values out of observations by default.
+- [x] Let observations reference adapter coverage records without treating coverage as execution semantics.
+- [x] Document the reference API and task-oriented observation workflow.
+- [x] Add tests for success observations, failure observations, write observations, diagnostics, timing, and coverage references.
+
 ## Alternatives considered
 
 - **Use backend logs only.** Rejected because logs are not stable semantic evidence and may be sensitive.
@@ -102,10 +116,12 @@ The first implementation adds observed variants for `execute`, `collect`, and `w
 - **Execution / interchange** — adapters must report execution facts without redefining semantics.
 - **Documentation** — docs must explain observation redaction and telemetry independence.
 
-## Unresolved questions
+## Design decisions
 
-- What minimum observation fields are required for every adapter?
-- Should failed planning, binding, and lowering attempts share the same observation model as execution attempts?
-- How should trace identifiers be represented when multiple telemetry systems are active?
+### Resolved
 
-<!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->
+Every adapter-backed observation must provide the semantic attempt target, plan target, operation, status, backend name, start/end timing, duration when available, diagnostics, trace identifier list, requested and observed semantic profile IDs when available, and optional row and byte counts. Adapter version, profile IDs, row count, byte count, coverage records, and trace identifiers may be absent or empty when the adapter cannot honestly provide them, but the field shape remains present so consumers can distinguish unavailable evidence from missing implementation.
+
+Failed planning, binding, and lowering attempts use the same execution observation model when they occur through a session operation and can be attached to a plan target or the explicit unavailable-plan target. Their diagnostics identify which stage failed. This keeps runtime attempt evidence uniform without claiming that an authored Prism plan exists when planning did not complete.
+
+Trace identifiers are represented as `list[str]`. InQL does not interpret the values or require a telemetry provider. Multiple telemetry systems can add multiple opaque identifiers, and local execution remains valid when the list is empty.
