@@ -57,7 +57,7 @@ InQL uses its **own** RFC series (starting at 000), independent of the [Incan la
 
 <!-- TODO: #7: auto populate this table (like how we do in incan) -->
 
-**v0.1 scope:** RFCs 000–004 plus RFC 007. When those foundational RFCs are resolved (Draft → Planned → Implemented), InQL v0.1 is complete: authors can read data, write typed queries, lower through Prism to Substrait, execute through DataFusion, and write results.
+**v0.1 tracking:** RFCs 000–004 plus RFC 007 remain the foundation that defines when InQL v0.1 is complete: authors can read data, write typed queries, lower through Prism to Substrait, execute through DataFusion, and write results. The table also marks additional v0.1-shipped slices that landed before the whole foundation is closed, including the function catalog and evidence/observation work.
 
 New RFCs should follow [TEMPLATE.md] (aligned with Incan’s RFC structure, adapted for InQL).
 

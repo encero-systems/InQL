@@ -10,7 +10,7 @@
   - InQL RFC 031 (local inspection APIs and artifacts)
   - InQL RFC 040 (interoperability semantic profiles)
 - **Issue:** [InQL #66](https://github.com/encero-systems/InQL/issues/66)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #85](https://github.com/encero-systems/InQL/pull/85)
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #85](https://github.com/encero-systems/InQL/pull/85); [InQL #87](https://github.com/encero-systems/InQL/pull/87)
 - **Written against:** Incan v0.3-era InQL
 - **Shipped in:** v0.1
 
@@ -85,7 +85,7 @@ The first implementation adds observed variants for `execute`, `collect`, and `w
 
 ## Implementation plan
 
-The implemented scope adds typed execution observation records, observed `Session.execute_observed`, `Session.collect_observed`, and `Session.write_*_observed` APIs, observation-backed result carriers, diagnostic capture for success and failure paths, and session-level coverage integration so execution evidence can refer to adapter coverage records without making coverage checks part of the execution semantics themselves. The first implementation deliberately keeps telemetry provider export out of scope; local structured observations are the source of truth and trace identifiers remain optional correlation values.
+The implemented scope adds typed execution observation records, observed `Session.execute_observed`, `Session.collect_observed`, and `Session.write_observed` APIs, observation-backed result carriers, diagnostic capture for success and failure paths, and session-level coverage integration so execution evidence can refer to adapter coverage records without making coverage checks part of the execution semantics themselves. The first implementation deliberately keeps telemetry provider export out of scope; local structured observations are the source of truth and trace identifiers remain optional correlation values.
 
 ## Progress checklist
 
