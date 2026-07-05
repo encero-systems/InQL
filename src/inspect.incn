@@ -289,7 +289,7 @@ def _adapter_requirements_for_authored_plan(
     mut requirements: list[AdapterRequirement] = []
     _append_adapter_requirement_once(
         requirements,
-        plan_target.clone(),
+        plan_target,
         AdapterRequirementCapability.NullSemantics,
         AdapterRequirementGuarantee.Required,
         "plan execution requires adapter null semantics for scalar and relational evaluation",
@@ -298,7 +298,7 @@ def _adapter_requirements_for_authored_plan(
     if len(lineage.edges) > 0:
         _append_adapter_requirement_once(
             requirements,
-            plan_target.clone(),
+            plan_target,
             AdapterRequirementCapability.LineagePreservation,
             AdapterRequirementGuarantee.Preferred,
             "lineage evidence exists and may need adapter preservation across execution boundaries",
@@ -322,7 +322,7 @@ def _append_node_adapter_requirements(
         PrismNodeKind.Filter =>
             _append_adapter_requirement_once(
                 requirements,
-                target.clone(),
+                target,
                 AdapterRequirementCapability.RowFilter,
                 AdapterRequirementGuarantee.Required,
                 "filter nodes require adapter row-filter execution",
@@ -331,7 +331,7 @@ def _append_node_adapter_requirements(
         PrismNodeKind.OrderBy =>
             _append_adapter_requirement_once(
                 requirements,
-                target.clone(),
+                target,
                 AdapterRequirementCapability.OrderedExecution,
                 AdapterRequirementGuarantee.Required,
                 "order-by nodes require ordered adapter execution",
@@ -341,7 +341,7 @@ def _append_node_adapter_requirements(
             if _window_node_requires_ordering(node):
                 _append_adapter_requirement_once(
                     requirements,
-                    target.clone(),
+                    target,
                     AdapterRequirementCapability.OrderedExecution,
                     AdapterRequirementGuarantee.Required,
                     "window specifications with ordering require ordered adapter execution",
@@ -351,7 +351,7 @@ def _append_node_adapter_requirements(
             if _aggregate_node_requires_ordering(node):
                 _append_adapter_requirement_once(
                     requirements,
-                    target.clone(),
+                    target,
                     AdapterRequirementCapability.OrderedExecution,
                     AdapterRequirementGuarantee.Required,
                     "ordered aggregate inputs require ordered adapter execution",
@@ -361,7 +361,7 @@ def _append_node_adapter_requirements(
     if len(function_names) > 0 or _node_has_direct_function_application(node):
         _append_adapter_requirement_once(
             requirements,
-            target.clone(),
+            target,
             AdapterRequirementCapability.ExtensionFunction,
             AdapterRequirementGuarantee.Required,
             "registered helper calls in this node require adapter function-extension coverage",
