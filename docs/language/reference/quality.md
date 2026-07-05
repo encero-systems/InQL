@@ -18,7 +18,7 @@ The first implementation evaluates these helpers through ordinary InQL plans and
 
 ## Policy intent
 
-`QualityAssertion.mode` records handling intent for callers that choose to enforce checks outside the assertion semantics. The first implementation keeps session evaluation policy-neutral: `observe_quality(...)` reports `Passed`, `Failed`, `Errored`, `Skipped`, or `Unsupported`; it does not throw on failed required checks.
+`QualityAssertion.mode` records handling intent for callers that choose to enforce checks outside the assertion semantics. The first implementation keeps session evaluation policy-neutral: `observe_quality(...)` reports `Passed`, `Failed`, `Errored`, or `Unsupported` for the built-in session checks; it does not throw on failed required checks. `Skipped` is part of the status vocabulary for caller-owned or future evaluators that intentionally bypass a check.
 
 | API | Result |
 | --- | --- |

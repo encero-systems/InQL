@@ -165,6 +165,7 @@ def test_observe_quality__records_group_threshold_failures() -> None:
     assert pass_observation.status == QualityObservationStatus.Passed, "all status groups should have at most three rows"
     assert fail_observation.status == QualityObservationStatus.Failed, "the open status group should violate max_count=2"
     assert _metric_value(fail_observation, "failing_group_count") == "1", "group quality should count failing groups"
+    assert len(fail_observation.execution_observation_ids) == 2, "group quality should reference both threshold probe executions"
 
 
 def test_observe_quality_pair__records_cross_relation_row_count_equality() -> None:

@@ -81,6 +81,13 @@ model _QualityCountEvidence:
     observation: ExecutionObservation
 
 
+model _QualityGroupThresholdEvidence:
+    """Failing group-count evidence plus execution observations used to compute it."""
+
+    row_count: int
+    execution_observations: list[ExecutionObservation]
+
+
 @derive(Clone)
 pub class SessionRegistration:
     pub logical_name: str
@@ -861,15 +868,18 @@ def _observe_group_row_count_quality_result[T with Clone](
 ) -> Result[QualityObservation, QualityObservation]:
     """Evaluate group row-count quality and use Result propagation for threshold probe failures."""
     grouped = data.group_by(assertion.group_by).agg([aggregate_as(count(), "quality_group_row_count")])
-    too_small_count = _failing_group_count_below_min(session, grouped.clone(), assertion.clone(), assertion.min_count)?
-    too_large_count = _failing_group_count_above_max(session, grouped, assertion.clone(), assertion.max_count)?
-    failing_group_count = too_small_count + too_large_count
+    too_small = _failing_group_count_below_min(session, grouped.clone(), assertion.clone(), assertion.min_count)?
+    too_large = _failing_group_count_above_max(session, grouped, assertion.clone(), assertion.max_count)?
+    failing_group_count = too_small.row_count + too_large.row_count
+    mut execution_observations: list[ExecutionObservation] = []
+    execution_observations.extend(too_small.execution_observations)
+    execution_observations.extend(too_large.execution_observations)
     plan_target = _lazy_frame_plan_target(data._cursor.store_id, data._cursor.tip_id)
     return Ok(
         _quality_observation_from_status(
             assertion,
             plan_target,
-            [],
+            execution_observations,
             _quality_status_from_bool(failing_group_count == 0),
             [_count_metric("failing_group_count", failing_group_count)],
             [],
@@ -935,14 +945,20 @@ def _failing_group_count_below_min[T with Clone](
     grouped: LazyFrame[T],
     assertion: QualityAssertion,
     min_count: Option[int],
-) -> Result[int, QualityObservation]:
+) -> Result[_QualityGroupThresholdEvidence, QualityObservation]:
     """Return how many groups are below the minimum threshold, or an errored observation encoded by the caller."""
     if let Some(value) = min_count:
         observed = session.collect_observed(grouped.filter(lt(col("quality_group_row_count"), value)))
         match observed.data:
-            Some(frame) => return Ok(frame.row_count())
+            Some(frame) =>
+                return Ok(
+                    _QualityGroupThresholdEvidence(
+                        row_count=frame.row_count(),
+                        execution_observations=[observed.observation],
+                    ),
+                )
             None => return Err(_errored_quality_observation(assertion, [observed.observation]))
-    return Ok(0)
+    return Ok(_QualityGroupThresholdEvidence(row_count=0, execution_observations=[]))
 
 
 def _failing_group_count_above_max[T with Clone](
@@ -950,14 +966,20 @@ def _failing_group_count_above_max[T with Clone](
     grouped: LazyFrame[T],
     assertion: QualityAssertion,
     max_count: Option[int],
-) -> Result[int, QualityObservation]:
+) -> Result[_QualityGroupThresholdEvidence, QualityObservation]:
     """Return how many groups are above the maximum threshold, or an errored observation encoded by the caller."""
     if let Some(value) = max_count:
         observed = session.collect_observed(grouped.filter(gt(col("quality_group_row_count"), value)))
         match observed.data:
-            Some(frame) => return Ok(frame.row_count())
+            Some(frame) =>
+                return Ok(
+                    _QualityGroupThresholdEvidence(
+                        row_count=frame.row_count(),
+                        execution_observations=[observed.observation],
+                    ),
+                )
             None => return Err(_errored_quality_observation(assertion, [observed.observation]))
-    return Ok(0)
+    return Ok(_QualityGroupThresholdEvidence(row_count=0, execution_observations=[]))
 
 
 def _quality_observation_from_status(
