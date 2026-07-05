@@ -1,6 +1,6 @@
 # InQL RFC 035: Governed attributes and policy checkpoints
 
-- **Status:** Draft
+- **Status:** Implemented
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -11,9 +11,9 @@
   - InQL RFC 030 (Prism lineage graph)
   - InQL RFC 033 (adapter requirements and coverage)
 - **Issue:** [InQL #69](https://github.com/encero-systems/InQL/issues/69)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #89](https://github.com/encero-systems/InQL/pull/89)
 - **Written against:** Incan v0.3-era InQL
-- **Shipped in:** —
+- **Shipped in:** v0.1
 
 ## Summary
 
@@ -110,10 +110,71 @@ Existing plans without governed attributes remain valid. Consumers must treat ab
 - **Execution / interchange** — Session and adapters may attach binding and execution checkpoint records.
 - **Documentation** — docs must distinguish attribute evidence from policy authority.
 
-## Unresolved questions
+## Design Decisions
 
-- Which governed attribute keys should InQL reserve for core use?
-- Which propagation rules are required for the first release?
-- Should policy checkpoints be serializable in portable plan artifacts by default, or only in local evidence artifacts?
+### Core attribute keys
 
-<!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->
+The first core governed attribute key is `schema.substrait_primitive_kind`, emitted from local inspection when an output field has a known primitive kind. Additional core keys must use an `inql.` or similarly explicit namespace when they describe InQL-owned evidence. User, catalog, policy, and imported artifact keys may use their own namespaces, but InQL must preserve their source and authority rather than silently treating them as core facts.
+
+### First propagation rules
+
+The first propagation rule is conservative schema evidence propagation from inspection metadata into field-scoped governed attributes. The emitted attributes use `GovernedAttributeSource.Lineage`, `GovernedAttributeConfidence.Exact`, and `GovernedAttributeStatus.Inferred` because they come from local plan/schema evidence rather than external authority. InQL must not fabricate policy, catalog, masking, jurisdiction, or classification attributes from name heuristics alone.
+
+### Serialization boundary
+
+Governed attributes and policy checkpoints are local evidence records in the first implementation. Portable plan artifacts and governed bundles may include them when their owning RFCs define the artifact shape. RFC 035 does not require embedding policy checkpoints into Substrait metadata, because Substrait metadata may be ignored by consumers and must not be the only carrier for correctness-relevant governance evidence.
+
+## Implementation Plan
+
+### Phase 1: Record model and helpers
+
+- Add governed attribute scope/source/confidence/status enums.
+- Add policy checkpoint phase/action enums.
+- Add typed `GovernedAttribute` and `PolicyCheckpoint` records with helper constructors and modifier methods.
+
+### Phase 2: Inspection carriage
+
+- Extend `PlanInspection` with governed attribute and policy checkpoint lists.
+- Convert inspection-derived schema metadata into conservative governed attributes.
+- Add a local planning checkpoint that records observed governed evidence without implying policy enforcement.
+- Include governed evidence families in deterministic inspection artifact summaries.
+
+### Phase 3: Docs and tests
+
+- Add focused helper tests.
+- Extend inspection tests for governed evidence and artifact counts.
+- Update reference/how-to docs, release notes, and RFC lifecycle state.
+
+## Progress Checklist
+
+### Spec / design
+
+- [x] Resolve reserved core attribute-key policy.
+- [x] Resolve first propagation rules.
+- [x] Resolve local-vs-portable serialization boundary.
+
+### Package API
+
+- [x] Add governed attribute enums and model.
+- [x] Add policy checkpoint enums and model.
+- [x] Add helper constructors and modifier methods.
+- [x] Export public governance records and helpers through `pub::inql`.
+
+### Inspection
+
+- [x] Add governed attributes to `PlanInspection`.
+- [x] Add policy checkpoints to `PlanInspection`.
+- [x] Emit conservative schema-derived governed attributes.
+- [x] Emit planning observation checkpoints without enforcement semantics.
+- [x] Include governed evidence families in artifact summaries.
+
+### Tests
+
+- [x] Add focused governed attribute and policy checkpoint helper tests.
+- [x] Extend inspection tests for governed attributes, policy checkpoints, and artifact counts.
+
+### Docs
+
+- [x] Add governed evidence reference docs.
+- [x] Add governed evidence how-to docs.
+- [x] Update inspection docs and release notes.

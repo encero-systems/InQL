@@ -22,6 +22,18 @@ from evidence import (
     SemanticTargetKind,
     UnsupportedEvidence,
 )
+from governance import (
+    GovernedAttribute,
+    GovernedAttributeConfidence,
+    GovernedAttributeScope,
+    GovernedAttributeSource,
+    GovernedAttributeStatus,
+    PolicyCheckpoint,
+    PolicyCheckpointAction,
+    PolicyCheckpointKind,
+    governed_attribute,
+    policy_checkpoint,
+)
 from metadata import inql_version
 from functions.registry import function_registry_entry_by_name
 from prism import prism_plan_id
@@ -84,6 +96,8 @@ pub model PlanInspection:
     pub lineage: LineageGraph
     pub adapter_requirements: list[AdapterRequirement]
     pub attachments: list[MetadataAttachment]
+    pub governed_attributes: list[GovernedAttribute]
+    pub policy_checkpoints: list[PolicyCheckpoint]
     pub artifacts: list[InspectionArtifact]
     pub unsupported_evidence: list[UnsupportedEvidence]
     pub diagnostics: list[str]
@@ -185,6 +199,8 @@ pub def inspect_plan[T with Clone](data: LazyFrame[T]) -> PlanInspection:
         lineage,
     )
     attachments = _metadata_attachments(plan_target, output_fields, tip_output_schema)
+    governed_attributes = _governed_attributes_from_metadata(attachments)
+    policy_checkpoints = _policy_checkpoints_for_inspection(plan_target, governed_attributes)
     authored_nodes = _authored_node_inspections(plan_id, authored_context, authored_ids)
     rewritten_nodes = _rewritten_node_inspections(plan_id, rewritten_context)
     unsupported = _unsupported_evidence_markers()
@@ -193,6 +209,8 @@ pub def inspect_plan[T with Clone](data: LazyFrame[T]) -> PlanInspection:
         len(lineage.edges),
         len(tip_output_schema),
         len(attachments),
+        len(governed_attributes),
+        len(policy_checkpoints),
         len(adapter_requirements),
         len(unsupported),
     )
@@ -212,6 +230,8 @@ pub def inspect_plan[T with Clone](data: LazyFrame[T]) -> PlanInspection:
         lineage=lineage,
         adapter_requirements=adapter_requirements,
         attachments=attachments,
+        governed_attributes=governed_attributes,
+        policy_checkpoints=policy_checkpoints,
         artifacts=artifacts,
         unsupported_evidence=unsupported,
         diagnostics=[],
@@ -1143,6 +1163,8 @@ def _artifact_summaries(
     lineage_edge_count: int,
     schema_field_count: int,
     metadata_attachment_count: int,
+    governed_attribute_count: int,
+    policy_checkpoint_count: int,
     adapter_requirement_count: int,
     unsupported_count: int,
 ) -> list[InspectionArtifact]:
@@ -1152,6 +1174,8 @@ def _artifact_summaries(
     artifacts.append(_artifact("lineage_graph", EvidenceArtifactStatus.Computed, lineage_edge_count))
     artifacts.append(_artifact("schema_flow", EvidenceArtifactStatus.Computed, schema_field_count))
     artifacts.append(_artifact("metadata_attachments", EvidenceArtifactStatus.Computed, metadata_attachment_count))
+    artifacts.append(_artifact("governed_attributes", EvidenceArtifactStatus.Computed, governed_attribute_count))
+    artifacts.append(_artifact("policy_checkpoints", EvidenceArtifactStatus.Computed, policy_checkpoint_count))
     artifacts.append(_artifact("adapter_requirements", EvidenceArtifactStatus.Computed, adapter_requirement_count))
     artifacts.append(_artifact("diagnostics", EvidenceArtifactStatus.Computed, 0))
     artifacts.append(_artifact("unsupported_evidence", EvidenceArtifactStatus.Computed, unsupported_count))
@@ -1199,6 +1223,52 @@ def _metadata_attachments(
                     ),
                 )
     return attachments
+
+
+def _governed_attributes_from_metadata(attachments: list[MetadataAttachment]) -> list[GovernedAttribute]:
+    """Promote local schema metadata into conservative governed attributes."""
+    mut attributes: list[GovernedAttribute] = []
+    for attachment in attachments:
+        if attachment.namespace == "inql.schema" and attachment.key == "substrait_primitive_kind":
+            attributes.append(
+                governed_attribute(
+                    attachment.target,
+                    "schema.substrait_primitive_kind",
+                    attachment.payload.value,
+                    value_schema="inql.governance.schema-primitive-kind.v0.1",
+                    scope=GovernedAttributeScope.Field,
+                    source=GovernedAttributeSource.Lineage,
+                    confidence=GovernedAttributeConfidence.Exact,
+                    status=GovernedAttributeStatus.Inferred,
+                    evidence_refs=[_metadata_evidence_ref(attachment)],
+                ),
+            )
+    return attributes
+
+
+def _policy_checkpoints_for_inspection(
+    plan_target: SemanticTarget,
+    governed_attributes: list[GovernedAttribute],
+) -> list[PolicyCheckpoint]:
+    """Record that inspection observed governed evidence but did not enforce policy."""
+    if len(governed_attributes) == 0:
+        return []
+    mut evidence_refs: list[str] = []
+    for attribute in governed_attributes:
+        evidence_refs.append(attribute.attribute_id)
+    return [policy_checkpoint(
+        plan_target,
+        PolicyCheckpointKind.Planning,
+        PolicyCheckpointAction.Observe,
+        "inql.policy.local-inspection",
+        "governed_evidence_observed",
+        evidence_refs=evidence_refs,
+    )]
+
+
+def _metadata_evidence_ref(attachment: MetadataAttachment) -> str:
+    """Return a stable local evidence reference for one metadata attachment."""
+    return f"metadata:{attachment.target.target_id}:{attachment.namespace}:{attachment.key}"
 
 
 def _public_attachment(

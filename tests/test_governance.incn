@@ -1,0 +1,121 @@
+"""Tests for RFC 035 governed attributes and policy checkpoints."""
+
+from evidence import (
+    ExecutionDiagnostic,
+    ExecutionDiagnosticSeverity,
+    MetadataVisibility,
+    SemanticTarget,
+    SemanticTargetKind,
+)
+from governance import (
+    GovernedAttributeConfidence,
+    GovernedAttributeScope,
+    GovernedAttributeSource,
+    GovernedAttributeStatus,
+    PolicyCheckpointKind,
+    PolicyCheckpointAction,
+    governed_attribute,
+    policy_checkpoint,
+)
+
+
+def _target(name: str) -> SemanticTarget:
+    """Build one stable fixture semantic target."""
+    return SemanticTarget(
+        kind=SemanticTargetKind.Field,
+        target_id=f"plan:fixture:field:{name}",
+        plan_id="plan:fixture",
+        scope_id="node:1",
+        path=f"plan/fixture/field/{name}",
+        name=name,
+        node_id=Some(1),
+        ordinal=Some(0),
+    )
+
+
+def test_governed_attribute__carries_provenance_confidence_status_and_lifetime() -> None:
+    """RFC 035: governed attributes should preserve provenance, confidence, status, authority, and lifetime."""
+    # -- Arrange --
+    target = _target("customer_email")
+
+    # -- Act --
+    attribute = governed_attribute(
+        target,
+        "classification",
+        "personal_data",
+        scope=GovernedAttributeScope.Field,
+        source=GovernedAttributeSource.User,
+        confidence=GovernedAttributeConfidence.High,
+        status=GovernedAttributeStatus.Asserted,
+        authority=Some("privacy-review"),
+        observed_at_unix_nanoseconds=Some(1000),
+        expires_at_unix_nanoseconds=Some(2000),
+        evidence_refs=["catalog:customer_email"],
+    )
+
+    # -- Assert --
+    assert attribute.attribute_id == "governed:plan:fixture:field:customer_email:classification", "attribute identity should include target and key"
+    assert attribute.target.name == "customer_email", "attribute should stay anchored to its semantic target"
+    assert attribute.key == "classification", "attribute should carry its governed key"
+    assert attribute.value.schema == "inql.governance.string.v0.1", "string helpers should declare their payload schema"
+    assert attribute.value.value == "personal_data", "attribute should carry its typed payload value"
+    assert attribute.scope == GovernedAttributeScope.Field, "field attributes should declare their scope"
+    assert attribute.source == GovernedAttributeSource.User, "attribute provenance should be explicit"
+    assert attribute.confidence == GovernedAttributeConfidence.High, "attribute confidence should be explicit"
+    assert attribute.status == GovernedAttributeStatus.Asserted, "attribute status should be explicit"
+    assert attribute.authority == Some("privacy-review"), "attribute authority should be optional but preserved"
+    assert attribute.observed_at_unix_nanoseconds == Some(1000), "attribute observation time should be preserved"
+    assert attribute.expires_at_unix_nanoseconds == Some(2000), "attribute expiration time should be preserved"
+    assert attribute.evidence_refs[0] == "catalog:customer_email", "attribute evidence references should be preserved"
+
+
+def test_governed_attribute__modifier_methods_return_updated_records() -> None:
+    """RFC 035: callers should be able to adjust status and confidence without rebuilding records by hand."""
+    # -- Arrange --
+    attribute = governed_attribute(_target("amount"), "classification", "internal")
+
+    # -- Act --
+    reviewed = attribute
+        .with_status(GovernedAttributeStatus.Accepted)
+        .with_confidence(GovernedAttributeConfidence.Exact)
+
+    # -- Assert --
+    assert reviewed.status == GovernedAttributeStatus.Accepted, "status modifier should update only the status field"
+    assert reviewed.confidence == GovernedAttributeConfidence.Exact, "confidence modifier should update only confidence"
+    assert reviewed.key == attribute.key, "modifiers should preserve attribute identity facts"
+    assert reviewed.target.target_id == attribute.target.target_id, "modifiers should preserve target identity"
+
+
+def test_policy_checkpoint__carries_decision_context_and_diagnostics() -> None:
+    """RFC 035: policy checkpoints should be decision records, not hidden enforcement behavior."""
+    # -- Arrange --
+    target = _target("customer_email")
+    diagnostic = ExecutionDiagnostic(
+        severity=ExecutionDiagnosticSeverity.Warning,
+        code="policy.mask.suggested",
+        message="Masking is recommended before export",
+        target=Some(target),
+    )
+
+    # -- Act --
+    checkpoint = policy_checkpoint(
+        target,
+        PolicyCheckpointKind.Planning,
+        PolicyCheckpointAction.Warn,
+        "policy:pii-export",
+        "masking_recommended",
+        visibility=MetadataVisibility.Internal,
+        diagnostics=[diagnostic],
+        evidence_refs=["governed:plan:fixture:field:customer_email:classification"],
+    )
+
+    # -- Assert --
+    assert checkpoint.checkpoint_id == "policy:plan:fixture:field:customer_email:planning:warn:masking_recommended", "checkpoint identity should include target, phase, action, and reason"
+    assert checkpoint.target.target_id == target.target_id, "checkpoint should stay anchored to the target under decision"
+    assert checkpoint.checkpoint == PolicyCheckpointKind.Planning, "checkpoint phase should be explicit"
+    assert checkpoint.action == PolicyCheckpointAction.Warn, "checkpoint action should be explicit"
+    assert checkpoint.policy_ref == "policy:pii-export", "policy reference should identify the decision source"
+    assert checkpoint.reason_code == "masking_recommended", "reason code should be machine-readable"
+    assert checkpoint.visibility == MetadataVisibility.Internal, "visibility should be explicit"
+    assert checkpoint.diagnostics[0].code == "policy.mask.suggested", "diagnostics should explain the decision"
+    assert checkpoint.evidence_refs[0] == "governed:plan:fixture:field:customer_email:classification", "checkpoint should preserve evidence references"

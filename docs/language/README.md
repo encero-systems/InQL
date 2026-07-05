@@ -22,6 +22,7 @@ This section documents the current InQL package surface.
 ### Execution and materialization
 
 - [Capture execution observations and adapter coverage (How-to)][execution-observations-how-to]
+- [Inspect governed evidence (How-to)][governed-evidence-how-to]
 - [Observe data quality checks (How-to)][quality-observations-how-to]
 - [Execution context (Reference)][execution-reference]
 - [Execution context (Explanation)][execution-explanation]
@@ -44,6 +45,7 @@ This section documents the current InQL package surface.
 
 - [Inspect a plan and lineage graph (How-to)][inspect-plan-lineage-how-to]
 - [Local inspection][inspection-reference]
+- [Governed attributes and policy checkpoints][governance-reference]
 - [Quality assertions and observations][quality-reference]
 
 <!-- References -->
@@ -66,6 +68,8 @@ This section documents the current InQL package surface.
 [execution-reference]: reference/execution_context.md
 [execution-explanation]: explanation/execution_context.md
 [execution-observations-how-to]: how-to/execution_observations.md
+[governed-evidence-how-to]: how-to/governed_evidence.md
+[governance-reference]: reference/governance.md
 [quality-observations-how-to]: how-to/quality_observations.md
 [inspect-plan-lineage-how-to]: how-to/inspect_plan_lineage.md
 [quality-reference]: reference/quality.md

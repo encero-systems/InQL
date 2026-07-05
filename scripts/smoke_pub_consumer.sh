@@ -45,7 +45,22 @@ cat > "$PROJECT_DIR/src/query_blocks_smoke.incn" <<EOF
 
 import pub::inql
 
-from pub::inql import DataFrame, LazyFrame, QualityObservationStatus, Session, array, col, eq, lit
+from pub::inql import (
+    DataFrame,
+    GovernedAttributeStatus,
+    LazyFrame,
+    PolicyCheckpointAction,
+    PolicyCheckpointKind,
+    QualityObservationStatus,
+    Session,
+    array,
+    col,
+    eq,
+    governed_attribute,
+    inspect_plan,
+    lit,
+    policy_checkpoint,
+)
 from std.testing import assert_is_ok, fail_t
 
 
@@ -338,6 +353,32 @@ def _quality_vocab_assertions_execute() -> None:
     assert colon_observations[0].assertion.mode.value() == "quarantine", "quality: should preserve policy methods"
 
 
+def _governed_evidence_exports_compile_for_pub_consumers() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    orders = _orders(session, "governed_evidence_orders")
+
+    # -- Act --
+    inspection = inspect_plan(orders)
+    attribute = governed_attribute(inspection.output_fields[0], "classification", "internal").with_status(
+        GovernedAttributeStatus.Accepted,
+    )
+    checkpoint = policy_checkpoint(
+        inspection.plan_target,
+        PolicyCheckpointKind.Planning,
+        PolicyCheckpointAction.Observe,
+        "policy:smoke",
+        "governed_evidence_observed",
+        evidence_refs=[attribute.attribute_id],
+    )
+
+    # -- Assert --
+    assert len(inspection.governed_attributes) > 0, "pub consumers should see inspection governed attributes"
+    assert len(inspection.policy_checkpoints) == 1, "pub consumers should see inspection policy checkpoints"
+    assert attribute.status == GovernedAttributeStatus.Accepted, "pub consumers should use governed attribute modifiers"
+    assert checkpoint.action == PolicyCheckpointAction.Observe, "pub consumers should construct policy checkpoints"
+
+
 def main() -> None:
     println("query smoke: select")
     _brace_select_aliases_and_lateral_aliases_materialize()
@@ -355,6 +396,8 @@ def main() -> None:
     _colon_spelling_materializes_same_select_surface()
     println("query smoke: quality")
     _quality_vocab_assertions_execute()
+    println("query smoke: governed evidence")
+    _governed_evidence_exports_compile_for_pub_consumers()
 EOF
 
 (cd "$PROJECT_DIR" && "$INCAN_BIN" lock >/dev/null)
