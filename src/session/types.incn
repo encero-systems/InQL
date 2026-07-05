@@ -45,6 +45,7 @@ from session.active import (
 from session.backend_dispatch import backend_collect_plan, backend_execute_plan, backend_write_plan
 from session.backend_types import BackendError, BackendErrorKind, BackendRegistration
 from dataset.materialization import DataFrameMaterialization
+from inspect import PlanInspection, inspect_plan
 from prism import prism_plan_id
 from prism.types import PrismStoreId
 from substrait.errors import SubstraitLoweringError, SubstraitLoweringErrorKind
@@ -300,6 +301,14 @@ pub class Session:
     def check_coverage(self, requirements: list[AdapterRequirement]) -> list[AdapterCoverageRecord]:
         """Return adapter coverage records for explicit semantic requirements without inventing requirements."""
         return [_coverage_record_for_requirement(requirement, self.backend_name()) for requirement in requirements]
+
+    def check_inspection_coverage(self, inspection: PlanInspection) -> list[AdapterCoverageRecord]:
+        """Return adapter coverage records for requirements inferred by plan inspection."""
+        return self.check_coverage(inspection.adapter_requirements)
+
+    def check_plan_coverage[T with Clone](self, data: LazyFrame[T]) -> list[AdapterCoverageRecord]:
+        """Inspect one lazy plan and return adapter coverage records for inferred requirements."""
+        return self.check_inspection_coverage(inspect_plan(data))
 
     def write_csv[T with Clone](self, data: LazyFrame[T], uri: str) -> Result[None, SessionError]:
         """Execute one lazy plan and write result rows to a CSV sink URI."""

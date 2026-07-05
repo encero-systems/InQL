@@ -1,8 +1,10 @@
 """Tests for local plan inspection and first relational evidence records."""
 
 from aggregate_builders import aggregate_as
-from functions import col, desc, eq, explode, row_number, str_lit, sum, window
+from functions import col, desc, eq, explode, parse_variant_json, row_number, str_lit, sum, typeof, window
 from evidence import (
+    AdapterRequirementCapability,
+    AdapterRequirementGuarantee,
     EvidenceArtifactStatus,
     LineageConfidence,
     LineageGraph,
@@ -106,6 +108,27 @@ def _artifact_record_count(inspection_family: str, inspection: PlanInspection) -
     return -1
 
 
+def _requirement_count(inspection: PlanInspection, capability: AdapterRequirementCapability) -> int:
+    """Return how many inferred adapter requirements use one capability family."""
+    mut count = 0
+    for requirement in inspection.adapter_requirements:
+        if requirement.capability == capability:
+            count += 1
+    return count
+
+
+def _has_requirement_with_guarantee(
+    inspection: PlanInspection,
+    capability: AdapterRequirementCapability,
+    guarantee: AdapterRequirementGuarantee,
+) -> bool:
+    """Return whether inspection has one inferred requirement with the requested guarantee level."""
+    for requirement in inspection.adapter_requirements:
+        if requirement.capability == capability and requirement.guarantee == guarantee:
+            return true
+    return false
+
+
 def test_inspect_plan__exposes_stable_plan_targets_schema_and_artifacts() -> None:
     """RFC 028/031: inspection exposes semantic targets, output schema, and artifact family status."""
     # -- Arrange --
@@ -134,18 +157,20 @@ def test_inspect_plan__exposes_stable_plan_targets_schema_and_artifacts() -> Non
     assert inspection.output_fields[0].target_id != "customer_id", "field identity must not be the display name alone"
     assert len(inspection.attachments) >= 3, "inspection should emit typed metadata attachments for versions and known schema facts"
     assert inspection.attachments[0].payload.schema == "inql.metadata.string.v0.1", "metadata payloads should declare a schema"
-    assert len(inspection.artifacts) == 6, "inspection should expose the full deterministic artifact family set"
+    assert len(inspection.artifacts) == 7, "inspection should expose the full deterministic artifact family set"
     assert inspection.artifacts[0].family == "plan_graph", "artifact summaries should be deterministic"
     assert inspection.artifacts[1].family == "lineage_graph", "lineage graph should be the second artifact family"
     assert inspection.artifacts[2].family == "schema_flow", "schema flow should be the third artifact family"
     assert inspection.artifacts[3].family == "metadata_attachments", "metadata attachments should be the fourth artifact family"
-    assert inspection.artifacts[4].family == "diagnostics", "diagnostics should be the fifth artifact family"
-    assert inspection.artifacts[5].family == "unsupported_evidence", "unsupported evidence should be the final artifact family"
+    assert inspection.artifacts[4].family == "adapter_requirements", "adapter requirements should be the fifth artifact family"
+    assert inspection.artifacts[5].family == "diagnostics", "diagnostics should follow adapter requirements"
+    assert inspection.artifacts[6].family == "unsupported_evidence", "unsupported evidence should be the final artifact family"
     assert inspection.artifacts[0].status == EvidenceArtifactStatus.Computed, "plan-graph artifact family should be computed"
     assert _artifact_record_count("plan_graph", inspection) == inspection.authored_node_count, "plan-graph count should match authored nodes"
     assert _artifact_record_count("lineage_graph", inspection) == len(inspection.lineage.edges), "lineage count should match emitted edges"
     assert _artifact_record_count("schema_flow", inspection) == len(inspection.output_schema), "schema-flow count should match output schema"
     assert _artifact_record_count("metadata_attachments", inspection) == len(inspection.attachments), "metadata count should match attachments"
+    assert _artifact_record_count("adapter_requirements", inspection) == len(inspection.adapter_requirements), "adapter-requirements count should match inferred requirements"
     assert _artifact_record_count("diagnostics", inspection) == 0, "diagnostic count should match the empty diagnostics list"
     assert _artifact_record_count("unsupported_evidence", inspection) == len(inspection.unsupported_evidence), "unsupported count should match markers"
     assert len(inspection.unsupported_evidence) == 4, "unsupported evidence families should be explicit markers"
@@ -153,6 +178,36 @@ def test_inspect_plan__exposes_stable_plan_targets_schema_and_artifacts() -> Non
     assert inspection.unsupported_evidence[1].family == "ingress_mappings", "ingress mapping gaps should be explicit"
     assert inspection.unsupported_evidence[2].family == "client_session_context", "session context gaps should be explicit"
     assert inspection.unsupported_evidence[3].family == "frontend_coverage", "frontend coverage gaps should be explicit"
+
+
+def test_inspect_plan__infers_adapter_requirements_from_plan_evidence() -> None:
+    """RFC 033: inspection should expose adapter requirements implied by the plan shape."""
+    # -- Arrange --
+    _register_order_schema("inspection_orders")
+    base: LazyFrame[Order] = lazy_frame_named_table("inspection_orders")
+    inspected = base
+        .filter(eq(col("status"), str_lit("paid")))
+        .with_column("payload_kind", typeof(parse_variant_json(col("status"))))
+        .order_by([desc(col("amount"))])
+
+    # -- Act --
+    inspection = inspect_plan(inspected)
+
+    # -- Assert --
+    assert _requirement_count(inspection, AdapterRequirementCapability.NullSemantics) == 1, "inspection should emit one baseline null-semantics requirement"
+    assert _requirement_count(inspection, AdapterRequirementCapability.RowFilter) == 1, "filter nodes should infer row-filter adapter requirements"
+    assert _requirement_count(inspection, AdapterRequirementCapability.OrderedExecution) == 1, "order-by nodes should infer ordered-execution requirements"
+    assert _requirement_count(inspection, AdapterRequirementCapability.ExtensionFunction) >= 1, "registered scalar helpers should infer extension-function requirements"
+    assert _requirement_count(inspection, AdapterRequirementCapability.VariantSemantics) == 1, "variant helper usage should infer variant-semantics requirements"
+    assert _has_requirement_with_guarantee(
+        inspection,
+        AdapterRequirementCapability.LineagePreservation,
+        AdapterRequirementGuarantee.Preferred,
+    ), "lineage evidence should create a preferred lineage-preservation requirement"
+    for requirement in inspection.adapter_requirements:
+        assert len(requirement.requirement_id) > 0, "inferred requirements should have stable local identities"
+        assert len(requirement.reason) > 0, "inferred requirements should explain their plan evidence"
+        assert len(requirement.evidence_refs) > 0, "inferred requirements should point back to inspection evidence"
 
 
 def test_inspect_lineage__distinguishes_control_grouping_and_value_edges() -> None:

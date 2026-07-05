@@ -88,7 +88,9 @@ The compact `execute(...)`, `collect(...)`, and `write(...)` methods still retur
 
 Adapter coverage answers a different question from execution success. Execution success says the selected backend accepted and ran a plan attempt. Coverage says whether the selected adapter is known to provide a named capability or guarantee.
 
-The current coverage API is deliberately explicit: callers pass `AdapterRequirement` records to `session.check_coverage(...)`. InQL does not yet infer all requirements from arbitrary plan shapes. Unknown coverage is therefore not a soft success; it means InQL does not have evidence that the adapter enforces that capability.
+Coverage can come from two places. Tools can pass explicit `AdapterRequirement` records to `session.check_coverage(...)` when the requirement comes from policy, governance, or another caller-owned contract. For requirements that are visible in local plan evidence, `inspect_plan(...)` records inferred requirements and `session.check_inspection_coverage(...)` or `session.check_plan_coverage(...)` evaluates them against the selected adapter.
+
+Inferred requirements are intentionally evidence-backed. InQL infers concrete plan needs such as row filters, ordered execution, extension functions, variant semantics, baseline null semantics, and lineage-preservation evidence; it does not fabricate policy requirements such as masking, audit emission, region binding, or cryptographic proofs when no inspected evidence asks for them. Unknown coverage is therefore not a soft success; it means InQL does not have evidence that the adapter enforces that capability.
 
 ## Typical flow
 

@@ -51,14 +51,14 @@ An inspection can reveal backend requirements:
 ```incan
 inspection = inspect_plan(summary)
 
-for requirement in inspection.adapter_requirements():
-    print(requirement.capability, requirement.guarantee_level)
+for requirement in inspection.adapter_requirements:
+    print(requirement.capability, requirement.guarantee)
 ```
 
-A session can then report whether the selected adapter covers explicit requirements:
+A session can then report whether the selected adapter covers the inferred requirements:
 
 ```incan
-coverage = session.check_coverage([requirement])
+coverage = session.check_inspection_coverage(inspection)
 ```
 
 If coverage is unknown for a requirement whose guarantee level is required, tools should not present that as enforced behavior.
@@ -104,7 +104,7 @@ Function registry entries, semi-structured functions, extensions, quality assert
 
 Existing adapters may initially report unknown coverage for capabilities they do not declare. Consumers must distinguish unknown from covered.
 
-The first implementation provides the adapter requirement and coverage record vocabulary plus `Session.check_coverage(requirements)`. Requirement inference from arbitrary inspection records remains part of the remaining RFC 033 work; the current API evaluates requirements that callers pass explicitly.
+The first implementation provides the adapter requirement and coverage record vocabulary plus `Session.check_coverage(requirements)` for caller-provided requirements. The RFC 033 completion slice adds inspection-inferred requirements for plan evidence that InQL can observe directly, including baseline null semantics, row filters, ordered execution, extension functions, variant semantics, and lineage-preservation evidence. `Session.check_inspection_coverage(inspection)` and `Session.check_plan_coverage(data)` evaluate those inferred requirements through the same adapter coverage model. Policy requirements that are not visible in plan evidence, such as masking, audit emission, region binding, waiver recording, and cryptographic proofs, still need explicit requirement records or their owning future surfaces.
 
 ## Alternatives considered
 

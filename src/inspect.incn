@@ -3,6 +3,9 @@
 from aggregate_builders import AggregateMeasure
 from dataset import LazyFrame
 from evidence import (
+    AdapterRequirement,
+    AdapterRequirementCapability,
+    AdapterRequirementGuarantee,
     EvidenceArtifactStatus,
     InspectionArtifact,
     LineageConfidence,
@@ -20,6 +23,7 @@ from evidence import (
     UnsupportedEvidence,
 )
 from metadata import inql_version
+from functions.registry import function_registry_entry_by_name
 from prism import prism_plan_id
 from prism.output_columns import authored_output_schema, rewritten_output_schema
 from prism.rewrite import derive_rewritten_view, rewrite_explain
@@ -78,6 +82,7 @@ pub model PlanInspection:
     pub authored_nodes: list[PlanNodeInspection]
     pub rewritten_nodes: list[PlanNodeInspection]
     pub lineage: LineageGraph
+    pub adapter_requirements: list[AdapterRequirement]
     pub attachments: list[MetadataAttachment]
     pub artifacts: list[InspectionArtifact]
     pub unsupported_evidence: list[UnsupportedEvidence]
@@ -172,6 +177,13 @@ pub def inspect_plan[T with Clone](data: LazyFrame[T]) -> PlanInspection:
     tip_output_schema = authored_context.schema(tip_id)
     output_fields = _field_targets_for_schema(plan_id, tip_id, tip_output_schema)
     lineage = _lineage_graph_for_authored_plan(plan_id, authored_context, authored_ids)
+    adapter_requirements = _adapter_requirements_for_authored_plan(
+        plan_id,
+        plan_target,
+        authored_context,
+        authored_ids,
+        lineage,
+    )
     attachments = _metadata_attachments(plan_target, output_fields, tip_output_schema)
     authored_nodes = _authored_node_inspections(plan_id, authored_context, authored_ids)
     rewritten_nodes = _rewritten_node_inspections(plan_id, rewritten_context)
@@ -181,6 +193,7 @@ pub def inspect_plan[T with Clone](data: LazyFrame[T]) -> PlanInspection:
         len(lineage.edges),
         len(tip_output_schema),
         len(attachments),
+        len(adapter_requirements),
         len(unsupported),
     )
     return PlanInspection(
@@ -197,6 +210,7 @@ pub def inspect_plan[T with Clone](data: LazyFrame[T]) -> PlanInspection:
         authored_nodes=authored_nodes,
         rewritten_nodes=rewritten_nodes,
         lineage=lineage,
+        adapter_requirements=adapter_requirements,
         attachments=attachments,
         artifacts=artifacts,
         unsupported_evidence=unsupported,
@@ -262,6 +276,247 @@ def _inspection_node_kind(kind: PrismNodeKind) -> InspectionNodeKind:
         PrismNodeKind.Window => return InspectionNodeKind.Window
         PrismNodeKind.OrderBy => return InspectionNodeKind.OrderBy
         PrismNodeKind.Limit => return InspectionNodeKind.Limit
+
+
+def _adapter_requirements_for_authored_plan(
+    plan_id: str,
+    plan_target: SemanticTarget,
+    context: _AuthoredInspectionContext,
+    authored_ids: list[int],
+    lineage: LineageGraph,
+) -> list[AdapterRequirement]:
+    """Infer adapter requirements from plan-inspection evidence without binding a backend."""
+    mut requirements: list[AdapterRequirement] = []
+    _append_adapter_requirement_once(
+        requirements,
+        plan_target,
+        AdapterRequirementCapability.NullSemantics,
+        AdapterRequirementGuarantee.Required,
+        "plan execution requires adapter null semantics for scalar and relational evaluation",
+        _plan_evidence_ref(plan_id),
+    )
+    if len(lineage.edges) > 0:
+        _append_adapter_requirement_once(
+            requirements,
+            plan_target,
+            AdapterRequirementCapability.LineagePreservation,
+            AdapterRequirementGuarantee.Preferred,
+            "lineage evidence exists and may need adapter preservation across execution boundaries",
+            f"{plan_id}:lineage_graph",
+        )
+    for node_id in authored_ids:
+        _append_node_adapter_requirements(requirements, plan_id, context.node(node_id))
+    return requirements
+
+
+def _append_node_adapter_requirements(
+    mut requirements: list[AdapterRequirement],
+    plan_id: str,
+    node: PrismNode,
+) -> None:
+    """Append adapter requirements implied by one authored Prism node and its expressions."""
+    target = _authored_node_target(plan_id, node)
+    evidence_ref = _node_evidence_ref(plan_id, node.node_id)
+    function_names = _node_scalar_function_names(node)
+    match node.kind:
+        PrismNodeKind.Filter =>
+            _append_adapter_requirement_once(
+                requirements,
+                target,
+                AdapterRequirementCapability.RowFilter,
+                AdapterRequirementGuarantee.Required,
+                "filter nodes require adapter row-filter execution",
+                evidence_ref,
+            )
+        PrismNodeKind.OrderBy =>
+            _append_adapter_requirement_once(
+                requirements,
+                target,
+                AdapterRequirementCapability.OrderedExecution,
+                AdapterRequirementGuarantee.Required,
+                "order-by nodes require ordered adapter execution",
+                evidence_ref,
+            )
+        PrismNodeKind.Window =>
+            if _window_node_requires_ordering(node):
+                _append_adapter_requirement_once(
+                    requirements,
+                    target,
+                    AdapterRequirementCapability.OrderedExecution,
+                    AdapterRequirementGuarantee.Required,
+                    "window specifications with ordering require ordered adapter execution",
+                    evidence_ref,
+                )
+        PrismNodeKind.Aggregate =>
+            if _aggregate_node_requires_ordering(node):
+                _append_adapter_requirement_once(
+                    requirements,
+                    target,
+                    AdapterRequirementCapability.OrderedExecution,
+                    AdapterRequirementGuarantee.Required,
+                    "ordered aggregate inputs require ordered adapter execution",
+                    evidence_ref,
+                )
+        _ => pass
+    if len(function_names) > 0 or _node_has_direct_function_application(node):
+        _append_adapter_requirement_once(
+            requirements,
+            target,
+            AdapterRequirementCapability.ExtensionFunction,
+            AdapterRequirementGuarantee.Required,
+            "registered helper calls in this node require adapter function-extension coverage",
+            evidence_ref,
+        )
+    if _function_names_include_variant(function_names):
+        _append_adapter_requirement_once(
+            requirements,
+            target,
+            AdapterRequirementCapability.VariantSemantics,
+            AdapterRequirementGuarantee.Required,
+            "variant helper calls in this node require adapter semi-structured value semantics",
+            evidence_ref,
+        )
+    return
+
+
+def _append_adapter_requirement_once(
+    mut requirements: list[AdapterRequirement],
+    target: SemanticTarget,
+    capability: AdapterRequirementCapability,
+    guarantee: AdapterRequirementGuarantee,
+    reason: str,
+    evidence_ref: str,
+) -> None:
+    """Append one inferred adapter requirement unless the same target/capability is already present."""
+    for requirement in requirements:
+        if requirement.target.target_id == target.target_id and requirement.capability == capability:
+            return
+    requirements.append(
+        AdapterRequirement(
+            requirement_id=_adapter_requirement_id(target, capability),
+            target=target,
+            capability=capability,
+            guarantee=guarantee,
+            reason=reason,
+            evidence_refs=[evidence_ref],
+        ),
+    )
+    return
+
+
+def _adapter_requirement_id(target: SemanticTarget, capability: AdapterRequirementCapability) -> str:
+    """Return a stable local identity for one inferred adapter requirement."""
+    return f"{target.target_id}:adapter-requirement:{capability.value()}"
+
+
+def _plan_evidence_ref(plan_id: str) -> str:
+    """Return the inspection evidence reference for the full plan."""
+    return f"{plan_id}:plan_graph"
+
+
+def _node_evidence_ref(plan_id: str, node_id: int) -> str:
+    """Return the inspection evidence reference for one authored Prism node."""
+    return f"{plan_id}:authored_node:{node_id}"
+
+
+def _node_has_direct_function_application(node: PrismNode) -> bool:
+    """Return whether one node carries non-scalar registry-backed applications."""
+    if len(node.aggregate_measures) > 0:
+        return true
+    if len(node.generator_applications) > 0:
+        return true
+    if len(node.window_projections) > 0:
+        return true
+    return false
+
+
+def _function_names_include_variant(function_names: list[str]) -> bool:
+    """Return whether any scalar function name belongs to the variant/semi-structured helper family."""
+    for function_name in function_names:
+        match function_registry_entry_by_name(function_name):
+            Some(entry) =>
+                if entry.variant.is_variant_aware:
+                    return true
+            None => pass
+    return false
+
+
+def _node_scalar_function_names(node: PrismNode) -> list[str]:
+    """Return unique scalar function names referenced by one Prism node."""
+    return _function_names_for_exprs(_node_expressions(node))
+
+
+def _node_expressions(node: PrismNode) -> list[ColumnExpr]:
+    """Collect scalar expressions carried by one authored Prism node."""
+    mut expressions: list[ColumnExpr] = []
+    match node.kind:
+        PrismNodeKind.Filter => expressions.append(node.filter_predicate)
+        PrismNodeKind.Join => expressions.append(node.join_predicate)
+        PrismNodeKind.Project =>
+            for assignment in node.projection_assignments:
+                expressions.append(assignment.expr)
+        PrismNodeKind.SelectProject =>
+            for assignment in node.projection_assignments:
+                expressions.append(assignment.expr)
+        PrismNodeKind.GroupBy => expressions.extend(node.group_columns)
+        PrismNodeKind.Aggregate =>
+            expressions.extend(node.group_columns)
+            for measure in node.aggregate_measures:
+                expressions.extend(measure.arguments)
+                if measure.has_filter:
+                    expressions.append(measure.filter_expr)
+                expressions.extend(measure.ordering)
+        PrismNodeKind.Generate =>
+            for generator in node.generator_applications:
+                expressions.extend(generator.arguments)
+        PrismNodeKind.Window =>
+            for projection in node.window_projections:
+                expressions.extend(projection.application.arguments)
+                expressions.extend(projection.application.spec.partition_columns)
+                expressions.extend(projection.application.spec.sort_columns)
+        PrismNodeKind.OrderBy => expressions.extend(node.sort_columns)
+        _ => pass
+    return expressions
+
+
+def _function_names_for_exprs(expressions: list[ColumnExpr]) -> list[str]:
+    """Return unique registry-backed scalar function names referenced by expressions."""
+    mut function_names = OrderedSet[str]()
+    for expr in expressions:
+        for function_name in _expr_function_names(expr):
+            function_names.add(function_name)
+    return function_names.to_list()
+
+
+def _expr_function_names(expr: ColumnExpr) -> list[str]:
+    """Return unique registry-backed scalar function names referenced by one expression tree."""
+    match untyped_column_expr(expr):
+        ScalarFunctionApplicationExpr(application) =>
+            mut names = OrderedSet[str]()
+            names.add(application.canonical_name)
+            for argument in application.arguments:
+                for function_name in _expr_function_names(argument):
+                    names.add(function_name)
+            return names.to_list()
+        _ => return []
+
+
+def _window_node_requires_ordering(node: PrismNode) -> bool:
+    """Return whether any window projection carries an ordering requirement."""
+    for projection in node.window_projections:
+        if projection.application.requires_ordering:
+            return true
+        if len(projection.application.spec.sort_columns) > 0:
+            return true
+    return false
+
+
+def _aggregate_node_requires_ordering(node: PrismNode) -> bool:
+    """Return whether aggregate measures carry ordered-input modifiers."""
+    for measure in node.aggregate_measures:
+        if len(measure.ordering) > 0:
+            return true
+    return false
 
 
 def _lineage_graph_for_authored_plan(
@@ -888,6 +1143,7 @@ def _artifact_summaries(
     lineage_edge_count: int,
     schema_field_count: int,
     metadata_attachment_count: int,
+    adapter_requirement_count: int,
     unsupported_count: int,
 ) -> list[InspectionArtifact]:
     """Return deterministic inspection artifact-family summaries."""
@@ -896,6 +1152,7 @@ def _artifact_summaries(
     artifacts.append(_artifact("lineage_graph", EvidenceArtifactStatus.Computed, lineage_edge_count))
     artifacts.append(_artifact("schema_flow", EvidenceArtifactStatus.Computed, schema_field_count))
     artifacts.append(_artifact("metadata_attachments", EvidenceArtifactStatus.Computed, metadata_attachment_count))
+    artifacts.append(_artifact("adapter_requirements", EvidenceArtifactStatus.Computed, adapter_requirement_count))
     artifacts.append(_artifact("diagnostics", EvidenceArtifactStatus.Computed, 0))
     artifacts.append(_artifact("unsupported_evidence", EvidenceArtifactStatus.Computed, unsupported_count))
     return artifacts
