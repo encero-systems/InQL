@@ -472,6 +472,21 @@ pub from bundle import (
     governed_plan_bundle,
     governed_plan_bundle_from_inspection,
 )
+pub from plan_diff import (
+    BLAST_RADIUS_INPUT_SCHEMA_VERSION,
+    PLAN_DIFF_SCHEMA_VERSION,
+    BlastRadiusInput,
+    PlanDiff,
+    PlanDiffChangeFamily,
+    PlanDiffChangeKind,
+    PlanDiffCompatibility,
+    PlanDiffConfidence,
+    PlanDiffRecord,
+    blast_radius_inputs,
+    diff_lazy_plans,
+    diff_plan_bundles,
+    diff_plans,
+)
 pub from inspect import (
     INSPECTION_SCHEMA_VERSION,
     InspectionNodeKind,

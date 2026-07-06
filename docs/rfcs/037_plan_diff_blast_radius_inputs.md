@@ -1,6 +1,6 @@
 # InQL RFC 037: Plan diff and blast-radius inputs
 
-- **Status:** Draft
+- **Status:** Implemented
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -12,9 +12,9 @@
   - InQL RFC 036 (governed plan bundle)
   - InQL RFC 040 (interoperability semantic profiles)
 - **Issue:** [InQL #71](https://github.com/encero-systems/InQL/issues/71)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
-- **Written against:** Incan v0.3-era InQL
-- **Shipped in:** —
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #91](https://github.com/encero-systems/InQL/pull/91)
+- **Written against:** Incan v0.4-era InQL
+- **Shipped in:** InQL v0.1
 
 ## Summary
 
@@ -121,10 +121,10 @@ Older artifacts may not contain enough identity or lineage for precise diffs. Di
 - **Execution / interchange** — adapter requirement changes must be included where execution behavior changes.
 - **Documentation** — docs must distinguish local blast-radius inputs from global impact analysis.
 
-## Unresolved questions
+## Design Decisions
 
-- Which change kinds should be compatibility-classified in the first release?
-- Should diff severity be part of InQL or left entirely to downstream policy?
-- How should diffs handle generated or unstable field names?
+### Resolved
 
-<!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->
+- The first release classifies output-field removals, output-field renames, and output-schema changes as locally breaking; output-field additions, lineage changes, node-shape changes, and adapter requirement changes are conservative potentially-breaking records; evidence-only and compatibility records are unknown unless a future RFC defines stronger policy.
+- InQL owns conservative local compatibility classes because they are evidence facts about the compared artifacts. Organization-specific severity, approval, promotion, and consumer-impact decisions remain downstream policy.
+- Generated and plan-local IDs are not treated as global identity. Diff keys use semantic facts where possible, such as target kind, display name, governed key, and scope. When InQL cannot compare safely because schema versions or identity assumptions are incompatible, it emits explicit unknown-impact records instead of silently returning an empty diff.

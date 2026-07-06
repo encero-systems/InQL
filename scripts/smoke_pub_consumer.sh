@@ -51,9 +51,12 @@ from pub::inql import (
     LazyFrame,
     PolicyCheckpointAction,
     PolicyCheckpointKind,
+    PlanDiff,
+    PlanDiffChangeFamily,
     QualityObservationStatus,
     Session,
     array,
+    diff_plan_bundles,
     col,
     eq,
     governed_attribute,
@@ -395,6 +398,30 @@ def _governed_plan_bundle_exports_compile_for_pub_consumers() -> None:
     assert len(bundle.policy_checkpoints) == 1, "pub consumers should receive policy checkpoints in bundles"
 
 
+def _diff_has_family(diff: PlanDiff, family: PlanDiffChangeFamily) -> bool:
+    """Return whether a pub-consumer diff contains one family."""
+    for record in diff.records:
+        if record.family == family:
+            return true
+    return false
+
+
+def _plan_diff_exports_compile_for_pub_consumers() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    before = governed_plan_bundle(_orders(session, "plan_diff_before"))
+    after = governed_plan_bundle(_orders(session, "plan_diff_after"), evidence_refs=["smoke:plan-diff"])
+
+    # -- Act --
+    diff = diff_plan_bundles(before, after)
+
+    # -- Assert --
+    assert diff.schema_version == "inql.plan-diff.v0.1", "pub consumers should receive typed plan diffs"
+    assert len(diff.records) > 0, "pub consumers should see evidence-reference changes"
+    assert _diff_has_family(diff, PlanDiffChangeFamily.EvidenceReference), "pub consumers should inspect diff families"
+    assert len(diff.blast_radius_inputs) > 0, "pub consumers should receive local blast-radius inputs"
+
+
 def main() -> None:
     println("query smoke: select")
     _brace_select_aliases_and_lateral_aliases_materialize()
@@ -416,6 +443,8 @@ def main() -> None:
     _governed_evidence_exports_compile_for_pub_consumers()
     println("query smoke: governed plan bundle")
     _governed_plan_bundle_exports_compile_for_pub_consumers()
+    println("query smoke: plan diff")
+    _plan_diff_exports_compile_for_pub_consumers()
 EOF
 
 (cd "$PROJECT_DIR" && "$INCAN_BIN" lock >/dev/null)

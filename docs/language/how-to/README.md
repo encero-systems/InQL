@@ -5,6 +5,7 @@ How-to guides show concrete task workflows for the current InQL package surface.
 - [Add window columns][window-columns]
 - [Build typed HyperLogLog sketches][typed-hll-sketches]
 - [Capture execution observations and adapter coverage][execution-observations]
+- [Compare two plans][plan-diffs]
 - [Build deferred dataset transformations][dataset-transformations]
 - [Estimate approximate metrics][approximate-metrics]
 - [Expand rows with generators][generator-rows]
@@ -26,6 +27,7 @@ How-to guides show concrete task workflows for the current InQL package surface.
 [inspect-plan-lineage]: inspect_plan_lineage.md
 [nested-row-values]: nested_row_values.md
 [normalize-semistructured-fields]: normalize_semistructured_fields.md
+[plan-diffs]: plan_diffs.md
 [quality-observations]: quality_observations.md
 [typed-hll-sketches]: typed_hll_sketches.md
 [variant-payloads]: variant_payloads.md
