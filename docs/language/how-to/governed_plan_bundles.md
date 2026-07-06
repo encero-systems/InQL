@@ -1,6 +1,6 @@
 # Package a governed plan bundle
 
-Use a governed plan bundle when a local tool, CI job, notebook, or migration assistant needs one handoff value that keeps a planned relation and its evidence together. The bundle does not make policy decisions. It gives consumers a typed package with explicit section states, so missing quality observations, absent coverage records, and unsupported future evidence families cannot be mistaken for successful evidence.
+Use a governed plan bundle when a local tool, CI job, notebook, or migration assistant needs one handoff value that keeps a planned relation and its evidence together. The bundle does not make policy decisions. It gives consumers a typed package with explicit section states, so missing quality observations, absent coverage records, and unsupported reserved evidence families cannot be mistaken for successful evidence.
 
 ## Build a bundle from a lazy plan
 
@@ -45,7 +45,7 @@ bundle = governed_plan_bundle(
 )
 ```
 
-The bundle records `quality_assertions`, `quality_observations`, and `coverage_records` as available sections because the caller supplied them. If those arguments are omitted, the sections remain present but `Unavailable`.
+The bundle records `quality_assertions`, `quality_observations`, and `coverage_records` as available sections because the caller supplied them. Semantic profiles and profile assessments follow the same rule when supplied. If those arguments are omitted, the sections remain present but `Unavailable`.
 
 ## Branch on section state
 
@@ -61,7 +61,7 @@ match bundle.section("coverage_records"):
     None => println("unknown bundle section")
 ```
 
-Future evidence families such as verification evidence, digest profiles, proof artifacts, constraint evidence, data contract evidence, semantic graph projections, semantic profiles, ingress mappings, client session context, and exchange bridges are represented as explicit `Unsupported` sections until their owning RFCs add concrete records. That is intentional: consumers can distinguish “not implemented here” from “implemented but not supplied for this bundle.”
+Reserved evidence families such as verification evidence, digest profiles, proof artifacts, constraint evidence, data contract evidence, semantic graph projections, ingress mappings, client session context, and exchange bridges are represented as explicit `Unsupported` sections until their owning RFCs add concrete records. That is intentional: consumers can distinguish “not implemented here” from “implemented but not supplied for this bundle.”
 
 ## Write a JSON summary
 
@@ -71,4 +71,4 @@ The typed bundle is the richest representation. When a tool only needs summary m
 bundle.write("target/inql/summary.bundle.json")?
 ```
 
-The JSON file contains bundle metadata, plan/root target summaries, counts, section records, input schema references, and evidence references. It does not flatten every rich nested evidence record. Keep the typed bundle in memory when the consumer needs full lineage edges, governed attributes, quality records, execution observations, or coverage diagnostics.
+The JSON file contains bundle metadata, plan/root target summaries, counts, section records, input schema references, and evidence references. It does not flatten every rich nested evidence record. Keep the typed bundle in memory when the consumer needs full lineage edges, governed attributes, quality records, execution observations, coverage diagnostics, semantic profiles, or profile assessments.

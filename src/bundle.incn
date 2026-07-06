@@ -22,6 +22,7 @@ from governance import GovernedAttribute, PolicyCheckpoint
 from inspect import InspectionNodeKind, PlanInspection, inspect_plan
 from quality import QualityAssertion, QualityObservation
 from scalar_schema import ScalarColumnSpec
+from semantic_profiles import SEMANTIC_PROFILE_SCHEMA_VERSION, SemanticProfile, SemanticProfileAssessment
 
 pub const GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION: str = "inql.governed-plan-bundle.v0.1"
 
@@ -106,6 +107,8 @@ pub model GovernedPlanBundle:
     pub execution_observations: list[ExecutionObservation]
     pub adapter_requirements: list[AdapterRequirement]
     pub coverage_records: list[AdapterCoverageRecord]
+    pub semantic_profiles: list[SemanticProfile]
+    pub profile_assessments: list[SemanticProfileAssessment]
     pub unsupported_evidence: list[UnsupportedEvidence]
     pub sections: list[BundleEvidenceSection]
     pub evidence_refs: list[str]
@@ -120,9 +123,9 @@ pub model GovernedPlanBundle:
 
     def section_available(self, family: str) -> bool:
         """Return whether a section exists and has available evidence."""
-        match self.section(family):
-            Some(section) => return section.availability == BundleSectionAvailability.Available
-            None => return false
+        if let Some(section) = self.section(family):
+            return section.availability == BundleSectionAvailability.Available
+        return false
 
     def to_json_value(self) -> JsonValue:
         """Return the stable governed-plan-bundle JSON summary."""
@@ -156,15 +159,19 @@ pub def governed_plan_bundle[T with Clone](
     execution_observations: list[ExecutionObservation] = [],
     coverage_records: list[AdapterCoverageRecord] = [],
     evidence_refs: list[str] = [],
+    semantic_profiles: list[SemanticProfile] = [],
+    profile_assessments: list[SemanticProfileAssessment] = [],
 ) -> GovernedPlanBundle:
     """Inspect one lazy plan and package its local governed evidence into a bundle."""
     return governed_plan_bundle_from_inspection(
         inspect_plan(data),
-        quality_assertions,
-        quality_observations,
-        execution_observations,
-        coverage_records,
-        evidence_refs,
+        quality_assertions=quality_assertions,
+        quality_observations=quality_observations,
+        execution_observations=execution_observations,
+        coverage_records=coverage_records,
+        evidence_refs=evidence_refs,
+        semantic_profiles=semantic_profiles,
+        profile_assessments=profile_assessments,
     )
 
 
@@ -175,6 +182,8 @@ pub def governed_plan_bundle_from_inspection(
     execution_observations: list[ExecutionObservation] = [],
     coverage_records: list[AdapterCoverageRecord] = [],
     evidence_refs: list[str] = [],
+    semantic_profiles: list[SemanticProfile] = [],
+    profile_assessments: list[SemanticProfileAssessment] = [],
 ) -> GovernedPlanBundle:
     """Package an existing inspection record and caller-supplied evidence into a governed plan bundle."""
     input_schema_references = _input_schema_references(inspection)
@@ -185,12 +194,14 @@ pub def governed_plan_bundle_from_inspection(
         quality_observations,
         execution_observations,
         coverage_records,
+        semantic_profiles,
+        profile_assessments,
     )
     return GovernedPlanBundle(
         schema_version=GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION,
         inql_version=inspection.inql_version,
         bundle_id=f"bundle:{inspection.plan_id}",
-        rule_versions=[GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION, inspection.schema_version, inspection.lineage.rule_version],
+        rule_versions=_bundle_rule_versions(inspection, semantic_profiles, profile_assessments),
         plan_target=inspection.plan_target,
         root_target=inspection.root_target,
         input_schema_references=input_schema_references,
@@ -205,6 +216,8 @@ pub def governed_plan_bundle_from_inspection(
         execution_observations=execution_observations,
         adapter_requirements=inspection.adapter_requirements,
         coverage_records=coverage_records,
+        semantic_profiles=semantic_profiles,
+        profile_assessments=profile_assessments,
         unsupported_evidence=inspection.unsupported_evidence,
         sections=sections,
         evidence_refs=evidence_refs,
@@ -219,8 +232,10 @@ def _bundle_sections(
     quality_observations: list[QualityObservation],
     execution_observations: list[ExecutionObservation],
     coverage_records: list[AdapterCoverageRecord],
+    semantic_profiles: list[SemanticProfile],
+    profile_assessments: list[SemanticProfileAssessment],
 ) -> list[BundleEvidenceSection]:
-    """Build deterministic section summaries for local and future evidence families."""
+    """Build deterministic section summaries for local and reserved evidence families."""
     mut sections: list[BundleEvidenceSection] = []
     sections.append(
         _section(
@@ -346,6 +361,22 @@ def _bundle_sections(
         ),
     )
     sections.append(
+        _optional_section(
+            "semantic_profiles",
+            len(semantic_profiles),
+            [profile.profile_id for profile in semantic_profiles],
+            "no semantic profiles were supplied",
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "profile_assessments",
+            len(profile_assessments),
+            [assessment.assessment_id for assessment in profile_assessments],
+            "no profile assessments were supplied",
+        ),
+    )
+    sections.append(
         _section(
             "substrait_plan_artifact",
             BundleSectionRequirement.Optional,
@@ -357,7 +388,7 @@ def _bundle_sections(
     )
     for unsupported in inspection.unsupported_evidence:
         _append_unsupported_section(sections, unsupported.family, unsupported.reason)
-    for family in _future_evidence_families():
+    for family in _reserved_evidence_families():
         _append_unsupported_section(
             sections,
             family,
@@ -413,19 +444,22 @@ def _optional_section(
 
 def _append_unsupported_section(mut sections: list[BundleEvidenceSection], family: str, reason: str) -> None:
     """Append an unsupported section when the family is not already represented."""
-    if _has_section(sections, family):
-        return
+    for idx in range(len(sections)):
+        section = sections[idx]
+        if section.family == family:
+            if section.availability == BundleSectionAvailability.Unavailable:
+                sections[idx] = _section(
+                    family,
+                    section.requirement,
+                    BundleSectionAvailability.Unsupported,
+                    section.record_count,
+                    reason,
+                    section.evidence_refs,
+                )
+            return
     sections.append(
         _section(family, BundleSectionRequirement.Optional, BundleSectionAvailability.Unsupported, 0, reason, []),
     )
-
-
-def _has_section(sections: list[BundleEvidenceSection], family: str) -> bool:
-    """Return whether a section list already contains one family."""
-    for section in sections:
-        if section.family == family:
-            return true
-    return false
 
 
 def _input_schema_reference_section(refs: list[str]) -> BundleEvidenceSection:
@@ -454,42 +488,26 @@ def _input_schema_references(inspection: PlanInspection) -> list[str]:
     return [node.target.target_id for node in inspection.authored_nodes if node.kind == InspectionNodeKind.ReadNamedTable]
 
 
+def _bundle_rule_versions(
+    inspection: PlanInspection,
+    semantic_profiles: list[SemanticProfile],
+    profile_assessments: list[SemanticProfileAssessment],
+) -> list[str]:
+    """Return bundle rule versions, including profile schema version when profile evidence is present."""
+    mut versions = [GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION, inspection.schema_version, inspection.lineage.rule_version]
+    if len(semantic_profiles) > 0 or len(profile_assessments) > 0:
+        versions.append(SEMANTIC_PROFILE_SCHEMA_VERSION)
+    return versions
+
+
 def _metadata_attachment_ref(attachment: MetadataAttachment) -> str:
     """Return the local reference string for one metadata attachment."""
     return f"metadata:{attachment.target.target_id}:{attachment.namespace}:{attachment.key}"
 
 
-def _future_evidence_families() -> list[str]:
+def _reserved_evidence_families() -> list[str]:
     """Return RFC-reserved evidence families that local bundles must mark explicitly until implemented."""
-    mut families: list[str] = []
-    # Verification and proof families come from RFCs 042-045.
-    families.append("verification_evidence")
-    families.append("canonical_equality_profiles")
-    families.append("digest_profiles")
-    families.append("verifier_statements")
-    families.append("proof_artifacts")
-    families.append("proof_verification_observations")
-
-    # Contract, topology, and planning families are reserved by RFCs 045-046.
-    families.append("constraint_evidence")
-    families.append("verification_plans")
-    families.append("data_contract_artifacts")
-    families.append("normalized_contract_evidence")
-    families.append("mapping_diagnostics")
-    families.append("product_topology")
-    families.append("port_dependencies")
-
-    # Interop, semantic graph, and frontend evidence families are reserved by RFCs 040-041 and 047.
-    families.append("semantic_evidence_graph_projection")
-    families.append("graph_artifacts")
-    families.append("graph_query_results")
-    families.append("semantic_profiles")
-    families.append("profile_assessments")
-    families.append("ingress_mappings")
-    families.append("frontend_coverage")
-    families.append("client_session_context")
-    families.append("external_exchange_bridges")
-    return families
+    return ["verification_evidence", "canonical_equality_profiles", "digest_profiles", "verifier_statements", "proof_artifacts", "proof_verification_observations", "constraint_evidence", "verification_plans", "data_contract_artifacts", "normalized_contract_evidence", "mapping_diagnostics", "product_topology", "port_dependencies", "semantic_evidence_graph_projection", "graph_artifacts", "graph_query_results", "ingress_mappings", "frontend_coverage", "client_session_context", "external_exchange_bridges"]
 
 
 def _bundle_counts_json_value(bundle: GovernedPlanBundle) -> JsonValue:
@@ -507,16 +525,15 @@ def _bundle_counts_json_value(bundle: GovernedPlanBundle) -> JsonValue:
     counts["execution_observations"] = JsonValue.int(len(bundle.execution_observations))
     counts["adapter_requirements"] = JsonValue.int(len(bundle.adapter_requirements))
     counts["coverage_records"] = JsonValue.int(len(bundle.coverage_records))
+    counts["semantic_profiles"] = JsonValue.int(len(bundle.semantic_profiles))
+    counts["profile_assessments"] = JsonValue.int(len(bundle.profile_assessments))
     counts["unsupported_evidence"] = JsonValue.int(len(bundle.unsupported_evidence))
     return JsonValue.object(counts)
 
 
 def _section_json_values(sections: list[BundleEvidenceSection]) -> list[JsonValue]:
     """Return JSON section summaries in bundle order."""
-    mut values: list[JsonValue] = []
-    for section in sections:
-        values.append(section.to_json_value())
-    return values
+    return [section.to_json_value() for section in sections]
 
 
 def _strings_to_json_values(values: list[str]) -> list[JsonValue]:

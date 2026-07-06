@@ -16,7 +16,7 @@ bundle_from_existing_inspection = governed_plan_bundle_from_inspection(inspectio
 | `governed_plan_bundle(data)` | `LazyFrame[T]` plus optional evidence lists | `GovernedPlanBundle` |
 | `governed_plan_bundle_from_inspection(inspection)` | `PlanInspection` plus optional evidence lists | `GovernedPlanBundle` |
 
-Both entry points accept optional `quality_assertions`, `quality_observations`, `execution_observations`, `coverage_records`, and `evidence_refs` arguments. `governed_plan_bundle(...)` runs local plan inspection first. `governed_plan_bundle_from_inspection(...)` is for callers that already inspected the plan and want to avoid redoing that work.
+Both entry points accept optional `quality_assertions`, `quality_observations`, `execution_observations`, `coverage_records`, `semantic_profiles`, `profile_assessments`, and `evidence_refs` arguments. `governed_plan_bundle(...)` runs local plan inspection first. `governed_plan_bundle_from_inspection(...)` is for callers that already inspected the plan and want to avoid redoing that work.
 
 ## Record types
 
@@ -54,8 +54,10 @@ Both entry points accept optional `quality_assertions`, `quality_observations`, 
 | `execution_observations` | `list[ExecutionObservation]` | Caller-supplied execution observations included in the bundle. |
 | `adapter_requirements` | `list[AdapterRequirement]` | Inspection-inferred adapter requirements. |
 | `coverage_records` | `list[AdapterCoverageRecord]` | Caller-supplied adapter coverage records included in the bundle. |
+| `semantic_profiles` | `list[SemanticProfile]` | Caller-supplied semantic profiles included in the bundle. |
+| `profile_assessments` | `list[SemanticProfileAssessment]` | Caller-supplied semantic profile assessments included in the bundle. |
 | `unsupported_evidence` | `list[UnsupportedEvidence]` | Inspection markers for evidence families not computed by the inspection path. |
-| `sections` | `list[BundleEvidenceSection]` | Deterministic section summaries for local and future evidence families. |
+| `sections` | `list[BundleEvidenceSection]` | Deterministic section summaries for local and reserved evidence families. |
 | `evidence_refs` | `list[str]` | Caller-supplied external or local evidence references. |
 | `export_status` | `BundleExportStatus` | Local export state. |
 
@@ -69,7 +71,7 @@ Sections are the compatibility surface for consumers that do not understand ever
 | `Unavailable` | The family is supported by this bundle surface, but no evidence was supplied or discovered for this bundle. |
 | `Unsupported` | The RFC series reserves the family, but this InQL implementation does not produce that family yet. |
 
-Required sections cover the local core evidence InQL can produce today: plan target, input schema references, output schema, output fields, lineage graph, metadata attachments, governed attributes, policy checkpoints, adapter requirements, and unsupported-evidence markers. Optional sections cover caller-provided execution, quality, coverage, Substrait artifact references, and future evidence families such as verification evidence, canonical equality profiles, proof artifacts, constraint evidence, data contract evidence, product topology, semantic evidence graph projections, semantic profiles, ingress mappings, client session context, and exchange bridges.
+Required sections cover the local core evidence InQL can produce today: plan target, input schema references, output schema, output fields, lineage graph, metadata attachments, governed attributes, policy checkpoints, adapter requirements, and unsupported-evidence markers. Optional sections cover caller-provided execution, quality, coverage, semantic profiles, profile assessments, Substrait artifact references, and reserved evidence families such as verification evidence, canonical equality profiles, proof artifacts, constraint evidence, data contract evidence, product topology, semantic evidence graph projections, ingress mappings, client session context, and exchange bridges.
 
 ## Methods
 
@@ -81,10 +83,10 @@ Required sections cover the local core evidence InQL can produce today: plan tar
 | `bundle.to_json_text()` | `Result[str, IoError]` | Serialize the stable JSON summary as pretty JSON text. |
 | `bundle.write(path)` | `Result[None, IoError]` | Write the stable JSON summary to a filesystem path. |
 
-The JSON summary intentionally contains metadata, counts, section states, input schema references, and evidence references. It does not flatten every rich typed record into JSON. Consumers that need the full in-memory record graph should use the typed `GovernedPlanBundle` value directly until InQL grows a broader artifact exchange format.
+The JSON summary intentionally contains metadata, counts, section states, input schema references, and evidence references. It does not flatten every rich typed record into JSON. Consumers that need the full in-memory record graph should use the typed `GovernedPlanBundle` value directly or use evidence exchange artifacts for handoff formats.
 
 ## Current limits
 
-Bundles are local evidence packages. They do not approve policy decisions, create a hosted evidence graph, publish to a control plane, or prove execution correctness. The current implementation does not embed a Substrait plan artifact by default, and future evidence families are marked as `Unsupported` until their owning RFCs provide concrete record surfaces.
+Bundles are local evidence packages. They do not approve policy decisions, create a hosted evidence graph, publish to a control plane, or prove execution correctness. The current implementation does not embed a Substrait plan artifact by default, and reserved evidence families are marked as `Unsupported` until their owning RFCs provide concrete record surfaces.
 
 For a task-oriented workflow, see [Package a governed plan bundle](../how-to/governed_plan_bundles.md).

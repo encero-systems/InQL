@@ -58,7 +58,11 @@ from pub::inql import (
     PlanDiff,
     PlanDiffChangeFamily,
     QualityObservationStatus,
+    SemanticProfileAssessmentState,
+    SemanticProfileDimensionKind,
+    SemanticProfileDimensionState,
     Session,
+    assess_profile_for_target,
     array,
     bundle_summary_exchange,
     diff_plan_bundles,
@@ -68,10 +72,14 @@ from pub::inql import (
     external_evidence_exchange,
     governed_attribute,
     governed_plan_bundle,
+    governed_plan_bundle_from_inspection,
+    inql_baseline_profile,
     inspect_plan,
     lit,
     openlineage_exchange,
     policy_checkpoint,
+    semantic_dimension,
+    sql_dialect_profile,
     telemetry_exchange,
     transformation_project_exchange,
 )
@@ -469,6 +477,38 @@ def _evidence_exchange_exports_compile_for_pub_consumers() -> None:
     assert len(inbound.external_artifacts) == 1, "inbound external artifact exchange should preserve artifact identity"
 
 
+def _semantic_profile_exports_compile_for_pub_consumers() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    inspection = inspect_plan(_orders(session, "semantic_profile_orders"))
+    baseline = inql_baseline_profile("smoke", evidence_refs=["smoke:profile"])
+    dialect = sql_dialect_profile(
+        "athena",
+        dimensions=[
+            semantic_dimension(
+                SemanticProfileDimensionKind.TemporalCalendar,
+                "timezone behavior not evaluated in smoke",
+                state=SemanticProfileDimensionState.Unknown,
+            ),
+        ],
+    )
+
+    # -- Act --
+    baseline_assessment = assess_profile_for_target(inspection.plan_target, baseline)
+    dialect_assessment = assess_profile_for_target(inspection.plan_target, dialect)
+    bundle = governed_plan_bundle_from_inspection(
+        inspection,
+        semantic_profiles=[baseline, dialect],
+        profile_assessments=[baseline_assessment, dialect_assessment],
+    )
+
+    # -- Assert --
+    assert baseline_assessment.state == SemanticProfileAssessmentState.Matched, "baseline profile should match exact dimensions"
+    assert dialect_assessment.state == SemanticProfileAssessmentState.Unknown, "unknown profile dimensions must remain unknown"
+    assert len(bundle.semantic_profiles) == 2, "bundle should export semantic profile records"
+    assert bundle.section_available("semantic_profiles"), "bundle should expose semantic profile section availability"
+
+
 def main() -> None:
     println("query smoke: select")
     _brace_select_aliases_and_lateral_aliases_materialize()
@@ -494,6 +534,8 @@ def main() -> None:
     _plan_diff_exports_compile_for_pub_consumers()
     println("query smoke: evidence exchange")
     _evidence_exchange_exports_compile_for_pub_consumers()
+    println("query smoke: semantic profiles")
+    _semantic_profile_exports_compile_for_pub_consumers()
 EOF
 
 (cd "$PROJECT_DIR" && "$INCAN_BIN" lock >/dev/null)

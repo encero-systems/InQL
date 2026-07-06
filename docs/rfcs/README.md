@@ -46,7 +46,7 @@ InQL uses its **own** RFC series (starting at 000), independent of the [Incan la
 | [037][rfc-037] | Implemented | Plan diff and blast-radius inputs                                                                 |     |
 | [038][rfc-038] | Implemented | Evidence exchange bridges                                                                         |     |
 | [039][rfc-039] | Draft       | Pandas-familiar exploration API                                                                   |     |
-| [040][rfc-040] | Draft       | Interoperability semantic profiles                                                                |     |
+| [040][rfc-040] | Implemented | Interoperability semantic profiles                                                                |     |
 | [041][rfc-041] | Draft       | Prism plan ingress and external client frontends                                                  |     |
 | [042][rfc-042] | Draft       | Async verification evidence                                                                       |     |
 | [043][rfc-043] | Draft       | Canonical equality and digest profiles                                                            |     |
