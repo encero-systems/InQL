@@ -28,6 +28,7 @@ This section documents the current InQL package surface.
 - [Compare two plans (How-to)][plan-diffs-how-to]
 - [Exchange evidence locally (How-to)][evidence-exchange-how-to]
 - [Use semantic profiles in evidence (How-to)][semantic-profiles-how-to]
+- [Analyze external frontend intent (How-to)][ingress-how-to]
 - [Execution context (Reference)][execution-reference]
 - [Execution context (Explanation)][execution-explanation]
 
@@ -54,6 +55,7 @@ This section documents the current InQL package surface.
 - [Plan diffs and blast-radius inputs][plan-diffs-reference]
 - [Evidence exchange bridges][evidence-exchange-reference]
 - [Interoperability semantic profiles][semantic-profiles-reference]
+- [Prism plan ingress][ingress-reference]
 - [Quality assertions and observations][quality-reference]
 
 <!-- References -->
@@ -81,11 +83,13 @@ This section documents the current InQL package surface.
 [plan-diffs-how-to]: how-to/plan_diffs.md
 [evidence-exchange-how-to]: how-to/evidence_exchange.md
 [semantic-profiles-how-to]: how-to/semantic_profiles.md
+[ingress-how-to]: how-to/ingress.md
 [governance-reference]: reference/governance.md
 [governed-plan-bundles-reference]: reference/governed_plan_bundles.md
 [plan-diffs-reference]: reference/plan_diffs.md
 [evidence-exchange-reference]: reference/evidence_exchange.md
 [semantic-profiles-reference]: reference/semantic_profiles.md
+[ingress-reference]: reference/ingress.md
 [quality-observations-how-to]: how-to/quality_observations.md
 [inspect-plan-lineage-how-to]: how-to/inspect_plan_lineage.md
 [quality-reference]: reference/quality.md
