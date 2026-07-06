@@ -45,7 +45,35 @@ bundle = governed_plan_bundle(
 )
 ```
 
-The bundle records `quality_assertions`, `quality_observations`, and `coverage_records` as available sections because the caller supplied them. Semantic profiles and profile assessments follow the same rule when supplied. If those arguments are omitted, the sections remain present but `Unavailable`.
+The bundle records `quality_assertions`, `quality_observations`, and `coverage_records` as available sections because the caller supplied them. Semantic profiles, profile assessments, and ingress evidence follow the same rule when supplied. If those arguments are omitted, the sections remain present but `Unavailable`.
+
+## Include ingress evidence
+
+When a plan came through a frontend boundary, package the ingress analysis evidence with the inspection result. This preserves request identity, client-session context, origin mappings, frontend coverage, and diagnostics beside the normal Prism evidence.
+
+```incan
+from pub::inql import (
+    analyze_ingress_plan,
+    governed_plan_bundle_from_inspection,
+    ingress_named_table,
+    ingress_plan,
+    inspect_plan,
+)
+
+plan = ingress_plan(request, session_context, [ingress_named_table("orders")])
+analysis: IngressAnalysis[Order] = analyze_ingress_plan[Order](plan)
+
+match analysis.plan:
+    Some(data) =>
+        bundle = governed_plan_bundle_from_inspection(
+            inspect_plan(data),
+            ingress_evidence=[analysis.evidence],
+        )
+        println(bundle.section_available("frontend_coverage"))
+    None => println("ingress analysis rejected the plan")
+```
+
+Ingress evidence is frontend-facing. It should be reviewed alongside, not instead of, adapter coverage records.
 
 ## Branch on section state
 
@@ -61,7 +89,7 @@ match bundle.section("coverage_records"):
     None => println("unknown bundle section")
 ```
 
-Reserved evidence families such as verification evidence, digest profiles, proof artifacts, constraint evidence, data contract evidence, semantic graph projections, ingress mappings, client session context, and exchange bridges are represented as explicit `Unsupported` sections until their owning RFCs add concrete records. That is intentional: consumers can distinguish “not implemented here” from “implemented but not supplied for this bundle.”
+Reserved evidence families such as verification evidence, digest profiles, proof artifacts, constraint evidence, data contract evidence, semantic graph projections, and exchange bridges are represented as explicit `Unsupported` sections until their owning RFCs add concrete records. That is intentional: consumers can distinguish “not implemented here” from “implemented but not supplied for this bundle.” Ingress sections are concrete optional sections; they are `Available` only when callers supply ingress evidence.
 
 ## Write a JSON summary
 

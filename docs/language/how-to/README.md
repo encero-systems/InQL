@@ -7,6 +7,7 @@ How-to guides show concrete task workflows for the current InQL package surface.
 - [Capture execution observations and adapter coverage][execution-observations]
 - [Compare two plans][plan-diffs]
 - [Exchange evidence locally][evidence-exchange]
+- [Analyze external frontend intent][ingress]
 - [Build deferred dataset transformations][dataset-transformations]
 - [Estimate approximate metrics][approximate-metrics]
 - [Expand rows with generators][generator-rows]
@@ -27,6 +28,7 @@ How-to guides show concrete task workflows for the current InQL package surface.
 [generator-rows]: generator_rows.md
 [governed-evidence]: governed_evidence.md
 [governed-plan-bundles]: governed_plan_bundles.md
+[ingress]: ingress.md
 [inspect-plan-lineage]: inspect_plan_lineage.md
 [nested-row-values]: nested_row_values.md
 [normalize-semistructured-fields]: normalize_semistructured_fields.md

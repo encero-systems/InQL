@@ -52,6 +52,12 @@ from pub::inql import (
     EvidenceExchangeTargetFormat,
     ExternalEvidenceConfidence,
     GovernedAttributeStatus,
+    IngressAnalysis,
+    IngressAnalysisStatus,
+    IngressCoverageState,
+    IngressFrontendKind,
+    IngressOriginKind,
+    IngressOriginReference,
     LazyFrame,
     PolicyCheckpointAction,
     PolicyCheckpointKind,
@@ -74,7 +80,15 @@ from pub::inql import (
     governed_plan_bundle,
     governed_plan_bundle_from_inspection,
     inql_baseline_profile,
+    analyze_ingress_plan,
+    client_session_context,
     inspect_plan,
+    ingress_filter,
+    ingress_limit,
+    ingress_named_table,
+    ingress_origin_reference,
+    ingress_plan,
+    ingress_request,
     lit,
     openlineage_exchange,
     policy_checkpoint,
@@ -509,6 +523,43 @@ def _semantic_profile_exports_compile_for_pub_consumers() -> None:
     assert bundle.section_available("semantic_profiles"), "bundle should expose semantic profile section availability"
 
 
+def _ingress_exports_compile_for_pub_consumers() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    _orders(session, "ingress_smoke_orders")
+    request = ingress_request(
+        "spark-connect-smoke",
+        "spark-connect",
+        frontend_kind=IngressFrontendKind.SparkConnect,
+        request_id="ingress-request:smoke",
+    )
+    origin = ingress_origin_reference(request, IngressOriginKind.Relation, "rel-0", "relations/0", "orders")
+    plan = ingress_plan(
+        request,
+        client_session_context(request, "session-smoke", current_namespace=Some("sales")),
+        [
+            ingress_named_table("ingress_smoke_orders", origin=Some(origin)),
+            ingress_filter(eq(col("customer_id"), "A")),
+            ingress_limit(1),
+        ],
+        requested_profile=Some(inql_baseline_profile("smoke")),
+    )
+
+    # -- Act --
+    analysis: IngressAnalysis[AggregateOrder] = analyze_ingress_plan[AggregateOrder](plan)
+
+    # -- Assert --
+    assert analysis.status == IngressAnalysisStatus.Analyzed, "ingress analysis should produce a plan for supported steps"
+    assert analysis.evidence.coverage_records[0].state == IngressCoverageState.Supported, "ingress coverage should be explicit"
+    match analysis.plan:
+        Some(data) =>
+            bundle = governed_plan_bundle_from_inspection(inspect_plan(data), ingress_evidence=[analysis.evidence])
+            assert bundle.section_available("ingress_mappings"), "bundle should expose ingress origin mappings"
+            assert bundle.section_available("frontend_coverage"), "bundle should expose frontend coverage"
+            assert bundle.section_available("client_session_context"), "bundle should expose client session context"
+        None => return fail_t("supported ingress analysis should produce a lazy plan")
+
+
 def main() -> None:
     println("query smoke: select")
     _brace_select_aliases_and_lateral_aliases_materialize()
@@ -536,6 +587,8 @@ def main() -> None:
     _evidence_exchange_exports_compile_for_pub_consumers()
     println("query smoke: semantic profiles")
     _semantic_profile_exports_compile_for_pub_consumers()
+    println("query smoke: ingress")
+    _ingress_exports_compile_for_pub_consumers()
 EOF
 
 (cd "$PROJECT_DIR" && "$INCAN_BIN" lock >/dev/null)

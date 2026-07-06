@@ -1,0 +1,210 @@
+"""Tests for Prism plan ingress records and analysis."""
+
+from std.testing import fail_t
+from aggregate_builders import aggregate_as
+from bundle import governed_plan_bundle_from_inspection
+from evidence import ExecutionDiagnosticSeverity
+from functions import col, desc, eq, sum
+from ingress import (
+    INGRESS_SCHEMA_VERSION,
+    IngressAnalysis,
+    IngressAnalysisStatus,
+    IngressCommandKind,
+    IngressCoverageState,
+    IngressFrontendKind,
+    IngressOriginKind,
+    IngressRequest,
+    analyze_ingress_plan,
+    client_session_context,
+    ingress_aggregate,
+    ingress_command,
+    ingress_filter,
+    ingress_group_by,
+    ingress_limit,
+    ingress_named_table,
+    ingress_order_by,
+    ingress_origin_reference,
+    ingress_plan,
+    ingress_request,
+    ingress_select,
+)
+from inspect import inspect_plan
+from projection_builders import with_column_assignment
+from semantic_profiles import (
+    SemanticProfileDimensionKind,
+    SemanticProfileDimensionState,
+    inql_baseline_profile,
+    semantic_dimension,
+    sql_dialect_profile,
+)
+from substrait.schema import RowColumnSpec, SubstraitPrimitiveKind
+from substrait.schema_registry import register_named_table_schema
+
+
+@derive(Clone)
+model IngressOrder:
+    """Fixture row shape used by ingress tests."""
+
+    customer_id: int
+    amount: int
+    status: str
+
+
+@derive(Clone)
+model IngressOrderSummary:
+    """Fixture projected row shape used by ingress tests."""
+
+    customer_id: int
+    total_amount: int
+
+
+def _register_order_schema(table_name: str) -> None:
+    """Register the table schema used by ingress tests."""
+    register_named_table_schema(
+        table_name,
+        [RowColumnSpec(name="customer_id", kind=SubstraitPrimitiveKind.I64, nullable=false), RowColumnSpec(
+            name="amount",
+            kind=SubstraitPrimitiveKind.I64,
+            nullable=false,
+        ), RowColumnSpec(name="status", kind=SubstraitPrimitiveKind.String, nullable=false)],
+    )
+
+
+def _request() -> IngressRequest:
+    """Build the shared Spark-shaped ingress request fixture."""
+    return ingress_request(
+        "spark-connect-fixture",
+        "spark-connect",
+        frontend_kind=IngressFrontendKind.SparkConnect,
+        request_id="ingress-request:spark-connect-fixture:orders",
+        protocol_version=Some("3.5"),
+        evidence_refs=["frontend:spark-connect-fixture"],
+    )
+
+
+def test_ingress__supported_relation_steps_analyze_to_prism_plan() -> None:
+    """RFC 041: supported relation ingress should converge on ordinary Prism-backed LazyFrame planning."""
+    # -- Arrange --
+    _register_order_schema("ingress_orders")
+    request = _request()
+    session_context = client_session_context(
+        request,
+        "session-a",
+        current_catalog=Some("lakehouse"),
+        current_namespace=Some("sales"),
+        timezone=Some("UTC"),
+        case_sensitive=Some(false),
+    )
+    origin = ingress_origin_reference(request, IngressOriginKind.Relation, "rel-0", "relations/0", "orders")
+    read_step = ingress_named_table("ingress_orders", origin=Some(origin))
+    filter_step = ingress_filter(eq(col("status"), "paid"))
+    customer_projection = with_column_assignment("customer_id", col("customer_id"))
+    amount_projection = with_column_assignment("amount", col("amount"))
+    select_step = ingress_select([customer_projection, amount_projection])
+    group_step = ingress_group_by([col("customer_id")])
+    aggregate_step = ingress_aggregate([aggregate_as(sum(col("amount")), "total_amount")])
+    order_step = ingress_order_by([desc(col("total_amount"))])
+    limit_step = ingress_limit(10)
+    plan = ingress_plan(
+        request,
+        session_context,
+        [read_step, filter_step, select_step, group_step, aggregate_step, order_step, limit_step],
+        requested_profile=Some(inql_baseline_profile("v0.1")),
+        evidence_refs=["ingress:orders"],
+    )
+
+    # -- Act --
+    analysis: IngressAnalysis[IngressOrderSummary] = analyze_ingress_plan[IngressOrderSummary](plan)
+
+    # -- Assert --
+    assert analysis.status == IngressAnalysisStatus.Analyzed, "supported ingress steps should analyze successfully"
+    assert analysis.is_accepted(), "accepted analysis should report an accepted status"
+    assert analysis.evidence.schema_version == INGRESS_SCHEMA_VERSION, "ingress evidence should be versioned"
+    assert len(analysis.evidence.origins) == 1, "origin references should be preserved as evidence"
+    assert len(analysis.evidence.coverage_records) == 7, "each supported relation step should emit frontend coverage"
+    assert analysis.evidence.coverage_records[0].state == IngressCoverageState.Supported, "supported relation coverage should be explicit"
+    assert len(analysis.evidence.profile_assessments) == 1, "requested profile should be assessed against the ingress request"
+    match analysis.plan:
+        Some(data) =>
+            assert data.planned_columns() == ["customer_id", "total_amount"], "analysis should produce ordinary projected LazyFrame output"
+        None => return fail_t("supported ingress analysis should produce a lazy plan")
+
+
+def test_ingress__unsupported_commands_are_rejected_before_execution() -> None:
+    """RFC 041: unsupported command ingress must remain explicit and reject analysis."""
+    # -- Arrange --
+    _register_order_schema("ingress_command_orders")
+    request = _request()
+    command_origin = ingress_origin_reference(request, IngressOriginKind.Command, "cmd-0", "commands/0", "listCatalogs")
+    plan = ingress_plan(
+        request,
+        client_session_context(request, "session-command"),
+        [ingress_named_table("ingress_command_orders")],
+        commands=[ingress_command(
+            IngressCommandKind.CatalogInspection,
+            "listCatalogs",
+            origin=Some(command_origin),
+            evidence_refs=["ingress:command"],
+        )],
+    )
+
+    # -- Act --
+    analysis: IngressAnalysis[IngressOrder] = analyze_ingress_plan[IngressOrder](plan)
+
+    # -- Assert --
+    assert analysis.status == IngressAnalysisStatus.Rejected, "unsupported commands should reject the analysis result"
+    assert len(analysis.evidence.diagnostics) == 1, "unsupported commands should emit a diagnostic"
+    assert analysis.evidence.diagnostics[0].severity == ExecutionDiagnosticSeverity.Error, "unsupported command diagnostics should block execution"
+    assert analysis.evidence.coverage_records[-1].state == IngressCoverageState.Unsupported, "command coverage should be unsupported"
+
+
+def test_ingress__profile_unknowns_remain_visible_in_analysis_evidence() -> None:
+    """RFC 041: profile-sensitive ingress should carry explicit profile assessment evidence."""
+    # -- Arrange --
+    _register_order_schema("ingress_profile_orders")
+    request = _request()
+    profile = sql_dialect_profile(
+        "spark-sql",
+        dimensions=[semantic_dimension(
+            SemanticProfileDimensionKind.IdentifierResolution,
+            "case sensitivity was not evaluated for this frontend fixture",
+            state=SemanticProfileDimensionState.Unknown,
+        )],
+    )
+    plan = ingress_plan(
+        request,
+        client_session_context(request, "session-profile", case_sensitive=Some(false)),
+        [ingress_named_table("ingress_profile_orders")],
+        requested_profile=Some(profile),
+    )
+
+    # -- Act --
+    analysis: IngressAnalysis[IngressOrder] = analyze_ingress_plan[IngressOrder](plan)
+
+    # -- Assert --
+    assert len(analysis.evidence.profile_assessments) == 1, "analysis should preserve profile assessment evidence"
+    assert analysis.evidence.coverage_records[0].semantic_profile_id == Some(profile.profile_id), "coverage should cite the selected profile"
+
+
+def test_ingress__governed_bundle_packages_ingress_evidence() -> None:
+    """RFC 041: governed bundles should expose ingress mappings, frontend coverage, and client session context."""
+    # -- Arrange --
+    _register_order_schema("ingress_bundle_orders")
+    request = _request()
+    origin = ingress_origin_reference(request, IngressOriginKind.Relation, "rel-bundle", "relations/0", "orders")
+    plan = ingress_plan(
+        request,
+        client_session_context(request, "session-bundle", current_namespace=Some("sales")),
+        [ingress_named_table("ingress_bundle_orders", origin=Some(origin))],
+    )
+    analysis: IngressAnalysis[IngressOrder] = analyze_ingress_plan[IngressOrder](plan)
+    match analysis.plan:
+        Some(data) =>
+            # -- Act --
+            bundle = governed_plan_bundle_from_inspection(inspect_plan(data), ingress_evidence=[analysis.evidence])
+
+            # -- Assert --
+            assert bundle.section_available("ingress_mappings"), "bundle should expose supplied ingress origin mappings"
+            assert bundle.section_available("frontend_coverage"), "bundle should expose supplied frontend coverage"
+            assert bundle.section_available("client_session_context"), "bundle should expose supplied client session context"
+        None => return fail_t("supported ingress analysis should produce a lazy plan")

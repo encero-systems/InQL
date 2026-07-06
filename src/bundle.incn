@@ -19,6 +19,7 @@ from evidence import (
     UnsupportedEvidence,
 )
 from governance import GovernedAttribute, PolicyCheckpoint
+from ingress import INGRESS_SCHEMA_VERSION, IngressEvidence
 from inspect import InspectionNodeKind, PlanInspection, inspect_plan
 from quality import QualityAssertion, QualityObservation
 from scalar_schema import ScalarColumnSpec
@@ -80,6 +81,19 @@ pub model BundleEvidenceSection:
         return JsonValue.object(entries)
 
 
+model _IngressBundleSectionSummary:
+    """Collected section counts and references for caller-supplied ingress evidence."""
+
+    request_refs: list[str]
+    session_refs: list[str]
+    origin_count: int
+    origin_refs: list[str]
+    coverage_count: int
+    coverage_refs: list[str]
+    diagnostic_count: int
+    diagnostic_refs: list[str]
+
+
 @derive(Clone)
 pub model GovernedPlanBundle:
     """
@@ -109,6 +123,7 @@ pub model GovernedPlanBundle:
     pub coverage_records: list[AdapterCoverageRecord]
     pub semantic_profiles: list[SemanticProfile]
     pub profile_assessments: list[SemanticProfileAssessment]
+    pub ingress_evidence: list[IngressEvidence]
     pub unsupported_evidence: list[UnsupportedEvidence]
     pub sections: list[BundleEvidenceSection]
     pub evidence_refs: list[str]
@@ -161,6 +176,7 @@ pub def governed_plan_bundle[T with Clone](
     evidence_refs: list[str] = [],
     semantic_profiles: list[SemanticProfile] = [],
     profile_assessments: list[SemanticProfileAssessment] = [],
+    ingress_evidence: list[IngressEvidence] = [],
 ) -> GovernedPlanBundle:
     """Inspect one lazy plan and package its local governed evidence into a bundle."""
     return governed_plan_bundle_from_inspection(
@@ -172,6 +188,7 @@ pub def governed_plan_bundle[T with Clone](
         evidence_refs=evidence_refs,
         semantic_profiles=semantic_profiles,
         profile_assessments=profile_assessments,
+        ingress_evidence=ingress_evidence,
     )
 
 
@@ -184,6 +201,7 @@ pub def governed_plan_bundle_from_inspection(
     evidence_refs: list[str] = [],
     semantic_profiles: list[SemanticProfile] = [],
     profile_assessments: list[SemanticProfileAssessment] = [],
+    ingress_evidence: list[IngressEvidence] = [],
 ) -> GovernedPlanBundle:
     """Package an existing inspection record and caller-supplied evidence into a governed plan bundle."""
     input_schema_references = _input_schema_references(inspection)
@@ -196,12 +214,13 @@ pub def governed_plan_bundle_from_inspection(
         coverage_records,
         semantic_profiles,
         profile_assessments,
+        ingress_evidence,
     )
     return GovernedPlanBundle(
         schema_version=GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION,
         inql_version=inspection.inql_version,
         bundle_id=f"bundle:{inspection.plan_id}",
-        rule_versions=_bundle_rule_versions(inspection, semantic_profiles, profile_assessments),
+        rule_versions=_bundle_rule_versions(inspection, semantic_profiles, profile_assessments, ingress_evidence),
         plan_target=inspection.plan_target,
         root_target=inspection.root_target,
         input_schema_references=input_schema_references,
@@ -218,6 +237,7 @@ pub def governed_plan_bundle_from_inspection(
         coverage_records=coverage_records,
         semantic_profiles=semantic_profiles,
         profile_assessments=profile_assessments,
+        ingress_evidence=ingress_evidence,
         unsupported_evidence=inspection.unsupported_evidence,
         sections=sections,
         evidence_refs=evidence_refs,
@@ -234,9 +254,11 @@ def _bundle_sections(
     coverage_records: list[AdapterCoverageRecord],
     semantic_profiles: list[SemanticProfile],
     profile_assessments: list[SemanticProfileAssessment],
+    ingress_evidence: list[IngressEvidence],
 ) -> list[BundleEvidenceSection]:
     """Build deterministic section summaries for local and reserved evidence families."""
     mut sections: list[BundleEvidenceSection] = []
+    ingress_summary = _ingress_bundle_section_summary(ingress_evidence)
     sections.append(
         _section(
             "plan",
@@ -377,6 +399,46 @@ def _bundle_sections(
         ),
     )
     sections.append(
+        _optional_section(
+            "ingress_requests",
+            len(ingress_summary.request_refs),
+            ingress_summary.request_refs,
+            "no ingress request evidence was supplied",
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "client_session_context",
+            len(ingress_summary.session_refs),
+            ingress_summary.session_refs,
+            "no client session context was supplied",
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "ingress_mappings",
+            ingress_summary.origin_count,
+            ingress_summary.origin_refs,
+            "no ingress origin mappings were supplied",
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "frontend_coverage",
+            ingress_summary.coverage_count,
+            ingress_summary.coverage_refs,
+            "no frontend coverage records were supplied",
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "ingress_diagnostics",
+            ingress_summary.diagnostic_count,
+            ingress_summary.diagnostic_refs,
+            "no ingress diagnostics were supplied",
+        ),
+    )
+    sections.append(
         _section(
             "substrait_plan_artifact",
             BundleSectionRequirement.Optional,
@@ -492,11 +554,14 @@ def _bundle_rule_versions(
     inspection: PlanInspection,
     semantic_profiles: list[SemanticProfile],
     profile_assessments: list[SemanticProfileAssessment],
+    ingress_evidence: list[IngressEvidence],
 ) -> list[str]:
     """Return bundle rule versions, including profile schema version when profile evidence is present."""
     mut versions = [GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION, inspection.schema_version, inspection.lineage.rule_version]
     if len(semantic_profiles) > 0 or len(profile_assessments) > 0:
         versions.append(SEMANTIC_PROFILE_SCHEMA_VERSION)
+    if len(ingress_evidence) > 0:
+        versions.append(INGRESS_SCHEMA_VERSION)
     return versions
 
 
@@ -507,7 +572,7 @@ def _metadata_attachment_ref(attachment: MetadataAttachment) -> str:
 
 def _reserved_evidence_families() -> list[str]:
     """Return RFC-reserved evidence families that local bundles must mark explicitly until implemented."""
-    return ["verification_evidence", "canonical_equality_profiles", "digest_profiles", "verifier_statements", "proof_artifacts", "proof_verification_observations", "constraint_evidence", "verification_plans", "data_contract_artifacts", "normalized_contract_evidence", "mapping_diagnostics", "product_topology", "port_dependencies", "semantic_evidence_graph_projection", "graph_artifacts", "graph_query_results", "ingress_mappings", "frontend_coverage", "client_session_context", "external_exchange_bridges"]
+    return ["verification_evidence", "canonical_equality_profiles", "digest_profiles", "verifier_statements", "proof_artifacts", "proof_verification_observations", "constraint_evidence", "verification_plans", "data_contract_artifacts", "normalized_contract_evidence", "mapping_diagnostics", "product_topology", "port_dependencies", "semantic_evidence_graph_projection", "graph_artifacts", "graph_query_results", "external_exchange_bridges"]
 
 
 def _bundle_counts_json_value(bundle: GovernedPlanBundle) -> JsonValue:
@@ -527,8 +592,43 @@ def _bundle_counts_json_value(bundle: GovernedPlanBundle) -> JsonValue:
     counts["coverage_records"] = JsonValue.int(len(bundle.coverage_records))
     counts["semantic_profiles"] = JsonValue.int(len(bundle.semantic_profiles))
     counts["profile_assessments"] = JsonValue.int(len(bundle.profile_assessments))
+    counts["ingress_evidence"] = JsonValue.int(len(bundle.ingress_evidence))
     counts["unsupported_evidence"] = JsonValue.int(len(bundle.unsupported_evidence))
     return JsonValue.object(counts)
+
+
+def _ingress_bundle_section_summary(evidence_records: list[IngressEvidence]) -> _IngressBundleSectionSummary:
+    """Collect all ingress section counts and references in one evidence traversal."""
+    mut request_refs: list[str] = []
+    mut session_refs: list[str] = []
+    mut origin_count = 0
+    mut origin_refs: list[str] = []
+    mut coverage_count = 0
+    mut coverage_refs: list[str] = []
+    mut diagnostic_count = 0
+    mut diagnostic_refs: list[str] = []
+    for evidence in evidence_records:
+        request_refs.append(evidence.request.request_id)
+        session_refs.append(evidence.session_context.session_id)
+        origin_count += len(evidence.origins)
+        coverage_count += len(evidence.coverage_records)
+        diagnostic_count += len(evidence.diagnostics)
+        for origin in evidence.origins:
+            origin_refs.append(origin.origin_id)
+        for coverage in evidence.coverage_records:
+            coverage_refs.append(coverage.coverage_id)
+        for diagnostic in evidence.diagnostics:
+            diagnostic_refs.append(diagnostic.code)
+    return _IngressBundleSectionSummary(
+        request_refs=request_refs,
+        session_refs=session_refs,
+        origin_count=origin_count,
+        origin_refs=origin_refs,
+        coverage_count=coverage_count,
+        coverage_refs=coverage_refs,
+        diagnostic_count=diagnostic_count,
+        diagnostic_refs=diagnostic_refs,
+    )
 
 
 def _section_json_values(sections: list[BundleEvidenceSection]) -> list[JsonValue]:

@@ -1,6 +1,6 @@
 # InQL RFC 041: Prism plan ingress and external client frontends
 
-- **Status:** Draft
+- **Status:** Implemented
 - **Created:** 2026-05-30
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -17,9 +17,9 @@
   - InQL RFC 033 (adapter requirements and coverage)
   - InQL RFC 040 (interoperability semantic profiles)
 - **Issue:** [InQL #75](https://github.com/encero-systems/InQL/issues/75)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
-- **Written against:** Incan v0.3-era InQL
-- **Shipped in:** —
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60), [InQL #94](https://github.com/encero-systems/InQL/pull/94)
+- **Written against:** Incan v0.4-era InQL
+- **Shipped in:** InQL v0.1
 
 ## Summary
 
@@ -157,11 +157,12 @@ Existing InQL plans and sessions remain valid without ingress evidence. Frontend
 - **Execution / interchange** — Session and backend adapters execute Prism-owned plans and may report adapter coverage, but they do not own ingress semantics.
 - **Documentation** — docs must distinguish external client protocol support from Spark engine compatibility, Substrait interchange, and DataFusion execution.
 
-## Unresolved questions
+## Design Decisions
 
-- Which Spark Connect relation and expression nodes belong in the first supported ingress slice?
-- Should ingress frontends live in the core package or optional integration packages?
-- What is the minimum common unresolved ingress model shared by Spark Connect, SQL, and future client protocols?
-- Which client session fields are required in the first Spark Connect-compatible profile without importing Spark's session model wholesale?
+### Resolved
 
-<!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->
+- The first implemented ingress analyzer supports a single-root, linear relation request: named-table read, filter, projection, group-by, aggregate, order-by, and limit. Those steps are enough to prove the frontend/Prism boundary without claiming full Spark Connect, SQL parser, join-tree, generator, or window API parity.
+- The core package owns the shared ingress record model, evidence records, coverage states, and Prism analyzer entry point. Protocol services, transport framing, authentication, complete Spark Connect protobuf coverage, and provider-specific client lifecycle behavior belong in optional integration packages over that core record model.
+- The common unresolved ingress model consists of request identity, frontend kind, protocol metadata, client session context, optional requested semantic profile, origin references, linear relation steps, command nodes, diagnostics, coverage records, and evidence references. SQL, Spark Connect, notebook, and API frontends can all project their first supported surfaces into that model without making their native protocol the semantic authority.
+- The first client session context records session id, request id, frontend id, current catalog, current namespace, timezone, case sensitivity, ANSI mode, configuration fingerprint, and evidence references. This is deliberately a compact evidence context rather than a wholesale copy of any one external session model.
+- Non-relational commands are represented but rejected by the core analyzer until an integration package maps them to explicit client-session behavior. Rejection is visible through diagnostics and unsupported ingress coverage, not hidden behind backend behavior.

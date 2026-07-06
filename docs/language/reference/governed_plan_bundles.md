@@ -16,7 +16,7 @@ bundle_from_existing_inspection = governed_plan_bundle_from_inspection(inspectio
 | `governed_plan_bundle(data)` | `LazyFrame[T]` plus optional evidence lists | `GovernedPlanBundle` |
 | `governed_plan_bundle_from_inspection(inspection)` | `PlanInspection` plus optional evidence lists | `GovernedPlanBundle` |
 
-Both entry points accept optional `quality_assertions`, `quality_observations`, `execution_observations`, `coverage_records`, `semantic_profiles`, `profile_assessments`, and `evidence_refs` arguments. `governed_plan_bundle(...)` runs local plan inspection first. `governed_plan_bundle_from_inspection(...)` is for callers that already inspected the plan and want to avoid redoing that work.
+Both entry points accept optional `quality_assertions`, `quality_observations`, `execution_observations`, `coverage_records`, `semantic_profiles`, `profile_assessments`, `ingress_evidence`, and `evidence_refs` arguments. `governed_plan_bundle(...)` runs local plan inspection first. `governed_plan_bundle_from_inspection(...)` is for callers that already inspected the plan and want to avoid redoing that work.
 
 ## Record types
 
@@ -56,6 +56,7 @@ Both entry points accept optional `quality_assertions`, `quality_observations`, 
 | `coverage_records` | `list[AdapterCoverageRecord]` | Caller-supplied adapter coverage records included in the bundle. |
 | `semantic_profiles` | `list[SemanticProfile]` | Caller-supplied semantic profiles included in the bundle. |
 | `profile_assessments` | `list[SemanticProfileAssessment]` | Caller-supplied semantic profile assessments included in the bundle. |
+| `ingress_evidence` | `list[IngressEvidence]` | Caller-supplied frontend ingress evidence included in the bundle. |
 | `unsupported_evidence` | `list[UnsupportedEvidence]` | Inspection markers for evidence families not computed by the inspection path. |
 | `sections` | `list[BundleEvidenceSection]` | Deterministic section summaries for local and reserved evidence families. |
 | `evidence_refs` | `list[str]` | Caller-supplied external or local evidence references. |
@@ -71,7 +72,7 @@ Sections are the compatibility surface for consumers that do not understand ever
 | `Unavailable` | The family is supported by this bundle surface, but no evidence was supplied or discovered for this bundle. |
 | `Unsupported` | The RFC series reserves the family, but this InQL implementation does not produce that family yet. |
 
-Required sections cover the local core evidence InQL can produce today: plan target, input schema references, output schema, output fields, lineage graph, metadata attachments, governed attributes, policy checkpoints, adapter requirements, and unsupported-evidence markers. Optional sections cover caller-provided execution, quality, coverage, semantic profiles, profile assessments, Substrait artifact references, and reserved evidence families such as verification evidence, canonical equality profiles, proof artifacts, constraint evidence, data contract evidence, product topology, semantic evidence graph projections, ingress mappings, client session context, and exchange bridges.
+Required sections cover the local core evidence InQL can produce today: plan target, input schema references, output schema, output fields, lineage graph, metadata attachments, governed attributes, policy checkpoints, adapter requirements, and unsupported-evidence markers. Optional sections cover caller-provided execution, quality, coverage, semantic profiles, profile assessments, ingress requests, ingress mappings, frontend coverage, ingress diagnostics, Substrait artifact references, and reserved evidence families such as verification evidence, canonical equality profiles, proof artifacts, constraint evidence, data contract evidence, product topology, semantic evidence graph projections, and exchange bridges.
 
 ## Methods
 
