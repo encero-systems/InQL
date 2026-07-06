@@ -30,11 +30,12 @@ Use the docs tree like this:
 11. [Package a governed plan bundle (How-to)][governed-plan-bundles-how-to]
 12. [Compare two plans (How-to)][plan-diffs-how-to]
 13. [Exchange evidence locally (How-to)][evidence-exchange-how-to]
-14. [Dataset carriers (Reference)][dataset-reference]
-15. [Dataset methods (Reference)][dataset-methods-reference]
-16. [Execution context (Reference)][execution-reference]
-17. [Inspect a plan and lineage graph (How-to)][inspect-plan-lineage-how-to]
-18. [Local inspection (Reference)][inspection-reference]
+14. [Use semantic profiles in evidence (How-to)][semantic-profiles-how-to]
+15. [Dataset carriers (Reference)][dataset-reference]
+16. [Dataset methods (Reference)][dataset-methods-reference]
+17. [Execution context (Reference)][execution-reference]
+18. [Inspect a plan and lineage graph (How-to)][inspect-plan-lineage-how-to]
+19. [Local inspection (Reference)][inspection-reference]
 
 ### Understand the system design
 
@@ -74,6 +75,7 @@ Use the docs tree like this:
 [governed-plan-bundles-how-to]: language/how-to/governed_plan_bundles.md
 [plan-diffs-how-to]: language/how-to/plan_diffs.md
 [evidence-exchange-how-to]: language/how-to/evidence_exchange.md
+[semantic-profiles-how-to]: language/how-to/semantic_profiles.md
 [inspect-plan-lineage-how-to]: language/how-to/inspect_plan_lineage.md
 [inspection-reference]: language/reference/inspection.md
 [rfcs-index]: rfcs/README.md

@@ -15,6 +15,7 @@ How-to guides show concrete task workflows for the current InQL package surface.
 - [Normalize semi-structured fields][normalize-semistructured-fields]
 - [Observe data quality checks][quality-observations]
 - [Package a governed plan bundle][governed-plan-bundles]
+- [Use semantic profiles in evidence][semantic-profiles]
 - [Inspect typed variant payloads][variant-payloads]
 - [Work with nested row values][nested-row-values]
 
@@ -31,6 +32,7 @@ How-to guides show concrete task workflows for the current InQL package surface.
 [normalize-semistructured-fields]: normalize_semistructured_fields.md
 [plan-diffs]: plan_diffs.md
 [quality-observations]: quality_observations.md
+[semantic-profiles]: semantic_profiles.md
 [typed-hll-sketches]: typed_hll_sketches.md
 [variant-payloads]: variant_payloads.md
 [window-columns]: window_columns.md
