@@ -6,6 +6,7 @@ How-to guides show concrete task workflows for the current InQL package surface.
 - [Build typed HyperLogLog sketches][typed-hll-sketches]
 - [Capture execution observations and adapter coverage][execution-observations]
 - [Compare two plans][plan-diffs]
+- [Exchange evidence locally][evidence-exchange]
 - [Build deferred dataset transformations][dataset-transformations]
 - [Estimate approximate metrics][approximate-metrics]
 - [Expand rows with generators][generator-rows]
@@ -21,6 +22,7 @@ How-to guides show concrete task workflows for the current InQL package surface.
 [approximate-metrics]: approximate_metrics.md
 [dataset-transformations]: dataset_transformations.md
 [execution-observations]: execution_observations.md
+[evidence-exchange]: evidence_exchange.md
 [generator-rows]: generator_rows.md
 [governed-evidence]: governed_evidence.md
 [governed-plan-bundles]: governed_plan_bundles.md

@@ -487,6 +487,27 @@ pub from plan_diff import (
     diff_plan_bundles,
     diff_plans,
 )
+pub from evidence_exchange import (
+    EVIDENCE_EXCHANGE_SCHEMA_VERSION,
+    EvidenceExchangeArtifact,
+    EvidenceExchangeDirection,
+    EvidenceExchangeLoss,
+    EvidenceExchangeMappingCoverage,
+    EvidenceExchangeProfile,
+    EvidenceExchangeRecord,
+    EvidenceExchangeRecordKind,
+    EvidenceExchangeRedactionMode,
+    EvidenceExchangeTargetFormat,
+    ExternalEvidenceArtifact,
+    ExternalEvidenceConfidence,
+    bundle_summary_exchange,
+    evidence_exchange_profile,
+    external_evidence_artifact,
+    external_evidence_exchange,
+    openlineage_exchange,
+    telemetry_exchange,
+    transformation_project_exchange,
+)
 pub from inspect import (
     INSPECTION_SCHEMA_VERSION,
     InspectionNodeKind,

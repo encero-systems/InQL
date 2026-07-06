@@ -1,6 +1,6 @@
 # InQL RFC 038: Evidence exchange bridges
 
-- **Status:** Draft
+- **Status:** Implemented
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -19,9 +19,9 @@
   - InQL RFC 046 (data contract ingress and product topology)
   - InQL RFC 047 (semantic evidence graph and agent query surface)
 - **Issue:** [InQL #72](https://github.com/encero-systems/InQL/issues/72)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #83](https://github.com/encero-systems/InQL/pull/83)
-- **Written against:** Incan v0.3-era InQL
-- **Shipped in:** —
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #83](https://github.com/encero-systems/InQL/pull/83); [InQL #92](https://github.com/encero-systems/InQL/pull/92)
+- **Written against:** Incan v0.4-era InQL
+- **Shipped in:** InQL v0.1
 
 ## Summary
 
@@ -148,13 +148,13 @@ Exchange bridges must version their mappings. Adding a new internal evidence fie
 - **Execution / interchange** — exchanges may include Substrait references, telemetry-shaped observations, lineage events, transformation artifacts, and run-result evidence.
 - **Documentation** — docs must identify external exchanges as evidence inputs or projections, not internal truth.
 
-## Unresolved questions
+## Design Decisions
 
-- Which exchange bridge profiles are required by this RFC?
-- Which public standards bridge profiles are required before this RFC can advance beyond Draft?
-- Should exchange bridges live in the core package or optional integration packages?
-- What sidecar format should preserve InQL-specific evidence when an external target is lossy?
-- Which transformation-project artifact profiles are required by this RFC?
-- Which data contract, product topology, and graph projection bridge profiles are required by this RFC versus owned entirely by InQL RFC 046 and InQL RFC 047?
+### Resolved
 
-<!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->
+- The required first bridge profiles are native InQL bundle summary exchange, OpenLineage-shaped outbound lineage exchange, OpenTelemetry-shaped outbound observation exchange, generic transformation-project suggestion exchange, and inbound external artifact identity exchange.
+- OpenLineage and OpenTelemetry are the required public-standard-shaped first projections because they map directly to lineage/run and telemetry/observation evidence already present in bundles. W3C provenance, data-quality vocabulary, in-toto/SLSA, verifiable credentials, data contract, data product, catalog, and graph projections remain target-format vocabulary until a later RFC or issue implements those concrete profiles.
+- The core package owns the typed local exchange model and first generic bridge profiles. Provider configuration, hosted ingestion, network transport, and service-specific parsers belong in optional integration packages or downstream tooling.
+- The native `EvidenceExchangeArtifact` JSON summary is the sidecar format for InQL-specific evidence when another target format is lossy. Lossy bridges must emit `EvidenceExchangeLoss` records pointing to the dimensions that need sidecar review.
+- The first transformation-project profile emits generic source, model, and quality-test suggestions plus inbound artifact identity records. Framework-specific parsers or writers, including dbt-shaped YAML generation, are separate concrete bridge profiles rather than hidden semantics in this RFC.
+- Data contract, product topology, and graph projection bridge profiles remain aligned with RFC 046 and RFC 047. RFC 038 provides the exchange envelope and target-format vocabulary; those RFCs own the specialized evidence models and concrete mapping rules.
