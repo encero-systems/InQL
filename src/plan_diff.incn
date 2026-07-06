@@ -1,0 +1,1401 @@
+"""Structured local plan diffs and blast-radius inputs."""
+
+from bundle import BundleEvidenceSection, GovernedPlanBundle
+from dataset import LazyFrame
+from evidence import (
+    AdapterCoverageRecord,
+    AdapterRequirement,
+    ExecutionDiagnostic,
+    ExecutionObservation,
+    LineageEdge,
+    MetadataAttachment,
+    SemanticTarget,
+    UnsupportedEvidence,
+)
+from governance import GovernedAttribute, PolicyCheckpoint
+from inspect import PlanInspection, PlanNodeInspection, inspect_plan
+from quality import QualityAssertion, QualityObservation
+from scalar_schema import ScalarColumnSpec
+
+pub const PLAN_DIFF_SCHEMA_VERSION: str = "inql.plan-diff.v0.1"
+pub const BLAST_RADIUS_INPUT_SCHEMA_VERSION: str = "inql.blast-radius-input.v0.1"
+
+
+@derive(Clone)
+pub enum PlanDiffChangeFamily(str):
+    """Evidence families that the local plan diff can classify."""
+
+    ArtifactCompatibility = "artifact_compatibility"
+    OutputField = "output_field"
+    OutputSchema = "output_schema"
+    PlanNode = "plan_node"
+    Lineage = "lineage"
+    MetadataAttachment = "metadata_attachment"
+    GovernedAttribute = "governed_attribute"
+    PolicyCheckpoint = "policy_checkpoint"
+    AdapterRequirement = "adapter_requirement"
+    CoverageRecord = "coverage_record"
+    QualityAssertion = "quality_assertion"
+    QualityObservation = "quality_observation"
+    ExecutionObservation = "execution_observation"
+    BundleSection = "bundle_section"
+    UnsupportedEvidence = "unsupported_evidence"
+    EvidenceReference = "evidence_reference"
+
+
+@derive(Clone)
+pub enum PlanDiffChangeKind(str):
+    """How one evidence fact changed between two artifacts."""
+
+    Added = "added"
+    Removed = "removed"
+    Changed = "changed"
+    Renamed = "renamed"
+    Unchanged = "unchanged"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub enum PlanDiffCompatibility(str):
+    """Conservative local compatibility class for one diff record."""
+
+    Compatible = "compatible"
+    PotentiallyBreaking = "potentially_breaking"
+    Breaking = "breaking"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub enum PlanDiffConfidence(str):
+    """Confidence that a diff record identifies the semantic change precisely."""
+
+    Exact = "exact"
+    Conservative = "conservative"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub model PlanDiffRecord:
+    """One structured change between two InQL evidence artifacts."""
+
+    pub record_id: str
+    pub family: PlanDiffChangeFamily
+    pub kind: PlanDiffChangeKind
+    pub compatibility: PlanDiffCompatibility
+    pub confidence: PlanDiffConfidence
+    pub name: str
+    pub target: Option[SemanticTarget]
+    pub before_target_id: Option[str]
+    pub after_target_id: Option[str]
+    pub before_value: str
+    pub after_value: str
+    pub reason: str
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model BlastRadiusInput:
+    """
+    Local downstream-impact input derived from one diff record.
+
+    This is not a global impact answer. It names local affected targets and requirement changes that downstream tooling
+    can combine with its own dependency index.
+    """
+
+    pub schema_version: str
+    pub input_id: str
+    pub diff_record_id: str
+    pub family: PlanDiffChangeFamily
+    pub compatibility: PlanDiffCompatibility
+    pub affected_target_ids: list[str]
+    pub requirement_change_ids: list[str]
+    pub evidence_refs: list[str]
+    pub reason: str
+
+
+@derive(Clone)
+pub model PlanDiff:
+    """Structured local comparison between two InQL evidence artifacts."""
+
+    pub schema_version: str
+    pub diff_id: str
+    pub before_plan_id: str
+    pub after_plan_id: str
+    pub before_bundle_id: Option[str]
+    pub after_bundle_id: Option[str]
+    pub records: list[PlanDiffRecord]
+    pub blast_radius_inputs: list[BlastRadiusInput]
+    pub diagnostics: list[str]
+
+    def is_empty(self) -> bool:
+        """Return whether the diff has no change or unknown-impact records."""
+        return len(self.records) == 0
+
+    def changed_output_fields(self) -> list[PlanDiffRecord]:
+        """Return output-field changes."""
+        return _records_for_family(self.records, PlanDiffChangeFamily.OutputField)
+
+    def changed_adapter_requirements(self) -> list[PlanDiffRecord]:
+        """Return adapter requirement changes."""
+        return _records_for_family(self.records, PlanDiffChangeFamily.AdapterRequirement)
+
+    def changed_lineage(self) -> list[PlanDiffRecord]:
+        """Return lineage changes."""
+        return _records_for_family(self.records, PlanDiffChangeFamily.Lineage)
+
+    def unknown_impacts(self) -> list[PlanDiffRecord]:
+        """Return records where InQL cannot classify impact precisely."""
+        mut records: list[PlanDiffRecord] = []
+        for record in self.records:
+            if record.kind == PlanDiffChangeKind.Unknown or record.compatibility == PlanDiffCompatibility.Unknown:
+                records.append(record)
+        return records
+
+    def has_breaking_changes(self) -> bool:
+        """Return whether any record is locally breaking."""
+        for record in self.records:
+            if record.compatibility == PlanDiffCompatibility.Breaking:
+                return true
+        return false
+
+
+pub def diff_lazy_plans[T with Clone, U with Clone](before: LazyFrame[T], after: LazyFrame[U]) -> PlanDiff:
+    """Inspect two lazy plans and compare their structured evidence."""
+    return diff_plans(inspect_plan(before), inspect_plan(after))
+
+
+pub def diff_plans(before: PlanInspection, after: PlanInspection) -> PlanDiff:
+    """Compare two plan inspection artifacts."""
+    mut records: list[PlanDiffRecord] = []
+    records.extend(_diff_inspection_compatibility(before, after))
+    if _inspections_are_compatible(before, after):
+        records.extend(
+            _diff_output_schema(before.output_schema, before.output_fields, after.output_schema, after.output_fields),
+        )
+        records.extend(_diff_plan_nodes("authored", before.authored_nodes, after.authored_nodes))
+        records.extend(_diff_plan_nodes("rewritten", before.rewritten_nodes, after.rewritten_nodes))
+        records.extend(_diff_lineage(before.lineage.edges, after.lineage.edges))
+        records.extend(_diff_metadata_attachments(before.attachments, after.attachments))
+        records.extend(_diff_governed_attributes(before.governed_attributes, after.governed_attributes))
+        records.extend(_diff_policy_checkpoints(before.policy_checkpoints, after.policy_checkpoints))
+        records.extend(_diff_adapter_requirements(before.adapter_requirements, after.adapter_requirements))
+        records.extend(_diff_unsupported_evidence(before.unsupported_evidence, after.unsupported_evidence))
+    return _plan_diff(f"plan-diff:{before.plan_id}:{after.plan_id}", before.plan_id, after.plan_id, None, None, records)
+
+
+pub def diff_plan_bundles(before: GovernedPlanBundle, after: GovernedPlanBundle) -> PlanDiff:
+    """Compare two governed plan bundles."""
+    mut records: list[PlanDiffRecord] = []
+    if before.schema_version != after.schema_version:
+        records.append(
+            _unknown_record(
+                "bundle_schema_version",
+                before.schema_version,
+                after.schema_version,
+                "bundle schema versions differ; local impact is unknown",
+            ),
+        )
+    else:
+        records.extend(
+            _diff_output_schema(before.output_schema, before.output_fields, after.output_schema, after.output_fields),
+        )
+        records.extend(_diff_lineage(before.lineage.edges, after.lineage.edges))
+        records.extend(_diff_metadata_attachments(before.attachments, after.attachments))
+        records.extend(_diff_governed_attributes(before.governed_attributes, after.governed_attributes))
+        records.extend(_diff_policy_checkpoints(before.policy_checkpoints, after.policy_checkpoints))
+        records.extend(_diff_adapter_requirements(before.adapter_requirements, after.adapter_requirements))
+        records.extend(_diff_coverage_records(before.coverage_records, after.coverage_records))
+        records.extend(_diff_quality_assertions(before.quality_assertions, after.quality_assertions))
+        records.extend(_diff_quality_observations(before.quality_observations, after.quality_observations))
+        records.extend(_diff_execution_observations(before.execution_observations, after.execution_observations))
+        records.extend(_diff_bundle_sections(before.sections, after.sections))
+        records.extend(_diff_unsupported_evidence(before.unsupported_evidence, after.unsupported_evidence))
+        records.extend(_diff_evidence_refs(before.evidence_refs, after.evidence_refs))
+    return _plan_diff(
+        f"plan-diff:{before.bundle_id}:{after.bundle_id}",
+        before.plan_target.plan_id,
+        after.plan_target.plan_id,
+        Some(before.bundle_id),
+        Some(after.bundle_id),
+        records,
+    )
+
+
+pub def blast_radius_inputs(diff: PlanDiff) -> list[BlastRadiusInput]:
+    """Return local blast-radius input records for one diff."""
+    return diff.blast_radius_inputs
+
+
+def _plan_diff(
+    diff_id: str,
+    before_plan_id: str,
+    after_plan_id: str,
+    before_bundle_id: Option[str],
+    after_bundle_id: Option[str],
+    records: list[PlanDiffRecord],
+) -> PlanDiff:
+    """Build the final diff and derive local blast-radius records from its changes."""
+    return PlanDiff(
+        schema_version=PLAN_DIFF_SCHEMA_VERSION,
+        diff_id=diff_id,
+        before_plan_id=before_plan_id,
+        after_plan_id=after_plan_id,
+        before_bundle_id=before_bundle_id,
+        after_bundle_id=after_bundle_id,
+        records=records,
+        blast_radius_inputs=_blast_radius_inputs(diff_id, records),
+        diagnostics=[],
+    )
+
+
+def _diff_inspection_compatibility(before: PlanInspection, after: PlanInspection) -> list[PlanDiffRecord]:
+    """Record unknown impact when inspection schema versions cannot be compared safely."""
+    mut records: list[PlanDiffRecord] = []
+    if before.schema_version != after.schema_version:
+        records.append(
+            _unknown_record(
+                "inspection_schema_version",
+                before.schema_version,
+                after.schema_version,
+                "inspection schema versions differ; local impact is unknown",
+            ),
+        )
+    return records
+
+
+def _inspections_are_compatible(before: PlanInspection, after: PlanInspection) -> bool:
+    """Return whether two inspection artifacts can be compared by this diff version."""
+    return before.schema_version == after.schema_version
+
+
+def _diff_output_schema(
+    before_schema: list[ScalarColumnSpec],
+    before_fields: list[SemanticTarget],
+    after_schema: list[ScalarColumnSpec],
+    after_fields: list[SemanticTarget],
+) -> list[PlanDiffRecord]:
+    """Compare output fields and schema facts by display name plus ordinal context."""
+    mut records = _diff_renamed_output_fields(before_schema, before_fields, after_schema, after_fields)
+    for before in before_schema:
+        match _scalar_column_by_name(after_schema, before.name):
+            Some(after) =>
+                if _scalar_column_signature(before) != _scalar_column_signature(after):
+                    records.append(
+                        _record(
+                            PlanDiffChangeFamily.OutputSchema,
+                            PlanDiffChangeKind.Changed,
+                            PlanDiffCompatibility.Breaking,
+                            PlanDiffConfidence.Exact,
+                            before.name,
+                            _field_target_by_name(after_fields, before.name),
+                            Some(_target_id_by_name(before_fields, before.name)),
+                            Some(_target_id_by_name(after_fields, before.name)),
+                            _scalar_column_signature(before),
+                            _scalar_column_signature(after),
+                            "output field schema changed",
+                            [],
+                        ),
+                    )
+            None =>
+                records.append(
+                    _record(
+                        PlanDiffChangeFamily.OutputField,
+                        PlanDiffChangeKind.Removed,
+                        PlanDiffCompatibility.Breaking,
+                        PlanDiffConfidence.Exact,
+                        before.name,
+                        _field_target_by_name(before_fields, before.name),
+                        Some(_target_id_by_name(before_fields, before.name)),
+                        None,
+                        _scalar_column_signature(before),
+                        "",
+                        "output field was removed",
+                        [],
+                    ),
+                )
+    for after in after_schema:
+        match _scalar_column_by_name(before_schema, after.name):
+            Some(_) => pass
+            None =>
+                records.append(
+                    _record(
+                        PlanDiffChangeFamily.OutputField,
+                        PlanDiffChangeKind.Added,
+                        PlanDiffCompatibility.PotentiallyBreaking,
+                        PlanDiffConfidence.Exact,
+                        after.name,
+                        _field_target_by_name(after_fields, after.name),
+                        None,
+                        Some(_target_id_by_name(after_fields, after.name)),
+                        "",
+                        _scalar_column_signature(after),
+                        "output field was added",
+                        [],
+                    ),
+                )
+    return records
+
+
+def _diff_renamed_output_fields(
+    before_schema: list[ScalarColumnSpec],
+    before_fields: list[SemanticTarget],
+    after_schema: list[ScalarColumnSpec],
+    after_fields: list[SemanticTarget],
+) -> list[PlanDiffRecord]:
+    """Detect ordinal-preserving field-name changes before add/remove records are emitted."""
+    mut records: list[PlanDiffRecord] = []
+    limit = _min_int(len(before_schema), len(after_schema))
+    for idx in range(0, limit):
+        before = before_schema[idx]
+        after = after_schema[idx]
+        if before.name != after.name and _scalar_column_shape(before) == _scalar_column_shape(after):
+            records.append(
+                _record(
+                    PlanDiffChangeFamily.OutputField,
+                    PlanDiffChangeKind.Renamed,
+                    PlanDiffCompatibility.Breaking,
+                    PlanDiffConfidence.Conservative,
+                    f"{before.name}->{after.name}",
+                    _field_target_by_name(after_fields, after.name),
+                    Some(_target_id_by_name(before_fields, before.name)),
+                    Some(_target_id_by_name(after_fields, after.name)),
+                    before.name,
+                    after.name,
+                    "output field name changed at the same ordinal",
+                    [],
+                ),
+            )
+    return records
+
+
+def _diff_plan_nodes(
+    prefix: str,
+    before_nodes: list[PlanNodeInspection],
+    after_nodes: list[PlanNodeInspection],
+) -> list[PlanDiffRecord]:
+    """Compare authored or rewritten node sequences by ordinal and node kind."""
+    mut records: list[PlanDiffRecord] = []
+    limit = _min_int(len(before_nodes), len(after_nodes))
+    for idx in range(0, limit):
+        before = before_nodes[idx]
+        after = after_nodes[idx]
+        if before.kind != after.kind:
+            records.append(
+                _record(
+                    PlanDiffChangeFamily.PlanNode,
+                    PlanDiffChangeKind.Changed,
+                    PlanDiffCompatibility.PotentiallyBreaking,
+                    PlanDiffConfidence.Conservative,
+                    f"{prefix}:{idx}",
+                    Some(after.target),
+                    Some(before.target.target_id),
+                    Some(after.target.target_id),
+                    before.kind.value(),
+                    after.kind.value(),
+                    "plan node kind changed at the same ordinal",
+                    [],
+                ),
+            )
+    if len(before_nodes) > len(after_nodes):
+        for idx in range(limit, len(before_nodes)):
+            node = before_nodes[idx]
+            records.append(
+                _record(
+                    PlanDiffChangeFamily.PlanNode,
+                    PlanDiffChangeKind.Removed,
+                    PlanDiffCompatibility.PotentiallyBreaking,
+                    PlanDiffConfidence.Conservative,
+                    f"{prefix}:{idx}:{node.kind.value()}",
+                    Some(node.target),
+                    Some(node.target.target_id),
+                    None,
+                    node.kind.value(),
+                    "",
+                    "plan node was removed",
+                    [],
+                ),
+            )
+    if len(after_nodes) > len(before_nodes):
+        for idx in range(limit, len(after_nodes)):
+            node = after_nodes[idx]
+            records.append(
+                _record(
+                    PlanDiffChangeFamily.PlanNode,
+                    PlanDiffChangeKind.Added,
+                    PlanDiffCompatibility.PotentiallyBreaking,
+                    PlanDiffConfidence.Conservative,
+                    f"{prefix}:{idx}:{node.kind.value()}",
+                    Some(node.target),
+                    None,
+                    Some(node.target.target_id),
+                    "",
+                    node.kind.value(),
+                    "plan node was added",
+                    [],
+                ),
+            )
+    return records
+
+
+def _diff_lineage(before_edges: list[LineageEdge], after_edges: list[LineageEdge]) -> list[PlanDiffRecord]:
+    """Compare lineage by semantic edge signatures rather than target ids tied to one plan id."""
+    mut records: list[PlanDiffRecord] = []
+    for before in before_edges:
+        if not _has_lineage_signature(after_edges, _lineage_signature(before)):
+            records.append(
+                _record(
+                    PlanDiffChangeFamily.Lineage,
+                    PlanDiffChangeKind.Removed,
+                    PlanDiffCompatibility.PotentiallyBreaking,
+                    PlanDiffConfidence.Conservative,
+                    _lineage_name(before),
+                    Some(before.destination),
+                    Some(before.destination.target_id),
+                    None,
+                    _lineage_signature(before),
+                    "",
+                    "lineage edge was removed",
+                    before.evidence_refs,
+                ),
+            )
+    for after in after_edges:
+        if not _has_lineage_signature(before_edges, _lineage_signature(after)):
+            records.append(
+                _record(
+                    PlanDiffChangeFamily.Lineage,
+                    PlanDiffChangeKind.Added,
+                    PlanDiffCompatibility.PotentiallyBreaking,
+                    PlanDiffConfidence.Conservative,
+                    _lineage_name(after),
+                    Some(after.destination),
+                    None,
+                    Some(after.destination.target_id),
+                    "",
+                    _lineage_signature(after),
+                    "lineage edge was added",
+                    after.evidence_refs,
+                ),
+            )
+    return records
+
+
+def _diff_metadata_attachments(
+    before_items: list[MetadataAttachment],
+    after_items: list[MetadataAttachment],
+) -> list[PlanDiffRecord]:
+    """Compare metadata attachments by target, namespace, and key."""
+    mut records: list[PlanDiffRecord] = []
+    for before in before_items:
+        key = _metadata_key(before)
+        match _metadata_by_key(after_items, key):
+            Some(after) =>
+                if _metadata_signature(before) != _metadata_signature(after):
+                    records.append(
+                        _changed_record(
+                            PlanDiffChangeFamily.MetadataAttachment,
+                            key,
+                            Some(after.target),
+                            _metadata_signature(before),
+                            _metadata_signature(after),
+                            "metadata attachment changed",
+                            _merge_refs(before.evidence_refs, after.evidence_refs),
+                        ),
+                    )
+            None =>
+                records.append(
+                    _removed_record(
+                        PlanDiffChangeFamily.MetadataAttachment,
+                        key,
+                        Some(before.target),
+                        before.evidence_refs,
+                    ),
+                )
+    for after in after_items:
+        key = _metadata_key(after)
+        match _metadata_by_key(before_items, key):
+            Some(_) => pass
+            None =>
+                records.append(
+                    _added_record(PlanDiffChangeFamily.MetadataAttachment, key, Some(after.target), after.evidence_refs),
+                )
+    return records
+
+
+def _diff_governed_attributes(
+    before_items: list[GovernedAttribute],
+    after_items: list[GovernedAttribute],
+) -> list[PlanDiffRecord]:
+    """Compare governed attributes by semantic target, key, and scope rather than plan-local ids."""
+    mut records: list[PlanDiffRecord] = []
+    for before in before_items:
+        key = _attribute_key(before)
+        match _attribute_by_key(after_items, key):
+            Some(after) =>
+                if _attribute_signature(before) != _attribute_signature(after):
+                    records.append(
+                        _changed_record(
+                            PlanDiffChangeFamily.GovernedAttribute,
+                            key,
+                            Some(after.target),
+                            _attribute_signature(before),
+                            _attribute_signature(after),
+                            "governed attribute changed",
+                            _merge_refs(before.evidence_refs, after.evidence_refs),
+                        ),
+                    )
+            None =>
+                records.append(
+                    _removed_record(
+                        PlanDiffChangeFamily.GovernedAttribute,
+                        key,
+                        Some(before.target),
+                        before.evidence_refs,
+                    ),
+                )
+    for after in after_items:
+        key = _attribute_key(after)
+        match _attribute_by_key(before_items, key):
+            Some(_) => pass
+            None =>
+                records.append(
+                    _added_record(PlanDiffChangeFamily.GovernedAttribute, key, Some(after.target), after.evidence_refs),
+                )
+    return records
+
+
+def _diff_policy_checkpoints(
+    before_items: list[PolicyCheckpoint],
+    after_items: list[PolicyCheckpoint],
+) -> list[PlanDiffRecord]:
+    """Compare policy checkpoints by semantic checkpoint facts rather than plan-local ids."""
+    mut records: list[PlanDiffRecord] = []
+    for before in before_items:
+        key = _checkpoint_key(before)
+        match _checkpoint_by_key(after_items, key):
+            Some(after) =>
+                if _checkpoint_signature(before) != _checkpoint_signature(after):
+                    records.append(
+                        _changed_record(
+                            PlanDiffChangeFamily.PolicyCheckpoint,
+                            key,
+                            Some(after.target),
+                            _checkpoint_signature(before),
+                            _checkpoint_signature(after),
+                            "policy checkpoint changed",
+                            _merge_refs(before.evidence_refs, after.evidence_refs),
+                        ),
+                    )
+            None =>
+                records.append(
+                    _removed_record(
+                        PlanDiffChangeFamily.PolicyCheckpoint,
+                        key,
+                        Some(before.target),
+                        before.evidence_refs,
+                    ),
+                )
+    for after in after_items:
+        key = _checkpoint_key(after)
+        match _checkpoint_by_key(before_items, key):
+            Some(_) => pass
+            None =>
+                records.append(
+                    _added_record(PlanDiffChangeFamily.PolicyCheckpoint, key, Some(after.target), after.evidence_refs),
+                )
+    return records
+
+
+def _diff_adapter_requirements(
+    before_items: list[AdapterRequirement],
+    after_items: list[AdapterRequirement],
+) -> list[PlanDiffRecord]:
+    """Compare adapter requirements by target and capability."""
+    mut records: list[PlanDiffRecord] = []
+    for before in before_items:
+        key = _requirement_key(before)
+        match _requirement_by_key(after_items, key):
+            Some(after) =>
+                if _requirement_signature(before) != _requirement_signature(after):
+                    records.append(
+                        _record(
+                            PlanDiffChangeFamily.AdapterRequirement,
+                            PlanDiffChangeKind.Changed,
+                            PlanDiffCompatibility.PotentiallyBreaking,
+                            PlanDiffConfidence.Conservative,
+                            key,
+                            Some(after.target),
+                            Some(before.target.target_id),
+                            Some(after.target.target_id),
+                            _requirement_signature(before),
+                            _requirement_signature(after),
+                            "adapter requirement changed",
+                            _merge_refs(before.evidence_refs, after.evidence_refs),
+                        ),
+                    )
+            None =>
+                records.append(
+                    _record(
+                        PlanDiffChangeFamily.AdapterRequirement,
+                        PlanDiffChangeKind.Removed,
+                        PlanDiffCompatibility.PotentiallyBreaking,
+                        PlanDiffConfidence.Conservative,
+                        key,
+                        Some(before.target),
+                        Some(before.target.target_id),
+                        None,
+                        _requirement_signature(before),
+                        "",
+                        "adapter requirement was removed",
+                        before.evidence_refs,
+                    ),
+                )
+    for after in after_items:
+        key = _requirement_key(after)
+        match _requirement_by_key(before_items, key):
+            Some(_) => pass
+            None =>
+                records.append(
+                    _record(
+                        PlanDiffChangeFamily.AdapterRequirement,
+                        PlanDiffChangeKind.Added,
+                        PlanDiffCompatibility.PotentiallyBreaking,
+                        PlanDiffConfidence.Conservative,
+                        key,
+                        Some(after.target),
+                        None,
+                        Some(after.target.target_id),
+                        "",
+                        _requirement_signature(after),
+                        "adapter requirement was added",
+                        after.evidence_refs,
+                    ),
+                )
+    return records
+
+
+def _diff_coverage_records(
+    before_items: list[AdapterCoverageRecord],
+    after_items: list[AdapterCoverageRecord],
+) -> list[PlanDiffRecord]:
+    """Compare explicit adapter coverage answers."""
+    mut records: list[PlanDiffRecord] = []
+    for before in before_items:
+        match _coverage_by_id(after_items, before.coverage_id):
+            Some(after) =>
+                if _coverage_signature(before) != _coverage_signature(after):
+                    records.append(
+                        _changed_record(
+                            PlanDiffChangeFamily.CoverageRecord,
+                            before.coverage_id,
+                            Some(after.requirement.target),
+                            _coverage_signature(before),
+                            _coverage_signature(after),
+                            "coverage record changed",
+                            _merge_refs(before.evidence_refs, after.evidence_refs),
+                        ),
+                    )
+            None =>
+                records.append(
+                    _removed_record(
+                        PlanDiffChangeFamily.CoverageRecord,
+                        before.coverage_id,
+                        Some(before.requirement.target),
+                        before.evidence_refs,
+                    ),
+                )
+    for after in after_items:
+        match _coverage_by_id(before_items, after.coverage_id):
+            Some(_) => pass
+            None =>
+                records.append(
+                    _added_record(
+                        PlanDiffChangeFamily.CoverageRecord,
+                        after.coverage_id,
+                        Some(after.requirement.target),
+                        after.evidence_refs,
+                    ),
+                )
+    return records
+
+
+def _diff_quality_assertions(
+    before_items: list[QualityAssertion],
+    after_items: list[QualityAssertion],
+) -> list[PlanDiffRecord]:
+    """Compare declared quality assertions."""
+    mut records: list[PlanDiffRecord] = []
+    for before in before_items:
+        match _quality_assertion_by_id(after_items, before.assertion_id):
+            Some(after) =>
+                if _quality_assertion_signature(before) != _quality_assertion_signature(after):
+                    records.append(
+                        _changed_record(
+                            PlanDiffChangeFamily.QualityAssertion,
+                            before.name,
+                            Some(after.target),
+                            _quality_assertion_signature(before),
+                            _quality_assertion_signature(after),
+                            "quality assertion changed",
+                            _merge_refs(before.evidence_refs, after.evidence_refs),
+                        ),
+                    )
+            None =>
+                records.append(
+                    _removed_record(
+                        PlanDiffChangeFamily.QualityAssertion,
+                        before.name,
+                        Some(before.target),
+                        before.evidence_refs,
+                    ),
+                )
+    for after in after_items:
+        match _quality_assertion_by_id(before_items, after.assertion_id):
+            Some(_) => pass
+            None =>
+                records.append(
+                    _added_record(
+                        PlanDiffChangeFamily.QualityAssertion,
+                        after.name,
+                        Some(after.target),
+                        after.evidence_refs,
+                    ),
+                )
+    return records
+
+
+def _diff_quality_observations(
+    before_items: list[QualityObservation],
+    after_items: list[QualityObservation],
+) -> list[PlanDiffRecord]:
+    """Compare quality observations."""
+    mut records: list[PlanDiffRecord] = []
+    for before in before_items:
+        match _quality_observation_by_id(after_items, before.observation_id):
+            Some(after) =>
+                if _quality_observation_signature(before) != _quality_observation_signature(after):
+                    records.append(
+                        _changed_record(
+                            PlanDiffChangeFamily.QualityObservation,
+                            before.observation_id,
+                            Some(after.target),
+                            _quality_observation_signature(before),
+                            _quality_observation_signature(after),
+                            "quality observation changed",
+                            _merge_refs(before.evidence_refs, after.evidence_refs),
+                        ),
+                    )
+            None =>
+                records.append(
+                    _removed_record(
+                        PlanDiffChangeFamily.QualityObservation,
+                        before.observation_id,
+                        Some(before.target),
+                        before.evidence_refs,
+                    ),
+                )
+    for after in after_items:
+        match _quality_observation_by_id(before_items, after.observation_id):
+            Some(_) => pass
+            None =>
+                records.append(
+                    _added_record(
+                        PlanDiffChangeFamily.QualityObservation,
+                        after.observation_id,
+                        Some(after.target),
+                        after.evidence_refs,
+                    ),
+                )
+    return records
+
+
+def _diff_execution_observations(
+    before_items: list[ExecutionObservation],
+    after_items: list[ExecutionObservation],
+) -> list[PlanDiffRecord]:
+    """Compare execution observations."""
+    mut records: list[PlanDiffRecord] = []
+    for before in before_items:
+        match _execution_observation_by_id(after_items, before.observation_id):
+            Some(after) =>
+                if _execution_observation_signature(before) != _execution_observation_signature(after):
+                    records.append(
+                        _changed_record(
+                            PlanDiffChangeFamily.ExecutionObservation,
+                            before.observation_id,
+                            Some(after.plan_target),
+                            _execution_observation_signature(before),
+                            _execution_observation_signature(after),
+                            "execution observation changed",
+                            _merge_refs(before.evidence_refs, after.evidence_refs),
+                        ),
+                    )
+            None =>
+                records.append(
+                    _removed_record(
+                        PlanDiffChangeFamily.ExecutionObservation,
+                        before.observation_id,
+                        Some(before.plan_target),
+                        before.evidence_refs,
+                    ),
+                )
+    for after in after_items:
+        match _execution_observation_by_id(before_items, after.observation_id):
+            Some(_) => pass
+            None =>
+                records.append(
+                    _added_record(
+                        PlanDiffChangeFamily.ExecutionObservation,
+                        after.observation_id,
+                        Some(after.plan_target),
+                        after.evidence_refs,
+                    ),
+                )
+    return records
+
+
+def _diff_bundle_sections(
+    before_items: list[BundleEvidenceSection],
+    after_items: list[BundleEvidenceSection],
+) -> list[PlanDiffRecord]:
+    """Compare bundle evidence section states."""
+    mut records: list[PlanDiffRecord] = []
+    for before in before_items:
+        match _section_by_family(after_items, before.family):
+            Some(after) =>
+                if _section_signature(before) != _section_signature(after):
+                    records.append(
+                        _changed_record(
+                            PlanDiffChangeFamily.BundleSection,
+                            before.family,
+                            None,
+                            _section_signature(before),
+                            _section_signature(after),
+                            "bundle evidence section changed",
+                            _merge_refs(before.evidence_refs, after.evidence_refs),
+                        ),
+                    )
+            None =>
+                records.append(
+                    _removed_record(PlanDiffChangeFamily.BundleSection, before.family, None, before.evidence_refs),
+                )
+    for after in after_items:
+        match _section_by_family(before_items, after.family):
+            Some(_) => pass
+            None => records.append(
+                _added_record(PlanDiffChangeFamily.BundleSection, after.family, None, after.evidence_refs),
+            )
+    return records
+
+
+def _diff_unsupported_evidence(
+    before_items: list[UnsupportedEvidence],
+    after_items: list[UnsupportedEvidence],
+) -> list[PlanDiffRecord]:
+    """Compare explicit unsupported evidence markers."""
+    mut records: list[PlanDiffRecord] = []
+    for before in before_items:
+        match _unsupported_by_family(after_items, before.family):
+            Some(after) =>
+                if before.reason != after.reason:
+                    records.append(
+                        _changed_record(
+                            PlanDiffChangeFamily.UnsupportedEvidence,
+                            before.family,
+                            None,
+                            before.reason,
+                            after.reason,
+                            "unsupported evidence reason changed",
+                            [],
+                        ),
+                    )
+            None => records.append(_removed_record(PlanDiffChangeFamily.UnsupportedEvidence, before.family, None, []))
+    for after in after_items:
+        match _unsupported_by_family(before_items, after.family):
+            Some(_) => pass
+            None => records.append(_added_record(PlanDiffChangeFamily.UnsupportedEvidence, after.family, None, []))
+    return records
+
+
+def _diff_evidence_refs(before_refs: list[str], after_refs: list[str]) -> list[PlanDiffRecord]:
+    """Compare bundle-level evidence references."""
+    mut records: list[PlanDiffRecord] = []
+    for before in before_refs:
+        if not _has_string(after_refs, before):
+            records.append(_removed_record(PlanDiffChangeFamily.EvidenceReference, before, None, [before]))
+    for after in after_refs:
+        if not _has_string(before_refs, after):
+            records.append(_added_record(PlanDiffChangeFamily.EvidenceReference, after, None, [after]))
+    return records
+
+
+def _blast_radius_inputs(diff_id: str, records: list[PlanDiffRecord]) -> list[BlastRadiusInput]:
+    """Derive one conservative local blast-radius input per change record."""
+    mut inputs: list[BlastRadiusInput] = []
+    for record in records:
+        if record.kind != PlanDiffChangeKind.Unchanged:
+            inputs.append(
+                BlastRadiusInput(
+                    schema_version=BLAST_RADIUS_INPUT_SCHEMA_VERSION,
+                    input_id=f"blast-radius:{record.record_id}",
+                    diff_record_id=record.record_id,
+                    family=record.family,
+                    compatibility=record.compatibility,
+                    affected_target_ids=_record_target_ids(record),
+                    requirement_change_ids=_record_requirement_ids(record),
+                    evidence_refs=record.evidence_refs,
+                    reason=f"{diff_id}: {record.reason}",
+                ),
+            )
+    return inputs
+
+
+def _record_target_ids(record: PlanDiffRecord) -> list[str]:
+    """Collect target ids referenced by one diff record without inventing global consumers."""
+    mut ids: list[str] = []
+    if let Some(value) = record.before_target_id:
+        ids.append(value)
+    if let Some(value) = record.after_target_id:
+        if not _has_string(ids, value):
+            ids.append(value)
+    return ids
+
+
+def _record_requirement_ids(record: PlanDiffRecord) -> list[str]:
+    """Return requirement ids when a diff record represents an adapter requirement change."""
+    if record.family == PlanDiffChangeFamily.AdapterRequirement:
+        return _record_target_ids(record)
+    return []
+
+
+def _unknown_record(name: str, before_value: str, after_value: str, reason: str) -> PlanDiffRecord:
+    """Build an explicit unknown-impact record."""
+    return _record(
+        PlanDiffChangeFamily.ArtifactCompatibility,
+        PlanDiffChangeKind.Unknown,
+        PlanDiffCompatibility.Unknown,
+        PlanDiffConfidence.Unknown,
+        name,
+        None,
+        None,
+        None,
+        before_value,
+        after_value,
+        reason,
+        [],
+    )
+
+
+def _added_record(
+    family: PlanDiffChangeFamily,
+    name: str,
+    target: Option[SemanticTarget],
+    evidence_refs: list[str],
+) -> PlanDiffRecord:
+    """Build a generic added-record diff for evidence families whose impact is policy-specific."""
+    return _record(
+        family,
+        PlanDiffChangeKind.Added,
+        _default_compatibility(family, PlanDiffChangeKind.Added),
+        PlanDiffConfidence.Conservative,
+        name,
+        target,
+        None,
+        _target_id_from_option(target),
+        "",
+        name,
+        "evidence record was added",
+        evidence_refs,
+    )
+
+
+def _removed_record(
+    family: PlanDiffChangeFamily,
+    name: str,
+    target: Option[SemanticTarget],
+    evidence_refs: list[str],
+) -> PlanDiffRecord:
+    """Build a generic removed-record diff for evidence families whose impact is policy-specific."""
+    return _record(
+        family,
+        PlanDiffChangeKind.Removed,
+        _default_compatibility(family, PlanDiffChangeKind.Removed),
+        PlanDiffConfidence.Conservative,
+        name,
+        target,
+        _target_id_from_option(target),
+        None,
+        name,
+        "",
+        "evidence record was removed",
+        evidence_refs,
+    )
+
+
+def _changed_record(
+    family: PlanDiffChangeFamily,
+    name: str,
+    target: Option[SemanticTarget],
+    before_value: str,
+    after_value: str,
+    reason: str,
+    evidence_refs: list[str],
+) -> PlanDiffRecord:
+    """Build a generic changed-record diff for evidence families whose impact is policy-specific."""
+    target_id = _target_id_from_option(target)
+    return _record(
+        family,
+        PlanDiffChangeKind.Changed,
+        _default_compatibility(family, PlanDiffChangeKind.Changed),
+        PlanDiffConfidence.Conservative,
+        name,
+        target,
+        target_id,
+        target_id,
+        before_value,
+        after_value,
+        reason,
+        evidence_refs,
+    )
+
+
+def _record(
+    family: PlanDiffChangeFamily,
+    kind: PlanDiffChangeKind,
+    compatibility: PlanDiffCompatibility,
+    confidence: PlanDiffConfidence,
+    name: str,
+    target: Option[SemanticTarget],
+    before_target_id: Option[str],
+    after_target_id: Option[str],
+    before_value: str,
+    after_value: str,
+    reason: str,
+    evidence_refs: list[str],
+) -> PlanDiffRecord:
+    """Build one deterministic local diff record."""
+    record_id = f"plan-diff:{family.value()}:{kind.value()}:{name}:{before_value}:{after_value}"
+    return PlanDiffRecord(
+        record_id=record_id,
+        family=family,
+        kind=kind,
+        compatibility=compatibility,
+        confidence=confidence,
+        name=name,
+        target=target,
+        before_target_id=before_target_id,
+        after_target_id=after_target_id,
+        before_value=before_value,
+        after_value=after_value,
+        reason=reason,
+        evidence_refs=evidence_refs,
+    )
+
+
+def _default_compatibility(family: PlanDiffChangeFamily, kind: PlanDiffChangeKind) -> PlanDiffCompatibility:
+    """Return conservative compatibility for policy-specific evidence families."""
+    if family == PlanDiffChangeFamily.ArtifactCompatibility:
+        return PlanDiffCompatibility.Unknown
+    if family == PlanDiffChangeFamily.CoverageRecord or family == PlanDiffChangeFamily.QualityAssertion:
+        return PlanDiffCompatibility.Unknown
+    if family == PlanDiffChangeFamily.QualityObservation or family == PlanDiffChangeFamily.ExecutionObservation:
+        return PlanDiffCompatibility.Unknown
+    if family == PlanDiffChangeFamily.BundleSection or family == PlanDiffChangeFamily.EvidenceReference:
+        return PlanDiffCompatibility.Unknown
+    if family == PlanDiffChangeFamily.UnsupportedEvidence:
+        return PlanDiffCompatibility.Unknown
+    if kind == PlanDiffChangeKind.Removed:
+        return PlanDiffCompatibility.PotentiallyBreaking
+    return PlanDiffCompatibility.Unknown
+
+
+def _records_for_family(records: list[PlanDiffRecord], family: PlanDiffChangeFamily) -> list[PlanDiffRecord]:
+    """Return records that belong to one family."""
+    return [record for record in records if record.family == family]
+
+
+def _scalar_column_signature(column: ScalarColumnSpec) -> str:
+    """Return the comparable full output-column signature."""
+    return f"{column.name}:{_scalar_column_shape(column)}"
+
+
+def _scalar_column_shape(column: ScalarColumnSpec) -> str:
+    """Return comparable type/nullability facts for one output column."""
+    return f"{_scalar_kind_text(column)}:nullable={column.nullable}"
+
+
+def _scalar_kind_text(column: ScalarColumnSpec) -> str:
+    """Return the scalar primitive kind text, preserving unknown schema as unknown."""
+    match column.kind:
+        Some(kind) => return kind.value()
+        None => return "unknown"
+
+
+def _scalar_column_by_name(columns: list[ScalarColumnSpec], name: str) -> Option[ScalarColumnSpec]:
+    """Return a scalar column by name."""
+    for column in columns:
+        if column.name == name:
+            return Some(column)
+    return None
+
+
+def _field_target_by_name(fields: list[SemanticTarget], name: str) -> Option[SemanticTarget]:
+    """Return the first output-field target with the requested name."""
+    for field in fields:
+        if field.name == name:
+            return Some(field)
+    return None
+
+
+def _target_id_by_name(fields: list[SemanticTarget], name: str) -> str:
+    """Return a field target id by name, or the display name when the field is absent."""
+    for field in fields:
+        if field.name == name:
+            return field.target_id
+    return name
+
+
+def _target_id_from_option(target: Option[SemanticTarget]) -> Option[str]:
+    """Return the target id from an optional semantic target."""
+    if let Some(value) = target:
+        return Some(value.target_id)
+    return None
+
+
+def _lineage_signature(edge: LineageEdge) -> str:
+    """Return the comparable lineage edge signature."""
+    return f"{edge.source.kind.value()}:{edge.source.name}->{edge.destination.kind.value()}:{edge.destination.name}:{edge.relationship.value()}:{edge.transformation.value()}:{edge.confidence.value()}"
+
+
+def _lineage_name(edge: LineageEdge) -> str:
+    """Return a concise lineage display name."""
+    return f"{edge.source.name}->{edge.destination.name}"
+
+
+def _has_lineage_signature(edges: list[LineageEdge], signature: str) -> bool:
+    """Return whether the lineage edge list contains a signature."""
+    for edge in edges:
+        if _lineage_signature(edge) == signature:
+            return true
+    return false
+
+
+def _metadata_key(item: MetadataAttachment) -> str:
+    """Return the semantic key for one metadata attachment."""
+    return f"{item.target.kind.value()}:{item.target.name}:{item.namespace}:{item.key}"
+
+
+def _metadata_signature(item: MetadataAttachment) -> str:
+    """Return comparable metadata attachment facts."""
+    return f"{_metadata_key(item)}:{item.payload.schema}:{item.payload.value}:{item.lifecycle.value()}:{item.source.value()}:{item.visibility.value()}"
+
+
+def _metadata_by_key(items: list[MetadataAttachment], key: str) -> Option[MetadataAttachment]:
+    """Return a metadata attachment by key."""
+    for item in items:
+        if _metadata_key(item) == key:
+            return Some(item)
+    return None
+
+
+def _attribute_key(item: GovernedAttribute) -> str:
+    """Return the semantic key for one governed attribute."""
+    return f"{item.target.kind.value()}:{item.target.name}:{item.key}:{item.scope.value()}"
+
+
+def _attribute_signature(item: GovernedAttribute) -> str:
+    """Return comparable governed attribute facts."""
+    return f"{_attribute_key(item)}:{item.value.schema}:{item.value.value}:{item.source.value()}:{item.confidence.value()}:{item.status.value()}"
+
+
+def _attribute_by_key(items: list[GovernedAttribute], key: str) -> Option[GovernedAttribute]:
+    """Return a governed attribute by semantic key."""
+    for item in items:
+        if _attribute_key(item) == key:
+            return Some(item)
+    return None
+
+
+def _checkpoint_key(item: PolicyCheckpoint) -> str:
+    """Return the semantic key for one policy checkpoint."""
+    return f"{item.target.kind.value()}:{item.target.name}:{item.checkpoint.value()}:{item.action.value()}:{item.policy_ref}:{item.reason_code}"
+
+
+def _checkpoint_signature(item: PolicyCheckpoint) -> str:
+    """Return comparable policy checkpoint facts."""
+    return f"{_checkpoint_key(item)}:{item.visibility.value()}:{_diagnostics_signature(item.diagnostics)}"
+
+
+def _checkpoint_by_key(items: list[PolicyCheckpoint], key: str) -> Option[PolicyCheckpoint]:
+    """Return a policy checkpoint by semantic key."""
+    for item in items:
+        if _checkpoint_key(item) == key:
+            return Some(item)
+    return None
+
+
+def _requirement_key(item: AdapterRequirement) -> str:
+    """Return the semantic key for one adapter requirement."""
+    return f"{item.target.kind.value()}:{item.target.name}:{item.capability.value()}"
+
+
+def _requirement_signature(item: AdapterRequirement) -> str:
+    """Return comparable adapter requirement facts."""
+    return f"{_requirement_key(item)}:{item.guarantee.value()}:{item.reason}"
+
+
+def _requirement_by_key(items: list[AdapterRequirement], key: str) -> Option[AdapterRequirement]:
+    """Return an adapter requirement by key."""
+    for item in items:
+        if _requirement_key(item) == key:
+            return Some(item)
+    return None
+
+
+def _coverage_signature(item: AdapterCoverageRecord) -> str:
+    """Return comparable adapter coverage facts."""
+    return f"{item.adapter_name}:{_option_str_text(item.adapter_version)}:{_option_str_text(item.semantic_profile_id)}:{item.state.value()}:{_diagnostics_signature(
+        item.diagnostics,
+    )}"
+
+
+def _coverage_by_id(items: list[AdapterCoverageRecord], coverage_id: str) -> Option[AdapterCoverageRecord]:
+    """Return an adapter coverage record by id."""
+    for item in items:
+        if item.coverage_id == coverage_id:
+            return Some(item)
+    return None
+
+
+def _quality_assertion_signature(item: QualityAssertion) -> str:
+    """Return comparable quality assertion facts."""
+    return f"{item.kind.value()}:{item.name}:{item.severity.value()}:{item.mode.value()}:{item.scope.value()}:{_option_int_text(
+        item.min_count,
+    )}:{_option_int_text(item.max_count)}:{_option_float_text(item.max_rate)}"
+
+
+def _quality_assertion_by_id(items: list[QualityAssertion], assertion_id: str) -> Option[QualityAssertion]:
+    """Return a quality assertion by id."""
+    for item in items:
+        if item.assertion_id == assertion_id:
+            return Some(item)
+    return None
+
+
+def _quality_observation_signature(item: QualityObservation) -> str:
+    """Return comparable quality observation facts."""
+    return f"{item.assertion.assertion_id}:{item.status.value()}:{len(item.metrics)}:{_diagnostics_signature(
+        item.diagnostics,
+    )}"
+
+
+def _quality_observation_by_id(items: list[QualityObservation], observation_id: str) -> Option[QualityObservation]:
+    """Return a quality observation by id."""
+    for item in items:
+        if item.observation_id == observation_id:
+            return Some(item)
+    return None
+
+
+def _execution_observation_signature(item: ExecutionObservation) -> str:
+    """Return comparable execution observation facts."""
+    return f"{item.operation.value()}:{item.status.value()}:{item.backend_name}:{_option_str_text(item.adapter_version)}:{_option_int_text(
+        item.row_count,
+    )}:{_option_int_text(item.byte_count)}:{_diagnostics_signature(item.diagnostics)}"
+
+
+def _execution_observation_by_id(
+    items: list[ExecutionObservation],
+    observation_id: str,
+) -> Option[ExecutionObservation]:
+    """Return an execution observation by id."""
+    for item in items:
+        if item.observation_id == observation_id:
+            return Some(item)
+    return None
+
+
+def _section_signature(item: BundleEvidenceSection) -> str:
+    """Return comparable bundle section facts."""
+    return f"{item.requirement.value()}:{item.availability.value()}:{item.record_count}:{item.reason}"
+
+
+def _section_by_family(items: list[BundleEvidenceSection], family: str) -> Option[BundleEvidenceSection]:
+    """Return a bundle section by family."""
+    for item in items:
+        if item.family == family:
+            return Some(item)
+    return None
+
+
+def _unsupported_by_family(items: list[UnsupportedEvidence], family: str) -> Option[UnsupportedEvidence]:
+    """Return an unsupported-evidence marker by family."""
+    for item in items:
+        if item.family == family:
+            return Some(item)
+    return None
+
+
+def _diagnostics_signature(diagnostics: list[ExecutionDiagnostic]) -> str:
+    """Return a compact diagnostics signature."""
+    mut parts: list[str] = []
+    for diagnostic in diagnostics:
+        parts.append(f"{diagnostic.severity.value()}:{diagnostic.code}:{diagnostic.message}")
+    return _join_pipe(parts)
+
+
+def _option_str_text(value: Option[str]) -> str:
+    """Return stable text for optional strings."""
+    if let Some(inner) = value:
+        return inner
+    return ""
+
+
+def _option_int_text(value: Option[int]) -> str:
+    """Return stable text for optional integers."""
+    if let Some(inner) = value:
+        return f"{inner}"
+    return ""
+
+
+def _option_float_text(value: Option[float]) -> str:
+    """Return stable text for optional floats."""
+    if let Some(inner) = value:
+        return f"{inner}"
+    return ""
+
+
+def _merge_refs(left: list[str], right: list[str]) -> list[str]:
+    """Merge evidence references while preserving first-seen order."""
+    mut refs: list[str] = []
+    for value in left:
+        if not _has_string(refs, value):
+            refs.append(value)
+    for value in right:
+        if not _has_string(refs, value):
+            refs.append(value)
+    return refs
+
+
+def _has_string(values: list[str], value: str) -> bool:
+    """Return whether a string list contains a value."""
+    for item in values:
+        if item == value:
+            return true
+    return false
+
+
+def _join_pipe(values: list[str]) -> str:
+    """Join strings with a pipe separator without depending on caller ordering tricks."""
+    mut output = ""
+    for idx in range(0, len(values)):
+        if idx > 0:
+            output += "|"
+        output += values[idx]
+    return output
+
+
+def _min_int(left: int, right: int) -> int:
+    """Return the smaller integer."""
+    if left < right:
+        return left
+    return right
