@@ -12,6 +12,7 @@ from evidence import (
     LineageTransformationKind,
     SemanticTargetKind,
 )
+from governance import GovernedAttributeSource, GovernedAttributeStatus, PolicyCheckpointAction, PolicyCheckpointKind
 from inspect import InspectionNodeKind, PlanInspection, inspect_lineage, inspect_plan
 from dataset import LazyFrame, lazy_frame_named_table
 from projection_builders import with_column_assignment
@@ -157,19 +158,25 @@ def test_inspect_plan__exposes_stable_plan_targets_schema_and_artifacts() -> Non
     assert inspection.output_fields[0].target_id != "customer_id", "field identity must not be the display name alone"
     assert len(inspection.attachments) >= 3, "inspection should emit typed metadata attachments for versions and known schema facts"
     assert inspection.attachments[0].payload.schema == "inql.metadata.string.v0.1", "metadata payloads should declare a schema"
-    assert len(inspection.artifacts) == 7, "inspection should expose the full deterministic artifact family set"
+    assert len(inspection.governed_attributes) >= 1, "inspection should expose inferred governed attributes for known fields"
+    assert len(inspection.policy_checkpoints) == 1, "inspection should expose the local planning checkpoint record"
+    assert len(inspection.artifacts) == 9, "inspection should expose the full deterministic artifact family set"
     assert inspection.artifacts[0].family == "plan_graph", "artifact summaries should be deterministic"
     assert inspection.artifacts[1].family == "lineage_graph", "lineage graph should be the second artifact family"
     assert inspection.artifacts[2].family == "schema_flow", "schema flow should be the third artifact family"
     assert inspection.artifacts[3].family == "metadata_attachments", "metadata attachments should be the fourth artifact family"
-    assert inspection.artifacts[4].family == "adapter_requirements", "adapter requirements should be the fifth artifact family"
-    assert inspection.artifacts[5].family == "diagnostics", "diagnostics should follow adapter requirements"
-    assert inspection.artifacts[6].family == "unsupported_evidence", "unsupported evidence should be the final artifact family"
+    assert inspection.artifacts[4].family == "governed_attributes", "governed attributes should follow metadata attachments"
+    assert inspection.artifacts[5].family == "policy_checkpoints", "policy checkpoints should follow governed attributes"
+    assert inspection.artifacts[6].family == "adapter_requirements", "adapter requirements should follow policy checkpoints"
+    assert inspection.artifacts[7].family == "diagnostics", "diagnostics should follow adapter requirements"
+    assert inspection.artifacts[8].family == "unsupported_evidence", "unsupported evidence should be the final artifact family"
     assert inspection.artifacts[0].status == EvidenceArtifactStatus.Computed, "plan-graph artifact family should be computed"
     assert _artifact_record_count("plan_graph", inspection) == inspection.authored_node_count, "plan-graph count should match authored nodes"
     assert _artifact_record_count("lineage_graph", inspection) == len(inspection.lineage.edges), "lineage count should match emitted edges"
     assert _artifact_record_count("schema_flow", inspection) == len(inspection.output_schema), "schema-flow count should match output schema"
     assert _artifact_record_count("metadata_attachments", inspection) == len(inspection.attachments), "metadata count should match attachments"
+    assert _artifact_record_count("governed_attributes", inspection) == len(inspection.governed_attributes), "governed-attribute count should match emitted records"
+    assert _artifact_record_count("policy_checkpoints", inspection) == len(inspection.policy_checkpoints), "policy-checkpoint count should match emitted records"
     assert _artifact_record_count("adapter_requirements", inspection) == len(inspection.adapter_requirements), "adapter-requirements count should match inferred requirements"
     assert _artifact_record_count("diagnostics", inspection) == 0, "diagnostic count should match the empty diagnostics list"
     assert _artifact_record_count("unsupported_evidence", inspection) == len(inspection.unsupported_evidence), "unsupported count should match markers"
@@ -178,6 +185,30 @@ def test_inspect_plan__exposes_stable_plan_targets_schema_and_artifacts() -> Non
     assert inspection.unsupported_evidence[1].family == "ingress_mappings", "ingress mapping gaps should be explicit"
     assert inspection.unsupported_evidence[2].family == "client_session_context", "session context gaps should be explicit"
     assert inspection.unsupported_evidence[3].family == "frontend_coverage", "frontend coverage gaps should be explicit"
+
+
+def test_inspect_plan__exposes_governed_attributes_and_policy_checkpoints() -> None:
+    """RFC 035: inspection should carry local governed evidence without becoming a policy engine."""
+    # -- Arrange --
+    _register_order_schema("inspection_orders")
+
+    # -- Act --
+    inspection = inspect_plan(_spend_summary())
+
+    # -- Assert --
+    mut schema_attribute_found = false
+    for attribute in inspection.governed_attributes:
+        if attribute.target.name == "customer_id" and attribute.key == "schema.substrait_primitive_kind":
+            schema_attribute_found = true
+            assert attribute.value.schema == "inql.governance.schema-primitive-kind.v0.1", "schema governed attributes should use a governance payload schema"
+            assert attribute.value.value == "i64", "schema governed attributes should preserve primitive kind"
+            assert attribute.source == GovernedAttributeSource.Lineage, "inspection-derived field attributes should name lineage/schema evidence as source"
+            assert attribute.status == GovernedAttributeStatus.Inferred, "inspection-derived field attributes should not claim asserted authority"
+            assert len(attribute.evidence_refs) > 0, "inferred attributes should point back to source evidence"
+    assert schema_attribute_found, "inspection should expose field schema facts as governed attributes"
+    assert inspection.policy_checkpoints[0].checkpoint == PolicyCheckpointKind.Planning, "inspection checkpoint should occur at planning"
+    assert inspection.policy_checkpoints[0].action == PolicyCheckpointAction.Observe, "inspection should observe policy state without enforcement"
+    assert len(inspection.policy_checkpoints[0].evidence_refs) > 0, "policy checkpoint should reference inspected evidence"
 
 
 def test_inspect_plan__infers_adapter_requirements_from_plan_evidence() -> None:

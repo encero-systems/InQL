@@ -1,0 +1,262 @@
+"""Governed attribute and policy checkpoint evidence records."""
+
+from evidence import ExecutionDiagnostic, MetadataPayload, MetadataVisibility, SemanticTarget
+
+
+@derive(Clone)
+pub enum GovernedAttributeScope(str):
+    """Relational scope for one governed attribute."""
+
+    Field = "field"
+    Relation = "relation"
+    Expression = "expression"
+    Plan = "plan"
+    Output = "output"
+    ExecutionPath = "execution_path"
+
+
+@derive(Clone)
+pub enum GovernedAttributeSource(str):
+    """Source family that supplied or inferred one governed attribute."""
+
+    Model = "model"
+    User = "user"
+    Lineage = "lineage"
+    Catalog = "catalog"
+    Policy = "policy"
+    Adapter = "adapter"
+    ImportedArtifact = "imported_artifact"
+    Inferred = "inferred"
+
+
+@derive(Clone)
+pub enum GovernedAttributeConfidence(str):
+    """Confidence level for a governed attribute value."""
+
+    Exact = "exact"
+    High = "high"
+    Medium = "medium"
+    Low = "low"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub enum GovernedAttributeStatus(str):
+    """Lifecycle status for a governed attribute assertion."""
+
+    Asserted = "asserted"
+    Inferred = "inferred"
+    Accepted = "accepted"
+    Rejected = "rejected"
+    Overridden = "overridden"
+    Stale = "stale"
+    PendingReview = "pending_review"
+
+
+@derive(Clone)
+pub enum PolicyCheckpointKind(str):
+    """Boundary where a policy decision or observation was recorded."""
+
+    Authoring = "authoring"
+    Planning = "planning"
+    Binding = "binding"
+    Execution = "execution"
+
+
+@derive(Clone)
+pub enum PolicyCheckpointAction(str):
+    """Action recorded by one policy checkpoint."""
+
+    Allow = "allow"
+    Deny = "deny"
+    Redact = "redact"
+    Mask = "mask"
+    RowFilter = "row_filter"
+    Warn = "warn"
+    RequireQualityCheck = "require_quality_check"
+    RequireApproval = "require_approval"
+    Observe = "observe"
+
+
+@derive(Clone)
+pub model GovernedAttribute:
+    """
+    One governed fact attached to a semantic target.
+
+    The record preserves provenance and confidence. It does not make inferred facts authoritative unless status and
+    authority say so explicitly.
+    """
+
+    pub attribute_id: str
+    pub target: SemanticTarget
+    pub key: str
+    pub value: MetadataPayload
+    pub scope: GovernedAttributeScope
+    pub source: GovernedAttributeSource
+    pub confidence: GovernedAttributeConfidence
+    pub status: GovernedAttributeStatus
+    pub authority: Option[str]
+    pub observed_at_unix_nanoseconds: Option[int]
+    pub expires_at_unix_nanoseconds: Option[int]
+    pub evidence_refs: list[str]
+
+    def with_status(self, status: GovernedAttributeStatus) -> Self:
+        """Return this attribute with a different status."""
+        return _governed_attribute_with(
+            self,
+            self.confidence,
+            status,
+            self.authority,
+            self.observed_at_unix_nanoseconds,
+            self.expires_at_unix_nanoseconds,
+        )
+
+    def with_confidence(self, confidence: GovernedAttributeConfidence) -> Self:
+        """Return this attribute with a different confidence value."""
+        return _governed_attribute_with(
+            self,
+            confidence,
+            self.status,
+            self.authority,
+            self.observed_at_unix_nanoseconds,
+            self.expires_at_unix_nanoseconds,
+        )
+
+    def with_authority(self, authority: str) -> Self:
+        """Return this attribute with an explicit authority reference."""
+        return _governed_attribute_with(
+            self,
+            self.confidence,
+            self.status,
+            Some(authority),
+            self.observed_at_unix_nanoseconds,
+            self.expires_at_unix_nanoseconds,
+        )
+
+    def with_lifetime(
+        self,
+        observed_at_unix_nanoseconds: Option[int],
+        expires_at_unix_nanoseconds: Option[int],
+    ) -> Self:
+        """Return this attribute with explicit observation and expiration times."""
+        return _governed_attribute_with(
+            self,
+            self.confidence,
+            self.status,
+            self.authority,
+            observed_at_unix_nanoseconds,
+            expires_at_unix_nanoseconds,
+        )
+
+
+@derive(Clone)
+pub model PolicyCheckpoint:
+    """
+    One policy decision or observation attached to a semantic target.
+
+    Checkpoints are evidence records. They do not define the policy language or enforce an action by themselves.
+    """
+
+    pub checkpoint_id: str
+    pub target: SemanticTarget
+    pub checkpoint: PolicyCheckpointKind
+    pub action: PolicyCheckpointAction
+    pub policy_ref: str
+    pub reason_code: str
+    pub evidence_refs: list[str]
+    pub visibility: MetadataVisibility
+    pub diagnostics: list[ExecutionDiagnostic]
+
+    def with_visibility(self, visibility: MetadataVisibility) -> Self:
+        """Return this checkpoint with a different visibility policy."""
+        return PolicyCheckpoint(
+            checkpoint_id=self.checkpoint_id,
+            target=self.target,
+            checkpoint=self.checkpoint,
+            action=self.action,
+            policy_ref=self.policy_ref,
+            reason_code=self.reason_code,
+            evidence_refs=self.evidence_refs,
+            visibility=visibility,
+            diagnostics=self.diagnostics,
+        )
+
+
+pub def governed_attribute(
+    target: SemanticTarget,
+    key: str,
+    value: str,
+    value_schema: str = "inql.governance.string.v0.1",
+    scope: GovernedAttributeScope = GovernedAttributeScope.Field,
+    source: GovernedAttributeSource = GovernedAttributeSource.Inferred,
+    confidence: GovernedAttributeConfidence = GovernedAttributeConfidence.Unknown,
+    status: GovernedAttributeStatus = GovernedAttributeStatus.Inferred,
+    authority: Option[str] = None,
+    observed_at_unix_nanoseconds: Option[int] = None,
+    expires_at_unix_nanoseconds: Option[int] = None,
+    evidence_refs: list[str] = [],
+) -> GovernedAttribute:
+    """Build one governed attribute with explicit provenance and lifecycle metadata."""
+    return GovernedAttribute(
+        attribute_id=f"governed:{target.target_id}:{key}",
+        target=target,
+        key=key,
+        value=MetadataPayload(schema=value_schema, value=value),
+        scope=scope,
+        source=source,
+        confidence=confidence,
+        status=status,
+        authority=authority,
+        observed_at_unix_nanoseconds=observed_at_unix_nanoseconds,
+        expires_at_unix_nanoseconds=expires_at_unix_nanoseconds,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def policy_checkpoint(
+    target: SemanticTarget,
+    checkpoint: PolicyCheckpointKind,
+    action: PolicyCheckpointAction,
+    policy_ref: str,
+    reason_code: str,
+    evidence_refs: list[str] = [],
+    visibility: MetadataVisibility = MetadataVisibility.Public,
+    diagnostics: list[ExecutionDiagnostic] = [],
+) -> PolicyCheckpoint:
+    """Build one policy checkpoint decision record."""
+    return PolicyCheckpoint(
+        checkpoint_id=f"policy:{target.target_id}:{checkpoint.value()}:{action.value()}:{reason_code}",
+        target=target,
+        checkpoint=checkpoint,
+        action=action,
+        policy_ref=policy_ref,
+        reason_code=reason_code,
+        evidence_refs=evidence_refs,
+        visibility=visibility,
+        diagnostics=diagnostics,
+    )
+
+
+def _governed_attribute_with(
+    attribute: GovernedAttribute,
+    confidence: GovernedAttributeConfidence,
+    status: GovernedAttributeStatus,
+    authority: Option[str],
+    observed_at_unix_nanoseconds: Option[int],
+    expires_at_unix_nanoseconds: Option[int],
+) -> GovernedAttribute:
+    """Return one governed attribute with selected lifecycle fields replaced."""
+    return GovernedAttribute(
+        attribute_id=attribute.attribute_id,
+        target=attribute.target,
+        key=attribute.key,
+        value=attribute.value,
+        scope=attribute.scope,
+        source=attribute.source,
+        confidence=confidence,
+        status=status,
+        authority=authority,
+        observed_at_unix_nanoseconds=observed_at_unix_nanoseconds,
+        expires_at_unix_nanoseconds=expires_at_unix_nanoseconds,
+        evidence_refs=attribute.evidence_refs,
+    )

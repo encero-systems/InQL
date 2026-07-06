@@ -54,6 +54,7 @@ InQL uses its **own** RFC series (starting at 000), independent of the [Incan la
 | [045][rfc-045] | Draft       | Constraint evidence and verification-aware planning                                               |     |
 | [046][rfc-046] | Draft       | Data contract ingress and product topology                                                        |     |
 | [047][rfc-047] | Draft       | Semantic evidence graph and agent query surface                                                   |     |
+| [048][rfc-048] | Draft       | Cluster execution backend mode                                                                    |     |
 
 <!-- TODO: #7: auto populate this table (like how we do in incan) -->
 
@@ -113,4 +114,5 @@ New RFCs should follow [TEMPLATE.md] (aligned with Incan’s RFC structure, adap
 [rfc-045]: 045_constraint_evidence_verification_planning.md
 [rfc-046]: 046_data_contract_ingress.md
 [rfc-047]: 047_semantic_evidence_graph_agent_surface.md
+[rfc-048]: 048_cluster_execution_backend_mode.md
 [incan-rfcs]: https://github.com/encero-systems/incan/tree/main/workspaces/docs-site/docs/RFCs

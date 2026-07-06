@@ -25,6 +25,8 @@ The inspection surface consumes shared evidence record families and adds the loc
 | `LineageGraph` | Plan-local lineage graph with a rule version and typed lineage edges. |
 | `LineageEdge` | Source-to-destination edge with relationship kind, transformation kind, confidence, expression reference, and evidence references. |
 | `MetadataAttachment` | Typed attachment record for schema-versioned metadata payloads. The first inspection slice emits public version attachments and concrete output-field primitive-kind attachments when known. |
+| `GovernedAttribute` | Governed fact attached to a semantic target with provenance, confidence, status, authority, lifetime, and evidence references. Inspection currently emits conservative schema primitive-kind attributes for known output fields. |
+| `PolicyCheckpoint` | Policy decision or observation record attached to a semantic target. Inspection records local planning observation checkpoints without enforcing policy. |
 | `AdapterRequirement` | Capability requirement inferred from plan evidence, such as row filtering, ordered execution, extension functions, variant semantics, baseline null semantics, or lineage-preservation evidence. |
 | `InspectionArtifact` | Deterministic summary for artifact families such as plan graph, lineage graph, schema flow, metadata attachments, diagnostics, and unsupported evidence. |
 | `UnsupportedEvidence` | Explicit marker for evidence families that are not computed by this inspection path. |
@@ -55,6 +57,6 @@ Lineage confidence is `Exact` when the extractor can resolve a dependency to exa
 
 Inspection is read-only and plan-local. It does not execute the plan, inspect DataFusion physical plans, read catalog metadata, emit files, or make governance decisions.
 
-The current implementation computes local Prism plan graph, schema flow, lineage graph, inferred adapter requirements, public version/schema metadata attachments, diagnostics shape, and unsupported-evidence markers. Session execution observations and adapter coverage evaluation are exposed through the execution context rather than through plan inspection. Semantic profiles, ingress mappings, client-session context, frontend coverage, quality observations, policy checkpoints, governed bundles, and external exchange bridges remain owned by their RFCs and are not silently inferred by this API.
+The current implementation computes local Prism plan graph, schema flow, lineage graph, inferred adapter requirements, public version/schema metadata attachments, governed attributes, policy checkpoint observations, diagnostics shape, and unsupported-evidence markers. Session execution observations and adapter coverage evaluation are exposed through the execution context rather than through plan inspection. Semantic profiles, ingress mappings, client-session context, frontend coverage, quality observations, governed bundles, and external exchange bridges remain owned by their RFCs and are not silently inferred by this API.
 
 For a task-oriented workflow, see [Inspect a plan and lineage graph](../how-to/inspect_plan_lineage.md).

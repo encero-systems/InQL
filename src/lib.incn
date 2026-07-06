@@ -450,6 +450,18 @@ pub from quality import (
     row_count,
     unique,
 )
+pub from governance import (
+    GovernedAttribute,
+    GovernedAttributeConfidence,
+    GovernedAttributeScope,
+    GovernedAttributeSource,
+    GovernedAttributeStatus,
+    PolicyCheckpoint,
+    PolicyCheckpointAction,
+    PolicyCheckpointKind,
+    governed_attribute,
+    policy_checkpoint,
+)
 pub from inspect import (
     INSPECTION_SCHEMA_VERSION,
     InspectionNodeKind,

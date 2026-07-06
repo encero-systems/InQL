@@ -8,6 +8,7 @@ How-to guides show concrete task workflows for the current InQL package surface.
 - [Build deferred dataset transformations][dataset-transformations]
 - [Estimate approximate metrics][approximate-metrics]
 - [Expand rows with generators][generator-rows]
+- [Inspect governed evidence][governed-evidence]
 - [Inspect a plan and lineage graph][inspect-plan-lineage]
 - [Normalize semi-structured fields][normalize-semistructured-fields]
 - [Observe data quality checks][quality-observations]
@@ -19,6 +20,7 @@ How-to guides show concrete task workflows for the current InQL package surface.
 [dataset-transformations]: dataset_transformations.md
 [execution-observations]: execution_observations.md
 [generator-rows]: generator_rows.md
+[governed-evidence]: governed_evidence.md
 [inspect-plan-lineage]: inspect_plan_lineage.md
 [nested-row-values]: nested_row_values.md
 [normalize-semistructured-fields]: normalize_semistructured_fields.md
