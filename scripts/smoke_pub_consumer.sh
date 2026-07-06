@@ -68,6 +68,11 @@ from pub::inql import (
     SemanticProfileDimensionKind,
     SemanticProfileDimensionState,
     Session,
+    VerificationAssertionKind,
+    VerificationAssurance,
+    VerificationCaptureBasis,
+    VerificationLifecycle,
+    VerificationOutcome,
     assess_profile_for_target,
     array,
     bundle_summary_exchange,
@@ -96,6 +101,12 @@ from pub::inql import (
     sql_dialect_profile,
     telemetry_exchange,
     transformation_project_exchange,
+    project_verification_state,
+    verification_assertion,
+    verification_coverage,
+    verification_evidence,
+    verification_observation,
+    verification_run,
 )
 from std.testing import assert_is_ok, fail_t
 
@@ -560,6 +571,40 @@ def _ingress_exports_compile_for_pub_consumers() -> None:
         None => return fail_t("supported ingress analysis should produce a lazy plan")
 
 
+def _verification_exports_compile_for_pub_consumers() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    inspection = inspect_plan(_orders(session, "verification_smoke_orders"))
+    assertion = verification_assertion(
+        "verification_smoke",
+        VerificationAssertionKind.RelationComparison,
+        inspection.plan_target,
+        comparison_intent="source and target row counts match",
+    )
+    run = verification_run("verification-run:smoke", [assertion])
+    observation = verification_observation(
+        "verification-observation:smoke",
+        run,
+        assertion,
+        VerificationLifecycle.Complete,
+        VerificationOutcome.Passed,
+        VerificationAssurance.Attested,
+        coverage=verification_coverage(1, 1, "relation"),
+        basis=VerificationCaptureBasis.ConnectorAttested,
+    )
+
+    # -- Act --
+    projection = project_verification_state(assertion, [observation])
+    evidence = verification_evidence([assertion], [run], [observation], projections=[projection])
+    bundle = governed_plan_bundle_from_inspection(inspection, verification_evidence=[evidence])
+
+    # -- Assert --
+    assert projection.outcome == VerificationOutcome.Passed, "verification projection should expose current outcome"
+    assert projection.assurance_count(VerificationAssurance.Attested) == 1, "assurance summary should retain attested evidence"
+    assert bundle.section_available("verification_evidence"), "bundle should expose verification evidence section availability"
+    assert bundle.section_available("verification_projections"), "bundle should expose verification projection evidence"
+
+
 def main() -> None:
     println("query smoke: select")
     _brace_select_aliases_and_lateral_aliases_materialize()
@@ -589,6 +634,8 @@ def main() -> None:
     _semantic_profile_exports_compile_for_pub_consumers()
     println("query smoke: ingress")
     _ingress_exports_compile_for_pub_consumers()
+    println("query smoke: verification")
+    _verification_exports_compile_for_pub_consumers()
 EOF
 
 (cd "$PROJECT_DIR" && "$INCAN_BIN" lock >/dev/null)

@@ -24,6 +24,7 @@ from inspect import InspectionNodeKind, PlanInspection, inspect_plan
 from quality import QualityAssertion, QualityObservation
 from scalar_schema import ScalarColumnSpec
 from semantic_profiles import SEMANTIC_PROFILE_SCHEMA_VERSION, SemanticProfile, SemanticProfileAssessment
+from verification import VERIFICATION_SCHEMA_VERSION, VerificationEvidence
 
 pub const GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION: str = "inql.governed-plan-bundle.v0.1"
 
@@ -94,6 +95,18 @@ model _IngressBundleSectionSummary:
     diagnostic_refs: list[str]
 
 
+model _VerificationBundleSectionSummary:
+    """Collected section counts and references for caller-supplied verification evidence."""
+
+    assertion_refs: list[str]
+    run_refs: list[str]
+    observation_refs: list[str]
+    projection_refs: list[str]
+    snapshot_refs: list[str]
+    commitment_refs: list[str]
+    waiver_refs: list[str]
+
+
 @derive(Clone)
 pub model GovernedPlanBundle:
     """
@@ -124,6 +137,7 @@ pub model GovernedPlanBundle:
     pub semantic_profiles: list[SemanticProfile]
     pub profile_assessments: list[SemanticProfileAssessment]
     pub ingress_evidence: list[IngressEvidence]
+    pub verification_evidence: list[VerificationEvidence]
     pub unsupported_evidence: list[UnsupportedEvidence]
     pub sections: list[BundleEvidenceSection]
     pub evidence_refs: list[str]
@@ -177,6 +191,7 @@ pub def governed_plan_bundle[T with Clone](
     semantic_profiles: list[SemanticProfile] = [],
     profile_assessments: list[SemanticProfileAssessment] = [],
     ingress_evidence: list[IngressEvidence] = [],
+    verification_evidence: list[VerificationEvidence] = [],
 ) -> GovernedPlanBundle:
     """Inspect one lazy plan and package its local governed evidence into a bundle."""
     return governed_plan_bundle_from_inspection(
@@ -189,6 +204,7 @@ pub def governed_plan_bundle[T with Clone](
         semantic_profiles=semantic_profiles,
         profile_assessments=profile_assessments,
         ingress_evidence=ingress_evidence,
+        verification_evidence=verification_evidence,
     )
 
 
@@ -202,6 +218,7 @@ pub def governed_plan_bundle_from_inspection(
     semantic_profiles: list[SemanticProfile] = [],
     profile_assessments: list[SemanticProfileAssessment] = [],
     ingress_evidence: list[IngressEvidence] = [],
+    verification_evidence: list[VerificationEvidence] = [],
 ) -> GovernedPlanBundle:
     """Package an existing inspection record and caller-supplied evidence into a governed plan bundle."""
     input_schema_references = _input_schema_references(inspection)
@@ -215,12 +232,19 @@ pub def governed_plan_bundle_from_inspection(
         semantic_profiles,
         profile_assessments,
         ingress_evidence,
+        verification_evidence,
     )
     return GovernedPlanBundle(
         schema_version=GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION,
         inql_version=inspection.inql_version,
         bundle_id=f"bundle:{inspection.plan_id}",
-        rule_versions=_bundle_rule_versions(inspection, semantic_profiles, profile_assessments, ingress_evidence),
+        rule_versions=_bundle_rule_versions(
+            inspection,
+            semantic_profiles,
+            profile_assessments,
+            ingress_evidence,
+            verification_evidence,
+        ),
         plan_target=inspection.plan_target,
         root_target=inspection.root_target,
         input_schema_references=input_schema_references,
@@ -238,6 +262,7 @@ pub def governed_plan_bundle_from_inspection(
         semantic_profiles=semantic_profiles,
         profile_assessments=profile_assessments,
         ingress_evidence=ingress_evidence,
+        verification_evidence=verification_evidence,
         unsupported_evidence=inspection.unsupported_evidence,
         sections=sections,
         evidence_refs=evidence_refs,
@@ -255,10 +280,12 @@ def _bundle_sections(
     semantic_profiles: list[SemanticProfile],
     profile_assessments: list[SemanticProfileAssessment],
     ingress_evidence: list[IngressEvidence],
+    verification_evidence: list[VerificationEvidence],
 ) -> list[BundleEvidenceSection]:
     """Build deterministic section summaries for local and reserved evidence families."""
     mut sections: list[BundleEvidenceSection] = []
     ingress_summary = _ingress_bundle_section_summary(ingress_evidence)
+    verification_summary = _verification_bundle_section_summary(verification_evidence)
     sections.append(
         _section(
             "plan",
@@ -439,6 +466,70 @@ def _bundle_sections(
         ),
     )
     sections.append(
+        _optional_section(
+            "verification_evidence",
+            len(verification_evidence),
+            _verification_evidence_refs(verification_evidence),
+            "no verification evidence was supplied",
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "verification_assertions",
+            len(verification_summary.assertion_refs),
+            verification_summary.assertion_refs,
+            "no verification assertions were supplied",
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "verification_runs",
+            len(verification_summary.run_refs),
+            verification_summary.run_refs,
+            "no verification runs were supplied",
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "verification_observations",
+            len(verification_summary.observation_refs),
+            verification_summary.observation_refs,
+            "no verification observations were supplied",
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "verification_projections",
+            len(verification_summary.projection_refs),
+            verification_summary.projection_refs,
+            "no verification projections were supplied",
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "verification_snapshots",
+            len(verification_summary.snapshot_refs),
+            verification_summary.snapshot_refs,
+            "no verification snapshots were supplied",
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "verification_commitments",
+            len(verification_summary.commitment_refs),
+            verification_summary.commitment_refs,
+            "no verification commitments were supplied",
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "verification_waivers",
+            len(verification_summary.waiver_refs),
+            verification_summary.waiver_refs,
+            "no verification waivers were supplied",
+        ),
+    )
+    sections.append(
         _section(
             "substrait_plan_artifact",
             BundleSectionRequirement.Optional,
@@ -555,6 +646,7 @@ def _bundle_rule_versions(
     semantic_profiles: list[SemanticProfile],
     profile_assessments: list[SemanticProfileAssessment],
     ingress_evidence: list[IngressEvidence],
+    verification_evidence: list[VerificationEvidence],
 ) -> list[str]:
     """Return bundle rule versions, including profile schema version when profile evidence is present."""
     mut versions = [GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION, inspection.schema_version, inspection.lineage.rule_version]
@@ -562,6 +654,8 @@ def _bundle_rule_versions(
         versions.append(SEMANTIC_PROFILE_SCHEMA_VERSION)
     if len(ingress_evidence) > 0:
         versions.append(INGRESS_SCHEMA_VERSION)
+    if len(verification_evidence) > 0:
+        versions.append(VERIFICATION_SCHEMA_VERSION)
     return versions
 
 
@@ -572,7 +666,7 @@ def _metadata_attachment_ref(attachment: MetadataAttachment) -> str:
 
 def _reserved_evidence_families() -> list[str]:
     """Return RFC-reserved evidence families that local bundles must mark explicitly until implemented."""
-    return ["verification_evidence", "canonical_equality_profiles", "digest_profiles", "verifier_statements", "proof_artifacts", "proof_verification_observations", "constraint_evidence", "verification_plans", "data_contract_artifacts", "normalized_contract_evidence", "mapping_diagnostics", "product_topology", "port_dependencies", "semantic_evidence_graph_projection", "graph_artifacts", "graph_query_results", "external_exchange_bridges"]
+    return ["canonical_equality_profiles", "digest_profiles", "verifier_statements", "proof_artifacts", "proof_verification_observations", "constraint_evidence", "verification_plans", "data_contract_artifacts", "normalized_contract_evidence", "mapping_diagnostics", "product_topology", "port_dependencies", "semantic_evidence_graph_projection", "graph_artifacts", "graph_query_results", "external_exchange_bridges"]
 
 
 def _bundle_counts_json_value(bundle: GovernedPlanBundle) -> JsonValue:
@@ -593,6 +687,7 @@ def _bundle_counts_json_value(bundle: GovernedPlanBundle) -> JsonValue:
     counts["semantic_profiles"] = JsonValue.int(len(bundle.semantic_profiles))
     counts["profile_assessments"] = JsonValue.int(len(bundle.profile_assessments))
     counts["ingress_evidence"] = JsonValue.int(len(bundle.ingress_evidence))
+    counts["verification_evidence"] = JsonValue.int(len(bundle.verification_evidence))
     counts["unsupported_evidence"] = JsonValue.int(len(bundle.unsupported_evidence))
     return JsonValue.object(counts)
 
@@ -629,6 +724,53 @@ def _ingress_bundle_section_summary(evidence_records: list[IngressEvidence]) -> 
         diagnostic_count=diagnostic_count,
         diagnostic_refs=diagnostic_refs,
     )
+
+
+def _verification_bundle_section_summary(
+    evidence_records: list[VerificationEvidence],
+) -> _VerificationBundleSectionSummary:
+    """Collect all verification section counts and references in one evidence traversal."""
+    mut assertion_refs: list[str] = []
+    mut run_refs: list[str] = []
+    mut observation_refs: list[str] = []
+    mut projection_refs: list[str] = []
+    mut snapshot_refs: list[str] = []
+    mut commitment_refs: list[str] = []
+    mut waiver_refs: list[str] = []
+    for evidence in evidence_records:
+        for assertion in evidence.assertions:
+            assertion_refs.append(assertion.assertion_id)
+        for run in evidence.runs:
+            run_refs.append(run.run_id)
+        for observation in evidence.observations:
+            observation_refs.append(observation.observation_id)
+        for projection in evidence.projections:
+            projection_refs.append(projection.projection_id)
+        for snapshot in evidence.snapshots:
+            snapshot_refs.append(snapshot.snapshot_id)
+        for commitment in evidence.commitments:
+            commitment_refs.append(commitment.commitment_id)
+        for waiver in evidence.waivers:
+            waiver_refs.append(waiver.waiver_id)
+    return _VerificationBundleSectionSummary(
+        assertion_refs=assertion_refs,
+        run_refs=run_refs,
+        observation_refs=observation_refs,
+        projection_refs=projection_refs,
+        snapshot_refs=snapshot_refs,
+        commitment_refs=commitment_refs,
+        waiver_refs=waiver_refs,
+    )
+
+
+def _verification_evidence_refs(evidence_records: list[VerificationEvidence]) -> list[str]:
+    """Return caller-supplied verification evidence refs plus compact group ids."""
+    mut refs: list[str] = []
+    for idx in range(len(evidence_records)):
+        refs.append(f"verification_evidence:{idx}")
+        for evidence_ref in evidence_records[idx].evidence_refs:
+            refs.append(evidence_ref)
+    return refs
 
 
 def _section_json_values(sections: list[BundleEvidenceSection]) -> list[JsonValue]:

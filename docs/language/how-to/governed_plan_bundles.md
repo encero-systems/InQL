@@ -17,7 +17,7 @@ println(bundle.section_available("lineage_graph"))
 
 ## Include quality and coverage evidence
 
-Caller-owned evidence can be included at creation time. This keeps inspection evidence, quality declarations, quality outcomes, execution attempts, and adapter coverage records together without making inspection execute the plan.
+Caller-owned evidence can be included at creation time. This keeps inspection evidence, quality declarations, quality outcomes, execution attempts, adapter coverage records, and verification observations together without making inspection execute the plan.
 
 ```incan
 from pub::inql import Session, governed_plan_bundle, row_count
@@ -75,6 +75,48 @@ match analysis.plan:
 
 Ingress evidence is frontend-facing. It should be reviewed alongside, not instead of, adapter coverage records.
 
+## Include verification evidence
+
+Verification evidence records what should be checked, what runs attempted, which append-only observations arrived, and what current projection was derived from those observations.
+
+```incan
+from pub::inql import (
+    VerificationAssertionKind,
+    VerificationAssurance,
+    VerificationLifecycle,
+    VerificationOutcome,
+    project_verification_state,
+    verification_assertion,
+    verification_coverage,
+    verification_evidence,
+    verification_observation,
+    verification_run,
+)
+
+assertion = verification_assertion(
+    "orders_reconciled",
+    VerificationAssertionKind.RelationComparison,
+    inspect_plan(summary).plan_target,
+    comparison_intent="source and target row counts match",
+)
+run = verification_run("verification-run:orders", [assertion])
+observation = verification_observation(
+    "verification-observation:orders",
+    run,
+    assertion,
+    VerificationLifecycle.Complete,
+    VerificationOutcome.Passed,
+    VerificationAssurance.Attested,
+    coverage=verification_coverage(1, 1, "relation"),
+)
+projection = project_verification_state(assertion, [observation])
+evidence = verification_evidence([assertion], [run], [observation], projections=[projection])
+
+bundle = governed_plan_bundle(summary, verification_evidence=[evidence])
+```
+
+The bundle records verification evidence as available sections when supplied. Missing verification evidence is `Unavailable`, not `Unsupported`. Digest profiles, proof artifacts, and constraint evidence remain separate RFC-owned sections.
+
 ## Branch on section state
 
 Do not treat an absent or zero-count section as a successful check. Look at `availability`.
@@ -89,7 +131,7 @@ match bundle.section("coverage_records"):
     None => println("unknown bundle section")
 ```
 
-Reserved evidence families such as verification evidence, digest profiles, proof artifacts, constraint evidence, data contract evidence, semantic graph projections, and exchange bridges are represented as explicit `Unsupported` sections until their owning RFCs add concrete records. That is intentional: consumers can distinguish “not implemented here” from “implemented but not supplied for this bundle.” Ingress sections are concrete optional sections; they are `Available` only when callers supply ingress evidence.
+Reserved evidence families such as digest profiles, proof artifacts, constraint evidence, data contract evidence, semantic graph projections, and exchange bridges are represented as explicit `Unsupported` sections until their owning RFCs add concrete records. That is intentional: consumers can distinguish “not implemented here” from “implemented but not supplied for this bundle.” Ingress and verification sections are concrete optional sections; they are `Available` only when callers supply evidence.
 
 ## Write a JSON summary
 
@@ -99,4 +141,4 @@ The typed bundle is the richest representation. When a tool only needs summary m
 bundle.write("target/inql/summary.bundle.json")?
 ```
 
-The JSON file contains bundle metadata, plan/root target summaries, counts, section records, input schema references, and evidence references. It does not flatten every rich nested evidence record. Keep the typed bundle in memory when the consumer needs full lineage edges, governed attributes, quality records, execution observations, coverage diagnostics, semantic profiles, or profile assessments.
+The JSON file contains bundle metadata, plan/root target summaries, counts, section records, input schema references, and evidence references. It does not flatten every rich nested evidence record. Keep the typed bundle in memory when the consumer needs full lineage edges, governed attributes, quality records, execution observations, coverage diagnostics, semantic profiles, profile assessments, ingress evidence, or verification evidence.

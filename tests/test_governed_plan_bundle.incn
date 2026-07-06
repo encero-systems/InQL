@@ -94,7 +94,10 @@ def test_governed_plan_bundle__packages_local_inspection_evidence() -> None:
     assert observation_section.availability == BundleSectionAvailability.Unavailable, "absent optional evidence should be unavailable, not empty available"
     assert observation_section.record_count == 0, "absent optional evidence should have zero records"
 
-    future_section = _require_section(bundle, "verification_evidence")
+    verification_section = _require_section(bundle, "verification_evidence")
+    assert verification_section.availability == BundleSectionAvailability.Unavailable, "supported but absent verification evidence should be unavailable"
+
+    future_section = _require_section(bundle, "canonical_equality_profiles")
     assert future_section.availability == BundleSectionAvailability.Unsupported, "future evidence families should be explicit unsupported sections"
 
 
@@ -127,5 +130,6 @@ def test_governed_plan_bundle__serializes_stable_json_summary() -> None:
             assert text.contains("\"schema_version\""), "JSON summary should include the schema version"
             assert text.contains("\"sections\""), "JSON summary should include section records"
             assert text.contains("\"quality_assertions\""), "JSON summary should name caller evidence sections"
-            assert text.contains("\"verification_evidence\""), "JSON summary should name unsupported future sections"
+            assert text.contains("\"verification_evidence\""), "JSON summary should name supported verification sections"
+            assert text.contains("\"canonical_equality_profiles\""), "JSON summary should name unsupported future sections"
         Err(err) => fail_t(err.message())
