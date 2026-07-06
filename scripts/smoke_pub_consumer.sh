@@ -47,6 +47,10 @@ import pub::inql
 
 from pub::inql import (
     DataFrame,
+    EvidenceExchangeRecord,
+    EvidenceExchangeRecordKind,
+    EvidenceExchangeTargetFormat,
+    ExternalEvidenceConfidence,
     GovernedAttributeStatus,
     LazyFrame,
     PolicyCheckpointAction,
@@ -56,14 +60,20 @@ from pub::inql import (
     QualityObservationStatus,
     Session,
     array,
+    bundle_summary_exchange,
     diff_plan_bundles,
     col,
     eq,
+    external_evidence_artifact,
+    external_evidence_exchange,
     governed_attribute,
     governed_plan_bundle,
     inspect_plan,
     lit,
+    openlineage_exchange,
     policy_checkpoint,
+    telemetry_exchange,
+    transformation_project_exchange,
 )
 from std.testing import assert_is_ok, fail_t
 
@@ -422,6 +432,43 @@ def _plan_diff_exports_compile_for_pub_consumers() -> None:
     assert len(diff.blast_radius_inputs) > 0, "pub consumers should receive local blast-radius inputs"
 
 
+def _exchange_has_kind(records: list[EvidenceExchangeRecord], kind: EvidenceExchangeRecordKind) -> bool:
+    """Return whether a pub-consumer exchange contains one record kind."""
+    for record in records:
+        if record.kind == kind:
+            return true
+    return false
+
+
+def _evidence_exchange_exports_compile_for_pub_consumers() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    bundle = governed_plan_bundle(_orders(session, "evidence_exchange_orders"), evidence_refs=["smoke:exchange"])
+    external = external_evidence_artifact(
+        "artifact:smoke:manifest",
+        EvidenceExchangeTargetFormat.TransformationProject,
+        "target/smoke/manifest.json",
+        confidence=ExternalEvidenceConfidence.Declared,
+    )
+
+    # -- Act --
+    summary = bundle_summary_exchange(bundle)
+    lineage = openlineage_exchange(bundle)
+    telemetry = telemetry_exchange(bundle)
+    transformation = transformation_project_exchange(bundle)
+    inbound = external_evidence_exchange(external)
+
+    # -- Assert --
+    assert summary.target_format == EvidenceExchangeTargetFormat.InqlBundleSummary, "bundle summary exchange should export"
+    assert _exchange_has_kind(lineage.records, EvidenceExchangeRecordKind.OpenLineageJob), "OpenLineage exchange should export job records"
+    assert _exchange_has_kind(telemetry.records, EvidenceExchangeRecordKind.TelemetryEvent), "telemetry exchange should export events"
+    assert _exchange_has_kind(
+        transformation.records,
+        EvidenceExchangeRecordKind.TransformationModelSuggestion,
+    ), "transformation exchange should export model suggestions"
+    assert len(inbound.external_artifacts) == 1, "inbound external artifact exchange should preserve artifact identity"
+
+
 def main() -> None:
     println("query smoke: select")
     _brace_select_aliases_and_lateral_aliases_materialize()
@@ -445,6 +492,8 @@ def main() -> None:
     _governed_plan_bundle_exports_compile_for_pub_consumers()
     println("query smoke: plan diff")
     _plan_diff_exports_compile_for_pub_consumers()
+    println("query smoke: evidence exchange")
+    _evidence_exchange_exports_compile_for_pub_consumers()
 EOF
 
 (cd "$PROJECT_DIR" && "$INCAN_BIN" lock >/dev/null)
