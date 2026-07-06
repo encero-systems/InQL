@@ -462,6 +462,16 @@ pub from governance import (
     governed_attribute,
     policy_checkpoint,
 )
+pub from bundle import (
+    BundleEvidenceSection,
+    BundleExportStatus,
+    BundleSectionAvailability,
+    BundleSectionRequirement,
+    GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION,
+    GovernedPlanBundle,
+    governed_plan_bundle,
+    governed_plan_bundle_from_inspection,
+)
 pub from inspect import (
     INSPECTION_SCHEMA_VERSION,
     InspectionNodeKind,

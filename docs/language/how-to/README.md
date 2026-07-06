@@ -12,6 +12,7 @@ How-to guides show concrete task workflows for the current InQL package surface.
 - [Inspect a plan and lineage graph][inspect-plan-lineage]
 - [Normalize semi-structured fields][normalize-semistructured-fields]
 - [Observe data quality checks][quality-observations]
+- [Package a governed plan bundle][governed-plan-bundles]
 - [Inspect typed variant payloads][variant-payloads]
 - [Work with nested row values][nested-row-values]
 
@@ -21,6 +22,7 @@ How-to guides show concrete task workflows for the current InQL package surface.
 [execution-observations]: execution_observations.md
 [generator-rows]: generator_rows.md
 [governed-evidence]: governed_evidence.md
+[governed-plan-bundles]: governed_plan_bundles.md
 [inspect-plan-lineage]: inspect_plan_lineage.md
 [nested-row-values]: nested_row_values.md
 [normalize-semistructured-fields]: normalize_semistructured_fields.md
