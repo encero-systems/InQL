@@ -10,6 +10,7 @@ How-to guides show concrete task workflows for the current InQL package surface.
 - [Expand rows with generators][generator-rows]
 - [Inspect a plan and lineage graph][inspect-plan-lineage]
 - [Normalize semi-structured fields][normalize-semistructured-fields]
+- [Observe data quality checks][quality-observations]
 - [Inspect typed variant payloads][variant-payloads]
 - [Work with nested row values][nested-row-values]
 
@@ -21,6 +22,7 @@ How-to guides show concrete task workflows for the current InQL package surface.
 [inspect-plan-lineage]: inspect_plan_lineage.md
 [nested-row-values]: nested_row_values.md
 [normalize-semistructured-fields]: normalize_semistructured_fields.md
+[quality-observations]: quality_observations.md
 [typed-hll-sketches]: typed_hll_sketches.md
 [variant-payloads]: variant_payloads.md
 [window-columns]: window_columns.md

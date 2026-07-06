@@ -1,7 +1,8 @@
-//! InQL query-block vocabulary companion.
+//! InQL vocabulary companion.
 //!
-//! The Incan compiler owns the generic vocabulary contract. InQL owns this package-specific `query:` surface and
-//! lowers it into ordinary InQL helper/method calls that continue through Prism, Substrait, and the active backend.
+//! The Incan compiler owns the generic vocabulary contract. InQL owns package-specific surfaces such as `query:`
+//! and `quality:`, then lowers them into ordinary InQL helper/method calls that continue through Prism, Substrait,
+//! quality observation, and the active backend.
 
 mod desugar;
 
@@ -11,15 +12,16 @@ use incan_vocab::{
     ScopedSurfaceEligibility, ScopedSurfaceMisuseScope, ScopedSurfaceReceiver, VocabRegistration,
 };
 
-pub use desugar::InqlQueryDesugarer;
+pub use desugar::InqlVocabDesugarer;
 
 pub const NAMESPACE: &str = "inql";
 pub const QUERY_KW: &str = "query";
+pub const QUALITY_KW: &str = "quality";
 pub const QUERY_FIELD_DESCRIPTOR: &str = "inql.query.field";
 
-// Incan's current vocab manifest API requires query desugarers to name helper bindings explicitly. Keep this list as
-// the query-expression helper surface, and keep the tests below in lock-step with `src/lib.incn` public function exports
-// so query blocks do not silently drift away from ordinary `pub::inql` helper calls.
+// Incan's current vocab manifest API requires desugarers to name helper bindings explicitly. Keep these lists in
+// lock-step with the public helper surfaces so vocab blocks do not silently drift away from ordinary `pub::inql`
+// helper calls.
 const QUERY_BLOCK_HELPER_EXPORTS: &[&str] = &[
     "col",
     "lit",
@@ -249,12 +251,20 @@ const QUERY_BLOCK_HELPER_EXPORTS: &[&str] = &[
     "with_column_assignment",
 ];
 
+const QUALITY_BLOCK_HELPER_EXPORTS: &[&str] = &[
+    "row_count",
+    "null_rate",
+    "unique",
+    "group_row_count",
+    "cross_relation_row_count_equal",
+];
+
 #[must_use]
 pub fn library_vocab() -> VocabRegistration {
     VocabRegistration::new()
         .with_surface(
             DslSurface::on_import(NAMESPACE)
-                .with_declaration(
+                .with_declarations([
                     DeclarationSurface::named(QUERY_KW)
                         .with_clause_body()
                         .desugars_to_expression()
@@ -282,7 +292,10 @@ pub fn library_vocab() -> VocabRegistration {
                                 .after("SELECT"),
                             ClauseSurface::expr("LIMIT").optional().after("ORDER BY"),
                         ]),
-                )
+                    DeclarationSurface::named(QUALITY_KW)
+                        .with_mixed_body()
+                        .desugars_to_expression(),
+                ])
                 .with_scoped_surface(
                     ScopedSurfaceDescriptor::leading_dot_path(QUERY_FIELD_DESCRIPTOR)
                         .with_eligibilities([
@@ -293,6 +306,7 @@ pub fn library_vocab() -> VocabRegistration {
                             ScopedSurfaceEligibility::clause_body(QUERY_KW, "EXPLODE"),
                             ScopedSurfaceEligibility::clause_body(QUERY_KW, "WINDOW"),
                             ScopedSurfaceEligibility::clause_body(QUERY_KW, "ON"),
+                            ScopedSurfaceEligibility::declaration_body(QUALITY_KW),
                         ])
                         .with_receiver(ScopedSurfaceReceiver::OwningDeclaration)
                         .with_misuse_scope(ScopedSurfaceMisuseScope::ActivatingFile)
@@ -312,12 +326,13 @@ pub fn library_vocab() -> VocabRegistration {
             helper_bindings: helper_bindings(),
             ..LibraryManifest::default()
         })
-        .with_desugarer(InqlQueryDesugarer)
+        .with_desugarer(InqlVocabDesugarer)
 }
 
 fn helper_bindings() -> Vec<HelperBinding> {
     QUERY_BLOCK_HELPER_EXPORTS
         .iter()
+        .chain(QUALITY_BLOCK_HELPER_EXPORTS.iter())
         .map(|name| HelperBinding {
             key: (*name).to_string(),
             exported_name: (*name).to_string(),
@@ -325,7 +340,11 @@ fn helper_bindings() -> Vec<HelperBinding> {
         .collect()
 }
 
-incan_vocab::export_wasm_desugarer!(InqlQueryDesugarer);
+pub(crate) fn helper_exported(name: &str) -> bool {
+    QUERY_BLOCK_HELPER_EXPORTS.contains(&name) || QUALITY_BLOCK_HELPER_EXPORTS.contains(&name)
+}
+
+incan_vocab::export_wasm_desugarer!(InqlVocabDesugarer);
 
 #[cfg(test)]
 mod tests {
@@ -354,8 +373,13 @@ mod tests {
             .iter()
             .map(|binding| binding.key.as_str())
             .collect();
+        let expected_keys: Vec<&str> = QUERY_BLOCK_HELPER_EXPORTS
+            .iter()
+            .chain(QUALITY_BLOCK_HELPER_EXPORTS.iter())
+            .copied()
+            .collect();
 
-        assert_eq!(manifest_keys, QUERY_BLOCK_HELPER_EXPORTS);
+        assert_eq!(manifest_keys, expected_keys);
         for binding in manifest_bindings {
             assert_eq!(binding.key, binding.exported_name);
         }

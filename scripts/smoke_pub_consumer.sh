@@ -45,7 +45,7 @@ cat > "$PROJECT_DIR/src/query_blocks_smoke.incn" <<EOF
 
 import pub::inql
 
-from pub::inql import DataFrame, LazyFrame, Session, array, col, eq, lit
+from pub::inql import DataFrame, LazyFrame, QualityObservationStatus, Session, array, col, eq, lit
 from std.testing import assert_is_ok, fail_t
 
 
@@ -310,6 +310,34 @@ def _colon_spelling_materializes_same_select_surface() -> None:
     _assert_preview_row_contains(payload, ["B", "7"], "query: SELECT should materialize later rows")
 
 
+def _quality_vocab_assertions_execute() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    orders = _orders(session, "quality_vocab_orders")
+    max_null_rate = 0.0
+    brace_checks = quality {
+        row_count(Some(1)).require()
+        null_rate(.customer_id, max_null_rate)
+        unique(.amount)
+    }
+    colon_checks = quality:
+        group_row_count([.customer_id], 1, Some(2)).quarantine()
+
+    # -- Act --
+    brace_observations = session.observe_quality(orders.clone(), brace_checks)
+    colon_observations = session.observe_quality(orders, colon_checks)
+
+    # -- Assert --
+    assert len(brace_observations) == 3, "quality { } should produce one observation per assertion"
+    assert brace_observations[0].status == QualityObservationStatus.Passed, "quality row_count should execute"
+    assert brace_observations[1].status == QualityObservationStatus.Passed, "quality null_rate should execute"
+    assert brace_observations[2].status == QualityObservationStatus.Passed, "quality unique should execute"
+    assert brace_observations[0].assertion.mode.value() == "require", "quality vocab should preserve policy methods"
+    assert len(colon_observations) == 1, "quality: should produce executable assertions"
+    assert colon_observations[0].status == QualityObservationStatus.Passed, "quality group_row_count should execute"
+    assert colon_observations[0].assertion.mode.value() == "quarantine", "quality: should preserve policy methods"
+
+
 def main() -> None:
     println("query smoke: select")
     _brace_select_aliases_and_lateral_aliases_materialize()
@@ -325,6 +353,8 @@ def main() -> None:
     _explode_and_window_by_materialize()
     println("query smoke: colon")
     _colon_spelling_materializes_same_select_surface()
+    println("query smoke: quality")
+    _quality_vocab_assertions_execute()
 EOF
 
 (cd "$PROJECT_DIR" && "$INCAN_BIN" lock >/dev/null)

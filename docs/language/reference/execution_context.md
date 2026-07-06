@@ -178,6 +178,17 @@ Coverage states are conservative. `Covered` means the selected adapter is known 
 
 For non-DataFusion backends, the current implementation returns `Unknown` for every capability until that adapter declares coverage metadata.
 
+## Quality observation APIs
+
+`Session` also evaluates quality assertions and returns structured quality observations. The quality reference owns the assertion and observation record details; this page lists the session entry points because they execute through the same session boundary as collection and adapter coverage.
+
+| API | Input | Returns |
+| --- | --- | --- |
+| `session.observe_quality(data, assertions)` | `LazyFrame[T]`, `list[QualityAssertion]` | `list[QualityObservation]` |
+| `session.observe_quality_pair(left, right, assertions)` | `LazyFrame[T]`, `LazyFrame[U]`, `list[QualityAssertion]` | `list[QualityObservation]` |
+
+Use `observe_quality(...)` for relation, field, and group assertions. Use `observe_quality_pair(...)` for explicit cross-relation assertions. Failed checks return quality observations with `QualityObservationStatus.Failed`; they do not throw or filter the checked relation by default.
+
 ## Active-session convenience
 
 | API                            | Returns                         | Purpose                                                   |
@@ -207,10 +218,14 @@ DataFusion is the implemented execution backend. `Session` stores a backend kind
 
 - For the conceptual model behind this surface, see [Execution context (Explanation)](../explanation/execution_context.md)
 - For task-oriented examples, see [Capture execution observations and adapter coverage](../how-to/execution_observations.md)
+- For quality assertion and observation records, see [Quality assertions and observations](quality.md)
+- For task-oriented quality examples, see [Observe data quality checks](../how-to/quality_observations.md)
 - For carrier semantics, see [Dataset carriers (Reference)](dataset_carriers.md)
 - For execution observation design, see [RFC 032][rfc-032]
 - For adapter requirement and coverage design, see [RFC 033][rfc-033]
+- For quality assertion and observation design, see [RFC 034][rfc-034]
 
 [rfc-004]: ../../rfcs/004_inql_execution_context.md
 [rfc-032]: ../../rfcs/032_execution_observations.md
 [rfc-033]: ../../rfcs/033_adapter_requirements_coverage.md
+[rfc-034]: ../../rfcs/034_quality_assertions_observations.md
