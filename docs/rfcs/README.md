@@ -42,7 +42,7 @@ InQL uses its **own** RFC series (starting at 000), independent of the [Incan la
 | [033][rfc-033] | Implemented | Adapter requirements and coverage                                                                 |     |
 | [034][rfc-034] | Implemented | Quality assertions and observations                                                               |     |
 | [035][rfc-035] | Draft       | Governed attributes and policy checkpoints                                                        |     |
-| [036][rfc-036] | Draft       | Governed plan bundle                                                                              |     |
+| [036][rfc-036] | Implemented | Governed plan bundle                                                                              |     |
 | [037][rfc-037] | Draft       | Plan diff and blast-radius inputs                                                                 |     |
 | [038][rfc-038] | Draft       | Evidence exchange bridges                                                                         |     |
 | [039][rfc-039] | Draft       | Pandas-familiar exploration API                                                                   |     |

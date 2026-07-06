@@ -1,0 +1,541 @@
+"""
+Governed plan bundle records for local evidence handoff.
+
+A bundle packages Prism inspection evidence with caller-supplied quality, execution, and coverage records. It keeps
+the rich typed record graph in memory and exposes a stable JSON summary for tools that only need metadata and section
+coverage.
+"""
+
+from std.fs import IoError, Path
+from std.json import JsonError, JsonValue, dumps_pretty
+from dataset import LazyFrame
+from evidence import (
+    AdapterCoverageRecord,
+    AdapterRequirement,
+    ExecutionObservation,
+    LineageGraph,
+    MetadataAttachment,
+    SemanticTarget,
+    UnsupportedEvidence,
+)
+from governance import GovernedAttribute, PolicyCheckpoint
+from inspect import InspectionNodeKind, PlanInspection, inspect_plan
+from quality import QualityAssertion, QualityObservation
+from scalar_schema import ScalarColumnSpec
+
+pub const GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION: str = "inql.governed-plan-bundle.v0.1"
+
+
+@derive(Clone)
+pub enum BundleSectionRequirement(str):
+    """Whether one bundle evidence section is mandatory for the local bundle contract."""
+
+    Required = "required"
+    Optional = "optional"
+
+
+@derive(Clone)
+pub enum BundleSectionAvailability(str):
+    """Availability state for one bundle evidence family."""
+
+    Available = "available"
+    Unavailable = "unavailable"
+    Unsupported = "unsupported"
+
+
+@derive(Clone)
+pub enum BundleExportStatus(str):
+    """Local export state for a governed plan bundle."""
+
+    Local = "local"
+    Written = "written"
+
+
+@derive(Clone)
+pub model BundleEvidenceSection:
+    """
+    Evidence-family summary inside a governed plan bundle.
+
+    A section can be present but unavailable or unsupported. Consumers should branch on `availability`, not on whether
+    `record_count` is zero.
+    """
+
+    pub family: str
+    pub requirement: BundleSectionRequirement
+    pub availability: BundleSectionAvailability
+    pub record_count: int
+    pub reason: str
+    pub evidence_refs: list[str]
+
+    def to_json_value(self) -> JsonValue:
+        """Return the stable JSON summary shape for this evidence section."""
+        mut entries: Dict[str, JsonValue] = {}
+        entries["family"] = JsonValue.str(self.family)
+        entries["requirement"] = JsonValue.str(self.requirement.value())
+        entries["availability"] = JsonValue.str(self.availability.value())
+        entries["record_count"] = JsonValue.int(self.record_count)
+        entries["reason"] = JsonValue.str(self.reason)
+        entries["evidence_refs"] = JsonValue.array(_strings_to_json_values(self.evidence_refs))
+        return JsonValue.object(entries)
+
+
+@derive(Clone)
+pub model GovernedPlanBundle:
+    """
+    Local governed evidence package for one planned relation.
+
+    The bundle keeps rich InQL records in memory and exposes a stable JSON summary for handoff tools that only need
+    bundle metadata and section coverage.
+    """
+
+    pub schema_version: str
+    pub inql_version: str
+    pub bundle_id: str
+    pub rule_versions: list[str]
+    pub plan_target: SemanticTarget
+    pub root_target: SemanticTarget
+    pub input_schema_references: list[str]
+    pub output_schema: list[ScalarColumnSpec]
+    pub output_fields: list[SemanticTarget]
+    pub lineage: LineageGraph
+    pub attachments: list[MetadataAttachment]
+    pub governed_attributes: list[GovernedAttribute]
+    pub policy_checkpoints: list[PolicyCheckpoint]
+    pub quality_assertions: list[QualityAssertion]
+    pub quality_observations: list[QualityObservation]
+    pub execution_observations: list[ExecutionObservation]
+    pub adapter_requirements: list[AdapterRequirement]
+    pub coverage_records: list[AdapterCoverageRecord]
+    pub unsupported_evidence: list[UnsupportedEvidence]
+    pub sections: list[BundleEvidenceSection]
+    pub evidence_refs: list[str]
+    pub export_status: BundleExportStatus
+
+    def section(self, family: str) -> Option[BundleEvidenceSection]:
+        """Return one evidence section by family name."""
+        for section in self.sections:
+            if section.family == family:
+                return Some(section)
+        return None
+
+    def section_available(self, family: str) -> bool:
+        """Return whether a section exists and has available evidence."""
+        match self.section(family):
+            Some(section) => return section.availability == BundleSectionAvailability.Available
+            None => return false
+
+    def to_json_value(self) -> JsonValue:
+        """Return the stable governed-plan-bundle JSON summary."""
+        mut entries: Dict[str, JsonValue] = {}
+        entries["schema_version"] = JsonValue.str(self.schema_version)
+        entries["inql_version"] = JsonValue.str(self.inql_version)
+        entries["bundle_id"] = JsonValue.str(self.bundle_id)
+        entries["rule_versions"] = JsonValue.array(_strings_to_json_values(self.rule_versions))
+        entries["plan"] = _semantic_target_json_value(self.plan_target)
+        entries["root"] = _semantic_target_json_value(self.root_target)
+        entries["export_status"] = JsonValue.str(self.export_status.value())
+        entries["counts"] = _bundle_counts_json_value(self)
+        entries["sections"] = JsonValue.array(_section_json_values(self.sections))
+        entries["input_schema_references"] = JsonValue.array(_strings_to_json_values(self.input_schema_references))
+        entries["evidence_refs"] = JsonValue.array(_strings_to_json_values(self.evidence_refs))
+        return JsonValue.object(entries)
+
+    def to_json_text(self) -> Result[str, IoError]:
+        """Serialize the stable bundle summary as pretty JSON text."""
+        return dumps_pretty(self.to_json_value()).map_err(_json_error_to_io_error)
+
+    def write(self, path: str) -> Result[None, IoError]:
+        """Write the stable bundle summary JSON to a filesystem path."""
+        return Path(path).write_text(self.to_json_text()?, "utf-8", "strict", None)
+
+
+pub def governed_plan_bundle[T with Clone](
+    data: LazyFrame[T],
+    quality_assertions: list[QualityAssertion] = [],
+    quality_observations: list[QualityObservation] = [],
+    execution_observations: list[ExecutionObservation] = [],
+    coverage_records: list[AdapterCoverageRecord] = [],
+    evidence_refs: list[str] = [],
+) -> GovernedPlanBundle:
+    """Inspect one lazy plan and package its local governed evidence into a bundle."""
+    return governed_plan_bundle_from_inspection(
+        inspect_plan(data),
+        quality_assertions,
+        quality_observations,
+        execution_observations,
+        coverage_records,
+        evidence_refs,
+    )
+
+
+pub def governed_plan_bundle_from_inspection(
+    inspection: PlanInspection,
+    quality_assertions: list[QualityAssertion] = [],
+    quality_observations: list[QualityObservation] = [],
+    execution_observations: list[ExecutionObservation] = [],
+    coverage_records: list[AdapterCoverageRecord] = [],
+    evidence_refs: list[str] = [],
+) -> GovernedPlanBundle:
+    """Package an existing inspection record and caller-supplied evidence into a governed plan bundle."""
+    input_schema_references = _input_schema_references(inspection)
+    sections = _bundle_sections(
+        inspection,
+        input_schema_references,
+        quality_assertions,
+        quality_observations,
+        execution_observations,
+        coverage_records,
+    )
+    return GovernedPlanBundle(
+        schema_version=GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION,
+        inql_version=inspection.inql_version,
+        bundle_id=f"bundle:{inspection.plan_id}",
+        rule_versions=[GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION, inspection.schema_version, inspection.lineage.rule_version],
+        plan_target=inspection.plan_target,
+        root_target=inspection.root_target,
+        input_schema_references=input_schema_references,
+        output_schema=inspection.output_schema,
+        output_fields=inspection.output_fields,
+        lineage=inspection.lineage,
+        attachments=inspection.attachments,
+        governed_attributes=inspection.governed_attributes,
+        policy_checkpoints=inspection.policy_checkpoints,
+        quality_assertions=quality_assertions,
+        quality_observations=quality_observations,
+        execution_observations=execution_observations,
+        adapter_requirements=inspection.adapter_requirements,
+        coverage_records=coverage_records,
+        unsupported_evidence=inspection.unsupported_evidence,
+        sections=sections,
+        evidence_refs=evidence_refs,
+        export_status=BundleExportStatus.Local,
+    )
+
+
+def _bundle_sections(
+    inspection: PlanInspection,
+    input_schema_references: list[str],
+    quality_assertions: list[QualityAssertion],
+    quality_observations: list[QualityObservation],
+    execution_observations: list[ExecutionObservation],
+    coverage_records: list[AdapterCoverageRecord],
+) -> list[BundleEvidenceSection]:
+    """Build deterministic section summaries for local and future evidence families."""
+    mut sections: list[BundleEvidenceSection] = []
+    sections.append(
+        _section(
+            "plan",
+            BundleSectionRequirement.Required,
+            BundleSectionAvailability.Available,
+            1,
+            "",
+            [inspection.plan_target.target_id],
+        ),
+    )
+    sections.append(_input_schema_reference_section(input_schema_references))
+    sections.append(
+        _section(
+            "output_schema",
+            BundleSectionRequirement.Required,
+            BundleSectionAvailability.Available,
+            len(inspection.output_schema),
+            "",
+            [field.target_id for field in inspection.output_fields],
+        ),
+    )
+    sections.append(
+        _section(
+            "output_fields",
+            BundleSectionRequirement.Required,
+            BundleSectionAvailability.Available,
+            len(inspection.output_fields),
+            "",
+            [field.target_id for field in inspection.output_fields],
+        ),
+    )
+    sections.append(
+        _section(
+            "lineage_graph",
+            BundleSectionRequirement.Required,
+            BundleSectionAvailability.Available,
+            len(inspection.lineage.edges),
+            "",
+            [inspection.lineage.plan_id],
+        ),
+    )
+    sections.append(
+        _section(
+            "metadata_attachments",
+            BundleSectionRequirement.Required,
+            BundleSectionAvailability.Available,
+            len(inspection.attachments),
+            "",
+            [_metadata_attachment_ref(attachment) for attachment in inspection.attachments],
+        ),
+    )
+    sections.append(
+        _section(
+            "governed_attributes",
+            BundleSectionRequirement.Required,
+            BundleSectionAvailability.Available,
+            len(inspection.governed_attributes),
+            "",
+            [attribute.attribute_id for attribute in inspection.governed_attributes],
+        ),
+    )
+    sections.append(
+        _section(
+            "policy_checkpoints",
+            BundleSectionRequirement.Required,
+            BundleSectionAvailability.Available,
+            len(inspection.policy_checkpoints),
+            "",
+            [checkpoint.checkpoint_id for checkpoint in inspection.policy_checkpoints],
+        ),
+    )
+    sections.append(
+        _section(
+            "adapter_requirements",
+            BundleSectionRequirement.Required,
+            BundleSectionAvailability.Available,
+            len(inspection.adapter_requirements),
+            "",
+            [requirement.requirement_id for requirement in inspection.adapter_requirements],
+        ),
+    )
+    sections.append(
+        _section(
+            "unsupported_evidence",
+            BundleSectionRequirement.Required,
+            BundleSectionAvailability.Available,
+            len(inspection.unsupported_evidence),
+            "",
+            [f"unsupported:{marker.family}" for marker in inspection.unsupported_evidence],
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "quality_assertions",
+            len(quality_assertions),
+            [assertion.assertion_id for assertion in quality_assertions],
+            "no quality assertions were supplied",
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "quality_observations",
+            len(quality_observations),
+            [observation.observation_id for observation in quality_observations],
+            "no quality observations were supplied",
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "execution_observations",
+            len(execution_observations),
+            [observation.observation_id for observation in execution_observations],
+            "no execution observations were supplied",
+        ),
+    )
+    sections.append(
+        _optional_section(
+            "coverage_records",
+            len(coverage_records),
+            [record.coverage_id for record in coverage_records],
+            "no adapter coverage records were supplied",
+        ),
+    )
+    sections.append(
+        _section(
+            "substrait_plan_artifact",
+            BundleSectionRequirement.Optional,
+            BundleSectionAvailability.Unavailable,
+            0,
+            "no Substrait artifact reference was supplied",
+            [],
+        ),
+    )
+    for unsupported in inspection.unsupported_evidence:
+        _append_unsupported_section(sections, unsupported.family, unsupported.reason)
+    for family in _future_evidence_families():
+        _append_unsupported_section(
+            sections,
+            family,
+            "this evidence family is reserved by the RFC series but is not implemented by local bundles yet",
+        )
+    return sections
+
+
+def _section(
+    family: str,
+    requirement: BundleSectionRequirement,
+    availability: BundleSectionAvailability,
+    record_count: int,
+    reason: str,
+    evidence_refs: list[str],
+) -> BundleEvidenceSection:
+    """Construct one bundle section record."""
+    return BundleEvidenceSection(
+        family=family,
+        requirement=requirement,
+        availability=availability,
+        record_count=record_count,
+        reason=reason,
+        evidence_refs=evidence_refs,
+    )
+
+
+def _optional_section(
+    family: str,
+    record_count: int,
+    evidence_refs: list[str],
+    missing_reason: str,
+) -> BundleEvidenceSection:
+    """Return an optional section that distinguishes absent caller evidence from empty available evidence."""
+    if record_count > 0:
+        return _section(
+            family,
+            BundleSectionRequirement.Optional,
+            BundleSectionAvailability.Available,
+            record_count,
+            "",
+            evidence_refs,
+        )
+    return _section(
+        family,
+        BundleSectionRequirement.Optional,
+        BundleSectionAvailability.Unavailable,
+        record_count,
+        missing_reason,
+        evidence_refs,
+    )
+
+
+def _append_unsupported_section(mut sections: list[BundleEvidenceSection], family: str, reason: str) -> None:
+    """Append an unsupported section when the family is not already represented."""
+    if _has_section(sections, family):
+        return
+    sections.append(
+        _section(family, BundleSectionRequirement.Optional, BundleSectionAvailability.Unsupported, 0, reason, []),
+    )
+
+
+def _has_section(sections: list[BundleEvidenceSection], family: str) -> bool:
+    """Return whether a section list already contains one family."""
+    for section in sections:
+        if section.family == family:
+            return true
+    return false
+
+
+def _input_schema_reference_section(refs: list[str]) -> BundleEvidenceSection:
+    """Return the required input-schema-reference section with an unavailable state when no read root is known."""
+    if len(refs) > 0:
+        return _section(
+            "input_schema_references",
+            BundleSectionRequirement.Required,
+            BundleSectionAvailability.Available,
+            len(refs),
+            "",
+            refs,
+        )
+    return _section(
+        "input_schema_references",
+        BundleSectionRequirement.Required,
+        BundleSectionAvailability.Unavailable,
+        0,
+        "no read-root schema references were discovered",
+        [],
+    )
+
+
+def _input_schema_references(inspection: PlanInspection) -> list[str]:
+    """Return local input schema references discovered from read-root node inspections."""
+    return [node.target.target_id for node in inspection.authored_nodes if node.kind == InspectionNodeKind.ReadNamedTable]
+
+
+def _metadata_attachment_ref(attachment: MetadataAttachment) -> str:
+    """Return the local reference string for one metadata attachment."""
+    return f"metadata:{attachment.target.target_id}:{attachment.namespace}:{attachment.key}"
+
+
+def _future_evidence_families() -> list[str]:
+    """Return RFC-reserved evidence families that local bundles must mark explicitly until implemented."""
+    mut families: list[str] = []
+    # Verification and proof families come from RFCs 042-045.
+    families.append("verification_evidence")
+    families.append("canonical_equality_profiles")
+    families.append("digest_profiles")
+    families.append("verifier_statements")
+    families.append("proof_artifacts")
+    families.append("proof_verification_observations")
+
+    # Contract, topology, and planning families are reserved by RFCs 045-046.
+    families.append("constraint_evidence")
+    families.append("verification_plans")
+    families.append("data_contract_artifacts")
+    families.append("normalized_contract_evidence")
+    families.append("mapping_diagnostics")
+    families.append("product_topology")
+    families.append("port_dependencies")
+
+    # Interop, semantic graph, and frontend evidence families are reserved by RFCs 040-041 and 047.
+    families.append("semantic_evidence_graph_projection")
+    families.append("graph_artifacts")
+    families.append("graph_query_results")
+    families.append("semantic_profiles")
+    families.append("profile_assessments")
+    families.append("ingress_mappings")
+    families.append("frontend_coverage")
+    families.append("client_session_context")
+    families.append("external_exchange_bridges")
+    return families
+
+
+def _bundle_counts_json_value(bundle: GovernedPlanBundle) -> JsonValue:
+    """Return stable JSON count fields for the rich in-memory bundle record."""
+    mut counts: Dict[str, JsonValue] = {}
+    counts["input_schema_references"] = JsonValue.int(len(bundle.input_schema_references))
+    counts["output_schema"] = JsonValue.int(len(bundle.output_schema))
+    counts["output_fields"] = JsonValue.int(len(bundle.output_fields))
+    counts["lineage_edges"] = JsonValue.int(len(bundle.lineage.edges))
+    counts["metadata_attachments"] = JsonValue.int(len(bundle.attachments))
+    counts["governed_attributes"] = JsonValue.int(len(bundle.governed_attributes))
+    counts["policy_checkpoints"] = JsonValue.int(len(bundle.policy_checkpoints))
+    counts["quality_assertions"] = JsonValue.int(len(bundle.quality_assertions))
+    counts["quality_observations"] = JsonValue.int(len(bundle.quality_observations))
+    counts["execution_observations"] = JsonValue.int(len(bundle.execution_observations))
+    counts["adapter_requirements"] = JsonValue.int(len(bundle.adapter_requirements))
+    counts["coverage_records"] = JsonValue.int(len(bundle.coverage_records))
+    counts["unsupported_evidence"] = JsonValue.int(len(bundle.unsupported_evidence))
+    return JsonValue.object(counts)
+
+
+def _section_json_values(sections: list[BundleEvidenceSection]) -> list[JsonValue]:
+    """Return JSON section summaries in bundle order."""
+    mut values: list[JsonValue] = []
+    for section in sections:
+        values.append(section.to_json_value())
+    return values
+
+
+def _strings_to_json_values(values: list[str]) -> list[JsonValue]:
+    """Return a JSON string array payload."""
+    return [JsonValue.str(value) for value in values]
+
+
+def _semantic_target_json_value(target: SemanticTarget) -> JsonValue:
+    """Return stable JSON metadata for one semantic target."""
+    mut entries: Dict[str, JsonValue] = {}
+    entries["kind"] = JsonValue.str(target.kind.value())
+    entries["target_id"] = JsonValue.str(target.target_id)
+    entries["plan_id"] = JsonValue.str(target.plan_id)
+    entries["scope_id"] = JsonValue.str(target.scope_id)
+    entries["path"] = JsonValue.str(target.path)
+    entries["name"] = JsonValue.str(target.name)
+    return JsonValue.object(entries)
+
+
+def _json_error_to_io_error(error: JsonError) -> IoError:
+    """Map JSON serialization failures into the filesystem write error contract."""
+    return IoError(kind="invalid_data", detail=error.message(), operation="json", position=-1, path=None)
