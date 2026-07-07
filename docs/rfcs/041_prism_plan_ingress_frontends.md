@@ -17,7 +17,7 @@
   - InQL RFC 033 (adapter requirements and coverage)
   - InQL RFC 040 (interoperability semantic profiles)
 - **Issue:** [InQL #75](https://github.com/encero-systems/InQL/issues/75)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60), [InQL #94](https://github.com/encero-systems/InQL/pull/94)
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60), [InQL #95](https://github.com/encero-systems/InQL/pull/95)
 - **Written against:** Incan v0.4-era InQL
 - **Shipped in:** InQL v0.1
 

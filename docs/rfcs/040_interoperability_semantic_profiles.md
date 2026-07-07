@@ -23,7 +23,7 @@
   - InQL RFC 038 (evidence exchange bridges)
   - InQL RFC 041 (Prism plan ingress and external client frontends)
 - **Issue:** [InQL #74](https://github.com/encero-systems/InQL/issues/74)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60), [InQL #93](https://github.com/encero-systems/InQL/pull/93)
+- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60), [InQL #95](https://github.com/encero-systems/InQL/pull/95)
 - **Written against:** Incan v0.4-era InQL
 - **Shipped in:** InQL v0.1
 
