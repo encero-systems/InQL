@@ -18,7 +18,7 @@ A `DataSet[T]` is a **schema-parameterized tabular carrier**:
 
 ## Bounded vs unbounded
 
-The key insight is that **a stream is an unbounded table**. Rather than defining separate operation APIs for batch and streaming, `DataSet[T]` provides one relational operation surface. The bounded/unbounded property is expressed through the type system:
+The key insight is that **a stream is an unbounded table**. Rather than defining unrelated operation APIs for batch and streaming, InQL keeps one relational carrier family and expresses the bounded/unbounded property through the type system:
 
 - **`BoundedDataSet[T]`** — finite extent, all operations allowed
 - **`UnboundedDataSet[T]`** — streaming/unbounded, unbounded-state operations rejected at compile time
@@ -76,7 +76,7 @@ def important_events(events: DataStream[Event]) -> DataStream[Event]:
     return events.filter(eq(col("severity"), "critical"))
 ```
 
-`DataStream[T]` shares the same operation API as batch carriers, but signals that its source is unbounded. Static streaming constraints are specified in RFC 001 and enforced as the compiler gains analysis for `UnboundedDataSet[T]`.
+`DataStream[T]` shares row-local carrier operations such as `filter(...)`, `where(...)`, `with_column(...)`, `assign(...)`, and `select(...)` with batch carriers. Operations that require a finite input, such as global `group_by(...)`, `agg(...)`, `order_by(...)`, `limit(...)`, and their familiar aliases, are available on `BoundedDataSet[T]`, `DataFrame[T]`, and `LazyFrame[T]` instead. The current InQL library surface enforces direct `DataStream[T]` calls this way; most-restrictive enforcement for values typed only as the root `DataSet[T]` remains blocked by Incan issue [#817][incan-817].
 
 ## Type signatures
 
@@ -236,3 +236,5 @@ It will:
   - [Projection builders](../reference/builders/projections.md)
 - **Query DSL**: `query {}` blocks that produce plans (RFC 003)
 - **Substrait**: Portable logical plans (RFC 002)
+
+[incan-817]: https://github.com/encero-systems/incan/issues/817

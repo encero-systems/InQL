@@ -55,4 +55,31 @@ top_orders = (
 )
 ```
 
+## Use familiar exploration aliases
+
+The carrier API also exposes small pandas/Spark-familiar aliases for exploration code. These aliases still build ordinary InQL plans; they do not make the carrier eager or mutable.
+
+```incan
+from pub::inql import LazyFrame
+from pub::inql.functions import avg, col, count, eq, sum
+from models import Order
+
+def paid_rollup(orders: LazyFrame[Order]) -> LazyFrame[Order]:
+    return (
+        orders
+            .where(eq(col("status"), "paid"))
+            .assign("net_amount", col("amount"))
+            .groupby(["region"])
+            .agg([
+                sum(col("net_amount")),
+                avg(col("net_amount")),
+                count(),
+            ])
+            .sort_values("sum_net_amount", ascending=false)
+            .head(10)
+    )
+```
+
+Use `where(...)` for `filter(...)`, `assign(...)` or `withColumn(...)` for `with_column(...)`, `groupby(...)` or `groupBy(...)` for `group_by(...)`, `sort_values(...)` for one-key sorting by a column selector, and `head(...)` for `limit(...)`. The grouping, sorting, and limiting aliases are bounded-only, just like their canonical operations; `DataStream[T]` keeps the row-local aliases and rejects the finite-input ones.
+
 These transforms stay deferred for `LazyFrame[T]`. Use a `Session` to execute, collect, or write the result. For exact method signatures and schema behavior, see [Dataset methods (Reference)](../reference/dataset_methods.md).
