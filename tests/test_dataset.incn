@@ -15,6 +15,7 @@ from functions import (
     count,
     count_distinct,
     count_if,
+    desc,
     eq,
     explode,
     explode_outer,
@@ -50,6 +51,7 @@ from substrait.function_extensions import (
     STACK_EXTENSION_URI,
 )
 from substrait.inspect import plan_contains_relation_kind, plan_has_extension_urn, relation_kind_name, root_rel
+from substrait.inspect import aggregate_group_columns, sort_field_count, sort_field_direction_name
 from substrait.plans import plan_encoded_len, plan_from_named_table, plan_from_root_relation
 from substrait.relations import read_named_table_rel
 from substrait.schema_registry import register_named_table_schema
@@ -446,6 +448,47 @@ def test_dataset_ops__select_retargets_output_row_type_while_preserving_carrier_
     assert projected_df.planned_columns() == ["order_id"], "DataFrame SELECT should expose the projected row shape"
     assert projected_lazy.planned_columns() == ["order_id"], "LazyFrame SELECT should expose the projected row shape"
     assert projected_stream.planned_columns() == ["order_id"], "DataStream SELECT should expose the projected row shape"
+
+
+def test_dataset_ops__familiar_aliases_preserve_canonical_carrier_shapes() -> None:
+    """RFC 039: pandas/Spark aliases should delegate to canonical carrier operations."""
+    # -- Arrange --
+    _register_projection_test_schema("orders_familiar_aliases")
+    base_df: DataFrame[Order] = DataFrame(
+        _type_witness=_order_witness(),
+        _materialization=DataFrameMaterialization.empty(),
+        _substrait_rel=read_named_table_rel("orders_familiar_aliases"),
+        _planned_columns=[],
+    )
+    base_lazy: LazyFrame[Order] = lazy_frame_named_table("orders_familiar_aliases")
+    base_stream: DataStream[Event] = DataStream(
+        _type_witness=_event_witness(),
+        _substrait_rel=read_named_table_rel("orders_familiar_aliases"),
+        _planned_columns=[],
+    )
+
+    # -- Act --
+    filtered_df = base_df.where(always_true())
+    assigned_df = filtered_df.assign("double_id", mul(col("id"), 2))
+    assigned_lazy = base_lazy.withColumn("triple_id", mul(col("id"), 3))
+    filtered_stream = base_stream.where(always_true())
+    assigned_stream = filtered_stream.withColumn("stream_id", col("id"))
+    grouped_lazy = base_lazy.groupby(["id"])
+    sorted_lazy = base_lazy.sort_values("id", ascending=false)
+    limited_df = assigned_df.head(3)
+
+    # -- Assert --
+    assert relation_kind_name(root_rel(filtered_df.to_substrait_plan())) == "FilterRel", "where should lower as filter"
+    assert assigned_df.planned_columns() == ["id", "double_id"], "assign should preserve with_column output planning"
+    assert assigned_lazy.planned_columns() == ["id", "triple_id"], "withColumn should alias assign for Spark-familiar code"
+    assert relation_kind_name(root_rel(filtered_stream.to_substrait_plan())) == "FilterRel", "stream where should stay row-local"
+    assert assigned_stream.planned_columns() == ["id", "stream_id"], "stream withColumn should keep row-local projection available"
+    assert relation_kind_name(root_rel(grouped_lazy.to_substrait_plan())) == "AggregateRel", "groupby should lower as group_by"
+    assert aggregate_group_columns(root_rel(grouped_lazy.to_substrait_plan())) == ["id"], "groupby should normalize string selectors to column expressions"
+    assert relation_kind_name(root_rel(sorted_lazy.to_substrait_plan())) == "SortRel", "sort_values should lower as order_by"
+    assert sort_field_count(root_rel(sorted_lazy.to_substrait_plan())) == 1, "sort_values should emit one sort key"
+    assert sort_field_direction_name(root_rel(sorted_lazy.to_substrait_plan()), 0) == "DescNullsLast", "sort_values should preserve descending direction"
+    assert relation_kind_name(root_rel(limited_df.to_substrait_plan())) == "FetchRel", "head should lower as limit"
 
 
 def test_dataset_ops__api_lowered_boundary_facts_stay_stable() -> None:

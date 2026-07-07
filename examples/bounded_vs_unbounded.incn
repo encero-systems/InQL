@@ -21,8 +21,8 @@ def high_priority_events(events: UnboundedDataSet[Event]) -> UnboundedDataSet[Ev
 
 
 def event_stream_window(events: UnboundedDataSet[Event]) -> UnboundedDataSet[Event]:
-    """Unbounded pipelines can still use row-local transforms."""
-    return high_priority_events(events).limit(1000)
+    """Unbounded pipelines can still use row-local transforms without pretending they are finite."""
+    return high_priority_events(events)
 
 
 def require_batch_orders(orders: BoundedDataSet[Order]) -> None:
