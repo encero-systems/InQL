@@ -221,7 +221,8 @@ If you want the clearest current story, read in this order:
 
 | Topic                       | Location                                                   |
 | --------------------------- | ---------------------------------------------------------- |
-| Docs landing page           | [docs/README.md][docs-root]                                |
+| Docs landing page           | [docs/index.md][docs-root]                                 |
+| Docs map                    | [docs/docs_map.md][docs-map]                               |
 | Language overview           | [docs/language/README.md][language-root]                   |
 | Dataset carriers            | [Reference][dataset-ref] · [Explanation][dataset-expl]     |
 | Execution context           | [Reference][execution-ref] · [Explanation][execution-expl] |
@@ -233,7 +234,8 @@ If you want the clearest current story, read in this order:
 
 <!-- References -->
 [incan-architecture]: https://github.com/encero-systems/incan/blob/main/workspaces/docs-site/docs/contributing/explanation/architecture.md
-[docs-root]: README.md
+[docs-root]: index.md
+[docs-map]: docs_map.md
 [language-root]: language/README.md
 [inql-rfcs]: rfcs/README.md
 [inql-contributing]: https://github.com/encero-systems/InQL/blob/main/CONTRIBUTING.md

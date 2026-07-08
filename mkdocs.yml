@@ -8,10 +8,21 @@ strict: true
 
 theme:
   name: material
+  font: false
+  palette:
+    - scheme: slate
+      primary: black
+      accent: cyan
   features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
     - navigation.indexes
     - content.code.copy
+
+plugins:
+  - search
 
 markdown_extensions:
   - admonition
@@ -24,8 +35,12 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
 
+extra_css:
+  - stylesheets/prismplane.css
+
 nav:
-  - Home: README.md
+  - Home: index.md
+  - Docs map: docs_map.md
   - Architecture: architecture.md
   - Language:
       - Overview: language/README.md
@@ -131,3 +146,4 @@ nav:
       - InQL DB: whitepapers/inql_db.md
   - Contributing:
       - Writing RFCs: contributing/writing_rfcs.md
+      - Prismplane docs theme: contributing/prismplane_docs_theme.md

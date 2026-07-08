@@ -14,6 +14,7 @@ Thank you for your interest in InQL — the typed relational layer for [Incan][i
 | [Incan `CONTRIBUTING.md`][incan-contributing] | Compiler, tooling, and Rust workspace workflow |
 | [Incan docs-site contributor loop][incan-docsite-loop] | Divio layout, snippets, checklist for Incan’s MkDocs site — mirror these patterns when shaping InQL `docs/` |
 | [Incan AGENTS — Docs-site workflow][incan-agents-docs-workflow] | Prose **without hard wrapping**, `mkdocs build --strict`, Material-friendly Markdown |
+| [Prismplane docs theme][prismplane-theme] | InQL-specific docs visual rules adapted from the local Prismplane prototype |
 
 **Compiler and language implementation** (lexer, parser, typechecker, lowering, codegen for `query {}` and related surfaces) lives in the **Incan** repository. Use that project’s docs and gates when you change the toolchain. Use **this** repo for the InQL **library source** (`.incn`) and **InQL RFCs** that specify the relational surface.
 
@@ -176,3 +177,4 @@ Open an issue on this repository for InQL-specific design or package questions; 
 [issue-templates]: .github/ISSUE_TEMPLATE/
 [incan-docsite-loop]: https://github.com/encero-systems/incan/blob/main/workspaces/docs-site/docs/contributing/tutorials/book/08_docsite_contributor_loop.md
 [incan-agents-docs-workflow]: https://github.com/encero-systems/incan/blob/main/AGENTS.md#docs-site-workflow-mkdocs-material
+[prismplane-theme]: docs/contributing/prismplane_docs_theme.md
