@@ -11,25 +11,8 @@ InQL is a typed relational layer for authoring, inspecting, and executing data l
 [Read the query block reference](language/reference/query_blocks.md){ .prism-button }
 </div>
 </div>
-<div class="prism-hero__visual" aria-label="A prism refracts typed source into Source, Join, Aggregate, and Project planning stages.">
-<div class="prism-scene">
-<div class="prism-crystal" aria-hidden="true"></div>
-<div class="prism-beam prism-beam--cyan" aria-hidden="true"></div>
-<div class="prism-beam prism-beam--green" aria-hidden="true"></div>
-<div class="prism-beam prism-beam--violet" aria-hidden="true"></div>
-<div class="prism-beam prism-beam--magenta" aria-hidden="true"></div>
-<div class="prism-stage-stack">
-<div class="prism-stage prism-stage--project"><span>04</span><strong>Project</strong><small>typed outputs</small></div>
-<div class="prism-stage prism-stage--aggregate"><span>03</span><strong>Aggregate</strong><small>sum(.amount)</small></div>
-<div class="prism-stage prism-stage--join"><span>02</span><strong>Join</strong><small>schema edges</small></div>
-<div class="prism-stage prism-stage--source"><span>01</span><strong>Source</strong><small>orders</small></div>
-</div>
-<div class="prism-signal-row">
-<div><span>schema</span><strong>Order</strong></div>
-<div><span>lineage</span><strong>orders.amount</strong></div>
-<div><span>boundary</span><strong>Substrait</strong></div>
-</div>
-</div>
+<div class="prism-hero__visual" aria-label="A glass prism refracts typed data logic into floating planning stages.">
+<img class="prism-hero__image" src="shared/prismplane/prismplane-hero.jpg" alt="">
 </div>
 </section>
 
