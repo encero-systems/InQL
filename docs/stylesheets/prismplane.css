@@ -219,12 +219,22 @@ body::before {
 
 .prism-hero {
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.35rem;
-  align-items: start;
   margin: 0 0 2.2rem;
-  padding: 1.6rem 0 2.4rem;
+  min-height: 560px;
+  padding: 5.1rem 0 3.4rem;
+  overflow: hidden;
+}
+
+.prism-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0 -8vw;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 72% 26%, rgba(122, 167, 255, 0.2), transparent 26rem),
+    radial-gradient(circle at 54% 58%, rgba(92, 200, 232, 0.13), transparent 22rem),
+    linear-gradient(90deg, rgba(8, 12, 18, 0.72) 0%, rgba(8, 12, 18, 0.2) 44%, rgba(8, 12, 18, 0) 100%);
+  pointer-events: none;
 }
 
 .prism-card::before,
@@ -242,9 +252,9 @@ body::before {
 
 .prism-hero__copy {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   align-self: center;
-  max-width: 46rem;
+  max-width: 39rem;
 }
 
 .prism-eyebrow,
@@ -259,124 +269,244 @@ body::before {
 
 .prism-hero .prism-hero__copy h1 {
   margin-top: 0;
-  max-width: 21ch;
+  max-width: 12ch;
   color: var(--inql-text);
-  font-size: 2.42rem;
+  font-size: clamp(2.4rem, 5vw, 4.65rem);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.02;
 }
 
 .prism-hero .prism-hero__copy > p:not(.prism-eyebrow) {
-  max-width: 42rem;
+  max-width: 23rem;
   color: var(--inql-muted);
-  font-size: 1rem;
+  font-size: 1.02rem;
 }
 
 .prism-hero__visual {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.92fr) minmax(0, 0.92fr);
-  gap: 0.75rem;
-  align-items: stretch;
-  min-height: 250px;
-  padding: 0.8rem;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: var(--inql-radius);
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018)),
-    rgba(13, 19, 28, 0.92);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.065), 0 18px 44px rgba(0, 0, 0, 0.26);
-}
-
-.prism-flow__pane {
-  position: relative;
-  min-width: 0;
-  border: 1px solid rgba(148, 163, 184, 0.17);
-  border-radius: var(--inql-radius);
-  background: rgba(8, 12, 18, 0.82);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    linear-gradient(90deg, rgba(8, 12, 18, 0.95) 0%, rgba(8, 12, 18, 0.58) 31%, rgba(8, 12, 18, 0.16) 68%, rgba(8, 12, 18, 0.1) 100%),
+    radial-gradient(circle at 61% 47%, rgba(92, 200, 232, 0.18), transparent 20rem),
+    radial-gradient(circle at 86% 50%, rgba(214, 122, 223, 0.12), transparent 22rem);
+  box-shadow: none;
   overflow: hidden;
 }
 
-.prism-flow__pane::before {
-  content: "";
-  display: block;
-  height: 1px;
-  background: var(--inql-rail);
-  opacity: 0.62;
+.prism-scene {
+  position: absolute;
+  inset: 0;
 }
 
-.prism-flow__label {
-  display: block;
-  padding: 0.7rem 0.78rem 0.45rem;
+.prism-scene::before,
+.prism-scene::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.prism-scene::before {
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 58px 58px;
+  opacity: 0.24;
+  mask-image: linear-gradient(90deg, transparent, black 18%, black 86%, transparent);
+}
+
+.prism-scene::after {
+  right: 7%;
+  top: 12%;
+  width: 1px;
+  height: 70%;
+  background: linear-gradient(180deg, transparent, rgba(92, 200, 232, 0.82), rgba(214, 122, 223, 0.72), transparent);
+  box-shadow: 0 0 18px rgba(92, 200, 232, 0.38);
+}
+
+.prism-crystal {
+  position: absolute;
+  left: 46%;
+  top: 48%;
+  width: 96px;
+  height: 128px;
+  transform: translateY(-50%);
+  clip-path: polygon(50% 0, 100% 70%, 50% 100%, 0 70%);
+  border: 1px solid rgba(230, 247, 255, 0.72);
+  background:
+    linear-gradient(132deg, rgba(255, 255, 255, 0.72), rgba(92, 200, 232, 0.24) 34%, rgba(122, 167, 255, 0.08) 62%, rgba(255, 255, 255, 0.36)),
+    rgba(10, 18, 26, 0.28);
+  box-shadow: 0 0 24px rgba(92, 200, 232, 0.52), inset 0 0 18px rgba(255, 255, 255, 0.24);
+}
+
+.prism-crystal::before,
+.prism-crystal::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  clip-path: polygon(50% 0, 100% 70%, 50% 100%, 0 70%);
+}
+
+.prism-crystal::after {
+  inset: 28px 18px 12px;
+  border-color: rgba(92, 200, 232, 0.4);
+}
+
+.prism-beam {
+  position: absolute;
+  left: 52%;
+  top: 45%;
+  width: 30%;
+  height: 72px;
+  transform-origin: left center;
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+  opacity: 0.72;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.prism-beam--cyan {
+  transform: rotate(-18deg);
+  background: linear-gradient(90deg, rgba(92, 200, 232, 0.9), rgba(92, 200, 232, 0));
+}
+
+.prism-beam--green {
+  transform: rotate(-6deg);
+  background: linear-gradient(90deg, rgba(99, 211, 155, 0.78), rgba(99, 211, 155, 0));
+}
+
+.prism-beam--violet {
+  transform: rotate(7deg);
+  background: linear-gradient(90deg, rgba(122, 167, 255, 0.82), rgba(122, 167, 255, 0));
+}
+
+.prism-beam--magenta {
+  transform: rotate(19deg);
+  background: linear-gradient(90deg, rgba(214, 122, 223, 0.9), rgba(214, 122, 223, 0));
+}
+
+.prism-stage-stack {
+  position: absolute;
+  right: 3%;
+  top: 9%;
+  width: min(34%, 390px);
+  height: 68%;
+  perspective: 900px;
+}
+
+.prism-stage {
+  position: absolute;
+  right: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.65rem;
+  align-items: center;
+  width: 100%;
+  min-height: 72px;
+  padding: 0.68rem 0.82rem;
+  border: 1px solid rgba(203, 213, 225, 0.24);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.035)),
+    rgba(13, 19, 28, 0.78);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  transform: perspective(900px) rotateX(52deg) rotateZ(-5deg);
+  backdrop-filter: blur(14px);
+}
+
+.prism-stage span {
+  grid-row: span 2;
   color: var(--inql-cyan);
-  font-size: 0.62rem;
-  font-weight: 760;
-  letter-spacing: 0.03em;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.prism-stage strong,
+.prism-stage small {
+  display: block;
+  min-width: 0;
+}
+
+.prism-stage strong {
+  color: var(--inql-text);
+  font-size: 0.88rem;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
-.prism-flow__code {
-  display: grid;
-  gap: 0.08rem;
-  padding: 0 0.78rem 0.75rem;
-  color: #edf4ff;
-  font-size: 0.66rem;
-  line-height: 1.5;
-  font-family: var(--inql-font-mono);
-  white-space: pre;
+.prism-stage small {
+  color: var(--inql-muted);
+  font-size: 0.7rem;
 }
 
-.prism-flow__code span {
+.prism-stage--project {
+  top: 0;
+  border-color: rgba(92, 200, 232, 0.48);
+  box-shadow: 0 0 22px rgba(92, 200, 232, 0.22), 0 16px 34px rgba(0, 0, 0, 0.24);
+}
+
+.prism-stage--aggregate {
+  top: 25%;
+  border-color: rgba(99, 211, 155, 0.46);
+  box-shadow: 0 0 22px rgba(99, 211, 155, 0.18), 0 16px 34px rgba(0, 0, 0, 0.24);
+}
+
+.prism-stage--join {
+  top: 50%;
+  border-color: rgba(122, 167, 255, 0.48);
+  box-shadow: 0 0 22px rgba(122, 167, 255, 0.18), 0 16px 34px rgba(0, 0, 0, 0.24);
+}
+
+.prism-stage--source {
+  top: 75%;
+  border-color: rgba(214, 122, 223, 0.5);
+  box-shadow: 0 0 22px rgba(214, 122, 223, 0.2), 0 16px 34px rgba(0, 0, 0, 0.24);
+}
+
+.prism-signal-row {
+  position: absolute;
+  right: 4.8%;
+  bottom: 1rem;
+  left: 48%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.prism-signal-row div {
+  min-width: 0;
+  padding: 0.54rem 0.62rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 7px;
+  background: rgba(8, 12, 18, 0.62);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.prism-signal-row span,
+.prism-signal-row strong {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.prism-flow__pane--plan,
-.prism-flow__pane--evidence {
-  display: grid;
-  align-content: start;
-  gap: 0.48rem;
-  padding-bottom: 0.75rem;
-}
-
-.prism-flow__row {
-  display: grid;
-  gap: 0.18rem;
-  margin: 0 0.78rem;
-  padding: 0.5rem 0.58rem;
-  border: 1px solid rgba(148, 163, 184, 0.13);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.034);
-}
-
-.prism-flow__row span {
+.prism-signal-row span {
   color: var(--inql-soft);
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 700;
   text-transform: uppercase;
 }
 
-.prism-flow__row strong {
+.prism-signal-row strong {
   color: var(--inql-text);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  line-height: 1.24;
-}
-
-.prism-flow__pane--plan .prism-flow__row:first-of-type,
-.prism-flow__pane--evidence .prism-flow__row:first-of-type {
-  border-left: 2px solid var(--inql-cyan);
-}
-
-.prism-flow__pane--plan .prism-flow__row:nth-of-type(3),
-.prism-flow__pane--evidence .prism-flow__row:nth-of-type(3) {
-  border-left: 2px solid var(--inql-green);
-}
-
-.prism-flow__pane--plan .prism-flow__row:nth-of-type(4),
-.prism-flow__pane--evidence .prism-flow__row:nth-of-type(4) {
-  border-left: 2px solid var(--inql-blue);
 }
 
 .prism-actions {
@@ -460,17 +590,43 @@ body::before {
 }
 
 @media screen and (max-width: 76.25em) {
-  .prism-hero,
   .prism-card-grid {
     grid-template-columns: 1fr;
   }
 
   .prism-hero {
     min-height: 0;
+    padding-top: 3.8rem;
+    padding-bottom: 2.2rem;
   }
 
   .prism-hero__visual {
-    grid-template-columns: 1fr;
+    position: relative;
+    min-height: 420px;
+    margin-top: 2rem;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: var(--inql-radius);
+  }
+
+  .prism-crystal {
+    left: 8%;
+    width: 76px;
+    height: 102px;
+  }
+
+  .prism-beam {
+    left: 16%;
+    width: 48%;
+  }
+
+  .prism-stage-stack {
+    right: 7%;
+    width: min(56%, 420px);
+  }
+
+  .prism-signal-row {
+    right: 7%;
+    left: 7%;
   }
 }
 
@@ -480,16 +636,63 @@ body::before {
   }
 
   .prism-hero {
-    padding: 0.8rem 0 1.5rem;
+    min-height: 780px;
+    padding: 1.7rem 0 1.8rem;
   }
 
   .prism-hero .prism-hero__copy h1 {
-    font-size: 2rem;
+    max-width: 15ch;
+    font-size: 2.08rem;
   }
 
-  .prism-hero__visual,
-  .prism-flow__code {
+  .prism-hero__visual {
+    position: absolute;
+    inset: 0;
+    margin-top: 0;
+    border: 0;
+    border-radius: 0;
     font-size: 0.68rem;
+    min-height: 0;
+    opacity: 0.64;
+  }
+
+  .prism-crystal {
+    left: 9%;
+    top: 70%;
+    width: 54px;
+    height: 74px;
+  }
+
+  .prism-beam {
+    left: 20%;
+    top: 67%;
+    width: 62%;
+    height: 40px;
+  }
+
+  .prism-stage-stack {
+    top: 54%;
+    right: -12%;
+    left: 22%;
+    width: auto;
+    height: 31%;
+  }
+
+  .prism-stage {
+    min-height: 50px;
+    padding: 0.48rem 0.58rem;
+  }
+
+  .prism-stage strong {
+    font-size: 0.72rem;
+  }
+
+  .prism-stage small {
+    font-size: 0.6rem;
+  }
+
+  .prism-signal-row {
+    display: none;
   }
 
   .prism-actions {

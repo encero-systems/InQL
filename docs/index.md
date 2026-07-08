@@ -2,7 +2,7 @@
 <div class="prism-hero__copy" markdown="1">
 <p class="prism-eyebrow">InQL documentation</p>
 
-# Typed relational logic for governed data systems
+# The typed data logic plane
 
 InQL is a typed relational layer for authoring, inspecting, and executing data logic. Query blocks, dataset carriers, portable function calls, Prism plan inspection, and Substrait boundaries share one backend-neutral model.
 
@@ -11,30 +11,24 @@ InQL is a typed relational layer for authoring, inspecting, and executing data l
 [Read the query block reference](language/reference/query_blocks.md){ .prism-button }
 </div>
 </div>
-<div class="prism-hero__visual" aria-label="InQL source code flowing into Prism plan, lineage, Substrait, and adapter evidence views.">
-<div class="prism-flow__pane prism-flow__pane--source">
-<span class="prism-flow__label">Incan source</span>
-<div class="prism-flow__code">
-<span>rollup = query {</span>
-<span>  FROM orders</span>
-<span>  WHERE .status == "paid"</span>
-<span>  GROUP BY .region</span>
-<span>  SELECT .region as region,</span>
-<span>         sum(.amount) as total</span>
-<span>}</span>
+<div class="prism-hero__visual" aria-label="A prism refracts typed source into Source, Join, Aggregate, and Project planning stages.">
+<div class="prism-scene">
+<div class="prism-crystal" aria-hidden="true"></div>
+<div class="prism-beam prism-beam--cyan" aria-hidden="true"></div>
+<div class="prism-beam prism-beam--green" aria-hidden="true"></div>
+<div class="prism-beam prism-beam--violet" aria-hidden="true"></div>
+<div class="prism-beam prism-beam--magenta" aria-hidden="true"></div>
+<div class="prism-stage-stack">
+<div class="prism-stage prism-stage--project"><span>04</span><strong>Project</strong><small>typed outputs</small></div>
+<div class="prism-stage prism-stage--aggregate"><span>03</span><strong>Aggregate</strong><small>sum(.amount)</small></div>
+<div class="prism-stage prism-stage--join"><span>02</span><strong>Join</strong><small>schema edges</small></div>
+<div class="prism-stage prism-stage--source"><span>01</span><strong>Source</strong><small>orders</small></div>
 </div>
+<div class="prism-signal-row">
+<div><span>schema</span><strong>Order</strong></div>
+<div><span>lineage</span><strong>orders.amount</strong></div>
+<div><span>boundary</span><strong>Substrait</strong></div>
 </div>
-<div class="prism-flow__pane prism-flow__pane--plan">
-<span class="prism-flow__label">Prism plan</span>
-<div class="prism-flow__row"><span>relation</span><strong>AggregateRel</strong></div>
-<div class="prism-flow__row"><span>schema</span><strong>region, total</strong></div>
-<div class="prism-flow__row"><span>lineage</span><strong>orders.amount</strong></div>
-</div>
-<div class="prism-flow__pane prism-flow__pane--evidence">
-<span class="prism-flow__label">Portable boundary</span>
-<div class="prism-flow__row"><span>format</span><strong>Substrait</strong></div>
-<div class="prism-flow__row"><span>adapter</span><strong>DataFusion</strong></div>
-<div class="prism-flow__row"><span>quality</span><strong>observable</strong></div>
 </div>
 </div>
 </section>
