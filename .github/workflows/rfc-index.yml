@@ -1,0 +1,37 @@
+name: RFC index
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/rfcs/**"
+      - "scripts/generate_rfc_index.py"
+      - ".github/workflows/rfc-index.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/rfcs/**"
+      - "scripts/generate_rfc_index.py"
+      - ".github/workflows/rfc-index.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: rfc-index-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check generated RFC index
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out InQL
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check RFC index
+        run: python3 scripts/generate_rfc_index.py --check

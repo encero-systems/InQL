@@ -56,6 +56,16 @@ registry-metadata: ## Validate RFC 014 function registry checked API metadata
 	@$(INCAN) tools metadata api . --format json > target/function_registry_api_metadata.json
 	@RUSTFLAGS="-Awarnings" $(INCAN) run scripts/check_function_registry_metadata.incn
 
+.PHONY: rfc-index
+rfc-index: ## Regenerate docs/rfcs/README.md from RFC markdown files
+	@echo "\033[1mGenerating RFC index...\033[0m"
+	@python3 scripts/generate_rfc_index.py
+
+.PHONY: rfc-index-check
+rfc-index-check: ## Check that docs/rfcs/README.md is in sync with RFC files
+	@echo "\033[1mChecking RFC index...\033[0m"
+	@python3 scripts/generate_rfc_index.py --check
+
 .PHONY: build-locked
 build-locked: ## Build with `--locked` (stricter; requires current `incan.lock`)
 	@echo "\033[1mBuilding InQL library (locked)...\033[0m"
@@ -110,15 +120,15 @@ fmt-check: ## Check formatting without writing (`incan fmt --check` per director
 # =============================================================================
 
 .PHONY: check
-check: fmt-check test-style vocab-companion-test registry-metadata build test ## Format check, style gate, metadata check, build, and test
+check: rfc-index-check fmt-check test-style vocab-companion-test registry-metadata build test ## RFC index, format, style, metadata, build, and test
 	@echo "\033[32m✓ check passed\033[0m"
 
 .PHONY: pre-commit
-pre-commit: fmt-check test-style vocab-companion-test registry-metadata build test ## Fast gate before commit (same as `check`)
+pre-commit: rfc-index-check fmt-check test-style vocab-companion-test registry-metadata build test ## Fast gate before commit (same as `check`)
 	@echo "\033[32m✓ pre-commit gate passed\033[0m"
 
 .PHONY: ci
-ci: fmt-check test-style vocab-companion-test registry-metadata build test smoke-consumer ## Same steps as GitHub Actions `inql` job
+ci: rfc-index-check fmt-check test-style vocab-companion-test registry-metadata build test smoke-consumer ## Same steps as GitHub Actions `inql` job
 	@echo "\033[32m✓ ci gate passed\033[0m"
 
 .PHONY: verify
