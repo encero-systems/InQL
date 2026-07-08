@@ -1,0 +1,3823 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Typed relational logic for Incan">
+      
+      
+      
+        <link rel="canonical" href="https://encero-systems.github.io/InQL/rfcs/042_async_verification_evidence/">
+      
+      
+        <link rel="prev" href="../041_prism_plan_ingress_frontends/">
+      
+      
+        <link rel="next" href="../043_canonical_equality_digest_profiles/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
+    
+    
+      
+        <title>RFC 042 - Async verification evidence - InQL</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6f8fc17f.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/prismplane.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#inql-rfc-042-async-verification-evidence" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="InQL" class="md-header__button md-logo" aria-label="InQL" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            InQL
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              RFC 042 - Async verification evidence
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="cyan"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    encero-systems/InQL
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs_map/" class="md-tabs__link">
+        
+  
+    
+  
+  Docs map
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../architecture/" class="md-tabs__link">
+        
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../language/" class="md-tabs__link">
+          
+  
+    
+  
+  Language
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+    
+  
+  RFCs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../release_notes/v0_1/" class="md-tabs__link">
+          
+  
+    
+  
+  Release notes
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../whitepapers/" class="md-tabs__link">
+          
+  
+    
+  
+  Whitepapers
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contributing/writing_rfcs/" class="md-tabs__link">
+          
+  
+    
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="InQL" class="md-nav__button md-logo" aria-label="InQL" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    InQL
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    encero-systems/InQL
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs_map/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Docs map
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Architecture
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../language/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Language
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Language
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Explanation
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            Explanation
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/explanation/dataset_carriers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset carriers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/explanation/execution_context/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Execution context
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../language/how-to/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    How-to guides
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            How-to guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/dataset_transformations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset transformations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/normalize_semistructured_fields/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Normalize semi-structured fields
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/nested_row_values/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Nested row values
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/generator_rows/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Generator rows
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/window_columns/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Window columns
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/approximate_metrics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Approximate metrics
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/typed_hll_sketches/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Typed HLL sketches
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/variant_payloads/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Variant payloads
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/execution_observations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Execution observations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/quality_observations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quality observations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/governed_evidence/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Governed evidence
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/inspect_plan_lineage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Inspect plan lineage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/dataset_carriers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset carriers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/dataset_methods/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset methods
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/query_blocks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Query blocks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/execution_context/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Execution context
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/inspection/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Inspection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quality
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4_8" id="__nav_4_4_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Builders
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4_8">
+            <span class="md-nav__icon md-icon"></span>
+            Builders
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/builders/filters/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Filters
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/builders/projections/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Projections
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/builders/aggregates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Aggregates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../language/reference/functions/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Functions
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_4_9" id="__nav_4_4_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            Functions
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/approximate/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Approximate
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/format/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Format
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/generators/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Generators
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/nested/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Nested
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/sketches/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sketches
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/variants/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Variants
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/windows/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Windows
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4_10" id="__nav_4_4_10_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Substrait
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4_10">
+            <span class="md-nav__icon md-icon"></span>
+            Substrait
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/substrait/conformance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Conformance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/substrait/operator_catalog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Operator catalog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/substrait/read_root_binding_contract/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Read root binding contract
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/substrait/revision_and_extension_policy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Revision and extension policy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    RFCs
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            RFCs
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TEMPLATE/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Template
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../000_inql_syntax/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 000 - Language specification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../001_inql_dataset/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 001 - Dataset types
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../002_apache_substrait_integration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 002 - Apache Substrait integration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../003_inql_query_blocks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 003 - Query blocks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../004_inql_execution_context/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 004 - Execution context
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../005_inql_pipe_forward/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 005 - Pipe-forward syntax
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../006_unnest_core_substrait/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 006 - Unnest core Substrait
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../007_prism_planning_engine/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 007 - Prism planning engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../008_optimizer_boundary_stats_cbo_aqe/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 008 - Optimizer boundary
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../009_session_format_handler_registry/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 009 - Session format handler registry
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../010_csv_ingestion_contract/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 010 - CSV ingestion contract
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../011_source_discovery_contract/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 011 - Source discovery contract
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../012_unified_scalar_expression_surface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 012 - Unified scalar expression surface
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../013_function_catalog_program/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 013 - Function catalog program
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../014_function_registry/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 014 - Function registry
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../015_core_scalar_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 015 - Core scalar functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../016_core_aggregate_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 016 - Core aggregate functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../017_aggregate_modifiers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 017 - Aggregate modifiers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../018_common_scalar_function_catalog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 018 - Common scalar function catalog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../019_window_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 019 - Window functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../020_nested_data_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 020 - Nested data functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../021_generator_table_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 021 - Generator table functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../022_semi_structured_format_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 022 - Semi-structured and format functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../023_approximate_sketch_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 023 - Approximate sketch functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../024_function_extension_policy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 024 - Function extension policy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../025_typed_sketch_logical_values/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 025 - Typed sketch logical values
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../026_semi_structured_variant_values/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 026 - Semi-structured variant values
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../027_relational_evidence_program/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 027 - Relational evidence program
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../028_semantic_identity_targets/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 028 - Semantic identity and target model
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../029_metadata_attachments/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 029 - Metadata attachments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../030_prism_lineage_graph/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 030 - Prism lineage graph
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../031_inspection_artifacts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 031 - Inspection artifacts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../032_execution_observations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 032 - Execution observations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../033_adapter_requirements_coverage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 033 - Adapter requirements and coverage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../034_quality_assertions_observations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 034 - Quality assertions and observations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../035_governed_attributes_policy_checkpoints/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 035 - Governed attributes and policy checkpoints
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../036_governed_plan_bundle/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 036 - Governed plan bundle
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../037_plan_diff_blast_radius_inputs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 037 - Plan diff and blast-radius inputs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../038_evidence_exchange_bridges/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 038 - Evidence exchange bridges
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../039_pandas_familiar_exploration_api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 039 - Pandas-familiar exploration API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../040_interoperability_semantic_profiles/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 040 - Interoperability semantic profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../041_prism_plan_ingress_frontends/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 041 - Prism plan ingress and external client frontends
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    RFC 042 - Async verification evidence
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    RFC 042 - Async verification evidence
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Motivation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Goals
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Non-Goals
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#guide-level-explanation-how-authors-think-about-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      Guide-level explanation (how authors think about it)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-level-explanation-precise-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reference-level explanation (precise rules)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Design details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Semantics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interaction-with-other-inql-surfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interaction with other InQL surfaces
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#standards-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Standards alignment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compatibility-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compatibility / migration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alternatives considered
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#drawbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Drawbacks
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation architecture
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#layers-affected" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layers affected
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unresolved-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Unresolved questions
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../043_canonical_equality_digest_profiles/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 043 - Canonical equality and digest profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../044_verifier_statements_proof_artifacts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 044 - Verifier statements and proof artifacts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../045_constraint_evidence_verification_planning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 045 - Constraint evidence and verification-aware planning
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../046_data_contract_ingress/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 046 - Data contract ingress and product topology
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../047_semantic_evidence_graph_agent_surface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 047 - Semantic evidence graph and agent query surface
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../048_cluster_execution_backend_mode/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 048 - Cluster execution backend mode
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Release notes
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Release notes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release_notes/v0_1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    v0.1
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../whitepapers/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Whitepapers
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Whitepapers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../whitepapers/inql_db/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    InQL DB
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Contributing
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/writing_rfcs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Writing RFCs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/prismplane_docs_theme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Prismplane docs theme
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Motivation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Goals
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Non-Goals
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#guide-level-explanation-how-authors-think-about-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      Guide-level explanation (how authors think about it)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-level-explanation-precise-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reference-level explanation (precise rules)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Design details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Semantics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interaction-with-other-inql-surfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interaction with other InQL surfaces
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#standards-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Standards alignment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compatibility-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compatibility / migration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alternatives considered
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#drawbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Drawbacks
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation architecture
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#layers-affected" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layers affected
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unresolved-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Unresolved questions
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="inql-rfc-042-async-verification-evidence">InQL RFC 042: Async verification evidence</h1>
+<ul>
+<li><strong>Status:</strong> Draft</li>
+<li><strong>Created:</strong> 2026-06-20</li>
+<li><strong>Author(s):</strong> Danny Meijer (@dannymeijer)</li>
+<li><strong>Related:</strong></li>
+<li>InQL RFC 027 (relational evidence program)</li>
+<li>InQL RFC 028 (semantic identity and target model)</li>
+<li>InQL RFC 029 (typed metadata attachments)</li>
+<li>InQL RFC 031 (local inspection APIs and artifacts)</li>
+<li>InQL RFC 032 (execution observations)</li>
+<li>InQL RFC 033 (adapter requirements and coverage)</li>
+<li>InQL RFC 034 (quality assertions and observations)</li>
+<li>InQL RFC 036 (governed plan bundle)</li>
+<li>InQL RFC 038 (evidence exchange bridges)</li>
+<li>InQL RFC 040 (interoperability semantic profiles)</li>
+<li>InQL RFC 043 (canonical equality and digest profiles)</li>
+<li>InQL RFC 044 (verifier statements and proof artifacts)</li>
+<li>InQL RFC 045 (constraint evidence and verification-aware planning)</li>
+<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/InQL/issues/77">InQL #77</a></li>
+<li><strong>RFC PR:</strong> <a href="https://github.com/encero-systems/InQL/pull/83">InQL #83</a></li>
+<li><strong>Written against:</strong> Incan v0.3-era InQL</li>
+<li><strong>Shipped in:</strong> —</li>
+</ul>
+<h2 id="summary">Summary</h2>
+<p>This RFC defines async verification evidence for InQL. Verification assertions are stable semantic targets, verification runs emit append-only observations over time, and current verification state is a projection over those observations rather than a mutable field. The model separates lifecycle, outcome, assurance, scope, and commitment context so tools can distinguish deterministic verification, external attestations, sampled checks, accepted waivers, unknown evidence, and proof-backed verification without pretending that all checks carry the same trust.</p>
+<h2 id="core-model">Core model</h2>
+<ol>
+<li>A verification assertion describes what should be checked; it does not store the current result of the check.</li>
+<li>A verification run records an attempt to evaluate one or more verification assertions under explicit profiles, bindings, and snapshot references.</li>
+<li>A verification observation is an append-only event emitted by a run. Observations may arrive incrementally and may cover only part of the assertion scope.</li>
+<li>A current verification state is a projection over observations for a specific assertion, scope, source snapshot, target snapshot, semantic profile context, and stream watermark.</li>
+<li>Lifecycle, outcome, and assurance are separate axes. A check can be complete but failed, passed but only attested, or failed but waived.</li>
+<li>Assurance is scoped. A relation may be sampled overall while individual partitions are verified, waived, unknown, or later proven.</li>
+<li>Cryptographic proof verification plugs into the same event model through verifier statements and proof artifacts defined by InQL RFC 044. This RFC defines observation state, not proof-system mechanics.</li>
+<li>Verification is always relative to recorded snapshots, stream positions, commitments, or attestations. It does not prove that those references faithfully represent reality unless their own authority and basis are also verified.</li>
+<li>Privacy is a separate evidence concern. Verification assurance must not imply zero-knowledge, confidentiality, or payload redaction.</li>
+</ol>
+<h2 id="motivation">Motivation</h2>
+<p>Migration, modernization, replicated analytics, and cross-system validation work rarely complete as one atomic yes-or-no check. Source counts may be reported by a connector before target data finishes loading. Partition digests may stream in over minutes or hours. A sampled comparison may later be replaced by a deterministic check. A mismatch may be waived for a specific partition while the rest of the relation remains verified. A proof verifier may also prove a bounded query result against committed inputs through the statement and artifact model defined by InQL RFC 044. InQL needs a vocabulary that can represent those movements without overwriting older evidence or collapsing weak and strong evidence into the same status.</p>
+<p>The existing evidence RFCs already define execution observations, quality observations, adapter coverage, governed bundles, exchange bridges, and semantic profiles. They do not yet define a cross-cutting assurance axis or an async verification event stream. Reusing only quality status would conflate "the predicate passed" with "the evidence is independently verified." Reusing only execution status would conflate "the job succeeded" with "the migration is correct." Reusing only adapter coverage would conflate "the adapter can perform a check" with "the check has actually been performed."</p>
+<h2 id="goals">Goals</h2>
+<ul>
+<li>Define verification assertions, verification runs, verification observations, and current verification projections.</li>
+<li>Keep lifecycle, outcome, and assurance separate.</li>
+<li>Support append-only async event streams where observations can upgrade, downgrade, supersede, revoke, or finalize earlier projections.</li>
+<li>Let verification evidence attach to semantic targets, snapshots, stream positions, watermarks, profiles, and evidence references.</li>
+<li>Require snapshot and commitment context to record authority, time, and basis when those facts are available.</li>
+<li>Define assurance labels for proven, verified, attested, sampled, waived, and unknown evidence.</li>
+<li>Define how proof-backed observations use the same lifecycle, outcome, assurance, scope, and commitment model while deferring statement and artifact details to InQL RFC 044.</li>
+<li>Require unsupported and omitted verification coverage to stay explicit in observations and projections.</li>
+<li>Clarify how verification evidence composes with quality observations, execution observations, adapter coverage, governed plan bundles, evidence exchange bridges, and semantic profiles.</li>
+</ul>
+<h2 id="non-goals">Non-Goals</h2>
+<ul>
+<li>Defining a new authoring syntax for verification.</li>
+<li>Defining a full migration product, orchestration engine, approval workflow, or hosted verification service.</li>
+<li>Defining a cryptographic proof system, polynomial commitment scheme, proving engine, verifier implementation, or proof artifact format.</li>
+<li>Defining every canonical row, partition, or relation digest profile.</li>
+<li>Proving that a source snapshot, target snapshot, or commitment faithfully represents the underlying system of record.</li>
+<li>Providing zero-knowledge, data minimization, encryption, or privacy guarantees.</li>
+<li>Replacing quality assertions, execution observations, adapter coverage records, or semantic profile assessments.</li>
+<li>Treating waived evidence as equivalent to verified or proven evidence.</li>
+</ul>
+<h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
+<p>An author or tool starts with a verification assertion. The assertion says what should be checked; it is stable even while evidence is still streaming:</p>
+<div class="highlight"><pre><span></span><code>check = verify_relation(
+    source=operational_orders,
+    target=analytics_orders,
+    key=[col(&quot;order_id&quot;)],
+    checks=[
+        row_count_equal(),
+        partition_digest_equal(by=[col(&quot;order_date&quot;)]),
+    ],
+)
+
+run = session.start_verification(check)
+</code></pre></div>
+<p>The names are illustrative. The same shape applies to operational tables replicated into cloud query stores, warehouse dimensions mirrored into lakehouse tables, SaaS exports loaded into analytical marts, streaming events materialized into batch stores, and outsourced query results checked against committed inputs. The important model is that verification creates evidence over time instead of returning one final boolean immediately.</p>
+<div class="highlight"><pre><span></span><code>for event in run.events():
+    print(event.scope, event.lifecycle, event.outcome, event.assurance)
+</code></pre></div>
+<p>A stream of observations might first report an external fact, then deterministic partition matches, then a mismatch, then a waiver for that mismatch:</p>
+<div class="highlight"><pre><span></span><code>scope=orders                         lifecycle=running   outcome=mixed   assurance=attested
+scope=orders/order_date=2026-06-18   lifecycle=complete  outcome=passed  assurance=verified
+scope=orders/order_date=2026-06-19   lifecycle=complete  outcome=failed  assurance=verified
+scope=orders/order_date=2026-06-19   lifecycle=complete  outcome=failed  assurance=waived
+projection=orders                    lifecycle=complete  outcome=mixed   assurance_summary=verified:1/2, waived:1/2
+</code></pre></div>
+<p>The waiver does not rewrite the failed deterministic check. It adds an accepted exception with its own evidence and reason. A report can then say that all non-waived partitions were verified while one partition was waived.</p>
+<p>For streaming or incremental relations, observations can be scoped by watermark or stream position:</p>
+<div class="highlight"><pre><span></span><code>scope=orders
+watermark=2026-06-20T10:15:00Z
+coverage=37/400 partitions
+outcome=mixed
+assurance=sampled
+</code></pre></div>
+<p>Later evidence may upgrade the current projection for the same scope:</p>
+<div class="highlight"><pre><span></span><code>scope=orders
+watermark=2026-06-20T10:15:00Z
+coverage=400/400 partitions
+outcome=passed
+assurance=verified
+</code></pre></div>
+<p>If a proof verifier verifies a cryptographic proof for the same bounded scope, it emits another observation rather than changing the assertion model:</p>
+<div class="highlight"><pre><span></span><code>scope=orders
+source_commitment=operational_snapshot:123456789
+target_commitment=target_manifest:sha256:...
+outcome=passed
+assurance=proven
+</code></pre></div>
+<h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>
+<p>A verification assertion must be a semantic target. It must include assertion identity, checked subject targets, input relation targets when applicable, comparison or predicate intent, scope model, required semantic profiles when known, severity or policy-neutral intent when applicable, and evidence references.</p>
+<p>A verification run must include run identity, assertion identity or assertion set identity, requested source and target profile references when applicable, binding context, start time, optional end time, requested snapshot or stream position references when available, and references to execution observations when verification work was executed through a session or adapter.</p>
+<p>A verification observation must include observation identity, run identity, assertion identity, observed scope, lifecycle state, outcome state, assurance label, basis, evidence references, diagnostics, event time or sequence, and optional coverage, source snapshot reference, target snapshot reference, source commitment reference, target commitment reference, watermark, stream position, redacted sample reference, supersedes reference, and finality marker.</p>
+<p>Snapshot and commitment references should include authority, observed time or commit time, capture basis, source location, version or fingerprint, and diagnostics when those facts are available. Capture basis should distinguish at least internally_computed, connector_attested, external_artifact, trusted_party, trusted_execution_environment, user_declared, and unknown.</p>
+<p>Verification assurance is relative to the recorded references. A proven or verified observation must not be presented as proving that the source reference faithfully represents the underlying system unless the observation or linked evidence also verifies the commitment authority and capture basis.</p>
+<p>Lifecycle state must distinguish at least:</p>
+<ul>
+<li>pending: verification has been declared or scheduled but has not started for the scope</li>
+<li>running: verification is in progress for the scope</li>
+<li>blocked: verification cannot currently make progress for the scope</li>
+<li>complete: verification reached a terminal observation for the scope and snapshot or watermark</li>
+<li>superseded: a later observation or run replaces this projection for the same scope</li>
+</ul>
+<p>Finality markers, when present, must distinguish provisional, final, and revoked observations.</p>
+<p>Outcome state must distinguish at least:</p>
+<ul>
+<li>passed: the checked condition passed for the observation scope</li>
+<li>failed: the checked condition failed for the observation scope</li>
+<li>mixed: child scopes or component checks have different outcomes</li>
+<li>errored: verification attempted to run but encountered an execution, connector, or evaluation error</li>
+<li>skipped: verification was intentionally not run for the scope</li>
+<li>unsupported: the requested verification cannot be represented or executed by the available system</li>
+</ul>
+<p>Assurance label must distinguish at least:</p>
+<ul>
+<li>proven: a cryptographic proof was verified against recorded commitments for the observation scope</li>
+<li>verified: a deterministic check ran against recorded source and target snapshots or stream positions for the observation scope</li>
+<li>attested: a connector, external tool, catalog, or runtime reported a fact that InQL did not independently verify</li>
+<li>sampled: only part of the population was checked, or the check was deterministic only for a sampled subset</li>
+<li>waived: a mismatch, missing check, or weaker evidence was explicitly accepted with a recorded reason</li>
+<li>unknown: no usable evidence is available for the observation scope</li>
+</ul>
+<p>Assurance labels must not be treated as a single global ordering without scope and coverage. A sampled deterministic check for one partition is not stronger than an attestation for a whole table in every context; consumers must evaluate assurance together with scope, coverage, snapshots, profiles, and diagnostics.</p>
+<p>The <code>waived</code> assurance label must not be rendered as equivalent to <code>verified</code> or <code>proven</code>. A waived observation must carry a reason, source, and evidence reference. If the underlying deterministic outcome was failed, the current projection may report an accepted exception, but the failed observation must remain available.</p>
+<p>The <code>verified</code> assurance label requires recorded inputs. For relation, row, or partition digest checks, the observation must identify the digest algorithm and canonicalization profile used, or must report unknown or unsupported evidence rather than claiming deterministic verification.</p>
+<p>The <code>proven</code> assurance label requires recorded public inputs sufficient for an independent verifier to understand the checked statement. At minimum, a proven observation must identify the proof system or verifier profile, source commitments, result commitments or result references, the verified statement identity, commitment authority, commitment basis, and verifier diagnostics. Statement and artifact details belong to InQL RFC 044; proof-system mathematics remain outside this RFC.</p>
+<p>Verification observations are append-only. An implementation must not update an old observation in place to change its outcome, assurance, scope, or evidence. Corrections, revocations, upgrades, downgrades, waivers, and finalizations must be represented as later observations with explicit supersedes or diagnostic references when they affect prior evidence.</p>
+<p>A current verification projection is derived evidence. It must identify the assertion, scope, snapshot or watermark context, selected observation set, projection rule version, lifecycle, outcome, assurance summary, coverage, and diagnostics. A projection must distinguish missing evidence from unknown evidence and unknown evidence from failed evidence.</p>
+<p>Projection rules must preserve weaker and stronger evidence separately. If a table has verified partitions, sampled partitions, waived partitions, and unknown partitions, the table-level projection should report mixed outcome or partial coverage rather than flattening the table to verified. Unsupported operators, omitted columns, omitted predicates, profile gaps, skipped partitions, and unknown digest semantics must remain visible as coverage diagnostics.</p>
+<p>Verification evidence may reference quality observations when the checked condition is expressed as an InQL quality assertion. In that case, the quality observation status remains the predicate outcome, while the verification observation assurance records how the predicate result was established.</p>
+<p>Verification evidence may reference execution observations when a verification run executes through a session or adapter. Execution success must not imply verification success, and verification success must not imply that every execution detail was covered.</p>
+<p>Verification evidence may create adapter requirements. Initial capability families should include snapshot_capture, canonical_digest, cross_relation_reconciliation, incremental_watermark, verification_event_stream, waiver_recording, and cryptographic_query_proof where applicable.</p>
+<p>Verification evidence must carry semantic profile context when source or target behavior affects correctness. A successful comparison under one source or target profile must not be reused under a different profile unless the evidence proves that the relevant profile dimensions are equivalent.</p>
+<p>Verification evidence must not imply privacy. If a verification process also provides payload redaction, confidentiality, encryption, or zero-knowledge properties, those properties must be represented as separate evidence or profile facts.</p>
+<p>Inbound exchange bridges may import external verification facts, but imported facts are attested unless InQL can represent and validate the underlying evidence under this RFC. Outbound exchange bridges must preserve assertion identity, scope, outcome, assurance, coverage, and diagnostics when the target format can carry them, or must report mapping loss.</p>
+<p>Governed plan bundles may include verification assertions, runs, observations, current projections, snapshot references, proof references, and waiver records. Bundles must distinguish unsupported verification evidence from empty verification evidence.</p>
+<h2 id="design-details">Design details</h2>
+<h3 id="syntax">Syntax</h3>
+<p>This RFC introduces no authoring syntax. Helper APIs, inspection APIs, session APIs, and artifact contracts are the normative surface. Any authoring syntax introduced by a separate RFC must lower to the same assertion and observation model.</p>
+<h3 id="semantics">Semantics</h3>
+<p>Verification is evidence-producing relational work. It may compare source and target relations, evaluate quality assertions, check digests, validate row counts, compare aggregates, track streaming watermarks, or verify externally supplied proof artifacts. The semantics of the checked relation remain owned by Prism, profiles, quality assertions, and execution/session contracts; verification observations report what was checked and how strong the evidence is.</p>
+<p>Current state is not authoritative storage. It is a projection over append-only observations. Consumers that need auditability must retain the observation stream or a bundle that can identify the observations used to compute the projection.</p>
+<h3 id="interaction-with-other-inql-surfaces">Interaction with other InQL surfaces</h3>
+<p>Verification assertions reuse semantic targets from RFC 028 and may use metadata attachments from RFC 029 for provenance, source, visibility, and evidence references.</p>
+<p>Verification observations compose with RFC 032 execution observations but do not replace them. A verification run may have one or more execution attempts, and an execution attempt may produce zero or more verification observations.</p>
+<p>Verification assertions may wrap or reference RFC 034 quality assertions. Quality status answers whether a predicate passed; verification assurance answers how that answer was established.</p>
+<p>Verification checks may require RFC 033 adapter coverage. Unknown or uncovered verification capability must not be presented as verified evidence.</p>
+<p>Verification evidence may be included in RFC 036 governed plan bundles as an evidence family with required, optional, unavailable, and unsupported section states.</p>
+<p>RFC 038 evidence exchange bridges may import and export verification evidence. Bridge mappings must not silently upgrade attested external facts to verified or proven InQL evidence.</p>
+<p>RFC 040 semantic profiles provide source and target context for verification. Profile mismatches or unknown dimensions must be diagnostic evidence and may prevent verified or proven assurance.</p>
+<h3 id="standards-alignment">Standards alignment</h3>
+<p>Verification observations should be bridgeable to public standards without making those standards the internal source of verification semantics. W3C PROV can represent verification runs as activities, snapshots, commitments, results, and proof artifacts as entities, and tools or authorities as agents. OpenTelemetry can carry runtime spans, events, metrics, logs, and trace correlation for verification attempts. OpenLineage can carry run, job, dataset, and facet-shaped projections when verification is attached to pipeline execution. in-toto, SLSA provenance, W3C Verifiable Credentials, JSON Web Signature, and COSE may carry signed attestations for <code>attested</code> evidence, commitment authority, capture basis, and proof-verifier outputs when a bridge profile supports them.</p>
+<p>Open-data governance principles should inform how verification reports explain provenance, reuse constraints, privacy, redaction, and stewardship, but those principles are not substitutes for verification observations, scope, outcome, assurance, or coverage.</p>
+<h3 id="compatibility-migration">Compatibility / migration</h3>
+<p>This RFC is additive. Existing quality observations, execution observations, coverage records, and bundles remain valid. Artifacts that lack verification sections must be interpreted as missing or unsupported verification evidence, not as successful verification.</p>
+<p>Existing quality observation statuses should not be renamed. When a quality observation is used for verification, the verification observation carries the additional assurance label and scope information.</p>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul>
+<li><strong>Use quality observation status as verification state.</strong> Rejected because <code>passed</code> and <code>failed</code> do not describe whether the result was independently verified, externally attested, sampled, waived, or cryptographically proven.</li>
+<li><strong>Use execution observation status as verification state.</strong> Rejected because a successful execution can produce a failed verification result, and a failed execution can leave prior verification evidence intact.</li>
+<li><strong>Store one mutable current state per check.</strong> Rejected because async and streaming verification needs auditability, partial coverage, supersession, downgrades, and late-arriving evidence.</li>
+<li><strong>Require cryptographic proofs for verification evidence.</strong> Rejected because deterministic migration and reconciliation work remains useful when no proof backend is available, and proof systems still need the same scope, snapshot, profile, and projection vocabulary.</li>
+<li><strong>Treat waived checks as passed.</strong> Rejected because accepted exceptions are operationally useful but are not evidence that data matched.</li>
+<li><strong>Define a total assurance order.</strong> Rejected because assurance strength depends on scope, coverage, snapshots, semantic profiles, and the consumer's risk model.</li>
+</ul>
+<h2 id="drawbacks">Drawbacks</h2>
+<ul>
+<li>Verification evidence adds another evidence family and another status axis for authors and tools to understand.</li>
+<li>Append-only observations require projection logic, and projection bugs can mislead consumers even when raw observations are correct.</li>
+<li>Streaming and partial verification can produce reports that are more conservative than users expect.</li>
+<li>Canonical digest and proof-compatible evidence need careful versioning to avoid false confidence.</li>
+<li>Waivers are necessary for real migrations but can be misused if reporting makes them look like successful checks.</li>
+</ul>
+<h2 id="implementation-architecture">Implementation architecture</h2>
+<p>This section is non-normative. A practical implementation can store verification observations as a local append-only artifact stream and expose a reducer that computes current projections by assertion, scope, snapshot, profile, and watermark. Session adapters can emit execution observations and verification observations separately. Bundle writers can embed both the raw event stream and a compact projection so simple consumers can read the latest state while audit consumers can replay the evidence.</p>
+<h2 id="layers-affected">Layers affected</h2>
+<ul>
+<li><strong>InQL specification</strong> — verification assertion, run, observation, assurance, and projection vocabulary become part of the relational evidence program.</li>
+<li><strong>InQL library package</strong> — inspection, quality, session, and bundle APIs should be able to expose verification assertions, observations, and projections.</li>
+<li><strong>Execution / interchange</strong> — adapters may need capability records for snapshot capture, canonical digests, event streams, reconciliation checks, and proof verification.</li>
+<li><strong>Documentation</strong> — docs must explain the difference between lifecycle, outcome, assurance, coverage, and waived evidence.</li>
+</ul>
+<h2 id="unresolved-questions">Unresolved questions</h2>
+<ul>
+<li>Which verification helper APIs are normative rather than illustrative?</li>
+<li>Which canonical row, partition, and relation digest profiles are required before deterministic verification can claim <code>verified</code> assurance?</li>
+<li>What minimum waiver fields are required to keep <code>waived</code> useful without defining organization-wide approval policy?</li>
+<li>Which InQL RFC 044 proof artifact fields are required before an implementation may emit <code>proven</code> assurance?</li>
+<li>Which projection rule versions should this RFC standardize for relation-level rollups over partition, sample, and watermark observations?</li>
+<li>Should a separate RFC define authoring syntax for verification blocks, or should verification remain an API and artifact surface?</li>
+</ul>
+<!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "content.code.copy"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.88dd0f4e.min.js"></script>
+      
+    
+  </body>
+</html>

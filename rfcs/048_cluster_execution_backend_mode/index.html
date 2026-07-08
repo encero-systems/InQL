@@ -1,0 +1,3973 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Typed relational logic for Incan">
+      
+      
+      
+        <link rel="canonical" href="https://encero-systems.github.io/InQL/rfcs/048_cluster_execution_backend_mode/">
+      
+      
+        <link rel="prev" href="../047_semantic_evidence_graph_agent_surface/">
+      
+      
+        <link rel="next" href="../../release_notes/v0_1/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
+    
+    
+      
+        <title>RFC 048 - Cluster execution backend mode - InQL</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6f8fc17f.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/prismplane.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#inql-rfc-048-cluster-execution-backend-mode" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="InQL" class="md-header__button md-logo" aria-label="InQL" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            InQL
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              RFC 048 - Cluster execution backend mode
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="cyan"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    encero-systems/InQL
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs_map/" class="md-tabs__link">
+        
+  
+    
+  
+  Docs map
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../architecture/" class="md-tabs__link">
+        
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../language/" class="md-tabs__link">
+          
+  
+    
+  
+  Language
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+    
+  
+  RFCs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../release_notes/v0_1/" class="md-tabs__link">
+          
+  
+    
+  
+  Release notes
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../whitepapers/" class="md-tabs__link">
+          
+  
+    
+  
+  Whitepapers
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contributing/writing_rfcs/" class="md-tabs__link">
+          
+  
+    
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="InQL" class="md-nav__button md-logo" aria-label="InQL" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    InQL
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    encero-systems/InQL
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs_map/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Docs map
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Architecture
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../language/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Language
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Language
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Explanation
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            Explanation
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/explanation/dataset_carriers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset carriers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/explanation/execution_context/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Execution context
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../language/how-to/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    How-to guides
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            How-to guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/dataset_transformations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset transformations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/normalize_semistructured_fields/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Normalize semi-structured fields
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/nested_row_values/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Nested row values
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/generator_rows/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Generator rows
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/window_columns/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Window columns
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/approximate_metrics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Approximate metrics
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/typed_hll_sketches/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Typed HLL sketches
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/variant_payloads/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Variant payloads
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/execution_observations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Execution observations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/quality_observations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quality observations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/governed_evidence/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Governed evidence
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/inspect_plan_lineage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Inspect plan lineage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/dataset_carriers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset carriers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/dataset_methods/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset methods
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/query_blocks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Query blocks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/execution_context/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Execution context
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/inspection/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Inspection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quality
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4_8" id="__nav_4_4_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Builders
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4_8">
+            <span class="md-nav__icon md-icon"></span>
+            Builders
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/builders/filters/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Filters
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/builders/projections/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Projections
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/builders/aggregates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Aggregates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../language/reference/functions/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Functions
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_4_9" id="__nav_4_4_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            Functions
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/approximate/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Approximate
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/format/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Format
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/generators/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Generators
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/nested/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Nested
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/sketches/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sketches
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/variants/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Variants
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/windows/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Windows
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4_10" id="__nav_4_4_10_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Substrait
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4_10">
+            <span class="md-nav__icon md-icon"></span>
+            Substrait
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/substrait/conformance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Conformance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/substrait/operator_catalog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Operator catalog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/substrait/read_root_binding_contract/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Read root binding contract
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/substrait/revision_and_extension_policy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Revision and extension policy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    RFCs
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            RFCs
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TEMPLATE/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Template
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../000_inql_syntax/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 000 - Language specification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../001_inql_dataset/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 001 - Dataset types
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../002_apache_substrait_integration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 002 - Apache Substrait integration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../003_inql_query_blocks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 003 - Query blocks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../004_inql_execution_context/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 004 - Execution context
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../005_inql_pipe_forward/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 005 - Pipe-forward syntax
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../006_unnest_core_substrait/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 006 - Unnest core Substrait
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../007_prism_planning_engine/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 007 - Prism planning engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../008_optimizer_boundary_stats_cbo_aqe/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 008 - Optimizer boundary
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../009_session_format_handler_registry/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 009 - Session format handler registry
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../010_csv_ingestion_contract/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 010 - CSV ingestion contract
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../011_source_discovery_contract/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 011 - Source discovery contract
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../012_unified_scalar_expression_surface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 012 - Unified scalar expression surface
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../013_function_catalog_program/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 013 - Function catalog program
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../014_function_registry/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 014 - Function registry
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../015_core_scalar_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 015 - Core scalar functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../016_core_aggregate_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 016 - Core aggregate functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../017_aggregate_modifiers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 017 - Aggregate modifiers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../018_common_scalar_function_catalog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 018 - Common scalar function catalog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../019_window_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 019 - Window functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../020_nested_data_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 020 - Nested data functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../021_generator_table_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 021 - Generator table functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../022_semi_structured_format_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 022 - Semi-structured and format functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../023_approximate_sketch_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 023 - Approximate sketch functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../024_function_extension_policy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 024 - Function extension policy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../025_typed_sketch_logical_values/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 025 - Typed sketch logical values
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../026_semi_structured_variant_values/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 026 - Semi-structured variant values
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../027_relational_evidence_program/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 027 - Relational evidence program
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../028_semantic_identity_targets/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 028 - Semantic identity and target model
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../029_metadata_attachments/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 029 - Metadata attachments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../030_prism_lineage_graph/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 030 - Prism lineage graph
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../031_inspection_artifacts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 031 - Inspection artifacts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../032_execution_observations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 032 - Execution observations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../033_adapter_requirements_coverage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 033 - Adapter requirements and coverage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../034_quality_assertions_observations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 034 - Quality assertions and observations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../035_governed_attributes_policy_checkpoints/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 035 - Governed attributes and policy checkpoints
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../036_governed_plan_bundle/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 036 - Governed plan bundle
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../037_plan_diff_blast_radius_inputs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 037 - Plan diff and blast-radius inputs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../038_evidence_exchange_bridges/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 038 - Evidence exchange bridges
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../039_pandas_familiar_exploration_api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 039 - Pandas-familiar exploration API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../040_interoperability_semantic_profiles/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 040 - Interoperability semantic profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../041_prism_plan_ingress_frontends/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 041 - Prism plan ingress and external client frontends
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../042_async_verification_evidence/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 042 - Async verification evidence
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../043_canonical_equality_digest_profiles/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 043 - Canonical equality and digest profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../044_verifier_statements_proof_artifacts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 044 - Verifier statements and proof artifacts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../045_constraint_evidence_verification_planning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 045 - Constraint evidence and verification-aware planning
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../046_data_contract_ingress/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 046 - Data contract ingress and product topology
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../047_semantic_evidence_graph_agent_surface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 047 - Semantic evidence graph and agent query surface
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    RFC 048 - Cluster execution backend mode
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    RFC 048 - Cluster execution backend mode
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Motivation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Goals
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Non-Goals
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#guide-level-explanation-how-authors-think-about-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      Guide-level explanation (how authors think about it)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-level-explanation-precise-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reference-level explanation (precise rules)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reference-level explanation (precise rules)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Backend mode
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#semantic-equivalence" class="md-nav__link">
+    <span class="md-ellipsis">
+      Semantic equivalence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plan-transport" class="md-nav__link">
+    <span class="md-ellipsis">
+      Plan transport
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#source-and-sink-binding" class="md-nav__link">
+    <span class="md-ellipsis">
+      Source and sink binding
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#udf-and-helper-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDF and helper deployment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#results-and-materialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Results and materialization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streaming-cluster-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Streaming cluster execution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#errors-and-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Errors and diagnostics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution-observations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Execution observations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Design details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Semantics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interaction-with-other-inql-surfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interaction with other InQL surfaces
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compatibility-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compatibility / migration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alternatives considered
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#drawbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Drawbacks
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#layers-affected" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layers affected
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unresolved-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Unresolved questions
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Release notes
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Release notes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release_notes/v0_1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    v0.1
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../whitepapers/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Whitepapers
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Whitepapers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../whitepapers/inql_db/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    InQL DB
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Contributing
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/writing_rfcs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Writing RFCs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/prismplane_docs_theme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Prismplane docs theme
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Motivation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Goals
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Non-Goals
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#guide-level-explanation-how-authors-think-about-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      Guide-level explanation (how authors think about it)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-level-explanation-precise-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reference-level explanation (precise rules)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reference-level explanation (precise rules)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Backend mode
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#semantic-equivalence" class="md-nav__link">
+    <span class="md-ellipsis">
+      Semantic equivalence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plan-transport" class="md-nav__link">
+    <span class="md-ellipsis">
+      Plan transport
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#source-and-sink-binding" class="md-nav__link">
+    <span class="md-ellipsis">
+      Source and sink binding
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#udf-and-helper-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDF and helper deployment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#results-and-materialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Results and materialization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streaming-cluster-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Streaming cluster execution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#errors-and-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Errors and diagnostics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution-observations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Execution observations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Design details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Semantics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interaction-with-other-inql-surfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interaction with other InQL surfaces
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compatibility-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compatibility / migration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alternatives considered
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#drawbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Drawbacks
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#layers-affected" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layers affected
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unresolved-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Unresolved questions
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="inql-rfc-048-cluster-execution-backend-mode">InQL RFC 048: Cluster execution backend mode</h1>
+<ul>
+<li><strong>Status:</strong> Draft</li>
+<li><strong>Created:</strong> 2026-07-05</li>
+<li><strong>Author(s):</strong> Danny Meijer (@dannymeijer)</li>
+<li><strong>Related:</strong></li>
+<li>InQL RFC 001 (dataset types and execution backend boundary)</li>
+<li>InQL RFC 002 (Apache Substrait integration)</li>
+<li>InQL RFC 004 (execution context)</li>
+<li>InQL RFC 007 (Prism planning engine)</li>
+<li>InQL RFC 008 (optimizer boundary, statistics, CBO, and adaptive execution)</li>
+<li>InQL RFC 032 (execution observations)</li>
+<li>InQL RFC 033 (adapter requirements and coverage)</li>
+<li>InQL RFC 041 (Prism plan ingress and external client frontends)</li>
+<li><strong>Issue:</strong> —</li>
+<li><strong>RFC PR:</strong> —</li>
+<li><strong>Written against:</strong> Incan 0.4.0-rc3 and InQL's v0.3-era package migration context</li>
+<li><strong>Shipped in:</strong> —</li>
+</ul>
+<h2 id="summary">Summary</h2>
+<p>This RFC defines cluster execution as a backend mode of InQL's existing <code>Session</code> execution boundary. Cluster mode must not create a second InQL semantic model: authors still produce typed InQL logical plans, Prism and Substrait remain the logical boundary, and backend adapters remain responsible for planning, scheduling, execution, runtime observations, and capability diagnostics. DataFusion remains the default local backend; a DataFusion-compatible cluster backend such as Ballista is the first concrete proof target because it can accept Substrait logical plans while adding scheduler, worker, shuffle, and distributed-observability concerns. Streaming uses the same backend-mode framing, but adds long-running lifecycle, checkpoint, watermark, offset, and sink-commit requirements for <code>DataStream[T]</code>.</p>
+<h2 id="motivation">Motivation</h2>
+<p>InQL started with a local DataFusion reference backend. That is enough for v0.1 read, transform, collect, and write workflows, but it is not enough for larger analytical work where data lives in object stores, catalogs, warehouses, or lakehouse tables and execution must happen near the data. Cluster execution is therefore not optional product polish; it is part of the credible execution story.</p>
+<p>The risk is allowing cluster concerns to leak into InQL's semantic layer. Distributed schedulers need job identifiers, worker registration, shuffle behavior, retry policy, adaptive execution, remote source access, and large-result handling. Those facts matter, but they are not query semantics. InQL needs an explicit cluster lane so the implementation can support distributed execution without making physical partitioning, scheduler behavior, or backend-specific knobs part of the portable author contract.</p>
+<p>The Apache DataFusion / Ballista 53.0.0 release is relevant because Ballista adds a Substrait scheduler client and presents a concrete DataFusion-family cluster proof target (<a href="https://datafusion.apache.org/blog/output/2026/05/24/datafusion-ballista-53.0.0/">release notes</a>). InQL should use that as implementation evidence, not as the normative definition of cluster mode.</p>
+<h2 id="goals">Goals</h2>
+<ul>
+<li>Define cluster execution as a <code>Session</code> backend mode.</li>
+<li>Preserve one InQL semantic model across local and cluster execution.</li>
+<li>Require explicit backend capability checks for cluster execution.</li>
+<li>Define the minimum source, sink, credential, UDF, result, error, and observation boundaries cluster mode must respect.</li>
+<li>Distinguish bounded cluster jobs from streaming cluster jobs without splitting the InQL semantic model.</li>
+<li>Treat Ballista or another DataFusion-compatible cluster runner as a proof target behind the backend abstraction.</li>
+<li>Keep cluster scheduler behavior visible through execution observations rather than hidden in adapter internals.</li>
+</ul>
+<h2 id="non-goals">Non-Goals</h2>
+<ul>
+<li>Defining a cluster scheduler implementation.</li>
+<li>Standardizing Ballista as the only cluster backend.</li>
+<li>Defining every DataFusion, Ballista, Spark, or warehouse configuration knob.</li>
+<li>Introducing cluster-specific InQL query syntax.</li>
+<li>Defining storage catalog APIs, credential providers, or object-store configuration in detail.</li>
+<li>Defining complete streaming semantics, watermark policies, trigger semantics, or state-store implementations.</li>
+<li>Guaranteeing that every InQL feature can execute on every cluster backend.</li>
+<li>Making physical partition IDs, shuffle layout, worker placement, or retry behavior part of portable InQL semantics.</li>
+</ul>
+<h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
+<p>Authors should think of cluster execution as changing where a plan runs, not what the plan means.</p>
+<div class="highlight"><pre><span></span><code>from pub::inql import Session
+from pub::inql import backends
+
+session = (
+    Session.builder()
+    .with_backend(
+        backends.DataFusionCluster(
+            scheduler_uri=&quot;http://ballista.example.internal:50050&quot;,
+            storage_profile=&quot;analytics_lake&quot;,
+        )
+    )
+    .build()
+)
+
+orders = session.table[Order](&quot;orders&quot;)
+
+result = query {
+    FROM orders
+    WHERE .status == &quot;completed&quot;
+    GROUP BY .region
+    SELECT .region, total = sum(.amount)
+}
+
+session.write_parquet(result, &quot;s3://warehouse/reports/regional_totals/&quot;)
+</code></pre></div>
+<p>The same logical query should be valid with a local DataFusion session when the registered sources and backend capabilities are equivalent:</p>
+<div class="highlight"><pre><span></span><code>local = Session.default()
+cluster = (
+    Session.builder()
+    .with_backend(
+        backends.DataFusionCluster(
+            scheduler_uri=&quot;http://ballista.example.internal:50050&quot;,
+            storage_profile=&quot;analytics_lake&quot;,
+        )
+    )
+    .build()
+)
+</code></pre></div>
+<p>Cluster mode may reject a plan before execution when the selected backend cannot satisfy required capabilities. For example, an InQL-owned UDF, generator relation, typed variant value, sketch value, or extension metadata shape may be unsupported by a cluster backend. That is a backend coverage result, not an invalid InQL program.</p>
+<p>For large outputs, authors and tools should prefer <code>execute(...)</code> and <code>write(...)</code> over <code>collect(...)</code>. <code>collect(...)</code> remains a materialization boundary, but cluster adapters may require limits, previews, or explicit approval for large result collection.</p>
+<p>For streaming inputs, the same pattern becomes a long-running execution:</p>
+<div class="highlight"><pre><span></span><code>events = session.stream[Event](&quot;events&quot;)
+alerts = important_events(events)
+
+handle = session.execute(alerts.write_to(alert_sink(&quot;ops_alerts&quot;)))
+</code></pre></div>
+<p>The important difference is lifecycle rather than semantics. A bounded <code>LazyFrame[T]</code> cluster job can finish. A <code>DataStream[T]</code> cluster job may keep running, checkpoint state, recover from worker failure, and emit output continuously. Cluster mode must surface that lifecycle through execution handles and observations instead of pretending streaming execution is a finite <code>collect(...)</code>.</p>
+<h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>
+<h3 id="backend-mode">Backend mode</h3>
+<p>Cluster execution is a backend selection under the existing <code>Session</code> contract. A session owns one execution backend for a given execution boundary. The backend may be local or cluster-backed, but the author-facing session type remains <code>Session</code>.</p>
+<p>Backend-specific configuration must live in <code>pub::inql.backends</code> or an equivalent backend namespace. InQL must not introduce backend-named root session types as the portable API.</p>
+<h3 id="semantic-equivalence">Semantic equivalence</h3>
+<p>For a plan that both local and cluster backends can execute, cluster execution must preserve the same InQL logical result as local execution:</p>
+<ul>
+<li>schema and output aliases must match the logical plan</li>
+<li>row values must match the InQL semantic contract</li>
+<li>ordering is guaranteed only when the logical plan declares ordering</li>
+<li>backend runtime metrics and physical plans may differ</li>
+<li>adaptive execution may change physical strategy but not logical results</li>
+</ul>
+<p>If a backend cannot preserve the InQL contract, it must report uncovered, partially covered, or unknown coverage through RFC 033-style adapter coverage records or fail with an execution error. It must not silently reinterpret the plan.</p>
+<h3 id="plan-transport">Plan transport</h3>
+<p>Cluster adapters should accept the same logical boundary as local adapters: Prism-owned logical intent lowered to Substrait plus InQL-owned registry metadata and read-root bindings. A DataFusion-family cluster backend may use Substrait submission when available.</p>
+<p>Substrait is not enough by itself. The adapter must also account for:</p>
+<ul>
+<li>InQL extension metadata and registry function anchors</li>
+<li>logical read-root bindings</li>
+<li>source and sink descriptors</li>
+<li>backend capability coverage</li>
+<li>UDF and helper deployment</li>
+<li>semantic profile requirements</li>
+<li>execution-observation capture</li>
+</ul>
+<h3 id="source-and-sink-binding">Source and sink binding</h3>
+<p>Cluster workers must be able to resolve every source and sink used by a plan. A path or table binding that works on the client machine is not automatically valid in cluster mode.</p>
+<p>Cluster backend configuration must distinguish:</p>
+<ul>
+<li>logical source names used by InQL plans</li>
+<li>backend-resolved table providers or catalogs</li>
+<li>object-store and filesystem profiles</li>
+<li>credential references</li>
+<li>sink targets and commit behavior</li>
+</ul>
+<p>Credentials must not be embedded in Prism records, Substrait plans, evidence bundles, or ordinary inspection output. Plans may reference credential or storage profiles by stable opaque identity.</p>
+<h3 id="udf-and-helper-deployment">UDF and helper deployment</h3>
+<p>If an InQL helper executes through a backend UDF, callback, extension function, or adapter-provided implementation, cluster mode must ensure that the implementation is available on every worker that may execute it.</p>
+<p>Missing UDF deployment is a backend coverage or execution error. It must not be treated as a different function result, a null result, or a fallback to untyped SQL text.</p>
+<h3 id="results-and-materialization">Results and materialization</h3>
+<p><code>Session.execute(...)</code> may return a cluster execution handle or completed execution result depending on backend policy. The handle must carry enough identity to retrieve execution observations.</p>
+<p><code>Session.collect(...)</code> materializes results to the caller. In cluster mode, collection may be rejected, limited, paged, or require explicit approval when the backend can determine that the result is too large for safe client materialization.</p>
+<p><code>Session.write(...)</code> and typed sink writes are the preferred large-output path. Cluster writes must report commit outcome and must distinguish planning failure, worker execution failure, partial write, commit failure, and post-commit observation failure.</p>
+<h3 id="streaming-cluster-execution">Streaming cluster execution</h3>
+<p>Streaming cluster execution uses the same <code>Session</code> backend boundary and the same <code>DataStream[T]</code> model defined by RFC 001. It is not a separate query language or a separate session type.</p>
+<p>A cluster backend that accepts <code>DataStream[T]</code> work must account for streaming-specific requirements in addition to bounded plan requirements:</p>
+<ul>
+<li>source offset or cursor tracking</li>
+<li>watermark and late-data policy when the plan depends on event time</li>
+<li>bounded-state guarantees for windows, joins, aggregations, and deduplication</li>
+<li>checkpoint storage and recovery behavior</li>
+<li>trigger, micro-batch, or continuous execution policy when exposed by the backend</li>
+<li>output mode and sink commit guarantees</li>
+<li>restart, cancellation, drain, and completion lifecycle</li>
+<li>replay and duplicate-output behavior after failure</li>
+</ul>
+<p><code>collect(...)</code> must not materialize an unbounded <code>DataStream[T]</code> as a finite <code>DataFrame[T]</code>. A backend may expose bounded previews, sampled observations, or time/window-limited materialization through explicit APIs, but those are preview or diagnostic operations rather than the canonical stream result.</p>
+<p>Streaming cluster execution should prefer <code>execute(...)</code>, subscriptions, or typed sink writes. Execution handles for streaming jobs must preserve job identity across status checks and should expose enough lifecycle state for tools to distinguish pending, running, checkpointed, lagging, failed, restarting, draining, cancelled, and completed states when the backend can report them.</p>
+<p>Streaming-specific capability coverage belongs in RFC 033 adapter coverage. Initial capability names should include source_offset_tracking, watermark_support, stateful_window_support, stateful_join_support, checkpoint_recovery, sink_commit_guarantee, replay_support, late_data_policy, and streaming_lifecycle_observations where applicable.</p>
+<h3 id="errors-and-diagnostics">Errors and diagnostics</h3>
+<p>Cluster mode must distinguish at least:</p>
+<ul>
+<li>backend configuration errors</li>
+<li>scheduler connection or submission errors</li>
+<li>source or sink binding errors</li>
+<li>missing worker-side UDF/helper deployment</li>
+<li>adapter coverage failures</li>
+<li>backend planning failures</li>
+<li>worker runtime failures</li>
+<li>retry exhaustion</li>
+<li>partial write or commit failures</li>
+<li>result materialization failures</li>
+<li>streaming checkpoint, offset, watermark, or sink-commit failures</li>
+</ul>
+<p>Errors should preserve backend job identity when one exists.</p>
+<h3 id="execution-observations">Execution observations</h3>
+<p>Cluster execution should emit RFC 032-style observations that include, when available:</p>
+<ul>
+<li>backend kind and backend version</li>
+<li>scheduler URI or scheduler identity</li>
+<li>job ID and attempt ID</li>
+<li>submitted logical plan identity</li>
+<li>backend logical and physical plan summaries</li>
+<li>stage, partition, and worker metrics</li>
+<li>shuffle, spill, skew, retry, and cancellation facts</li>
+<li>output sink commit facts</li>
+<li>adapter coverage records used during planning</li>
+<li>streaming lifecycle, checkpoint, watermark, offset, lag, and restart facts when executing <code>DataStream[T]</code></li>
+</ul>
+<p>Observations are evidence. They must not replace the logical plan as the source of semantic meaning.</p>
+<h2 id="design-details">Design details</h2>
+<h3 id="syntax">Syntax</h3>
+<p>This RFC introduces no query syntax. It adds backend-selection concepts under the existing <code>Session.builder()</code> model.</p>
+<p>Illustrative names such as <code>DataFusionCluster</code> are non-normative until implemented.</p>
+<h3 id="semantics">Semantics</h3>
+<p>Cluster mode changes execution placement and physical execution strategy. It does not change InQL expression semantics, query schema rules, function registry meaning, or Substrait lowering contracts.</p>
+<h3 id="interaction-with-other-inql-surfaces">Interaction with other InQL surfaces</h3>
+<ul>
+<li>RFC 001 remains the carrier and dataset boundary. Cluster mode does not introduce new carrier types.</li>
+<li>RFC 001 remains the source of <code>BoundedDataSet[T]</code> / <code>UnboundedDataSet[T]</code> capability gating. Streaming cluster execution must not loosen static <code>DataStream[T]</code> restrictions.</li>
+<li>RFC 002 remains the Substrait interchange boundary. Cluster mode may use Substrait submission but must preserve InQL metadata and binding contracts.</li>
+<li>RFC 004 remains the session and backend-selection boundary. This RFC narrows how cluster mode fits under that boundary.</li>
+<li>RFC 008 owns optimizer and adaptive-execution boundaries. Cluster mode may expose runtime facts used by the backend, but Prism remains the semantic logical planning owner.</li>
+<li>RFC 032 owns execution observations. Cluster-specific runtime facts should appear there.</li>
+<li>RFC 033 owns adapter requirements and coverage. Cluster backend support must be reported through that model.</li>
+<li>RFC 041 plan ingress frontends must keep cluster execution behind the same backend adapter boundary.</li>
+</ul>
+<h3 id="compatibility-migration">Compatibility / migration</h3>
+<p>Existing local DataFusion sessions remain valid. Cluster mode is additive.</p>
+<p>Implementations may initially expose cluster mode as experimental or capability-gated. A cluster backend may report unknown or uncovered coverage for existing InQL features until worker-side deployment, Substrait support, and runtime behavior are proven.</p>
+<p>Streaming cluster execution may remain experimental after bounded cluster execution is available. A backend can support bounded <code>LazyFrame[T]</code> cluster jobs while reporting uncovered or unknown coverage for <code>DataStream[T]</code> jobs.</p>
+<p>Docs that say distributed execution, cluster scheduling, or shuffle are fully out of scope for InQL should be revised once this RFC is accepted. The better boundary is: cluster scheduling mechanics are out of InQL semantics, but cluster execution backend mode is part of the <code>Session</code> execution architecture.</p>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul>
+<li><strong>Leave cluster execution entirely to operational layers.</strong> Rejected because InQL's <code>Session</code> already owns backend selection, execution, collection, and writes. Operational layers may scope and inject sessions, but the cluster backend boundary belongs under <code>Session</code>.</li>
+<li><strong>Create a separate <code>ClusterSession</code> type.</strong> Rejected because it splits the author-facing execution model and makes local versus cluster execution look semantically different.</li>
+<li><strong>Make Ballista the normative backend.</strong> Rejected because Ballista is a strong proof target, not the portable contract. InQL should support other cluster-capable backends when they can satisfy the same boundary.</li>
+<li><strong>Use raw SQL submission for cluster execution.</strong> Rejected because raw SQL is not an InQL <code>Session</code> escape hatch and would bypass typed logical intent, registry metadata, and Substrait contracts.</li>
+<li><strong>Expose every scheduler knob as portable InQL API.</strong> Rejected because backend-specific tuning belongs in backend options and evidence, not in the portable query surface.</li>
+<li><strong>Treat streams as just long bounded jobs.</strong> Rejected because unbounded inputs need lifecycle, checkpoint, watermark, offset, and sink semantics that finite jobs do not.</li>
+</ul>
+<h2 id="drawbacks">Drawbacks</h2>
+<ul>
+<li>Cluster mode adds configuration, deployment, and diagnostics complexity.</li>
+<li>Backend coverage becomes more important and harder to prove.</li>
+<li>UDF/helper deployment across workers can fail in ways local execution cannot.</li>
+<li>Large-result collection needs guardrails that local examples often ignore.</li>
+<li>Streaming cluster execution adds long-running lifecycle and state recovery concerns.</li>
+<li>Ballista and other cluster backends may lag local DataFusion feature coverage.</li>
+</ul>
+<h2 id="layers-affected">Layers affected</h2>
+<ul>
+<li><strong>InQL specification</strong> — must define cluster execution as a backend mode without changing query semantics.</li>
+<li><strong>InQL library package</strong> — should expose cluster backend selection and typed configuration once implementation begins.</li>
+<li><strong>Execution / interchange</strong> — adapters must preserve Substrait, registry metadata, read-root binding, coverage, and observation contracts across cluster submission. Streaming adapters must additionally report lifecycle, checkpoint, offset, watermark, and sink-commit behavior where applicable.</li>
+<li><strong>Documentation</strong> — RFC 004 and execution-context docs should distinguish "cluster scheduling mechanics are not InQL semantics" from "cluster backend mode is supported by the session architecture."</li>
+</ul>
+<h2 id="unresolved-questions">Unresolved questions</h2>
+<ul>
+<li>What public backend type name should the first cluster proof target use: <code>DataFusionCluster</code>, <code>Ballista</code>, or a more general scheduler-backed DataFusion selection?</li>
+<li>Which cluster backend options are portable enough for <code>backends</code> and which must remain opaque encoded backend options?</li>
+<li>What default guardrail should <code>collect(...)</code> use in cluster mode for large results?</li>
+<li>How should worker-side deployment of InQL-owned UDFs and adapter callbacks be represented in coverage records?</li>
+<li>Which execution observations are required before cluster mode can move from experimental to planned?</li>
+<li>Should cluster execution require a stable storage profile abstraction before implementation, or can the first proof target use backend-specific storage options?</li>
+<li>Which streaming lifecycle states and capability names are required before <code>DataStream[T]</code> cluster execution can move beyond experimental?</li>
+<li>Should bounded cluster execution and streaming cluster execution ship under separate backend capability gates?</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "content.code.copy"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.88dd0f4e.min.js"></script>
+      
+    
+  </body>
+</html>

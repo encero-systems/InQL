@@ -1,0 +1,4522 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Typed relational logic for Incan">
+      
+      
+      
+        <link rel="canonical" href="https://encero-systems.github.io/InQL/rfcs/000_inql_syntax/">
+      
+      
+        <link rel="prev" href="../TEMPLATE/">
+      
+      
+        <link rel="next" href="../001_inql_dataset/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
+    
+    
+      
+        <title>RFC 000 - Language specification - InQL</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6f8fc17f.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/prismplane.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#inql-rfc-000-language-specification" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="InQL" class="md-header__button md-logo" aria-label="InQL" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            InQL
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              RFC 000 - Language specification
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="cyan"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    encero-systems/InQL
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs_map/" class="md-tabs__link">
+        
+  
+    
+  
+  Docs map
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../architecture/" class="md-tabs__link">
+        
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../language/" class="md-tabs__link">
+          
+  
+    
+  
+  Language
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+    
+  
+  RFCs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../release_notes/v0_1/" class="md-tabs__link">
+          
+  
+    
+  
+  Release notes
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../whitepapers/" class="md-tabs__link">
+          
+  
+    
+  
+  Whitepapers
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contributing/writing_rfcs/" class="md-tabs__link">
+          
+  
+    
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="InQL" class="md-nav__button md-logo" aria-label="InQL" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    InQL
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    encero-systems/InQL
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs_map/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Docs map
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Architecture
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../language/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Language
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Language
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Explanation
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            Explanation
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/explanation/dataset_carriers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset carriers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/explanation/execution_context/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Execution context
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../language/how-to/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    How-to guides
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            How-to guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/dataset_transformations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset transformations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/normalize_semistructured_fields/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Normalize semi-structured fields
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/nested_row_values/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Nested row values
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/generator_rows/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Generator rows
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/window_columns/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Window columns
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/approximate_metrics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Approximate metrics
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/typed_hll_sketches/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Typed HLL sketches
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/variant_payloads/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Variant payloads
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/execution_observations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Execution observations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/quality_observations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quality observations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/governed_evidence/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Governed evidence
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/how-to/inspect_plan_lineage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Inspect plan lineage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/dataset_carriers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset carriers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/dataset_methods/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset methods
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/query_blocks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Query blocks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/execution_context/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Execution context
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/inspection/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Inspection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quality
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4_8" id="__nav_4_4_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Builders
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4_8">
+            <span class="md-nav__icon md-icon"></span>
+            Builders
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/builders/filters/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Filters
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/builders/projections/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Projections
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/builders/aggregates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Aggregates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../language/reference/functions/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Functions
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_4_9" id="__nav_4_4_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            Functions
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/approximate/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Approximate
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/format/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Format
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/generators/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Generators
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/nested/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Nested
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/sketches/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sketches
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/variants/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Variants
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/functions/windows/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Windows
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4_10" id="__nav_4_4_10_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Substrait
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4_10">
+            <span class="md-nav__icon md-icon"></span>
+            Substrait
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/substrait/conformance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Conformance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/substrait/operator_catalog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Operator catalog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/substrait/read_root_binding_contract/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Read root binding contract
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language/reference/substrait/revision_and_extension_policy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Revision and extension policy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    RFCs
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            RFCs
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TEMPLATE/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Template
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    RFC 000 - Language specification
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    RFC 000 - Language specification
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Motivation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Goals
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Non-Goals
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#guide-level-explanation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Guide-level explanation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Guide-level explanation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-inql-does" class="md-nav__link">
+    <span class="md-ellipsis">
+      What InQL does
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-four-naming-forms" class="md-nav__link">
+    <span class="md-ellipsis">
+      The four naming forms
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema-shapes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema shapes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#two-authoring-surfaces-v01" class="md-nav__link">
+    <span class="md-ellipsis">
+      Two authoring surfaces (v0.1)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-level-explanation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reference-level explanation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reference-level explanation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-what-inql-owns" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. What InQL owns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-naming-forms" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Naming forms
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-current-query-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Current query schema
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-resolution-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Resolution rules
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Resolution rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rule-1-column-is-always-the-primary-input-relation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rule 1: .column is always the primary input relation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rule-2-relationcolumn-is-always-the-named-relation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rule 2: relation.column is always the named relation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rule-3-bare-names-resolve-against-the-current-query-schema-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rule 3: bare names resolve against the current query schema first
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rule-4-select-alias-visibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rule 4: SELECT alias visibility
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rule-5-ordinary-incan-values-when-no-column-matches" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rule 5: ordinary Incan values when no column matches
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-ambiguity-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Ambiguity examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Ambiguity examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-outer-binding-vs-query-column" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 Outer binding vs query column
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-alias-after-projection" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 Alias after projection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-joined-relation-stays-explicit" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 Joined relation stays explicit
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-query-surfaces-and-semantic-equivalence" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Query surfaces and semantic equivalence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-scope-restriction-column-is-only-valid-in-relational-positions" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Scope restriction: .column is only valid in relational positions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-schema-shapes" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Schema shapes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Schema shapes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-fully-typed-dataframet" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1 Fully typed: DataFrame[T]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-open-ended-model-x-with-openended" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2 Open-ended: model X with OpenEnded
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-dynamic-dataframedynamic" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3 Dynamic: DataFrame[Dynamic]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-four-schema-shapes" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.4 Four schema shapes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#85-schema-boundary-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.5 Schema boundary validation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-relationship-to-incan-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Relationship to Incan models
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-compilation-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. Compilation model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#11-layer-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. Layer boundaries
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Design details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cross-rfc-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cross-RFC consistency
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compatibility
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alternatives considered
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#drawbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Drawbacks
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#layers-affected" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layers affected
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Design Decisions
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../001_inql_dataset/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 001 - Dataset types
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../002_apache_substrait_integration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 002 - Apache Substrait integration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../003_inql_query_blocks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 003 - Query blocks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../004_inql_execution_context/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 004 - Execution context
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../005_inql_pipe_forward/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 005 - Pipe-forward syntax
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../006_unnest_core_substrait/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 006 - Unnest core Substrait
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../007_prism_planning_engine/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 007 - Prism planning engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../008_optimizer_boundary_stats_cbo_aqe/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 008 - Optimizer boundary
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../009_session_format_handler_registry/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 009 - Session format handler registry
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../010_csv_ingestion_contract/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 010 - CSV ingestion contract
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../011_source_discovery_contract/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 011 - Source discovery contract
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../012_unified_scalar_expression_surface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 012 - Unified scalar expression surface
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../013_function_catalog_program/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 013 - Function catalog program
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../014_function_registry/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 014 - Function registry
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../015_core_scalar_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 015 - Core scalar functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../016_core_aggregate_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 016 - Core aggregate functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../017_aggregate_modifiers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 017 - Aggregate modifiers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../018_common_scalar_function_catalog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 018 - Common scalar function catalog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../019_window_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 019 - Window functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../020_nested_data_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 020 - Nested data functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../021_generator_table_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 021 - Generator table functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../022_semi_structured_format_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 022 - Semi-structured and format functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../023_approximate_sketch_functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 023 - Approximate sketch functions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../024_function_extension_policy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 024 - Function extension policy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../025_typed_sketch_logical_values/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 025 - Typed sketch logical values
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../026_semi_structured_variant_values/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 026 - Semi-structured variant values
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../027_relational_evidence_program/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 027 - Relational evidence program
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../028_semantic_identity_targets/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 028 - Semantic identity and target model
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../029_metadata_attachments/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 029 - Metadata attachments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../030_prism_lineage_graph/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 030 - Prism lineage graph
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../031_inspection_artifacts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 031 - Inspection artifacts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../032_execution_observations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 032 - Execution observations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../033_adapter_requirements_coverage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 033 - Adapter requirements and coverage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../034_quality_assertions_observations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 034 - Quality assertions and observations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../035_governed_attributes_policy_checkpoints/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 035 - Governed attributes and policy checkpoints
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../036_governed_plan_bundle/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 036 - Governed plan bundle
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../037_plan_diff_blast_radius_inputs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 037 - Plan diff and blast-radius inputs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../038_evidence_exchange_bridges/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 038 - Evidence exchange bridges
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../039_pandas_familiar_exploration_api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 039 - Pandas-familiar exploration API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../040_interoperability_semantic_profiles/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 040 - Interoperability semantic profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../041_prism_plan_ingress_frontends/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 041 - Prism plan ingress and external client frontends
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../042_async_verification_evidence/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 042 - Async verification evidence
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../043_canonical_equality_digest_profiles/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 043 - Canonical equality and digest profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../044_verifier_statements_proof_artifacts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 044 - Verifier statements and proof artifacts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../045_constraint_evidence_verification_planning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 045 - Constraint evidence and verification-aware planning
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../046_data_contract_ingress/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 046 - Data contract ingress and product topology
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../047_semantic_evidence_graph_agent_surface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 047 - Semantic evidence graph and agent query surface
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../048_cluster_execution_backend_mode/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 048 - Cluster execution backend mode
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Release notes
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Release notes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release_notes/v0_1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    v0.1
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../whitepapers/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Whitepapers
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Whitepapers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../whitepapers/inql_db/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    InQL DB
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Contributing
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/writing_rfcs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Writing RFCs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/prismplane_docs_theme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Prismplane docs theme
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Motivation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Goals
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Non-Goals
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#guide-level-explanation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Guide-level explanation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Guide-level explanation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-inql-does" class="md-nav__link">
+    <span class="md-ellipsis">
+      What InQL does
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-four-naming-forms" class="md-nav__link">
+    <span class="md-ellipsis">
+      The four naming forms
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema-shapes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema shapes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#two-authoring-surfaces-v01" class="md-nav__link">
+    <span class="md-ellipsis">
+      Two authoring surfaces (v0.1)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-level-explanation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reference-level explanation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reference-level explanation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-what-inql-owns" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. What InQL owns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-naming-forms" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Naming forms
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-current-query-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Current query schema
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-resolution-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Resolution rules
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Resolution rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rule-1-column-is-always-the-primary-input-relation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rule 1: .column is always the primary input relation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rule-2-relationcolumn-is-always-the-named-relation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rule 2: relation.column is always the named relation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rule-3-bare-names-resolve-against-the-current-query-schema-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rule 3: bare names resolve against the current query schema first
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rule-4-select-alias-visibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rule 4: SELECT alias visibility
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rule-5-ordinary-incan-values-when-no-column-matches" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rule 5: ordinary Incan values when no column matches
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-ambiguity-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Ambiguity examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Ambiguity examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-outer-binding-vs-query-column" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 Outer binding vs query column
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-alias-after-projection" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 Alias after projection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-joined-relation-stays-explicit" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 Joined relation stays explicit
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-query-surfaces-and-semantic-equivalence" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Query surfaces and semantic equivalence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-scope-restriction-column-is-only-valid-in-relational-positions" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Scope restriction: .column is only valid in relational positions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-schema-shapes" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Schema shapes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Schema shapes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-fully-typed-dataframet" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1 Fully typed: DataFrame[T]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-open-ended-model-x-with-openended" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2 Open-ended: model X with OpenEnded
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-dynamic-dataframedynamic" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3 Dynamic: DataFrame[Dynamic]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-four-schema-shapes" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.4 Four schema shapes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#85-schema-boundary-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.5 Schema boundary validation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-relationship-to-incan-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Relationship to Incan models
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-compilation-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. Compilation model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#11-layer-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. Layer boundaries
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Design details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cross-rfc-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cross-RFC consistency
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compatibility
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alternatives considered
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#drawbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Drawbacks
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#layers-affected" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layers affected
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Design Decisions
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="inql-rfc-000-language-specification">InQL RFC 000: Language Specification</h1>
+<ul>
+<li><strong>Status:</strong> Planned</li>
+<li><strong>Created:</strong> 2026-03-18</li>
+<li><strong>Author(s):</strong> Danny Meijer</li>
+<li><strong>Related:</strong> -</li>
+<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/InQL/issues/1">InQL #1</a></li>
+<li><strong>RFC PR:</strong> -</li>
+<li><strong>Written against:</strong> Incan v0.2</li>
+<li><strong>Shipped in:</strong> -</li>
+</ul>
+<h2 id="summary">Summary</h2>
+<p>InQL is the typed data logic plane for the Incan ecosystem: relational queries, schema-parameterized DataFrame transformations, and backend-neutral logical planning. This RFC is the foundational specification for InQL v0.1. It defines what InQL is and what it owns, the core semantic model, naming forms and resolution rules, schema shapes, the compilation model, and layer boundaries. Companion RFCs address dataset types, plan interchange, query grammar, execution context, and pipe-forward syntax.</p>
+<h2 id="core-model">Core model</h2>
+<p>InQL treats all data logic as one relational semantic model exposed through multiple authoring surfaces:</p>
+<ol>
+<li><strong><code>query {}</code> blocks</strong> — SQL-familiar clause surface</li>
+<li><strong><code>DataSet[T]</code> method chains</strong> — programmatic API</li>
+</ol>
+<p>These are not separate languages; they are two authoring surfaces over one internal model. A future pipe-forward surface <strong>must</strong> desugar to the same model when introduced.</p>
+<p>That model has four ingredients:</p>
+<ol>
+<li><strong>Lexical Incan scope</strong> — ordinary bindings, imports, constants, and functions visible from the surrounding module or function.</li>
+<li><strong>Relation registry</strong> — the current primary relation plus any named joined relations.</li>
+<li><strong>Current query schema</strong> — the columns currently visible at this stage of the relational plan.</li>
+<li><strong>Published projection aliases</strong> — the output schema produced after a projection boundary.</li>
+</ol>
+<p>The key rule: <strong>in relational clause positions, bare identifiers resolve against the current query schema before lexical Incan bindings.</strong></p>
+<h2 id="motivation">Motivation</h2>
+<p>Relational code in Incan must resolve field access and column names deterministically and statically where the language promises checking. Without a single foundational specification, <code>query {}</code> and method-chain surfaces would drift, schema-shape rules would be inconsistent across carriers, and the boundary between data logic and execution would blur. This RFC consolidates that model so every companion RFC can cite it rather than redefine it, and so that completion of RFCs 000–004 constitutes a usable InQL v0.1.</p>
+<h2 id="goals">Goals</h2>
+<ul>
+<li>Define what InQL is, what it owns, and what it does not own.</li>
+<li>Establish the core semantic model: one relational model, multiple authoring surfaces.</li>
+<li>Define the four naming forms and resolution rules for identifier binding inside relational contexts.</li>
+<li>Define schema shapes: fully typed, open-ended, and dynamic.</li>
+<li>Define the compilation model: how InQL source flows through the Incan compiler pipeline to portable plans and execution.</li>
+<li>Define layer boundaries: InQL owns typed data logic and logical planning; execution, orchestration, and operational semantics belong to adjacent layers.</li>
+<li>Establish the relationship to Incan models as the schema surface for query authoring and validation.</li>
+<li>State that <code>query {}</code> and method-chain surfaces, when both are present, <strong>must not</strong> change resolution rules relative to each other.</li>
+<li>State that <code>.column</code> is only valid inside relational expression positions — <code>query {}</code> blocks, relational operation arguments (e.g. <code>.filter(...)</code>, <code>.join(...)</code>), and future pipe-forward stages — and is not a general Incan expression form.</li>
+</ul>
+<h2 id="non-goals">Non-Goals</h2>
+<ul>
+<li>Dataset types, carriers, and the trait hierarchy (<code>DataSet[T]</code>, <code>BoundedDataSet[T]</code>, <code>UnboundedDataSet[T]</code>) — InQL RFC 001.</li>
+<li>Apache Substrait plan interchange and <code>Rel</code>-level mapping — InQL RFC 002.</li>
+<li><code>query {}</code> grammar, clause inventory, and typechecking — InQL RFC 003.</li>
+<li>Execution context, session, DataFusion, read/write — InQL RFC 004.</li>
+<li>Pipe-forward (<code>|&gt;</code>) syntax — InQL RFC 005 (not in v0.1 scope).</li>
+<li>Orchestration, workflows, quality gates, contract enforcement — execution and operational layers.</li>
+<li>Governed business meaning and semantic serving — semantic layer.</li>
+<li>Cluster-scale scheduling, distributed fault tolerance — orchestration layer.</li>
+</ul>
+<h2 id="guide-level-explanation">Guide-level explanation</h2>
+<h3 id="what-inql-does">What InQL does</h3>
+<p>InQL lets authors express typed data logic — queries, transformations, aggregations, joins — against schema-parameterized datasets, with compile-time validation and backend-neutral logical plans. Authors write relational intent; the compiler checks it against <code>model</code> schemas; the toolchain lowers it to a portable plan (Apache Substrait) that an execution context can optimize and run.</p>
+<h3 id="the-four-naming-forms">The four naming forms</h3>
+<p>When you write <code>.amount</code>, <code>amount</code>, <code>orders.amount</code>, or <code>total_spend</code> inside an InQL query, what exactly are you referring to?</p>
+<p>InQL has four distinct naming forms, and the answer depends on which one you're using:</p>
+<ul>
+<li><code>.column</code> — the field from the current input relation</li>
+<li><code>relation.column</code> — the field from a named joined relation</li>
+<li>bare <code>column</code> — a column currently visible in the query schema</li>
+<li>an ordinary Incan name — a binding, function, or constant from the surrounding code</li>
+</ul>
+<p>Here are all four forms in one query:</p>
+<div class="highlight"><pre><span></span><code>threshold = 1000
+
+query {
+    FROM orders
+    JOIN customers ON .customer_id == customers.id
+    WHERE .amount &gt; threshold
+    SELECT
+        .order_id,
+        customers.name,
+        .amount,
+}
+</code></pre></div>
+<p><code>.amount</code> and <code>.customer_id</code> are form 1 (primary relation). <code>customers.name</code> is form 2 (named join). <code>threshold</code> is form 4 (ordinary Incan binding — no column by that name exists in the query schema).</p>
+<p>If you remember only five things about InQL naming:</p>
+<ol>
+<li><code>.column</code> is explicit access to the current input relation.</li>
+<li><code>relation.column</code> is explicit access to a named joined relation.</li>
+<li>Bare names resolve to the current query schema first. When a bare name shadows an outer binding, the compiler warns and suggests the <code>.column</code> form.</li>
+<li>Projection aliases are visible to later expressions in the same <code>SELECT</code> list (in order) and to all following clauses.</li>
+<li>If no column matches, ordinary Incan bindings may still be used where the grammar allows ordinary expressions.</li>
+</ol>
+<h3 id="schema-shapes">Schema shapes</h3>
+<p>InQL supports several schema modes without losing its semantic model:</p>
+<ul>
+<li><strong>Fully typed</strong> (<code>DataFrame[Order]</code>) — the compiler knows every field name, type, and nullability. This is the strongest and most ergonomic mode.</li>
+<li><strong>Open-ended</strong> (<code>DataFrame[Event]</code> where <code>Event</code> is declared <code>with OpenEnded</code>) — declared fields are fully typed; undeclared fields become soft-runtime references with a warning.</li>
+<li><strong>Dynamic</strong> (<code>DataFrame[Dynamic]</code>) — full field resolution is runtime-driven, but the compiler still tracks a lower-bound structural surface (minimum required inputs, minimum guaranteed outputs).</li>
+</ul>
+<h3 id="two-authoring-surfaces-v01">Two authoring surfaces (v0.1)</h3>
+<p>The examples in this section assume aggregate helpers such as <code>sum</code> are imported from <code>pub::inql.functions</code> (they are not ambient builtins).</p>
+<div class="highlight"><pre><span></span><code>from pub::inql.functions import sum
+
+# query {} blocks
+query {
+    FROM orders
+    WHERE .amount &gt; 100
+    GROUP BY .region
+    SELECT region, sum(.amount) as total
+}
+
+# method chains
+orders
+    .filter(.amount &gt; 100)
+    .group_by(.region)
+    .agg(sum(.amount) as total)
+</code></pre></div>
+<p>These lower to the same relational plan. Identifier resolution rules do not change between them.</p>
+<h2 id="reference-level-explanation">Reference-level explanation</h2>
+<h3 id="1-what-inql-owns">1. What InQL owns</h3>
+<p>InQL owns the data-logic concerns of the platform:</p>
+<ul>
+<li>query authoring</li>
+<li>relational plan construction</li>
+<li>column and alias resolution</li>
+<li>schema flow through query stages</li>
+<li>typed DataFrame semantics</li>
+<li>backend-neutral logical planning</li>
+</ul>
+<p>It <strong>must not</strong> become:</p>
+<ul>
+<li>an orchestration or pipeline framework</li>
+<li>a semantic catalog or governed business-meaning layer</li>
+<li>an execution runtime that swallows runner and adapter concerns</li>
+<li>a catch-all engine abstraction</li>
+</ul>
+<p>Its job is to preserve one deterministic, type-aware model of data intent across authoring surfaces.</p>
+<h3 id="2-naming-forms">2. Naming forms</h3>
+<p>Inside InQL relational contexts there are four distinct naming forms:</p>
+<ol>
+<li>
+<p><strong><code>.column</code></strong> (primary relation)
+    Explicit field access against the current input relation. In <code>query {}</code>, that is the relation established by <code>FROM</code> for <code>.column</code> positions — including after <code>JOIN</code>. <code>.column</code> does not refer to joined relations.</p>
+</li>
+<li>
+<p><strong><code>relation.column</code></strong> (named relation)
+    Explicit field access against a named relation (e.g. a <code>JOIN</code> alias). <code>relation</code> is the relation name; <code>column</code> is the field on that relation's row type.</p>
+</li>
+<li>
+<p><strong>Bare <code>column</code></strong>
+    A bare identifier interpreted as a column in the current query schema (see §3), in relational clause positions.</p>
+</li>
+<li>
+<p><strong>Ordinary Incan binding</strong>
+    Lexical bindings, functions, constants, imports, and other symbols that are not query-schema columns. Used when the grammar allows a general Incan expression and a bare name does not resolve as a column (§4.5).</p>
+</li>
+</ol>
+<p>The syntax is asymmetric by design:</p>
+<ul>
+<li><code>.column</code> — "field from the current input relation."</li>
+<li><code>relation.column</code> — "field from that named relation."</li>
+<li>bare <code>column</code> — "column visible at this stage of the query."</li>
+</ul>
+<p>That split keeps a SQL-familiar surface while preserving static checking.</p>
+<h3 id="3-current-query-schema">3. Current query schema</h3>
+<p>Every stage of a <code>query {}</code> block has a current query schema: the set of column names (and their types) that bare identifiers may denote in relational positions.</p>
+<p>It evolves top to bottom, including at least:</p>
+<ul>
+<li><code>FROM</code> establishes the base schema of the primary relation.</li>
+<li><code>JOIN</code> adds named secondary relations; <code>relation.column</code> disambiguates fields from those relations.</li>
+<li><code>GROUP BY</code> constrains what may appear unaggregated in subsequent <code>SELECT</code>.</li>
+<li><code>WINDOW BY</code> (or equivalent) may extend the schema with computed columns.</li>
+<li><code>SELECT ... as alias</code> produces a new output schema for following clauses.</li>
+<li>Clauses after <code>SELECT</code> (e.g. post-<code>SELECT</code> filters, <code>ORDER BY</code>) see the schema produced by the preceding <code>SELECT</code>.</li>
+</ul>
+<p>Example (illustrative):</p>
+<div class="highlight"><pre><span></span><code>query {
+    FROM orders
+    GROUP BY .customer_id
+    SELECT
+        customer_id,
+        sum(.amount) as total_spend,
+    WHERE total_spend &gt; 1000
+    ORDER BY total_spend DESC
+}
+</code></pre></div>
+<p><code>total_spend</code> in the later <code>WHERE</code> and <code>ORDER BY</code> is not an outer Incan variable. It is a column in the current query schema produced by the preceding <code>SELECT</code>.</p>
+<h3 id="4-resolution-rules">4. Resolution rules</h3>
+<h4 id="rule-1-column-is-always-the-primary-input-relation">Rule 1: <code>.column</code> is always the primary input relation</h4>
+<p><code>.status</code> denotes the <code>status</code> field on the primary relation from <code>FROM</code>, including after <code>JOIN</code>. <code>.column</code> does not refer to joined relations; use <code>relation.column</code> for those.</p>
+<div class="highlight"><pre><span></span><code>query {
+    FROM orders
+    WHERE .status == &quot;completed&quot;
+}
+</code></pre></div>
+<p>Here <code>.status</code> is <code>orders.status</code>.</p>
+<h4 id="rule-2-relationcolumn-is-always-the-named-relation">Rule 2: <code>relation.column</code> is always the named relation</h4>
+<p>Joined fields <strong>must</strong> use <code>alias.column</code> when referring to the joined relation's fields.</p>
+<div class="highlight"><pre><span></span><code>query {
+    FROM orders
+    JOIN customers ON .customer_id == customers.id
+    SELECT
+        .order_id,
+        customers.name,
+        .amount,
+}
+</code></pre></div>
+<h4 id="rule-3-bare-names-resolve-against-the-current-query-schema-first">Rule 3: bare names resolve against the current query schema first</h4>
+<p>In relational clause positions, a bare identifier <strong>must</strong> resolve against the current query schema before ordinary lexical Incan bindings are considered, when a matching column exists.</p>
+<div class="highlight"><pre><span></span><code>query {
+    FROM orders
+    SELECT customer_id, sum(.amount) as total_spend
+    ORDER BY total_spend DESC
+}
+</code></pre></div>
+<p>Query text reads as relational logic, not a competition between relational names and outer variables. If an outer Incan binding shares a name with a query column, the column wins in those positions.</p>
+<h4 id="rule-4-select-alias-visibility">Rule 4: <code>SELECT</code> alias visibility</h4>
+<p>Aliases introduced in a <code>SELECT</code> list are available to subsequent expressions in the same projection list, in order. An alias defined on line N is visible to expressions on lines N+1, N+2, etc., but not to expressions that precede it. Aliases also become part of the output schema for all following clauses (<code>ORDER BY</code>, post-<code>SELECT WHERE</code>, etc.).</p>
+<div class="highlight"><pre><span></span><code>query {
+    FROM orders
+    SELECT
+        sum(.amount) as total_spend,
+        total_spend * 0.2 as tax,
+    ORDER BY total_spend DESC
+}
+</code></pre></div>
+<p>Here <code>tax</code> may reference <code>total_spend</code> because <code>total_spend</code> is defined earlier in the same <code>SELECT</code> list. <code>total_spend</code> in <code>ORDER BY</code> refers to the projected column. This follows the lateral column alias convention used by DuckDB, Snowflake, and MySQL. Exact lowering semantics (e.g. inline expression rewriting for Substrait) are specified by the query grammar.</p>
+<h4 id="rule-5-ordinary-incan-values-when-no-column-matches">Rule 5: ordinary Incan values when no column matches</h4>
+<p>If a bare identifier does not resolve to a query schema column, it <strong>may</strong> resolve as an ordinary Incan binding or value where the grammar allows a full Incan expression.</p>
+<div class="highlight"><pre><span></span><code>threshold = 1000
+
+query {
+    FROM orders
+    WHERE .amount &gt; threshold
+}
+</code></pre></div>
+<p><code>threshold</code> is not a column; it resolves as the surrounding binding. This is how InQL stays composable with the rest of Incan instead of becoming an isolated mini-language.</p>
+<h3 id="5-ambiguity-examples">5. Ambiguity examples</h3>
+<h4 id="51-outer-binding-vs-query-column">5.1 Outer binding vs query column</h4>
+<div class="highlight"><pre><span></span><code>customer_id = &quot;debug-value&quot;
+
+query {
+    FROM orders
+    SELECT customer_id
+}
+</code></pre></div>
+<p><code>customer_id</code> resolves to the query column, not the outer variable, because relational schema names win in relational clause positions. When an outer binding of the same name exists, the typechecker emits a warning and suggests the explicit form:</p>
+<div class="highlight"><pre><span></span><code>query {
+    FROM orders
+    SELECT .customer_id
+}
+</code></pre></div>
+<h4 id="52-alias-after-projection">5.2 Alias after projection</h4>
+<div class="highlight"><pre><span></span><code>query {
+    FROM orders
+    SELECT
+        sum(.amount) as total_spend,
+    WHERE total_spend &gt; 1000
+}
+</code></pre></div>
+<p><code>total_spend</code> in <code>WHERE</code> is the projected column from the preceding <code>SELECT</code>.</p>
+<h4 id="53-joined-relation-stays-explicit">5.3 Joined relation stays explicit</h4>
+<div class="highlight"><pre><span></span><code>query {
+    FROM orders
+    JOIN customers ON .customer_id == customers.id
+    SELECT
+        customer_id,
+        customers.name,
+}
+</code></pre></div>
+<p>Bare <code>customer_id</code> is the current schema column; <code>customers.name</code> stays explicit because it comes from a named joined relation.</p>
+<h3 id="6-query-surfaces-and-semantic-equivalence">6. Query surfaces and semantic equivalence</h3>
+<p>These are two surfaces over the same relational model. Identifier resolution rules do not change across them — only the syntactic setup changes.</p>
+<ol>
+<li>
+<p><code>query {}</code>
+    The SQL-familiar, clause-oriented surface.</p>
+</li>
+<li>
+<p>Collection method chains
+    The method-chain surface:</p>
+<div class="highlight"><pre><span></span><code>orders
+    .filter(.amount &gt; 100)
+    .group_by(.region)
+    .agg(sum(.amount) as total)
+</code></pre></div>
+</li>
+</ol>
+<p><strong>Normative:</strong> wherever multiple surfaces are supported, identifier resolution (§§2–4) <strong>must</strong> be identical across them.</p>
+<p>A future pipe-forward surface is deferred from v0.1 but <strong>must</strong> also share the same resolution rules when introduced.</p>
+<h3 id="7-scope-restriction-column-is-only-valid-in-relational-positions">7. Scope restriction: <code>.column</code> is only valid in relational positions</h3>
+<p><code>.field</code> is <strong>not</strong> a general Incan expression form. It is only valid inside <strong>relational expression positions</strong>:</p>
+<ul>
+<li>Inside a <code>query {}</code> block (any clause position that permits a relational expression).</li>
+<li>As an argument to a relational operation on a <code>DataSet[T]</code> value (e.g. <code>.filter(.amount &gt; 100)</code> — here <code>.amount</code> is in a relational argument position).</li>
+<li>Inside a future pipe-forward stage.</li>
+</ul>
+<p>Using <code>.field</code> outside these contexts <strong>must</strong> be a compile-time error. This keeps the dot notation unambiguous: wherever <code>.field</code> appears, there is always a well-defined primary relation that supplies the field type.</p>
+<h3 id="8-schema-shapes">8. Schema shapes</h3>
+<p>InQL needs to support several schema modes without losing its semantic model.</p>
+<h4 id="81-fully-typed-dataframet">8.1 Fully typed: <code>DataFrame[T]</code></h4>
+<p><code>DataFrame[T]</code> carries the full field-level schema through compilation. <code>.filter(.amount &gt; 100)</code> can validate <code>amount</code> exists and has a compatible type; projection can produce a new typed output shape; grouping and aggregation can be validated against the schema.</p>
+<p>When <code>T</code> is an Incan model that participates in contract semantics upstream, InQL <strong>should</strong> treat it first as a schema surface: query checking uses the model's fields and types; projection and output typing flow from that model shape.</p>
+<h4 id="82-open-ended-model-x-with-openended">8.2 Open-ended: <code>model X with OpenEnded</code></h4>
+<p>For models declared as:</p>
+<div class="highlight"><pre><span></span><code>model Event with OpenEnded:
+    event_id: str
+    occurred_at: datetime
+    user_id: str
+</code></pre></div>
+<p>the declared fields remain fully typed while undeclared fields become soft-runtime references.</p>
+<ul>
+<li>closed <code>model X:</code> → declared fields are the complete schema surface</li>
+<li><code>model X with OpenEnded:</code> → declared fields are the minimum guaranteed schema surface; additional runtime fields <strong>may</strong> exist</li>
+</ul>
+<p>Operationally:</p>
+<ul>
+<li>declared field → checked normally</li>
+<li>undeclared field → warning plus soft-runtime field node</li>
+</ul>
+<p><code>OpenEnded</code> <strong>should</strong> be treated as a compiler-known marker with schema-shaping semantics, not as an ordinary user-defined behavioral trait.</p>
+<h4 id="83-dynamic-dataframedynamic">8.3 Dynamic: <code>DataFrame[Dynamic]</code></h4>
+<p>For untyped DataFrames, the compiler still tracks relational plan shape, but full field resolution becomes runtime-driven.</p>
+<p>Even for <code>DataFrame[Dynamic]</code>, the compiler <strong>should</strong> infer a <strong>lower-bound structural surface</strong>:</p>
+<ul>
+<li>the <strong>minimum required input surface</strong>: columns that <strong>must</strong> exist because the query reads or references them</li>
+<li>the <strong>minimum guaranteed output surface</strong>: columns that the query definitely preserves or creates</li>
+</ul>
+<p>So if a query over <code>DataFrame[Dynamic]</code> reads <code>.foo</code> and then projects <code>.foo</code> plus <code>bar = some_expr(...)</code>, the compiler <strong>should</strong> be able to say: input surface is at least <code>{foo}</code>; output surface is at least <code>{foo, bar}</code>.</p>
+<p>Operationally:</p>
+<ul>
+<li><code>.column</code> lowers to a runtime column reference annotated with a required-field dependency</li>
+<li>field-not-found errors do not exist at compile time</li>
+<li>type-driven coercions from model metadata are not inserted</li>
+</ul>
+<h4 id="84-four-schema-shapes">8.4 Four schema shapes</h4>
+<p>Once both openness and subscription are allowed, InQL recognizes four common schema shapes:</p>
+<ol>
+<li><strong>Closed local</strong> — a plain local model. Declared fields are the complete schema surface.</li>
+<li><strong>Open local</strong> — a local model <code>with OpenEnded</code>. Declared fields are the minimum guaranteed schema surface.</li>
+<li><strong>Closed subscribed or projected view</strong> — a consumer model that projects an upstream model into an exact local view.</li>
+<li><strong>Open subscribed or projected view</strong> — a consumer model that projects an upstream model but remains open-ended.</li>
+</ol>
+<p>This 2x2 framing separates two concerns cleanly:</p>
+<ul>
+<li><strong>completeness</strong>: closed vs open-ended</li>
+<li><strong>provenance</strong>: local vs subscribed or projected</li>
+</ul>
+<p>InQL <strong>should</strong> be able to reason about all four shapes using the same core machinery: known guaranteed fields, openness of the schema surface, and provenance of fields where available.</p>
+<h4 id="85-schema-boundary-validation">8.5 Schema boundary validation</h4>
+<p>When a boundary exists between untyped and typed DataFrames in pipeline wiring, the platform <strong>should</strong> insert a runtime schema validation check that ensures expected fields exist, types are compatible, nullability is compatible, and collects mismatches into one diagnostic.</p>
+<p>Where lower-bound structural surfaces are available, the compiler <strong>should</strong> use them before runtime to detect obviously incompatible wiring and to distinguish "definitely required" columns from merely possible runtime columns.</p>
+<h3 id="9-relationship-to-incan-models">9. Relationship to Incan models</h3>
+<p>InQL does not invent its own schema-definition system. It relies on Incan models as the typed schema surface for query authoring and validation.</p>
+<p>An Incan model gives InQL:</p>
+<ul>
+<li>field names</li>
+<li>field types</li>
+<li>nullability</li>
+<li>structural shape for joins, projections, and outputs</li>
+</ul>
+<p>InQL <strong>must not</strong> redefine schema language or model declarations; it consumes models as-is. Subscription and compatibility semantics (narrowing, widening, blast radius) belong in the operational and contract layers above InQL, not in InQL itself. InQL <strong>may</strong> surface subscription-derived schema information during typechecking and planning, but the declaration and enforcement model belongs to the contract layer.</p>
+<h3 id="10-compilation-model">10. Compilation model</h3>
+<p>InQL queries follow the same broad compiler pipeline as ordinary Incan code, with query-specific stages for relational planning:</p>
+<div class="highlight"><pre><span></span><code>InQL source
+  → parser and AST
+  → typechecker (name resolution, schema flow, type inference)
+  → InQL IR (relational operators, typed expressions)
+  → Substrait emission
+  → execution context optimization and execution
+</code></pre></div>
+<p>The user-facing query model stays stable while the lower layers evolve: AST shape may change, IR may change, Substrait maturity may improve, and execution backend implementations may change. The author should still be expressing the same typed data intent.</p>
+<h3 id="11-layer-boundaries">11. Layer boundaries</h3>
+<p>The boundaries matter:</p>
+<ul>
+<li><strong>Incan</strong> owns the shared language, type system, modules, traits, compile-time safety, and the core <code>model</code> type definitions that queries use as schemas.</li>
+<li><strong>InQL</strong> owns typed data logic, relational semantics, schema flow, and logical planning.</li>
+<li><strong>Execution layer</strong> owns runners, workflows, adapters, quality enforcement, contract enforcement, and operational workload semantics.</li>
+<li><strong>Semantic layer</strong> owns governed business meaning and semantic-serving abstractions.</li>
+</ul>
+<p>InQL sits above the language core and below execution, semantics, and product layers.</p>
+<h2 id="design-details">Design details</h2>
+<h3 id="cross-rfc-consistency">Cross-RFC consistency</h3>
+<ul>
+<li>All companion InQL RFCs <strong>must</strong> stay consistent with this document for naming forms, current query schema behavior, resolution order, schema shapes, and the relational-position restriction on <code>.column</code> described in §§2–7.</li>
+<li>Extensions in companion RFCs <strong>must not</strong> contradict these rules without an explicit amendment to this RFC.</li>
+<li>Any future authoring surface (including pipe-forward), when introduced, <strong>must</strong> desugar to the same semantic model and <strong>must not</strong> change identifier resolution rules.</li>
+</ul>
+<h3 id="compatibility">Compatibility</h3>
+<ul>
+<li>Naming and resolution rules are foundational; breaking changes <strong>must</strong> go through a dedicated RFC amendment.</li>
+<li>New schema shapes <strong>should</strong> be additive.</li>
+</ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<ul>
+<li><strong>Single global lexical scope for bare names in queries</strong> — rejected: breaks SQL-familiar <code>SELECT</code> / <code>ORDER BY</code> patterns and alias flow.</li>
+<li><strong><code>.column</code> as a general Incan expression form</strong> — rejected: without a well-defined primary relation in scope, <code>.field</code> has no unambiguous meaning. Restricting it to relational positions keeps the notation precise and allows the compiler to always resolve the field type statically.</li>
+<li><strong>Three authoring surfaces in v0.1</strong> (including pipe-forward) — deferred: v0.1 focuses on <code>query {}</code> and method chains; pipe-forward is a syntactic convenience that does not unlock new capability and can be added in a later version without breaking the semantic model.</li>
+<li><strong>Separate resolution rules per surface</strong> — rejected: would create semantic drift between <code>query {}</code> and method chains.</li>
+</ul>
+<h2 id="drawbacks">Drawbacks</h2>
+<ul>
+<li>Large foundational document that many companion RFCs depend on; amendments need care.</li>
+<li>Open-ended and dynamic schema modes add compiler complexity even in v0.1.</li>
+<li>The single-model constraint across surfaces requires implementation discipline to avoid surface-specific shortcuts that break semantic equivalence.</li>
+</ul>
+<h2 id="layers-affected">Layers affected</h2>
+<ul>
+<li><strong>Parser / AST</strong>: relational surfaces must preserve the distinct naming forms (<code>.column</code>, <code>relation.column</code>, bare identifiers, and ordinary Incan expressions) and their clause-sensitive contexts.</li>
+<li><strong>Typechecker</strong>: resolution order, current query schema flow, <code>SELECT</code> alias publication, join alias handling, and schema-shape behavior (typed, open-ended, dynamic) must remain consistent across surfaces.</li>
+<li><strong>IR / lowering</strong>: both authoring surfaces must lower to one relational semantic model without changing identifier meaning or schema-flow behavior.</li>
+<li><strong>LSP</strong>: relational positions need resolution-aware highlighting, diagnostics, and completions that reflect the same naming rules as the compiler.</li>
+<li><strong>Documentation</strong>: companion InQL RFCs and contributor docs must describe the same foundational naming, schema, and boundary rules.</li>
+</ul>
+<h2 id="design-decisions">Design Decisions</h2>
+<ul>
+<li><strong><code>.column</code> scope restriction:</strong> <code>.field</code> is only valid in relational expression positions (<code>query {}</code> clauses, method-chain relational arguments, and future pipe-forward stages). It is a compile-time error outside those positions. This keeps the dot notation unambiguous and ensures a primary relation is always in scope when <code>.field</code> is used.</li>
+<li><strong>Lateral column aliases in <code>SELECT</code>:</strong> an alias defined in a <code>SELECT</code> list is visible to subsequent expressions in the same list, in order (lateral column alias semantics). This follows the convention of DuckDB, Snowflake, and MySQL. An alias is not visible to expressions that precede it in the list. Implementations <strong>must</strong> rewrite dependent expressions (e.g. inline substitution) before Substrait lowering, since Substrait projection nodes do not natively support lateral alias references.</li>
+<li><strong>Pipe-forward deferred to v0.2+:</strong> InQL RFC 005 specifies pipe-forward as an optional surface with the same resolution rules. It is not part of v0.1 scope. This RFC (§6) states the invariant that pipe-forward <strong>must</strong> share §§2–4 resolution rules.</li>
+<li><strong>Method-chain API scope:</strong> deferred to InQL RFC 001, which defines the <code>DataSet[T]</code> operation surface. This RFC does not mandate a particular chain API shape.</li>
+<li><strong><code>HAVING</code> keyword:</strong> not InQL syntax. Post-<code>SELECT</code> filtering uses a second <code>WHERE</code> clause (clause ordering details — InQL RFC 003).</li>
+<li><strong>Schema shape priority for v0.1:</strong> fully typed (<code>DataFrame[T]</code>) is the primary mode. Open-ended (<code>with OpenEnded</code>) and dynamic (<code>DataFrame[Dynamic]</code>) remain part of the normative model in this RFC, but any implementation that does not yet support a permitted behavior <strong>must</strong> reject it explicitly rather than silently reinterpreting or weakening these semantics.</li>
+<li><strong>Open-ended model marker syntax:</strong> <code>model X with OpenEnded</code> is the normative spelling in this RFC for v0.1. If Incan changes how openness is declared, this RFC <strong>must</strong> be amended in lockstep; implementations follow the Incan language as shipped and update InQL specification text accordingly.</li>
+<li><strong>External / catalog-bound models:</strong> resolution of <code>model X = external("catalog://...")</code> (or equivalent) and how such models surface in query schemas is <strong>out of scope for InQL RFC 000</strong> and for v0.1 closure. It depends on Incan contract and catalog semantics and <strong>may</strong> be specified in a later InQL RFC once those foundations exist.</li>
+<li><strong>Shadowing warning and LSP:</strong> when a bare name matches both a query column and an outer Incan binding, query semantics and the diagnostic (warn; suggest <code>.column</code>) are normative above. Whether the LSP offers quick-fixes (e.g. rewrite to <code>.column</code>, rename outer binding) is <strong>tooling policy</strong> in the Incan LSP and is not prescribed here; any such fixes <strong>must</strong> preserve the resolution rules in §§2–4.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "content.code.copy"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.88dd0f4e.min.js"></script>
+      
+    
+  </body>
+</html>
