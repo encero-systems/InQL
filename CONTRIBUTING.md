@@ -60,6 +60,10 @@ Thank you for your interest in InQL — the typed relational layer for [Incan][i
 
    Use `mkdocs serve` for local preview while editing. The GitHub Actions docs workflow runs the same strict build for changes under `docs/`, `mkdocs.yml`, `requirements-docs.txt`, or the workflow itself.
 
+5. **Preview or publish the documentation site**
+
+   The public documentation site is published at [encero-systems.github.io/InQL/][docs-site]. The docs workflow publishes to the `gh-pages` branch after a successful strict build on `main` or manual dispatch. Repository Pages settings should use **Deploy from a branch**, branch `gh-pages`, folder `/ (root)`.
+
 ## Project structure
 
 See [docs/architecture.md][architecture] for a concise map. In short:
@@ -178,3 +182,4 @@ Open an issue on this repository for InQL-specific design or package questions; 
 [incan-docsite-loop]: https://github.com/encero-systems/incan/blob/main/workspaces/docs-site/docs/contributing/tutorials/book/08_docsite_contributor_loop.md
 [incan-agents-docs-workflow]: https://github.com/encero-systems/incan/blob/main/AGENTS.md#docs-site-workflow-mkdocs-material
 [prismplane-theme]: docs/contributing/prismplane_docs_theme.md
+[docs-site]: https://encero-systems.github.io/InQL/

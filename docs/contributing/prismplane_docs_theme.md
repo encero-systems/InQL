@@ -5,6 +5,8 @@ Prismplane is InQL's documentation visual language: optical planning surfaces, t
 ## Design rules
 
 - Tables, code blocks, schema examples, and query snippets should carry more visual authority than decorative panels.
+- Primary visuals should show InQL product reality: source code, typed schemas, Prism plan shape, lineage, Substrait boundaries, adapter coverage, quality evidence, or similarly inspectable state.
+- Avoid vague generated hero art. If a visual does not help a reader understand InQL's data logic surface, replace it with a grounded product visual.
 - Color belongs in rails, edge behavior, focus states, and signal accents; long-form prose should stay calm and readable.
 - Glass effects should support inspectability. If a treatment makes text, navigation, or code harder to read, simplify it.
 - InQL should feel analytical and typed, not ceremonial. Do not copy Incan's Incapunk forged-metal tone directly.

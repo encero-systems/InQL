@@ -1,5 +1,3 @@
-# Typed relational logic that stays inspectable
-
 <section class="prism-hero" markdown="1">
 <div class="prism-hero__copy" markdown="1">
 <p class="prism-eyebrow">InQL documentation</p>
@@ -13,7 +11,29 @@ InQL is where relational work becomes a checked Incan surface: query blocks, typ
 [Read the query block reference](language/reference/query_blocks.md){ .prism-button }
 </div>
 </div>
-<div class="prism-hero__visual" aria-label="A prism-shaped planning diagram where authored query intent splits into schema, lineage, execution, and evidence views."></div>
+<div class="prism-hero__visual" aria-label="InQL source code flowing into Prism plan, lineage, Substrait, and adapter evidence views.">
+<div class="prism-flow__pane prism-flow__pane--source">
+<span class="prism-flow__label">Incan source</span>
+<div class="prism-flow__code">
+<span>rollup = query {</span>
+<span>    FROM orders</span>
+<span>    WHERE .status == "paid"</span>
+<span>    GROUP BY .region</span>
+<span>    SELECT</span>
+<span>        .region as region,</span>
+<span>        sum(.amount) as total</span>
+<span>}</span>
+</div>
+</div>
+<div class="prism-flow__arrow" aria-hidden="true">→</div>
+<div class="prism-flow__pane prism-flow__pane--plan">
+<span class="prism-flow__label">Inspectable plan</span>
+<div class="prism-flow__node">Prism graph</div>
+<div class="prism-flow__node">Schema + lineage</div>
+<div class="prism-flow__node">Substrait boundary</div>
+<div class="prism-flow__node">Adapter evidence</div>
+</div>
+</div>
 </section>
 
 ## Choose the right path
