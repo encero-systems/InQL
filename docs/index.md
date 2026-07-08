@@ -2,9 +2,9 @@
 <div class="prism-hero__copy" markdown="1">
 <p class="prism-eyebrow">InQL documentation</p>
 
-# Typed data logic for Incan
+# Typed relational logic for governed data systems
 
-InQL is where relational work becomes a checked Incan surface: query blocks, typed dataset carriers, portable function calls, Prism plan inspection, and Substrait-backed execution boundaries all share one semantic spine.
+InQL is a typed relational layer for authoring, inspecting, and executing data logic. Query blocks, dataset carriers, portable function calls, Prism plan inspection, and Substrait boundaries share one backend-neutral model.
 
 <div class="prism-actions" markdown="1">
 [Start with dataset transformations](language/how-to/dataset_transformations.md){ .prism-button .prism-button--primary }
@@ -47,7 +47,7 @@ InQL is where relational work becomes a checked Incan surface: query blocks, typ
 
 ### Build typed transformations
 
-Start with `DataSet[T]`, `LazyFrame[T]`, and query blocks when you want relational intent in Incan instead of untyped SQL strings.
+Start with `DataSet[T]`, `LazyFrame[T]`, and query blocks when you want relational intent in source code instead of untyped SQL strings.
 
 [Use dataset transformations](language/how-to/dataset_transformations.md)
 </article>
@@ -85,7 +85,7 @@ Quality and governed evidence docs show how InQL records assertions, observation
 
 ## A first useful loop
 
-InQL is easiest to learn by following the shape of a real workflow: declare row models in Incan, build a typed relational plan, inspect the plan before execution, then run it through a session when you intentionally cross the backend boundary.
+InQL is easiest to learn by following the shape of a real workflow: declare row models, build a typed relational plan, inspect the plan before execution, then run it through a session when you intentionally cross the backend boundary.
 
 ```incan
 model Order:
@@ -106,7 +106,7 @@ paid_rollup = query {
 }
 ```
 
-That example is not trying to teach every surface at once. It shows the core promise: the query reads like relational logic, but it still belongs to typed Incan source and can flow through Prism inspection and Substrait lowering before any adapter executes it.
+That example is not trying to teach every surface at once. It shows the core promise: the query reads like relational logic, but it remains typed source that can flow through Prism inspection and Substrait lowering before any adapter executes it.
 
 ## What the docs cover
 
