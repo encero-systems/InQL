@@ -39,9 +39,9 @@ The following table maps InQL plan capabilities to Substrait logical relations a
 | Limit / offset                                                | `FetchRel`                                                                                                                                | core    |
 | Union, intersect, except                                      | `SetRel` with the appropriate set operation enum                                                                                          | core    |
 | Reuse of an identical subplan                                 | `Plan` + `ReferenceRel`                                                                                                                   | core    |
-| Unnest / explode                                              | Extension rel or documented expansion — **must** be pinned per implementation (see [Unnest / explode](#unnest--explode))                  | gap     |
-| Pivot / unpivot                                               | `ExtensionSingleRel` or documented rewrite to join + aggregate + project (see [Pivot / unpivot](#pivot--unpivot))                         | gap     |
-| Asof / interval join                                          | Gap or non-equi join expression only where consumer contract explicitly allows (see [Asof / interval joins](#asof--interval-joins))       | gap     |
+| Unnest / explode                                              | Extension rel or documented expansion — **must** be pinned per implementation (see [Unnest / explode](#unnest-explode))                    | gap     |
+| Pivot / unpivot                                               | `ExtensionSingleRel` or documented rewrite to join + aggregate + project (see [Pivot / unpivot](#pivot-unpivot))                           | gap     |
+| Asof / interval join                                          | Gap or non-equi join expression only where consumer contract explicitly allows (see [Asof / interval joins](#asof-interval-joins))         | gap     |
 | Streaming time semantics (watermarks, session windows, state) | Outside core Substrait unless via named extensions or a separate execution IR (see [Streaming time semantics](#streaming-time-semantics)) | gap     |
 
 ## Optional mutation profile
@@ -111,5 +111,5 @@ Watermarks, session windows, and stateful streaming operations are outside the s
 
 <!-- References -->
 
-[rfc-002]: ../../rfcs/002_apache_substrait_integration.md
+[rfc-002]: ../../../rfcs/002_apache_substrait_integration.md
 [ref-conformance-corpus]: ./conformance.md

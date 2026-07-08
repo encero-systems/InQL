@@ -48,6 +48,17 @@ Thank you for your interest in InQL — the typed relational layer for [Incan][i
 
    With `incan` on your `PATH` you can call `incan build --lib` and `incan test tests` directly (use the `tests/` path so a sibling Incan checkout under `./incan/` is not collected). Override the binary with `make build INCAN=/path/to/incan` if needed.
 
+4. **Build the documentation site**
+
+   Install the pinned docs dependencies and run a strict build before opening documentation-heavy PRs:
+
+   ```bash
+   python -m pip install -r requirements-docs.txt
+   mkdocs build --strict
+   ```
+
+   Use `mkdocs serve` for local preview while editing. The GitHub Actions docs workflow runs the same strict build for changes under `docs/`, `mkdocs.yml`, `requirements-docs.txt`, or the workflow itself.
+
 ## Project structure
 
 See [docs/architecture.md][architecture] for a concise map. In short:
@@ -56,6 +67,8 @@ See [docs/architecture.md][architecture] for a concise map. In short:
 - `src/*.incn` — library modules; `lib.incn` re-exports the public surface
 - `tests/` — Incan tests for the package
 - `docs/rfcs/` — design specifications (numbered separately from Incan’s RFC index)
+- `mkdocs.yml` — documentation site navigation and strict-build configuration
+- `requirements-docs.txt` — pinned Python dependencies for local and CI docs builds
 
 ## Changing behavior
 

@@ -97,5 +97,5 @@ Reclassification from gap → core or extension → core is **not** breaking (it
 
 <!-- References -->
 
-[rfc-002]: ../../rfcs/002_apache_substrait_integration.md
+[rfc-002]: ../../../rfcs/002_apache_substrait_integration.md
 [ref-operator-catalog]: ./operator_catalog.md

@@ -68,5 +68,5 @@ In all cases the `LazyFrame[T]` holds a deferred plan — no data is fetched unt
 
 <!-- References -->
 
-[rfc-002]: ../../rfcs/002_apache_substrait_integration.md
+[rfc-002]: ../../../rfcs/002_apache_substrait_integration.md
 [rfc-004]: ../../../rfcs/004_inql_execution_context.md

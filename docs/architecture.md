@@ -109,7 +109,7 @@ That means:
 - extension and gap handling are documented at the Substrait boundary
 - internal planning freedom is allowed, but emitted plans must follow RFC 002
 
-Substrait-facing package code lives primarily under [substrait/](../src/substrait/). The current implementation is intentionally split into focused modules for relation building, plan assembly, schema registry, extension bookkeeping, expression lowering, and inspection. For current boundary docs, start with [Substrait read-root and binding contract][substrait-read-root].
+Substrait-facing package code lives primarily under [`src/substrait/`][src-substrait]. The current implementation is intentionally split into focused modules for relation building, plan assembly, schema registry, extension bookkeeping, expression lowering, and inspection. For current boundary docs, start with [Substrait read-root and binding contract][substrait-read-root].
 
 ### Session
 
@@ -133,10 +133,10 @@ For current package behavior, see [Execution context (Reference)][execution-ref]
 
 The package uses the following implementation shape:
 
-- author-facing carrier types live in [mod.incn](../src/dataset/mod.incn)
-- canonical relational operator helpers live in [ops.incn](../src/dataset/ops.incn)
-- Substrait emission lives under [substrait/](../src/substrait/)
-- Prism internals live under [prism/](../src/prism/)
+- author-facing carrier types live in [`src/dataset/mod.incn`][src-dataset-mod]
+- canonical relational operator helpers live in [`src/dataset/ops.incn`][src-dataset-ops]
+- Substrait emission lives under [`src/substrait/`][src-substrait]
+- Prism internals live under [`src/prism/`][src-prism]
 - `LazyFrame[T]` routes through a backend-native `PrismCursor[T]`
 - `DataFrame[T]` and `DataStream[T]` keep their carrier-specific backing shapes while sharing the public dataset surface
 
@@ -236,7 +236,11 @@ If you want the clearest current story, read in this order:
 [docs-root]: README.md
 [language-root]: language/README.md
 [inql-rfcs]: rfcs/README.md
-[inql-contributing]: ../CONTRIBUTING.md
+[inql-contributing]: https://github.com/encero-systems/InQL/blob/main/CONTRIBUTING.md
+[src-dataset-mod]: https://github.com/encero-systems/InQL/blob/main/src/dataset/mod.incn
+[src-dataset-ops]: https://github.com/encero-systems/InQL/blob/main/src/dataset/ops.incn
+[src-prism]: https://github.com/encero-systems/InQL/tree/main/src/prism
+[src-substrait]: https://github.com/encero-systems/InQL/tree/main/src/substrait
 [dataset-ref]: language/reference/dataset_carriers.md
 [dataset-expl]: language/explanation/dataset_carriers.md
 [execution-ref]: language/reference/execution_context.md

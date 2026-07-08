@@ -11,7 +11,7 @@ Use the docs tree like this:
 - **RFCs:** design records and normative proposals in [rfcs/][rfcs]
 - **Whitepapers:** broader non-normative design papers in [whitepapers/][whitepapers]
 - **Release notes:** shipped and user-visible changes in [release_notes/][release-notes]
-- **Contributing:** contributor workflow, especially RFC process, in [contributing/][contributing]
+- **Contributing:** contributor workflow, especially RFC process, in [contributing/writing_rfcs.md][contributing]
 
 ## Recommended reading paths
 
@@ -44,17 +44,17 @@ Use the docs tree like this:
 1. [RFC index][rfcs-index]
 2. [How to write an RFC][writing-rfcs]
 
-> Note: When a standalone docs site is added, `docs/` remains the content root. The structure here should already follow the same content model used in Incan: reference, how-to guides, explanation, architecture/contributing, RFCs, and release notes.
+The standalone MkDocs site uses `docs/` as the content root. The structure follows the same content model used in Incan: reference, how-to guides, explanation, architecture/contributing, RFCs, whitepapers, and release notes.
 
 <!-- References -->
-[language-reference]: language/reference/
-[language-how-to]: language/how-to/
-[language-explanation]: language/explanation/
+[language-reference]: language/reference/dataset_carriers.md
+[language-how-to]: language/how-to/README.md
+[language-explanation]: language/explanation/dataset_carriers.md
 [architecture]: architecture.md
 [rfcs]: rfcs/README.md
 [whitepapers]: whitepapers/README.md
-[release-notes]: release_notes/
-[contributing]: contributing/
+[release-notes]: release_notes/v0_1.md
+[contributing]: contributing/writing_rfcs.md
 [language-overview]: language/README.md
 [window-columns-how-to]: language/how-to/window_columns.md
 [dataset-explanation]: language/explanation/dataset_carriers.md

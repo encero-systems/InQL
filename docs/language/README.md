@@ -49,9 +49,9 @@ This section documents the current InQL package surface.
 - [Quality assertions and observations][quality-reference]
 
 <!-- References -->
-[reference]: reference/
-[how-to]: how-to/
-[explanation]: explanation/
+[reference]: reference/dataset_carriers.md
+[how-to]: how-to/README.md
+[explanation]: explanation/dataset_carriers.md
 [approximate-metrics-how-to]: how-to/approximate_metrics.md
 [dataset-reference]: reference/dataset_carriers.md
 [dataset-explanation]: explanation/dataset_carriers.md

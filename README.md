@@ -46,7 +46,8 @@ Normative proposals live under **[docs/rfcs/](docs/rfcs/README.md)**. InQL’s R
 - `src/lib.incn` — public exports
 - `src/` — library modules
 - `tests/` — tests
-- `.github/workflows/` — CI (builds the pinned Incan release branch, then runs InQL checks)
+- `mkdocs.yml` — documentation site configuration for the `docs/` tree
+- `.github/workflows/` — CI for package checks and strict docs builds
 
 Build and test from this repo root (with `incan` on your `PATH`):
 
@@ -61,4 +62,4 @@ incan build --lib
 incan test tests
 ```
 
-See `make help` for other targets (`fmt`, `fmt-check`, `registry-metadata`, `build-locked`, …). Continuous integration builds **Incan from source** from the workflow's pinned `INCAN_REF` release branch or tag, then runs `fmt-check`, `test-style`, function registry metadata validation, `build`, `test`, and the pub-consumer smoke check (see [.github/workflows/ci.yml](.github/workflows/ci.yml)).
+See `make help` for other targets (`fmt`, `fmt-check`, `registry-metadata`, `build-locked`, …). Continuous integration builds **Incan from source** from the workflow's pinned `INCAN_REF` release branch or tag, then runs `fmt-check`, `test-style`, function registry metadata validation, `build`, `test`, and the pub-consumer smoke check (see [.github/workflows/ci.yml](.github/workflows/ci.yml)). The docs workflow runs `mkdocs build --strict` for documentation changes; see [CONTRIBUTING.md](CONTRIBUTING.md) for the local docs build loop.
