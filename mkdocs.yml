@@ -37,7 +37,7 @@ markdown_extensions:
       custom_checkbox: true
 
 extra_css:
-  - stylesheets/prismplane.css?v=20260708-professional
+  - stylesheets/prismplane.css?v=20260708-prismplane-hero
 
 nav:
   - Home: index.md
