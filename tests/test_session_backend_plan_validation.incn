@@ -1,0 +1,170 @@
+"""Session tests for the portable plan-validation backend."""
+
+from rust::substrait::proto import Plan, PlanRel
+from rust::substrait::proto::plan_rel import RelType as PlanRelType
+from backends import PlanValidation, csv_source, plan_validation_backend_selection
+from dataset import LazyFrame
+from session import Session, SessionErrorKind, csv_sink
+from session.backend_dispatch import backend_execute_plan
+from session.backend_types import BackendErrorKind
+from substrait.plans import empty_plan
+from substrait.relations import read_named_table_rel
+from std.testing import assert_is_err, assert_is_ok
+
+
+@derive(Clone)
+pub model Order:
+    """Minimal row model used by backend validation tests."""
+
+    pub id: int
+
+
+def _plan_validation_session() -> Session:
+    """Return one Session configured with the plan-validation backend."""
+    return Session.builder().with_plan_validation(PlanValidation(require_root_relation=true)).build()
+
+
+def _non_root_plan() -> Plan:
+    """Return one plan whose first relation is not a root relation."""
+    return Plan(
+        version=None,
+        extension_urns=[],
+        extensions=[],
+        relations=[PlanRel(rel_type=Some(PlanRelType.Rel(read_named_table_rel("orders"))))],
+        advanced_extensions=None,
+        expected_type_urls=[],
+        parameter_bindings=[],
+        type_aliases=[],
+    )
+
+
+def test_session_backend_plan_validation__builder_selects_backend() -> None:
+    """Session builders should select and preserve the plan-validation backend envelope."""
+    # -- Arrange --
+    selection = plan_validation_backend_selection(PlanValidation(require_root_relation=false))
+
+    # -- Act --
+    session = Session.builder().with_backend(selection).build()
+    backend = session.plan_validation_backend()
+
+    # -- Assert --
+    assert session.backend_name() == "plan_validation", "builder should select the plan-validation backend"
+    assert backend.require_root_relation is false, "builder should preserve plan-validation backend options"
+
+
+def test_session_backend_plan_validation__execute_validates_registered_plan() -> None:
+    """execute should accept a bound named-table plan without using a row engine."""
+    # -- Arrange --
+    mut session = _plan_validation_session()
+
+    # -- Act & Assert --
+    assert_is_ok(
+        session.register("orders", csv_source("tests/fixtures/orders.csv")),
+        "fixture registration should succeed",
+    )
+    lazy: LazyFrame[Order] = assert_is_ok(session.table("orders"), "registered table lookup should succeed")
+
+    assert_is_ok(session.execute(lazy), "plan-validation backend should accept a bound named-table plan")
+
+
+def test_session_backend_plan_validation__read_csv_executes_validation_plan() -> None:
+    """read_csv should keep the portable validation backend on the normal read path."""
+    # -- Arrange --
+    mut session = _plan_validation_session()
+
+    # -- Act --
+    lazy: LazyFrame[Order] = assert_is_ok(
+        session.read_csv("orders", "tests/fixtures/orders.csv"),
+        "read_csv should bind the fixture source",
+    )
+
+    # -- Assert --
+    assert_is_ok(session.execute(lazy), "plan-validation backend should validate read_csv plans")
+
+
+def test_session_backend_plan_validation__requires_real_root_relation() -> None:
+    """execute should reject empty and non-root plans when root validation is required."""
+    # -- Arrange --
+    selection = plan_validation_backend_selection(PlanValidation(require_root_relation=true))
+
+    # -- Act --
+    empty_err = assert_is_err(
+        backend_execute_plan(selection.clone(), [], empty_plan()),
+        "empty plans should fail root validation",
+    )
+    non_root_err = assert_is_err(
+        backend_execute_plan(selection, [], _non_root_plan()),
+        "non-root plan relations should fail root validation",
+    )
+
+    # -- Assert --
+    assert empty_err.kind == BackendErrorKind.BackendPlanningError, empty_err.message
+    assert non_root_err.kind == BackendErrorKind.BackendPlanningError, non_root_err.message
+    assert empty_err.message.contains("no root relation"), empty_err.message
+    assert non_root_err.message.contains("no root relation"), non_root_err.message
+
+
+def test_session_backend_plan_validation__collect_reports_typed_unsupported_error() -> None:
+    """collect should report a typed backend error instead of pretending to materialize rows."""
+    # -- Arrange --
+    mut session = _plan_validation_session()
+    assert_is_ok(
+        session.register("orders", csv_source("tests/fixtures/orders.csv")),
+        "fixture registration should succeed",
+    )
+    lazy: LazyFrame[Order] = assert_is_ok(session.table("orders"), "registered table lookup should succeed")
+
+    # -- Act --
+    err = assert_is_err(session.collect(lazy), "plan-validation backend should not materialize rows")
+
+    # -- Assert --
+    assert err.kind == SessionErrorKind.BackendExecutionError, err.error_message()
+    assert err.message.contains("does not materialize rows"), err.error_message()
+
+
+def test_session_backend_plan_validation__write_reports_typed_unsupported_error() -> None:
+    """write should report a typed backend error instead of creating sink output."""
+    # -- Arrange --
+    mut session = _plan_validation_session()
+    assert_is_ok(
+        session.register("orders", csv_source("tests/fixtures/orders.csv")),
+        "fixture registration should succeed",
+    )
+    lazy: LazyFrame[Order] = assert_is_ok(session.table("orders"), "registered table lookup should succeed")
+
+    # -- Act --
+    err = assert_is_err(
+        session.write(lazy, csv_sink("tests/target/plan_validation_output.csv")),
+        "plan-validation backend should not write sinks",
+    )
+
+    # -- Assert --
+    assert err.kind == SessionErrorKind.BackendSinkError, err.error_message()
+    assert err.message.contains("does not write sinks"), err.error_message()
+
+
+def test_session_backend_plan_validation__write_helpers_report_typed_unsupported_error() -> None:
+    """write_csv and write_parquet should preserve typed unsupported sink errors."""
+    # -- Arrange --
+    mut session = _plan_validation_session()
+    assert_is_ok(
+        session.register("orders", csv_source("tests/fixtures/orders.csv")),
+        "fixture registration should succeed",
+    )
+    lazy: LazyFrame[Order] = assert_is_ok(session.table("orders"), "registered table lookup should succeed")
+
+    # -- Act --
+    csv_err = assert_is_err(
+        session.write_csv(lazy.clone(), "tests/target/plan_validation_output.csv"),
+        "plan-validation backend should not write CSV sinks",
+    )
+    parquet_err = assert_is_err(
+        session.write_parquet(lazy, "tests/target/plan_validation_output.parquet"),
+        "plan-validation backend should not write Parquet sinks",
+    )
+
+    # -- Assert --
+    assert csv_err.kind == SessionErrorKind.BackendSinkError, csv_err.error_message()
+    assert parquet_err.kind == SessionErrorKind.BackendSinkError, parquet_err.error_message()
+    assert csv_err.message.contains("does not write sinks"), csv_err.error_message()
+    assert parquet_err.message.contains("does not write sinks"), parquet_err.error_message()

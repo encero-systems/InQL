@@ -19,8 +19,20 @@ pub class DataFusion:
 
 
 @derive(Clone)
+pub class PlanValidation:
+    """Portable backend configuration for plan and binding validation without local row execution."""
+
+    pub require_root_relation: bool
+
+    def clone(self) -> Self:
+        """Return one cloned plan-validation backend configuration."""
+        return PlanValidation(require_root_relation=self.require_root_relation)
+
+
+@derive(Clone)
 pub enum BackendKind(str):
     DataFusionEngine = "datafusion"
+    PlanValidationEngine = "plan_validation"
 
 
 @derive(Clone)
@@ -82,6 +94,19 @@ pub def datafusion_backend_selection(backend: DataFusion) -> BackendSelection:
 pub def datafusion_backend_from_selection(selection: BackendSelection) -> DataFusion:
     """Decode DataFusion options from one backend-selection envelope."""
     return DataFusion(enable_optimizer=_backend_bool_option(selection, "enable_optimizer", true))
+
+
+pub def plan_validation_backend_selection(backend: PlanValidation) -> BackendSelection:
+    """Encode plan-validation backend options into one portable backend-selection envelope."""
+    return BackendSelection(
+        kind=BackendKind.PlanValidationEngine,
+        options=[BackendOption(key="require_root_relation", value=_bool_option_value(backend.require_root_relation))],
+    )
+
+
+pub def plan_validation_backend_from_selection(selection: BackendSelection) -> PlanValidation:
+    """Decode plan-validation options from one backend-selection envelope."""
+    return PlanValidation(require_root_relation=_backend_bool_option(selection, "require_root_relation", true))
 
 
 pub def backend_kind_name(selection: BackendSelection) -> str:

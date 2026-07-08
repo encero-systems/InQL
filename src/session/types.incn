@@ -6,6 +6,7 @@ from aggregate_builders import aggregate_as
 from backends import (
     BackendSelection,
     DataFusion,
+    PlanValidation,
     TableSource,
     backend_kind_name,
     datafusion_backend_from_selection,
@@ -15,6 +16,8 @@ from backends import (
     csv_source,
     default_backend_selection,
     parquet_source,
+    plan_validation_backend_from_selection,
+    plan_validation_backend_selection,
 )
 from dataset import BoundedDataSet, DataFrame, LazyFrame, lazy_frame_named_table
 from evidence import (
@@ -152,6 +155,10 @@ pub class Session:
     def datafusion_backend(self) -> DataFusion:
         """Return the current DataFusion backend configuration."""
         return datafusion_backend_from_selection(self._backend)
+
+    def plan_validation_backend(self) -> PlanValidation:
+        """Return the current plan-validation backend configuration."""
+        return plan_validation_backend_from_selection(self._backend)
 
     def registration_count(self) -> int:
         """Return the number of registered logical sources in this Session."""
@@ -443,6 +450,10 @@ pub class SessionBuilder:
     def with_datafusion(self, backend: DataFusion) -> Self:
         """Select DataFusion backend options for the Session being built."""
         return self.with_backend(datafusion_backend_selection(backend.clone()))
+
+    def with_plan_validation(self, backend: PlanValidation) -> Self:
+        """Select the portable plan-validation backend for the Session being built."""
+        return self.with_backend(plan_validation_backend_selection(backend.clone()))
 
     def build(self) -> Session:
         """Build one Session from the current builder backend selection."""
