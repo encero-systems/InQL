@@ -3381,22 +3381,25 @@
 <span class="prism-flow__label">Incan source</span>
 <div class="prism-flow__code">
 <span>rollup = query {</span>
-<span>    FROM orders</span>
-<span>    WHERE .status == "paid"</span>
-<span>    GROUP BY .region</span>
-<span>    SELECT</span>
-<span>        .region as region,</span>
-<span>        sum(.amount) as total</span>
+<span>  FROM orders</span>
+<span>  WHERE .status == "paid"</span>
+<span>  GROUP BY .region</span>
+<span>  SELECT .region as region,</span>
+<span>         sum(.amount) as total</span>
 <span>}</span>
 </div>
 </div>
-<div aria-hidden="true" class="prism-flow__arrow">→</div>
 <div class="prism-flow__pane prism-flow__pane--plan">
-<span class="prism-flow__label">Inspectable plan</span>
-<div class="prism-flow__node">Prism graph</div>
-<div class="prism-flow__node">Schema + lineage</div>
-<div class="prism-flow__node">Substrait boundary</div>
-<div class="prism-flow__node">Adapter evidence</div>
+<span class="prism-flow__label">Prism plan</span>
+<div class="prism-flow__row"><span>relation</span><strong>AggregateRel</strong></div>
+<div class="prism-flow__row"><span>schema</span><strong>region, total</strong></div>
+<div class="prism-flow__row"><span>lineage</span><strong>orders.amount</strong></div>
+</div>
+<div class="prism-flow__pane prism-flow__pane--evidence">
+<span class="prism-flow__label">Portable boundary</span>
+<div class="prism-flow__row"><span>format</span><strong>Substrait</strong></div>
+<div class="prism-flow__row"><span>adapter</span><strong>DataFusion</strong></div>
+<div class="prism-flow__row"><span>quality</span><strong>observable</strong></div>
 </div>
 </div>
 </section>
