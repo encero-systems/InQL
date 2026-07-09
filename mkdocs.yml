@@ -11,6 +11,9 @@ theme:
   name: material
   logo: shared/brand/inql-mark.png
   font: false
+  highlightjs: false
+  pygments_style: default
+  pygments_style_dark: native
   palette:
     - scheme: slate
       primary: black
@@ -26,13 +29,21 @@ theme:
 plugins:
   - search
 
+hooks:
+  - mkdocs_hooks.py
+
 markdown_extensions:
   - admonition
   - attr_list
   - def_list
   - md_in_html
   - pymdownx.details
-  - pymdownx.highlight
+  - pymdownx.highlight:
+      use_pygments: true
+      pygments_lang_class: true
+      extend_pygments_lang:
+        - name: incan
+          lang: incan
   - pymdownx.superfences
   - pymdownx.tasklist:
       custom_checkbox: true

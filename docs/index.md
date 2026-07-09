@@ -117,8 +117,8 @@ Author in the surface that fits the task. InQL keeps the semantics attached as t
 InQL plans are not opaque strings handed to a backend engine. Prism exposes the typed model and evidence before execution.
 </div>
 
-<div class="inql-prism-board" markdown="1">
-<article class="inql-code-card" markdown="1">
+<div class="inql-prism-board" markdown="block">
+<div class="inql-code-card" markdown="block">
 <span>Your query</span>
 
 ```incan
@@ -131,9 +131,9 @@ query {
         sum(.amount) as total
 }
 ```
-</article>
+</div>
 
-<article class="inql-plan-card" markdown="1">
+<div class="inql-plan-card" markdown="block">
 <span>Prism inspection</span>
 
 ```text
@@ -142,16 +142,16 @@ Source(orders)
   Aggregate(group: region)
   Project(region, total)
 ```
-</article>
+</div>
 
-<article class="inql-engine-card" markdown="1">
+<div class="inql-engine-card" markdown="block">
 <span>Execution targets</span>
 
 - DataFusion
 - DuckDB
 - Spark
 - Other Substrait consumers
-</article>
+</div>
 </div>
 </section>
 
