@@ -25,41 +25,67 @@
 </div>
 </section>
 
-<section class="inql-problem-panel" markdown="1">
-<div class="inql-problem-panel__left" markdown="1">
+<section class="inql-problem-panel inql-convergence-section" markdown="1">
+<div class="inql-problem-panel__left inql-diagnosis" markdown="1">
+<p class="inql-section-kicker">Why it exists</p>
+
 ## The problem with data logic today
 
-<div class="inql-problem-grid" markdown="1">
-<article markdown="1">
-### Too many ways to express logic
+Teams lose time to expression drift, backend rewrites, and plans that stay hidden until runtime.
 
-SQL, DataFrames, pipelines, and notebooks each carry their own shape.
+<div class="inql-friction-list">
+<article>
+<span>01</span>
+<div>
+<h3>Too many ways to express logic</h3>
+<p>SQL, DataFrames, pipelines, and notebooks each carry their own shape.</p>
+</div>
 </article>
 
-<article markdown="1">
-### Different semantics and behaviors
-
-Small rewrites can change meaning before anyone sees the plan.
+<article>
+<span>02</span>
+<div>
+<h3>Different semantics and behaviors</h3>
+<p>Small rewrites can change meaning before anyone sees the plan.</p>
+</div>
 </article>
 
-<article markdown="1">
-### Hard to inspect and debug
-
-You see results, but not the typed relational model that produced them.
+<article>
+<span>03</span>
+<div>
+<h3>Hard to inspect and debug</h3>
+<p>You see results, but not the logic, lineage, or rechecking behavior.</p>
+</div>
 </article>
 
-<article markdown="1">
-### Tied to specific engines
-
-Porting usually means rewriting logic and rechecking behavior.
+<article>
+<span>04</span>
+<div>
+<h3>Tied to specific engines</h3>
+<p>Porting usually means rewriting logic and revalidating behavior.</p>
+</div>
 </article>
 </div>
 </div>
 
-<div class="inql-problem-panel__right" markdown="1">
+<div class="inql-problem-panel__right inql-convergence" markdown="1">
+<p class="inql-section-kicker">The InQL idea</p>
+
 ## InQL is the unifying layer
 
-Different surfaces. One semantic model. One compiler. Multiple execution targets.
+Different surfaces. One compiler. Multiple execution targets.
+
+<figure class="inql-convergence-figure">
+<img src="shared/prismplane/semantic-convergence.jpg" alt="Authoring surfaces converging into one typed relational model and refracting into portable execution paths.">
+<figcaption>
+<span>SQL</span>
+<span>DataFrames</span>
+<span>LazyFrames</span>
+<span>Pipelines</span>
+<strong>One typed relational model</strong>
+<span>Execution targets</span>
+</figcaption>
+</figure>
 
 <p class="inql-thesis">Write once. Understand always. Run anywhere.</p>
 </div>
