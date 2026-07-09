@@ -99,7 +99,7 @@ Author in the surface that fits the task. InQL keeps the semantics attached as t
 
 <div class="inql-process-stage" aria-label="Five InQL stages moving from authoring intent through Prism inspection to portable execution.">
 <div class="inql-process-rail">
-<article class="inql-step-card">
+<article class="inql-step-card inql-step-card--author">
 <span>01</span>
 <h3>Author</h3>
 <p>Write in the interface that matches your workflow and context.</p>
@@ -111,7 +111,7 @@ Author in the surface that fits the task. InQL keeps the semantics attached as t
 </ul>
 </article>
 
-<article class="inql-step-card">
+<article class="inql-step-card inql-step-card--compile">
 <span>02</span>
 <h3>Compile</h3>
 <p>Lower authoring intent into a typed relational model and Substrait plan.</p>
@@ -123,7 +123,7 @@ Author in the surface that fits the task. InQL keeps the semantics attached as t
 <p class="inql-tag-row">Substrait</p>
 </article>
 
-<article class="inql-step-card inql-step-card--focus">
+<article class="inql-step-card inql-step-card--focus inql-step-card--prism">
 <span>03</span>
 <h3>Prism</h3>
 <p>InQL's semantic core makes the compiler's decisions visible.</p>
@@ -136,7 +136,7 @@ Author in the surface that fits the task. InQL keeps the semantics attached as t
 </ul>
 </article>
 
-<article class="inql-step-card">
+<article class="inql-step-card inql-step-card--optimize">
 <span>04</span>
 <h3>Optimize</h3>
 <p>Apply rule- and cost-based optimizations for the best execution plan.</p>
@@ -149,7 +149,7 @@ Author in the surface that fits the task. InQL keeps the semantics attached as t
 <p class="inql-tag-row">Smart optimizer</p>
 </article>
 
-<article class="inql-step-card">
+<article class="inql-step-card inql-step-card--execute">
 <span>05</span>
 <h3>Execute</h3>
 <p>Run on the engine that fits: local, in-process, or distributed.</p>

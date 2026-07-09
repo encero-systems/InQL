@@ -753,9 +753,9 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-process {
   background:
-    radial-gradient(circle at 52% 42%, rgba(107, 151, 255, 0.12), transparent 36rem),
-    radial-gradient(circle at 83% 45%, rgba(205, 94, 255, 0.1), transparent 30rem),
-    rgba(255, 255, 255, 0.82);
+    radial-gradient(circle at 50% 44%, rgba(107, 151, 255, 0.16), transparent 36rem),
+    radial-gradient(circle at 82% 46%, rgba(205, 94, 255, 0.12), transparent 30rem),
+    rgba(255, 255, 255, 0.86);
 }
 
 .inql-section-heading {
@@ -776,16 +776,16 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-process-stage {
   position: relative;
-  min-height: clamp(27rem, 43vw, 34rem);
-  padding: clamp(1.2rem, 2.2vw, 1.8rem);
-  border: 1px solid rgba(71, 109, 255, 0.14);
-  border-radius: clamp(1.2rem, 2vw, 1.75rem);
+  min-height: clamp(25rem, 34vw, 30rem);
+  padding: clamp(1rem, 1.65vw, 1.4rem);
+  border: 1px solid rgba(71, 109, 255, 0.16);
+  border-radius: clamp(1.15rem, 1.8vw, 1.55rem);
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.16) 48%, rgba(255, 255, 255, 0.9)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.22) 54%, rgba(255, 255, 255, 0.72)),
-    url("../shared/prismplane/process-flow-stage.jpg") center / 108% auto no-repeat;
+    linear-gradient(90deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.02) 52%, rgba(255, 255, 255, 0.7)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.02) 42%, rgba(255, 255, 255, 0.4)),
+    url("../shared/prismplane/process-flow-stage.jpg") center / 106% auto no-repeat;
   overflow: hidden;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88), 0 26px 72px rgba(55, 74, 123, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 24px 76px rgba(55, 74, 123, 0.12);
 }
 
 .inql-process-stage::before {
@@ -793,8 +793,8 @@ body:has(.inql-launch) .md-typeset li {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 52% 40%, rgba(255, 255, 255, 0.02), transparent 14rem),
-    radial-gradient(circle at 50% 70%, rgba(123, 92, 255, 0.08), transparent 22rem);
+    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.02), transparent 14rem),
+    radial-gradient(circle at 50% 74%, rgba(123, 92, 255, 0.07), transparent 22rem);
   pointer-events: none;
 }
 
@@ -802,27 +802,27 @@ body:has(.inql-launch) .md-typeset li {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: clamp(0.95rem, 1.7vw, 1.65rem);
-  align-items: stretch;
-  min-height: clamp(23rem, 36vw, 29.5rem);
+  grid-template-columns: 0.9fr 0.98fr 1.36fr 0.98fr 0.9fr;
+  gap: clamp(0.7rem, 1.25vw, 1.25rem);
+  align-items: center;
+  min-height: clamp(22rem, 29vw, 26.5rem);
 }
 
 .inql-step-card {
   display: flex;
-  min-height: 0;
-  padding: clamp(0.9rem, 1.35vw, 1.15rem);
+  min-height: clamp(19.25rem, 25vw, 22.6rem);
+  padding: clamp(0.72rem, 1vw, 1rem);
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.42);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86), 0 20px 42px rgba(55, 74, 123, 0.08);
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68), 0 18px 42px rgba(55, 74, 123, 0.08);
   backdrop-filter: blur(1px);
 }
 
 .inql-step-card > span {
   display: inline-flex;
-  margin-bottom: 0.48rem;
+  margin-bottom: 0.42rem;
   color: var(--inql-page-blue);
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   font-weight: 830;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -830,15 +830,30 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-step-card--focus {
   border-color: rgba(123, 92, 255, 0.48);
-  background: rgba(255, 255, 255, 0.54);
-  box-shadow: 0 0 0 1px rgba(123, 92, 255, 0.12), 0 30px 68px rgba(88, 71, 190, 0.2);
+  background: rgba(255, 255, 255, 0.38);
+  box-shadow: 0 0 0 1px rgba(123, 92, 255, 0.14), 0 34px 78px rgba(88, 71, 190, 0.2);
+}
+
+.inql-step-card--prism {
+  min-height: clamp(23rem, 31vw, 27.5rem);
+  transform: translateY(-0.25rem);
+}
+
+.inql-step-card--compile,
+.inql-step-card--optimize {
+  transform: translateY(0.25rem);
+}
+
+.inql-step-card--author,
+.inql-step-card--execute {
+  transform: translateY(0.55rem);
 }
 
 .inql-tag-row {
   margin-top: auto !important;
-  padding-top: 0.9rem;
+  padding-top: 0.72rem;
   color: var(--inql-page-blue) !important;
-  font-size: 0.67rem !important;
+  font-size: 0.62rem !important;
   font-weight: 780;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -846,21 +861,21 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-process-list {
   display: grid;
-  gap: 0.42rem;
+  gap: 0.34rem;
   margin: auto 0 0;
   padding: 0;
   list-style: none;
 }
 
 .inql-process-list li {
-  min-height: 1.9rem;
+  min-height: 1.62rem;
   margin: 0 !important;
-  padding: 0.42rem 0.56rem;
+  padding: 0.34rem 0.5rem;
   border: 1px solid rgba(71, 109, 255, 0.1);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.68);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.58);
   color: var(--inql-page-copy) !important;
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 700;
   line-height: 1.18;
   list-style: none !important;
@@ -878,14 +893,14 @@ body:has(.inql-launch) .md-typeset li {
 }
 
 .inql-mini-code {
-  margin: auto 0 0.7rem;
-  padding: 0.62rem;
+  margin: auto 0 0.58rem;
+  padding: 0.56rem;
   border: 1px solid rgba(71, 109, 255, 0.12);
   border-radius: var(--inql-radius-md);
-  background: rgba(255, 255, 255, 0.66);
+  background: rgba(255, 255, 255, 0.58);
   color: #263553;
-  font-size: 0.56rem;
-  line-height: 1.5;
+  font-size: 0.52rem;
+  line-height: 1.42;
   overflow-x: auto;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 10px 22px rgba(55, 74, 123, 0.06);
 }
@@ -1100,22 +1115,6 @@ body:has(.inql-launch) .md-typeset li {
     margin-right: 0;
   }
 
-  .inql-process-rail {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    min-height: auto;
-  }
-
-  .inql-process-stage {
-    min-height: auto;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.54) 46%, rgba(255, 255, 255, 0.9)),
-      url("../shared/prismplane/process-flow-stage.jpg") center top / auto 100% no-repeat;
-  }
-
-  .inql-step-card {
-    min-height: 14rem;
-  }
-
   .inql-convergence {
     min-height: 26rem;
     background:
@@ -1125,6 +1124,26 @@ body:has(.inql-launch) .md-typeset li {
 
   .inql-convergence__copy {
     width: min(100%, 30rem);
+  }
+}
+
+@media screen and (max-width: 62em) {
+  .inql-process-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: auto;
+  }
+
+  .inql-process-stage {
+    min-height: auto;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.42) 44%, rgba(255, 255, 255, 0.88)),
+      url("../shared/prismplane/process-flow-stage.jpg") center top / auto 100% no-repeat;
+  }
+
+  .inql-step-card,
+  .inql-step-card--prism {
+    min-height: 14rem;
+    transform: none;
   }
 }
 
