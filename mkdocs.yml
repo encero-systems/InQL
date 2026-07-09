@@ -9,6 +9,7 @@ strict: true
 
 theme:
   name: material
+  logo: shared/brand/inql-mark.png
   font: false
   palette:
     - scheme: slate
@@ -37,7 +38,7 @@ markdown_extensions:
       custom_checkbox: true
 
 extra_css:
-  - stylesheets/prismplane.css?v=20260709-reference-fit-1
+  - stylesheets/prismplane.css?v=20260709-reference-fit-2
 
 nav:
   - Home: index.md
