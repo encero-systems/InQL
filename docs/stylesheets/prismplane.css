@@ -751,6 +751,13 @@ body:has(.inql-launch) .md-typeset li {
   padding: clamp(1.35rem, 3vw, 2.25rem);
 }
 
+.inql-process {
+  background:
+    radial-gradient(circle at 52% 42%, rgba(107, 151, 255, 0.12), transparent 36rem),
+    radial-gradient(circle at 83% 45%, rgba(205, 94, 255, 0.1), transparent 30rem),
+    rgba(255, 255, 255, 0.82);
+}
+
 .inql-section-heading {
   max-width: 55rem;
   margin-bottom: 1.35rem;
@@ -762,20 +769,58 @@ body:has(.inql-launch) .md-typeset li {
   color: var(--inql-page-copy) !important;
 }
 
+.inql-process-heading {
+  max-width: 31rem;
+  margin-bottom: clamp(1.1rem, 2.2vw, 1.8rem);
+}
+
+.inql-process-stage {
+  position: relative;
+  min-height: clamp(27rem, 43vw, 34rem);
+  padding: clamp(1.2rem, 2.2vw, 1.8rem);
+  border: 1px solid rgba(71, 109, 255, 0.14);
+  border-radius: clamp(1.2rem, 2vw, 1.75rem);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.16) 48%, rgba(255, 255, 255, 0.9)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.22) 54%, rgba(255, 255, 255, 0.72)),
+    url("../shared/prismplane/process-flow-stage.jpg") center / 108% auto no-repeat;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88), 0 26px 72px rgba(55, 74, 123, 0.1);
+}
+
+.inql-process-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 52% 40%, rgba(255, 255, 255, 0.02), transparent 14rem),
+    radial-gradient(circle at 50% 70%, rgba(123, 92, 255, 0.08), transparent 22rem);
+  pointer-events: none;
+}
+
 .inql-process-rail {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: clamp(0.85rem, 1.5vw, 1.15rem);
+  gap: clamp(0.95rem, 1.7vw, 1.65rem);
+  align-items: stretch;
+  min-height: clamp(23rem, 36vw, 29.5rem);
 }
 
 .inql-step-card {
-  min-height: 11.9rem;
-  padding: 0.95rem;
+  display: flex;
+  min-height: 0;
+  padding: clamp(0.9rem, 1.35vw, 1.15rem);
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.42);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86), 0 20px 42px rgba(55, 74, 123, 0.08);
+  backdrop-filter: blur(1px);
 }
 
 .inql-step-card > span {
   display: inline-flex;
-  margin-bottom: 0.9rem;
+  margin-bottom: 0.48rem;
   color: var(--inql-page-blue);
   font-size: 0.7rem;
   font-weight: 830;
@@ -785,17 +830,73 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-step-card--focus {
   border-color: rgba(123, 92, 255, 0.48);
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 0 0 1px rgba(123, 92, 255, 0.12), 0 24px 58px rgba(88, 71, 190, 0.16);
+  background: rgba(255, 255, 255, 0.54);
+  box-shadow: 0 0 0 1px rgba(123, 92, 255, 0.12), 0 30px 68px rgba(88, 71, 190, 0.2);
 }
 
 .inql-tag-row {
-  margin-top: 1.05rem !important;
+  margin-top: auto !important;
+  padding-top: 0.9rem;
   color: var(--inql-page-blue) !important;
   font-size: 0.67rem !important;
   font-weight: 780;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.inql-process-list {
+  display: grid;
+  gap: 0.42rem;
+  margin: auto 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.inql-process-list li {
+  min-height: 1.9rem;
+  margin: 0 !important;
+  padding: 0.42rem 0.56rem;
+  border: 1px solid rgba(71, 109, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--inql-page-copy) !important;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.18;
+  list-style: none !important;
+  box-shadow: 0 9px 20px rgba(55, 74, 123, 0.05);
+}
+
+.inql-process-list li::marker,
+.inql-process-list li::before {
+  content: none !important;
+  display: none !important;
+}
+
+.inql-process-list--prism {
+  margin-top: auto;
+}
+
+.inql-mini-code {
+  margin: auto 0 0.7rem;
+  padding: 0.62rem;
+  border: 1px solid rgba(71, 109, 255, 0.12);
+  border-radius: var(--inql-radius-md);
+  background: rgba(255, 255, 255, 0.66);
+  color: #263553;
+  font-size: 0.56rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 10px 22px rgba(55, 74, 123, 0.06);
+}
+
+.inql-mini-code code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  white-space: pre;
 }
 
 .inql-prism-board {
@@ -1001,6 +1102,18 @@ body:has(.inql-launch) .md-typeset li {
 
   .inql-process-rail {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: auto;
+  }
+
+  .inql-process-stage {
+    min-height: auto;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.54) 46%, rgba(255, 255, 255, 0.9)),
+      url("../shared/prismplane/process-flow-stage.jpg") center top / auto 100% no-repeat;
+  }
+
+  .inql-step-card {
+    min-height: 14rem;
   }
 
   .inql-convergence {
@@ -1059,6 +1172,27 @@ body:has(.inql-launch) .md-typeset li {
 
   .inql-process-rail {
     grid-template-columns: 1fr;
+  }
+
+  .inql-process-stage {
+    padding: 0.85rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.62) 45%, rgba(255, 255, 255, 0.94)),
+      url("../shared/prismplane/process-flow-stage.jpg") center top / auto 100% no-repeat;
+  }
+
+  .inql-step-card {
+    min-height: 0;
+    padding: 0.9rem;
+    background: rgba(255, 255, 255, 0.74);
+  }
+
+  .inql-process-list {
+    margin-top: 0.8rem;
+  }
+
+  .inql-mini-code {
+    margin-top: 0.8rem;
   }
 
   .inql-friction-list article {
