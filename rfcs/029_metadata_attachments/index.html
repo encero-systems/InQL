@@ -3532,11 +3532,11 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Most authors should see attachments through inspection results:</p>
-<div class="highlight"><pre><span></span><code>plan = inspect_plan(summary)
-field = plan.output_field(&quot;customer_id&quot;)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">plan</span> <span class="o">=</span> <span class="n">inspect_plan</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+<span class="n">field</span> <span class="o">=</span> <span class="n">plan</span><span class="o">.</span><span class="n">output_field</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)</span>
 
-for attachment in field.attachments():
-    print(attachment.namespace, attachment.key, attachment.visibility)
+<span class="k">for</span> <span class="n">attachment</span> <span class="ow">in</span> <span class="n">field</span><span class="o">.</span><span class="n">attachments</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">attachment</span><span class="o">.</span><span class="n">namespace</span><span class="p">,</span> <span class="n">attachment</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">attachment</span><span class="o">.</span><span class="n">visibility</span><span class="p">)</span>
 </code></pre></div>
 <p>The attachment shape lets tools distinguish a user-authored label, a planner-derived fact, an adapter-reported observation, and a redacted sensitive value.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

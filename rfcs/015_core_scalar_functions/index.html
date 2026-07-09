@@ -3793,14 +3793,14 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors should be able to write everyday filters and computed columns without switching helper families:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import add, and_, cast, col, coalesce, gt, is_not_null, lit, mul
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">add</span><span class="o">,</span><span class="w"> </span><span class="nn">and_</span><span class="o">,</span><span class="w"> </span><span class="nn">cast</span><span class="o">,</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">coalesce</span><span class="o">,</span><span class="w"> </span><span class="nn">gt</span><span class="o">,</span><span class="w"> </span><span class="nn">is_not_null</span><span class="o">,</span><span class="w"> </span><span class="nn">lit</span><span class="o">,</span><span class="w"> </span><span class="nn">mul</span>
 
-enriched = (
-    orders
-        .filter(and_(is_not_null(col(&quot;customer_id&quot;)), gt(col(&quot;amount&quot;), lit(0))))
-        .with_column(&quot;amount_cents&quot;, mul(cast(col(&quot;amount&quot;), int), lit(100)))
-        .with_column(&quot;status_or_unknown&quot;, coalesce([col(&quot;status&quot;), lit(&quot;unknown&quot;)]))
-)
+<span class="n">enriched</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">orders</span>
+        <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="n">and_</span><span class="p">(</span><span class="n">is_not_null</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)),</span> <span class="nb">gt</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="mi">0</span><span class="p">))))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;amount_cents&quot;</span><span class="p">,</span> <span class="n">mul</span><span class="p">(</span><span class="n">cast</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">),</span> <span class="nb">int</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="mi">100</span><span class="p">)))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;status_or_unknown&quot;</span><span class="p">,</span> <span class="nb">coalesce</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;unknown&quot;</span><span class="p">)]))</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>The exact surface may later gain operator sugar, but the semantic set should be available through importable functions first.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

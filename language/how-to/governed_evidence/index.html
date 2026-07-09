@@ -3302,66 +3302,66 @@
 <p>Use governed attributes and policy checkpoints when you need local evidence about sensitive, classified, reviewed, or policy-relevant relational targets without making InQL responsible for your organization’s policy engine.</p>
 <h2 id="inspect-inferred-governed-attributes">Inspect inferred governed attributes</h2>
 <p><code>inspect_plan(...)</code> carries governed evidence next to lineage, metadata attachments, adapter requirements, and unsupported-evidence markers.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import inspect_plan
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">inspect_plan</span>
 
-inspection = inspect_plan(summary)
+<span class="n">inspection</span> <span class="o">=</span> <span class="n">inspect_plan</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
 
-for attribute in inspection.governed_attributes:
-    println(f&quot;{attribute.target.name}: {attribute.key} = {attribute.value.value}&quot;)
-    println(f&quot;  source={attribute.source.value()} status={attribute.status.value()}&quot;)
+<span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">inspection</span><span class="o">.</span><span class="n">governed_attributes</span><span class="p">:</span>
+    <span class="nb">println</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attribute</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">attribute</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">attribute</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">println</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  source=</span><span class="si">{</span><span class="n">attribute</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">value</span><span class="p">()</span><span class="si">}</span><span class="s2"> status=</span><span class="si">{</span><span class="n">attribute</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">value</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>Inspection infers field schema attributes when local plan evidence includes a field’s primitive kind. These records use the same target, provenance, confidence, status, and evidence-reference shape as caller-supplied attributes, so catalog, contract, and policy-ingress steps can attach compatible evidence without a separate record model.</p>
 <h2 id="declare-a-caller-supplied-attribute">Declare a caller-supplied attribute</h2>
 <p>Use <code>governed_attribute(...)</code> when another local step already knows a governed fact and wants to attach it to a semantic target.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import (
-    GovernedAttributeConfidence,
-    GovernedAttributeScope,
-    GovernedAttributeSource,
-    GovernedAttributeStatus,
-    governed_attribute,
-    inspect_plan,
-)
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="p">(</span>
+    <span class="nc">GovernedAttributeConfidence</span><span class="p">,</span>
+    <span class="nc">GovernedAttributeScope</span><span class="p">,</span>
+    <span class="nc">GovernedAttributeSource</span><span class="p">,</span>
+    <span class="nc">GovernedAttributeStatus</span><span class="p">,</span>
+    <span class="n">governed_attribute</span><span class="p">,</span>
+    <span class="n">inspect_plan</span><span class="p">,</span>
+<span class="p">)</span>
 
-inspection = inspect_plan(customer_report)
-email_target = inspection.output_fields[0]
+<span class="n">inspection</span> <span class="o">=</span> <span class="n">inspect_plan</span><span class="p">(</span><span class="n">customer_report</span><span class="p">)</span>
+<span class="n">email_target</span> <span class="o">=</span> <span class="n">inspection</span><span class="o">.</span><span class="n">output_fields</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-classification = governed_attribute(
-    email_target,
-    &quot;classification&quot;,
-    &quot;personal_data&quot;,
-    scope=GovernedAttributeScope.Field,
-    source=GovernedAttributeSource.User,
-    confidence=GovernedAttributeConfidence.High,
-    status=GovernedAttributeStatus.Asserted,
-    authority=Some(&quot;privacy-review&quot;),
-    evidence_refs=[&quot;catalog:customer_report.email&quot;],
-)
+<span class="n">classification</span> <span class="o">=</span> <span class="n">governed_attribute</span><span class="p">(</span>
+    <span class="n">email_target</span><span class="p">,</span>
+    <span class="s2">&quot;classification&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;personal_data&quot;</span><span class="p">,</span>
+    <span class="n">scope</span><span class="o">=</span><span class="nc">GovernedAttributeScope</span><span class="o">.</span><span class="nc">Field</span><span class="p">,</span>
+    <span class="n">source</span><span class="o">=</span><span class="nc">GovernedAttributeSource</span><span class="o">.</span><span class="nc">User</span><span class="p">,</span>
+    <span class="n">confidence</span><span class="o">=</span><span class="nc">GovernedAttributeConfidence</span><span class="o">.</span><span class="nc">High</span><span class="p">,</span>
+    <span class="n">status</span><span class="o">=</span><span class="nc">GovernedAttributeStatus</span><span class="o">.</span><span class="nc">Asserted</span><span class="p">,</span>
+    <span class="n">authority</span><span class="o">=</span><span class="nb">Some</span><span class="p">(</span><span class="s2">&quot;privacy-review&quot;</span><span class="p">),</span>
+    <span class="n">evidence_refs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;catalog:customer_report.email&quot;</span><span class="p">],</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>This only creates evidence. It does not mask the field, filter rows, block execution, or certify the output.</p>
 <h2 id="record-a-policy-checkpoint">Record a policy checkpoint</h2>
 <p>Use <code>policy_checkpoint(...)</code> to record a policy result or observation at a known boundary.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import (
-    MetadataVisibility,
-    PolicyCheckpointAction,
-    PolicyCheckpointKind,
-    policy_checkpoint,
-)
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="p">(</span>
+    <span class="nc">MetadataVisibility</span><span class="p">,</span>
+    <span class="nc">PolicyCheckpointAction</span><span class="p">,</span>
+    <span class="nc">PolicyCheckpointKind</span><span class="p">,</span>
+    <span class="n">policy_checkpoint</span><span class="p">,</span>
+<span class="p">)</span>
 
-checkpoint = policy_checkpoint(
-    email_target,
-    PolicyCheckpointKind.Planning,
-    PolicyCheckpointAction.Warn,
-    &quot;policy:pii-export&quot;,
-    &quot;masking_recommended&quot;,
-    visibility=MetadataVisibility.Internal,
-    evidence_refs=[classification.attribute_id],
-)
+<span class="n">checkpoint</span> <span class="o">=</span> <span class="n">policy_checkpoint</span><span class="p">(</span>
+    <span class="n">email_target</span><span class="p">,</span>
+    <span class="nc">PolicyCheckpointKind</span><span class="o">.</span><span class="nc">Planning</span><span class="p">,</span>
+    <span class="nc">PolicyCheckpointAction</span><span class="o">.</span><span class="nc">Warn</span><span class="p">,</span>
+    <span class="s2">&quot;policy:pii-export&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;masking_recommended&quot;</span><span class="p">,</span>
+    <span class="n">visibility</span><span class="o">=</span><span class="nc">MetadataVisibility</span><span class="o">.</span><span class="nc">Internal</span><span class="p">,</span>
+    <span class="n">evidence_refs</span><span class="o">=</span><span class="p">[</span><span class="n">classification</span><span class="o">.</span><span class="n">attribute_id</span><span class="p">],</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>The checkpoint says that a warning decision was recorded. A CI job, notebook, orchestration layer, or governance tool can decide what to do with that warning. InQL keeps the decision evidence explicit and local.</p>
 <h2 id="read-policy-observation-from-inspection">Read policy observation from inspection</h2>
 <p>Local inspection emits a planning checkpoint when it observes governed evidence. That checkpoint uses <code>PolicyCheckpointAction.Observe</code>, not <code>Allow</code> or <code>Deny</code>, because inspection is not a policy engine.</p>
-<div class="highlight"><pre><span></span><code>for checkpoint in inspection.policy_checkpoints:
-    println(f&quot;{checkpoint.checkpoint.value()}: {checkpoint.action.value()} {checkpoint.reason_code}&quot;)
+<div class="language-incan highlight"><pre><span></span><code><span class="k">for</span> <span class="n">checkpoint</span> <span class="ow">in</span> <span class="n">inspection</span><span class="o">.</span><span class="n">policy_checkpoints</span><span class="p">:</span>
+    <span class="nb">println</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">value</span><span class="p">()</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">value</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">reason_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>For the complete record and enum reference, see <a href="../../reference/governance/">Governed attributes and policy checkpoints (Reference)</a>.</p>
 

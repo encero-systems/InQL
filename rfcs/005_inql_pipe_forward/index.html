@@ -3589,27 +3589,27 @@
 <li>Finalizing a dedicated aggregate-stage spelling analogous to BigQuery's <code>AGGREGATE</code> operator. The initial value of pipe-forward is expression-first relational shorthand; aggregate-stage surface details may be refined in a follow-up amendment as long as semantics stay aligned with InQL RFC 003.</li>
 </ul>
 <h2 id="guide-level-explanation">Guide-level explanation</h2>
-<div class="highlight"><pre><span></span><code>new_df = df
-    |&gt; where .amount &gt; 100
-    |&gt; select { region }
+<div class="language-incan highlight"><pre><span></span><code><span class="n">new_df</span> <span class="o">=</span> <span class="n">df</span>
+    <span class="o">|&gt;</span> <span class="n">where</span> <span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span>
+    <span class="o">|&gt;</span> <span class="n">select</span> <span class="p">{</span> <span class="n">region</span> <span class="p">}</span>
 </code></pre></div>
 <p>This is the core value proposition: when a dataset value already exists in scope, pipe-forward gives a concise linear shorthand for a few relational steps. The semantics are identical to an equivalent <code>query {}</code> block or method chain; only syntax differs. <code>.amount</code> and <code>region</code> resolve using the same rules as the other InQL surfaces.</p>
 <p>Another common pattern is incremental narrowing over an existing dataset:</p>
-<div class="highlight"><pre><span></span><code>preview = orders
-    |&gt; where .status == &quot;completed&quot;
-    |&gt; order_by .created_at desc
-    |&gt; limit 20
+<div class="language-incan highlight"><pre><span></span><code><span class="n">preview</span> <span class="o">=</span> <span class="n">orders</span>
+    <span class="o">|&gt;</span> <span class="n">where</span> <span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;completed&quot;</span>
+    <span class="o">|&gt;</span> <span class="n">order_by</span> <span class="o">.</span><span class="n">created_at</span> <span class="nb">desc</span>
+    <span class="o">|&gt;</span> <span class="n">limit</span> <span class="mi">20</span>
 </code></pre></div>
 <p>Pipe-forward also supports enrichment without leaving the linear flow:</p>
-<div class="highlight"><pre><span></span><code>enriched = orders
-    |&gt; join customers on .customer_id == customers.id
-    |&gt; where .amount &gt; 100
-    |&gt; select { .order_id, customers.name, .amount }
+<div class="language-incan highlight"><pre><span></span><code><span class="n">enriched</span> <span class="o">=</span> <span class="n">orders</span>
+    <span class="o">|&gt;</span> <span class="nb">join</span> <span class="n">customers</span> <span class="n">on</span> <span class="o">.</span><span class="n">customer_id</span> <span class="o">==</span> <span class="n">customers</span><span class="o">.</span><span class="n">id</span>
+    <span class="o">|&gt;</span> <span class="n">where</span> <span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span>
+    <span class="o">|&gt;</span> <span class="n">select</span> <span class="p">{</span> <span class="o">.</span><span class="n">order_id</span><span class="p">,</span> <span class="n">customers</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="o">.</span><span class="n">amount</span> <span class="p">}</span>
 </code></pre></div>
 <p>Because the pipe attaches to any <code>DataSet[T]</code>-producing expression, it can continue from a <code>query {}</code> result as well:</p>
-<div class="highlight"><pre><span></span><code>filtered = query {
-    FROM orders
-} |&gt; where .amount &gt; 100
+<div class="language-incan highlight"><pre><span></span><code><span class="n">filtered</span> <span class="o">=</span> <span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+<span class="p">}</span> <span class="o">|&gt;</span> <span class="n">where</span> <span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span>
 </code></pre></div>
 <h2 id="reference-level-explanation">Reference-level explanation</h2>
 <h3 id="token-and-stage-syntax">Token and stage syntax</h3>

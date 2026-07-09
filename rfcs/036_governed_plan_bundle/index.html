@@ -3544,8 +3544,8 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>An author or CI job can produce one bundle for a planned relation:</p>
-<div class="highlight"><pre><span></span><code>bundle = governed_plan_bundle(summary)
-bundle.write(&quot;target/inql/summary.bundle.json&quot;)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">bundle</span> <span class="o">=</span> <span class="n">governed_plan_bundle</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+<span class="n">bundle</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;target/inql/summary.bundle.json&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>The bundle can be inspected locally or consumed by other tools. It does not require a hosted service.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

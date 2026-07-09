@@ -3570,16 +3570,16 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors should eventually see InQL as having a coherent function catalog rather than a handful of unrelated helpers:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import avg, col, count, date_trunc, lower, sum, trim
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">avg</span><span class="o">,</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">count</span><span class="o">,</span><span class="w"> </span><span class="nn">date_trunc</span><span class="o">,</span><span class="w"> </span><span class="nn">lower</span><span class="o">,</span><span class="w"> </span><span class="nn">sum</span><span class="o">,</span><span class="w"> </span><span class="nn">trim</span>
 
-summary = (
-    orders
-        .filter(col(&quot;amount&quot;) &gt; 0)
-        .with_column(&quot;email_norm&quot;, lower(trim(col(&quot;email&quot;))))
-        .with_column(&quot;order_month&quot;, date_trunc(&quot;month&quot;, col(&quot;created_at&quot;)))
-        .group_by([col(&quot;customer_id&quot;), col(&quot;order_month&quot;)])
-        .agg([count(), sum(col(&quot;amount&quot;)), avg(col(&quot;amount&quot;))])
-)
+<span class="n">summary</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">orders</span>
+        <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;email_norm&quot;</span><span class="p">,</span> <span class="nb">lower</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">))))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;order_month&quot;</span><span class="p">,</span> <span class="n">date_trunc</span><span class="p">(</span><span class="s2">&quot;month&quot;</span><span class="p">,</span> <span class="nb">col</span><span class="p">(</span><span class="s2">&quot;created_at&quot;</span><span class="p">)))</span>
+        <span class="o">.</span><span class="n">group_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">),</span> <span class="nb">col</span><span class="p">(</span><span class="s2">&quot;order_month&quot;</span><span class="p">)])</span>
+        <span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="nb">count</span><span class="p">(),</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">)),</span> <span class="nb">avg</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))])</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>The child RFCs define which names exist, how they typecheck, how aliases work, and how they lower. This umbrella RFC only tracks the larger program.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

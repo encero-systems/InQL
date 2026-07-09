@@ -4109,17 +4109,17 @@
 <li>an ordinary Incan name — a binding, function, or constant from the surrounding code</li>
 </ul>
 <p>Here are all four forms in one query:</p>
-<div class="highlight"><pre><span></span><code>threshold = 1000
+<div class="language-incan highlight"><pre><span></span><code><span class="n">threshold</span> <span class="o">=</span> <span class="mi">1000</span>
 
-query {
-    FROM orders
-    JOIN customers ON .customer_id == customers.id
-    WHERE .amount &gt; threshold
-    SELECT
-        .order_id,
-        customers.name,
-        .amount,
-}
+<span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">JOIN</span> <span class="n">customers</span> <span class="k">ON</span> <span class="o">.</span><span class="n">customer_id</span> <span class="o">==</span> <span class="n">customers</span><span class="o">.</span><span class="n">id</span>
+    <span class="k">WHERE</span> <span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="n">threshold</span>
+    <span class="k">SELECT</span>
+        <span class="o">.</span><span class="n">order_id</span><span class="p">,</span>
+        <span class="n">customers</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="o">.</span><span class="n">amount</span><span class="p">,</span>
+<span class="p">}</span>
 </code></pre></div>
 <p><code>.amount</code> and <code>.customer_id</code> are form 1 (primary relation). <code>customers.name</code> is form 2 (named join). <code>threshold</code> is form 4 (ordinary Incan binding — no column by that name exists in the query schema).</p>
 <p>If you remember only five things about InQL naming:</p>
@@ -4139,21 +4139,21 @@ query {
 </ul>
 <h3 id="two-authoring-surfaces-v01">Two authoring surfaces (v0.1)</h3>
 <p>The examples in this section assume aggregate helpers such as <code>sum</code> are imported from <code>pub::inql.functions</code> (they are not ambient builtins).</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import sum
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">sum</span>
 
-# query {} blocks
-query {
-    FROM orders
-    WHERE .amount &gt; 100
-    GROUP BY .region
-    SELECT region, sum(.amount) as total
-}
+<span class="c1"># query {} blocks</span>
+<span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">WHERE</span> <span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span>
+    <span class="k">GROUP</span> <span class="k">BY</span> <span class="o">.</span><span class="n">region</span>
+    <span class="k">SELECT</span> <span class="n">region</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total</span>
+<span class="p">}</span>
 
-# method chains
-orders
-    .filter(.amount &gt; 100)
-    .group_by(.region)
-    .agg(sum(.amount) as total)
+<span class="c1"># method chains</span>
+<span class="n">orders</span>
+    <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="o">.</span><span class="n">region</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total</span><span class="p">)</span>
 </code></pre></div>
 <p>These lower to the same relational plan. Identifier resolution rules do not change between them.</p>
 <h2 id="reference-level-explanation">Reference-level explanation</h2>
@@ -4214,99 +4214,99 @@ orders
 <li>Clauses after <code>SELECT</code> (e.g. post-<code>SELECT</code> filters, <code>ORDER BY</code>) see the schema produced by the preceding <code>SELECT</code>.</li>
 </ul>
 <p>Example (illustrative):</p>
-<div class="highlight"><pre><span></span><code>query {
-    FROM orders
-    GROUP BY .customer_id
-    SELECT
-        customer_id,
-        sum(.amount) as total_spend,
-    WHERE total_spend &gt; 1000
-    ORDER BY total_spend DESC
-}
+<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">GROUP</span> <span class="k">BY</span> <span class="o">.</span><span class="n">customer_id</span>
+    <span class="k">SELECT</span>
+        <span class="n">customer_id</span><span class="p">,</span>
+        <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_spend</span><span class="p">,</span>
+    <span class="k">WHERE</span> <span class="n">total_spend</span> <span class="o">&gt;</span> <span class="mi">1000</span>
+    <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">total_spend</span> <span class="k">DESC</span>
+<span class="p">}</span>
 </code></pre></div>
 <p><code>total_spend</code> in the later <code>WHERE</code> and <code>ORDER BY</code> is not an outer Incan variable. It is a column in the current query schema produced by the preceding <code>SELECT</code>.</p>
 <h3 id="4-resolution-rules">4. Resolution rules</h3>
 <h4 id="rule-1-column-is-always-the-primary-input-relation">Rule 1: <code>.column</code> is always the primary input relation</h4>
 <p><code>.status</code> denotes the <code>status</code> field on the primary relation from <code>FROM</code>, including after <code>JOIN</code>. <code>.column</code> does not refer to joined relations; use <code>relation.column</code> for those.</p>
-<div class="highlight"><pre><span></span><code>query {
-    FROM orders
-    WHERE .status == &quot;completed&quot;
-}
+<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">WHERE</span> <span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;completed&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <p>Here <code>.status</code> is <code>orders.status</code>.</p>
 <h4 id="rule-2-relationcolumn-is-always-the-named-relation">Rule 2: <code>relation.column</code> is always the named relation</h4>
 <p>Joined fields <strong>must</strong> use <code>alias.column</code> when referring to the joined relation's fields.</p>
-<div class="highlight"><pre><span></span><code>query {
-    FROM orders
-    JOIN customers ON .customer_id == customers.id
-    SELECT
-        .order_id,
-        customers.name,
-        .amount,
-}
+<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">JOIN</span> <span class="n">customers</span> <span class="k">ON</span> <span class="o">.</span><span class="n">customer_id</span> <span class="o">==</span> <span class="n">customers</span><span class="o">.</span><span class="n">id</span>
+    <span class="k">SELECT</span>
+        <span class="o">.</span><span class="n">order_id</span><span class="p">,</span>
+        <span class="n">customers</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="o">.</span><span class="n">amount</span><span class="p">,</span>
+<span class="p">}</span>
 </code></pre></div>
 <h4 id="rule-3-bare-names-resolve-against-the-current-query-schema-first">Rule 3: bare names resolve against the current query schema first</h4>
 <p>In relational clause positions, a bare identifier <strong>must</strong> resolve against the current query schema before ordinary lexical Incan bindings are considered, when a matching column exists.</p>
-<div class="highlight"><pre><span></span><code>query {
-    FROM orders
-    SELECT customer_id, sum(.amount) as total_spend
-    ORDER BY total_spend DESC
-}
+<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">SELECT</span> <span class="n">customer_id</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_spend</span>
+    <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">total_spend</span> <span class="k">DESC</span>
+<span class="p">}</span>
 </code></pre></div>
 <p>Query text reads as relational logic, not a competition between relational names and outer variables. If an outer Incan binding shares a name with a query column, the column wins in those positions.</p>
 <h4 id="rule-4-select-alias-visibility">Rule 4: <code>SELECT</code> alias visibility</h4>
 <p>Aliases introduced in a <code>SELECT</code> list are available to subsequent expressions in the same projection list, in order. An alias defined on line N is visible to expressions on lines N+1, N+2, etc., but not to expressions that precede it. Aliases also become part of the output schema for all following clauses (<code>ORDER BY</code>, post-<code>SELECT WHERE</code>, etc.).</p>
-<div class="highlight"><pre><span></span><code>query {
-    FROM orders
-    SELECT
-        sum(.amount) as total_spend,
-        total_spend * 0.2 as tax,
-    ORDER BY total_spend DESC
-}
+<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">SELECT</span>
+        <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_spend</span><span class="p">,</span>
+        <span class="n">total_spend</span> <span class="o">*</span> <span class="mf">0.2</span> <span class="k">as</span> <span class="n">tax</span><span class="p">,</span>
+    <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">total_spend</span> <span class="k">DESC</span>
+<span class="p">}</span>
 </code></pre></div>
 <p>Here <code>tax</code> may reference <code>total_spend</code> because <code>total_spend</code> is defined earlier in the same <code>SELECT</code> list. <code>total_spend</code> in <code>ORDER BY</code> refers to the projected column. This follows the lateral column alias convention used by DuckDB, Snowflake, and MySQL. Exact lowering semantics (e.g. inline expression rewriting for Substrait) are specified by the query grammar.</p>
 <h4 id="rule-5-ordinary-incan-values-when-no-column-matches">Rule 5: ordinary Incan values when no column matches</h4>
 <p>If a bare identifier does not resolve to a query schema column, it <strong>may</strong> resolve as an ordinary Incan binding or value where the grammar allows a full Incan expression.</p>
-<div class="highlight"><pre><span></span><code>threshold = 1000
+<div class="language-incan highlight"><pre><span></span><code><span class="n">threshold</span> <span class="o">=</span> <span class="mi">1000</span>
 
-query {
-    FROM orders
-    WHERE .amount &gt; threshold
-}
+<span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">WHERE</span> <span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="n">threshold</span>
+<span class="p">}</span>
 </code></pre></div>
 <p><code>threshold</code> is not a column; it resolves as the surrounding binding. This is how InQL stays composable with the rest of Incan instead of becoming an isolated mini-language.</p>
 <h3 id="5-ambiguity-examples">5. Ambiguity examples</h3>
 <h4 id="51-outer-binding-vs-query-column">5.1 Outer binding vs query column</h4>
-<div class="highlight"><pre><span></span><code>customer_id = &quot;debug-value&quot;
+<div class="language-incan highlight"><pre><span></span><code><span class="n">customer_id</span> <span class="o">=</span> <span class="s2">&quot;debug-value&quot;</span>
 
-query {
-    FROM orders
-    SELECT customer_id
-}
+<span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">SELECT</span> <span class="n">customer_id</span>
+<span class="p">}</span>
 </code></pre></div>
 <p><code>customer_id</code> resolves to the query column, not the outer variable, because relational schema names win in relational clause positions. When an outer binding of the same name exists, the typechecker emits a warning and suggests the explicit form:</p>
-<div class="highlight"><pre><span></span><code>query {
-    FROM orders
-    SELECT .customer_id
-}
+<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">SELECT</span> <span class="o">.</span><span class="n">customer_id</span>
+<span class="p">}</span>
 </code></pre></div>
 <h4 id="52-alias-after-projection">5.2 Alias after projection</h4>
-<div class="highlight"><pre><span></span><code>query {
-    FROM orders
-    SELECT
-        sum(.amount) as total_spend,
-    WHERE total_spend &gt; 1000
-}
+<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">SELECT</span>
+        <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_spend</span><span class="p">,</span>
+    <span class="k">WHERE</span> <span class="n">total_spend</span> <span class="o">&gt;</span> <span class="mi">1000</span>
+<span class="p">}</span>
 </code></pre></div>
 <p><code>total_spend</code> in <code>WHERE</code> is the projected column from the preceding <code>SELECT</code>.</p>
 <h4 id="53-joined-relation-stays-explicit">5.3 Joined relation stays explicit</h4>
-<div class="highlight"><pre><span></span><code>query {
-    FROM orders
-    JOIN customers ON .customer_id == customers.id
-    SELECT
-        customer_id,
-        customers.name,
-}
+<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">JOIN</span> <span class="n">customers</span> <span class="k">ON</span> <span class="o">.</span><span class="n">customer_id</span> <span class="o">==</span> <span class="n">customers</span><span class="o">.</span><span class="n">id</span>
+    <span class="k">SELECT</span>
+        <span class="n">customer_id</span><span class="p">,</span>
+        <span class="n">customers</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+<span class="p">}</span>
 </code></pre></div>
 <p>Bare <code>customer_id</code> is the current schema column; <code>customers.name</code> stays explicit because it comes from a named joined relation.</p>
 <h3 id="6-query-surfaces-and-semantic-equivalence">6. Query surfaces and semantic equivalence</h3>
@@ -4319,10 +4319,10 @@ query {
 <li>
 <p>Collection method chains
     The method-chain surface:</p>
-<div class="highlight"><pre><span></span><code>orders
-    .filter(.amount &gt; 100)
-    .group_by(.region)
-    .agg(sum(.amount) as total)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">orders</span>
+    <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="o">.</span><span class="n">region</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total</span><span class="p">)</span>
 </code></pre></div>
 </li>
 </ol>
@@ -4343,10 +4343,10 @@ query {
 <p>When <code>T</code> is an Incan model that participates in contract semantics upstream, InQL <strong>should</strong> treat it first as a schema surface: query checking uses the model's fields and types; projection and output typing flow from that model shape.</p>
 <h4 id="82-open-ended-model-x-with-openended">8.2 Open-ended: <code>model X with OpenEnded</code></h4>
 <p>For models declared as:</p>
-<div class="highlight"><pre><span></span><code>model Event with OpenEnded:
-    event_id: str
-    occurred_at: datetime
-    user_id: str
+<div class="language-incan highlight"><pre><span></span><code><span class="k">model</span> <span class="nc">Event</span> <span class="k">with</span> <span class="nc">OpenEnded</span><span class="p">:</span>
+    <span class="n">event_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">occurred_at</span><span class="p">:</span> <span class="n">datetime</span>
+    <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span>
 </code></pre></div>
 <p>the declared fields remain fully typed while undeclared fields become soft-runtime references.</p>
 <ul>
@@ -4402,7 +4402,7 @@ query {
 <p>InQL <strong>must not</strong> redefine schema language or model declarations; it consumes models as-is. Subscription and compatibility semantics (narrowing, widening, blast radius) belong in the operational and contract layers above InQL, not in InQL itself. InQL <strong>may</strong> surface subscription-derived schema information during typechecking and planning, but the declaration and enforcement model belongs to the contract layer.</p>
 <h3 id="10-compilation-model">10. Compilation model</h3>
 <p>InQL queries follow the same broad compiler pipeline as ordinary Incan code, with query-specific stages for relational planning:</p>
-<div class="highlight"><pre><span></span><code>InQL source
+<div class="language-text highlight"><pre><span></span><code>InQL source
   → parser and AST
   → typechecker (name resolution, schema flow, type inference)
   → InQL IR (relational operators, typed expressions)

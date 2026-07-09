@@ -3339,88 +3339,88 @@
 <p>Use the observed Session methods when you need an auditable execution attempt record. Use <code>check_coverage(...)</code> when a tool, policy, or review step already knows which adapter capability needs to be checked.</p>
 <h2 id="collect-with-an-observation">Collect with an observation</h2>
 <p>Use <code>collect_observed(...)</code> when you need materialized data and execution evidence from the same attempt.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import ExecutionObservationStatus, LazyFrame, Session
-from models import Order
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">ExecutionObservationStatus</span><span class="o">,</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">Session</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-session = Session.default()
-orders: LazyFrame[Order] = session.read_csv(&quot;orders&quot;, &quot;orders.csv&quot;)?
+<span class="n">session</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+<span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;orders&quot;</span><span class="p">,</span> <span class="s2">&quot;orders.csv&quot;</span><span class="p">)</span><span class="o">?</span>
 
-observed = session.collect_observed(orders)
+<span class="n">observed</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">collect_observed</span><span class="p">(</span><span class="n">orders</span><span class="p">)</span>
 
-match observed.data:
-    Some(df) =&gt;
-        println(df.preview_text())
-        println(f&quot;rows={df.row_count()}&quot;)
-    None =&gt;
-        println(observed.observation.diagnostics[0].message)
+<span class="k">match</span> <span class="n">observed</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+    <span class="nb">Some</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="o">=&gt;</span>
+        <span class="nb">println</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">preview_text</span><span class="p">())</span>
+        <span class="nb">println</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;rows=</span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">row_count</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="kc">None</span> <span class="o">=&gt;</span>
+        <span class="nb">println</span><span class="p">(</span><span class="n">observed</span><span class="o">.</span><span class="n">observation</span><span class="o">.</span><span class="n">diagnostics</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
 
-assert observed.observation.status == ExecutionObservationStatus.Success
+<span class="k">assert</span> <span class="n">observed</span><span class="o">.</span><span class="n">observation</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="nc">ExecutionObservationStatus</span><span class="o">.</span><span class="nc">Success</span>
 </code></pre></div>
 <p>The observed result always includes <code>observation</code>. On success, <code>data</code> contains the materialized <code>DataFrame[T]</code>. On failure, <code>data</code> is <code>None</code> and <code>error</code> contains the <code>SessionError</code>.</p>
 <h2 id="validate-execution-without-materializing">Validate execution without materializing</h2>
 <p>Use <code>execute_observed(...)</code> when you want the same execution checkpoint as <code>execute(...)</code> but still need an observation record.</p>
-<div class="highlight"><pre><span></span><code>observed = session.execute_observed(orders)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">observed</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute_observed</span><span class="p">(</span><span class="n">orders</span><span class="p">)</span>
 
-match observed.error:
-    Some(err) =&gt; println(err.error_message())
-    None =&gt; println(observed.observation.observation_id)
+<span class="k">match</span> <span class="n">observed</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+    <span class="nb">Some</span><span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nb">println</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">error_message</span><span class="p">())</span>
+    <span class="kc">None</span> <span class="o">=&gt;</span> <span class="nb">println</span><span class="p">(</span><span class="n">observed</span><span class="o">.</span><span class="n">observation</span><span class="o">.</span><span class="n">observation_id</span><span class="p">)</span>
 </code></pre></div>
 <p><code>execute_observed(...)</code> returns the deferred <code>LazyFrame[T]</code> on success. It does not invent a row count because it does not materialize local rows.</p>
 <h2 id="write-with-an-observation">Write with an observation</h2>
 <p>Use <code>write_observed(...)</code> when the write itself is the operation you want to audit.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import csv_sink
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">csv_sink</span>
 
-write_attempt = session.write_observed(orders, csv_sink(&quot;target/orders.csv&quot;))
+<span class="n">write_attempt</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">write_observed</span><span class="p">(</span><span class="n">orders</span><span class="p">,</span> <span class="n">csv_sink</span><span class="p">(</span><span class="s2">&quot;target/orders.csv&quot;</span><span class="p">))</span>
 
-match write_attempt.error:
-    Some(err) =&gt; println(err.error_message())
-    None =&gt; println(write_attempt.observation.observation_id)
+<span class="k">match</span> <span class="n">write_attempt</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+    <span class="nb">Some</span><span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nb">println</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">error_message</span><span class="p">())</span>
+    <span class="kc">None</span> <span class="o">=&gt;</span> <span class="nb">println</span><span class="p">(</span><span class="n">write_attempt</span><span class="o">.</span><span class="n">observation</span><span class="o">.</span><span class="n">observation_id</span><span class="p">)</span>
 </code></pre></div>
 <p>The write result has no <code>data</code> field. The output artifact is the sink side effect; the returned value carries the observation and optional error.</p>
 <h2 id="check-inferred-adapter-requirements">Check inferred adapter requirements</h2>
 <p>Use <code>check_plan_coverage(...)</code> when you want InQL to inspect a lazy plan and evaluate the adapter requirements that are visible in that plan evidence.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import AdapterCoverageState
-from pub::inql.functions import col, desc, eq
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">AdapterCoverageState</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">desc</span><span class="o">,</span><span class="w"> </span><span class="nn">eq</span>
 
-review = orders
-    .filter(eq(col(&quot;status&quot;), &quot;paid&quot;))
-    .order_by([desc(col(&quot;amount&quot;))])
+<span class="n">review</span> <span class="o">=</span> <span class="n">orders</span>
+    <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="nb">eq</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">),</span> <span class="s2">&quot;paid&quot;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">order_by</span><span class="p">([</span><span class="nb">desc</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))])</span>
 
-coverage = session.check_plan_coverage(review)
+<span class="n">coverage</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">check_plan_coverage</span><span class="p">(</span><span class="n">review</span><span class="p">)</span>
 
-for record in coverage:
-    match record.state:
-        AdapterCoverageState.Covered =&gt; pass
-        AdapterCoverageState.PartiallyCovered =&gt; println(record.diagnostics[0].message)
-        AdapterCoverageState.Uncovered =&gt; println(record.diagnostics[0].message)
-        AdapterCoverageState.Unknown =&gt; println(record.diagnostics[0].message)
+<span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">coverage</span><span class="p">:</span>
+    <span class="k">match</span> <span class="n">record</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
+        <span class="nc">AdapterCoverageState</span><span class="o">.</span><span class="nc">Covered</span> <span class="o">=&gt;</span> <span class="k">pass</span>
+        <span class="nc">AdapterCoverageState</span><span class="o">.</span><span class="nc">PartiallyCovered</span> <span class="o">=&gt;</span> <span class="nb">println</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">diagnostics</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+        <span class="nc">AdapterCoverageState</span><span class="o">.</span><span class="nc">Uncovered</span> <span class="o">=&gt;</span> <span class="nb">println</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">diagnostics</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+        <span class="nc">AdapterCoverageState</span><span class="o">.</span><span class="nc">Unknown</span> <span class="o">=&gt;</span> <span class="nb">println</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">diagnostics</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="check-explicit-adapter-requirements">Check explicit adapter requirements</h2>
 <p>Use <code>check_coverage(...)</code> when the requirement comes from a policy, workflow, or review step rather than directly from the inspected plan shape. Build the requirements that matter, then ask the selected adapter for coverage records.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import (
-    AdapterCoverageState,
-    AdapterRequirement,
-    AdapterRequirementCapability,
-    AdapterRequirementGuarantee,
-)
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="p">(</span>
+    <span class="nc">AdapterCoverageState</span><span class="p">,</span>
+    <span class="nc">AdapterRequirement</span><span class="p">,</span>
+    <span class="nc">AdapterRequirementCapability</span><span class="p">,</span>
+    <span class="nc">AdapterRequirementGuarantee</span><span class="p">,</span>
+<span class="p">)</span>
 
-observed = session.collect_observed(orders)
-requirement = AdapterRequirement(
-    requirement_id=&quot;orders-row-filter&quot;,
-    target=observed.observation.plan_target,
-    capability=AdapterRequirementCapability.RowFilter,
-    guarantee=AdapterRequirementGuarantee.Required,
-    reason=&quot;filtered order review requires adapter-side row filtering&quot;,
-    evidence_refs=[],
-)
+<span class="n">observed</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">collect_observed</span><span class="p">(</span><span class="n">orders</span><span class="p">)</span>
+<span class="n">requirement</span> <span class="o">=</span> <span class="nc">AdapterRequirement</span><span class="p">(</span>
+    <span class="n">requirement_id</span><span class="o">=</span><span class="s2">&quot;orders-row-filter&quot;</span><span class="p">,</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">observed</span><span class="o">.</span><span class="n">observation</span><span class="o">.</span><span class="n">plan_target</span><span class="p">,</span>
+    <span class="n">capability</span><span class="o">=</span><span class="nc">AdapterRequirementCapability</span><span class="o">.</span><span class="nc">RowFilter</span><span class="p">,</span>
+    <span class="n">guarantee</span><span class="o">=</span><span class="nc">AdapterRequirementGuarantee</span><span class="o">.</span><span class="nc">Required</span><span class="p">,</span>
+    <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;filtered order review requires adapter-side row filtering&quot;</span><span class="p">,</span>
+    <span class="n">evidence_refs</span><span class="o">=</span><span class="p">[],</span>
+<span class="p">)</span>
 
-coverage = session.check_coverage([requirement])
+<span class="n">coverage</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">check_coverage</span><span class="p">([</span><span class="n">requirement</span><span class="p">])</span>
 
-match coverage[0].state:
-    AdapterCoverageState.Covered =&gt; println(&quot;covered&quot;)
-    AdapterCoverageState.PartiallyCovered =&gt; println(coverage[0].diagnostics[0].message)
-    AdapterCoverageState.Uncovered =&gt; println(coverage[0].diagnostics[0].message)
-    AdapterCoverageState.Unknown =&gt; println(coverage[0].diagnostics[0].message)
+<span class="k">match</span> <span class="n">coverage</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
+    <span class="nc">AdapterCoverageState</span><span class="o">.</span><span class="nc">Covered</span> <span class="o">=&gt;</span> <span class="nb">println</span><span class="p">(</span><span class="s2">&quot;covered&quot;</span><span class="p">)</span>
+    <span class="nc">AdapterCoverageState</span><span class="o">.</span><span class="nc">PartiallyCovered</span> <span class="o">=&gt;</span> <span class="nb">println</span><span class="p">(</span><span class="n">coverage</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">diagnostics</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+    <span class="nc">AdapterCoverageState</span><span class="o">.</span><span class="nc">Uncovered</span> <span class="o">=&gt;</span> <span class="nb">println</span><span class="p">(</span><span class="n">coverage</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">diagnostics</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+    <span class="nc">AdapterCoverageState</span><span class="o">.</span><span class="nc">Unknown</span> <span class="o">=&gt;</span> <span class="nb">println</span><span class="p">(</span><span class="n">coverage</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">diagnostics</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
 </code></pre></div>
 <p>Treat <code>Unknown</code> as non-enforcing. It means InQL has not classified that adapter capability; it does not mean the adapter has proven support.</p>
 <h2 id="choose-the-right-observed-method">Choose the right observed method</h2>

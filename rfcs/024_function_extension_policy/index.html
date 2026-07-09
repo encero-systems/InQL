@@ -3554,10 +3554,10 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Portable InQL functions should work across supported execution paths when backend support exists. Extension functions are explicit:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import col
-from pub::inql_ext.geo import st_srid
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql_ext</span><span class="o">.</span><span class="n">geo</span> <span class="kn">import</span><span class="w"> </span><span class="nn">st_srid</span>
 
-places_with_srid = places.with_column(&quot;srid&quot;, st_srid(col(&quot;geometry&quot;)))
+<span class="n">places_with_srid</span> <span class="o">=</span> <span class="n">places</span><span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;srid&quot;</span><span class="p">,</span> <span class="n">st_srid</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;geometry&quot;</span><span class="p">)))</span>
 </code></pre></div>
 <p>If an author asks for a function that depends on physical Spark partitions, JVM reflection, or a specific engine runtime, InQL should say no in the portable core rather than pretending it is a normal data logic function.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

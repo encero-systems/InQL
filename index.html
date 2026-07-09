@@ -3661,27 +3661,27 @@
 <p>InQL plans are not opaque strings handed to a backend engine. Prism exposes the typed model and evidence before execution.</p>
 </div>
 <div class="inql-prism-board">
-<article class="inql-code-card">
+<div class="inql-code-card">
 <p><span>Your query</span></p>
-<div class="highlight"><pre><span></span><code>query {
-    FROM orders
-    WHERE .status == &quot;paid&quot;
-    GROUP BY .region
-    SELECT
-        .region as region,
-        sum(.amount) as total
-}
+<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">WHERE</span> <span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;paid&quot;</span>
+    <span class="k">GROUP</span> <span class="k">BY</span> <span class="o">.</span><span class="n">region</span>
+    <span class="k">SELECT</span>
+        <span class="o">.</span><span class="n">region</span> <span class="k">as</span> <span class="n">region</span><span class="p">,</span>
+        <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total</span>
+<span class="p">}</span>
 </code></pre></div>
-</article>
-<article class="inql-plan-card">
+</div>
+<div class="inql-plan-card">
 <p><span>Prism inspection</span></p>
-<div class="highlight"><pre><span></span><code>Source(orders)
+<div class="language-text highlight"><pre><span></span><code>Source(orders)
   Filter(status == paid)
   Aggregate(group: region)
   Project(region, total)
 </code></pre></div>
-</article>
-<article class="inql-engine-card">
+</div>
+<div class="inql-engine-card">
 <p><span>Execution targets</span></p>
 <ul>
 <li>DataFusion</li>
@@ -3689,7 +3689,7 @@
 <li>Spark</li>
 <li>Other Substrait consumers</li>
 </ul>
-</article>
+</div>
 </div>
 </section>
 <section class="inql-surfaces">
@@ -3705,14 +3705,14 @@
 <span>LazyFrames</span>
 <span>Pipelines</span>
 </div>
-<div class="highlight"><pre><span></span><code>query {
-    FROM orders
-    WHERE .status == &quot;paid&quot;
-    GROUP BY .region
-    SELECT
-        .region as region,
-        sum(.amount) as total
-}
+<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">WHERE</span> <span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;paid&quot;</span>
+    <span class="k">GROUP</span> <span class="k">BY</span> <span class="o">.</span><span class="n">region</span>
+    <span class="k">SELECT</span>
+        <span class="o">.</span><span class="n">region</span> <span class="k">as</span> <span class="n">region</span><span class="p">,</span>
+        <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total</span>
+<span class="p">}</span>
 </code></pre></div>
 </div>
 <div class="inql-same-plan">

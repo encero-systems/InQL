@@ -3723,33 +3723,33 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors can use bracket syntax when they want a familiar DataFrame-like way to refer to columns:</p>
-<div class="highlight"><pre><span></span><code>high_value = orders[orders[&quot;amount&quot;] &gt; 100]
+<div class="language-incan highlight"><pre><span></span><code><span class="n">high_value</span> <span class="o">=</span> <span class="n">orders</span><span class="p">[</span><span class="n">orders</span><span class="p">[</span><span class="s2">&quot;amount&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">]</span>
 </code></pre></div>
 <p><code>orders["amount"]</code> is not a pandas Series. It is a column expression bound to <code>orders</code>, equivalent in meaning to a relation-scoped column reference. The comparison produces a boolean scalar expression, and <code>orders[...]</code> with that boolean expression filters rows.</p>
 <p>Authors can project columns with a list of names:</p>
-<div class="highlight"><pre><span></span><code>order_amounts = orders[[&quot;order_id&quot;, &quot;customer_id&quot;, &quot;amount&quot;]]
+<div class="language-incan highlight"><pre><span></span><code><span class="n">order_amounts</span> <span class="o">=</span> <span class="n">orders</span><span class="p">[[</span><span class="s2">&quot;order_id&quot;</span><span class="p">,</span> <span class="s2">&quot;customer_id&quot;</span><span class="p">,</span> <span class="s2">&quot;amount&quot;</span><span class="p">]]</span>
 </code></pre></div>
 <p>This is a projection over the same relation. The output preserves column order from the list and follows the same schema rules as the corresponding InQL projection operation.</p>
 <p>Authors can use familiar method aliases for common exploration flows:</p>
-<div class="highlight"><pre><span></span><code>enriched = (
-    orders
-        .where(orders[&quot;amount&quot;] &gt; 100)
-        .assign(&quot;gross_amount&quot;, orders[&quot;amount&quot;] * 1.21)
-)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">enriched</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">orders</span>
+        <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">orders</span><span class="p">[</span><span class="s2">&quot;amount&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="s2">&quot;gross_amount&quot;</span><span class="p">,</span> <span class="n">orders</span><span class="p">[</span><span class="s2">&quot;amount&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1.21</span><span class="p">)</span>
+<span class="p">)</span>
 
-summary = (
-    enriched
-        .groupby([&quot;region&quot;])
-        .agg([sum(enriched[&quot;gross_amount&quot;]) as total_gross, count() as order_count])
-        .sort_values(&quot;total_gross&quot;, ascending=false)
-        .head(20)
-)
+<span class="n">summary</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">enriched</span>
+        <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;region&quot;</span><span class="p">])</span>
+        <span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="nb">sum</span><span class="p">(</span><span class="n">enriched</span><span class="p">[</span><span class="s2">&quot;gross_amount&quot;</span><span class="p">])</span> <span class="k">as</span> <span class="n">total_gross</span><span class="p">,</span> <span class="nb">count</span><span class="p">()</span> <span class="k">as</span> <span class="n">order_count</span><span class="p">])</span>
+        <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;total_gross&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="k">false</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>Those names are familiar, but the semantics are still InQL. <code>where</code> is <code>filter</code>, <code>assign</code> is derived-column projection, <code>groupby</code> is <code>group_by</code>, <code>sort_values</code> is <code>order_by</code>, and <code>head</code> is <code>limit</code>. They do not execute eagerly unless the surrounding execution context materializes the result.</p>
 <p>Row indexing is intentionally rejected:</p>
-<div class="highlight"><pre><span></span><code>first = orders[0]        # compile-time error
-preview = orders[1:10]   # compile-time error
-row = orders.iloc[0]     # not part of this RFC
+<div class="language-incan highlight"><pre><span></span><code><span class="n">first</span> <span class="o">=</span> <span class="n">orders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>        <span class="c1"># compile-time error</span>
+<span class="n">preview</span> <span class="o">=</span> <span class="n">orders</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span>   <span class="c1"># compile-time error</span>
+<span class="n">row</span> <span class="o">=</span> <span class="n">orders</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>     <span class="c1"># not part of this RFC</span>
 </code></pre></div>
 <p>Authors should use <code>head(n)</code> or <code>limit(n)</code> for preview-shaped relational limiting, and window functions for ordered row-number analytics.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

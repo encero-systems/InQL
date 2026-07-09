@@ -3421,7 +3421,7 @@
 <h1 id="dataset-carriers-reference">Dataset carriers (Reference)</h1>
 <p>This page documents the carrier hierarchy only. Method details live in <a href="../dataset_methods/">Dataset methods</a> so this page stays small as the API grows.</p>
 <h2 id="type-hierarchy">Type hierarchy</h2>
-<div class="highlight"><pre><span></span><code>DataSet[T]                       (root trait — any tabular data)
+<div class="language-text highlight"><pre><span></span><code>DataSet[T]                       (root trait — any tabular data)
 ├── BoundedDataSet[T]            (trait — finite extent)
 │   ├── DataFrame[T]             (concrete — materialized/eager)
 │   └── LazyFrame[T]             (concrete — deferred plan, bounded source)

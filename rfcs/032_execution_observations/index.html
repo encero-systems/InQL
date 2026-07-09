@@ -3600,11 +3600,11 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>An author can collect data and then inspect the observation:</p>
-<div class="highlight"><pre><span></span><code>observed = session.collect_observed(summary)
-observation = observed.observation
+<div class="language-incan highlight"><pre><span></span><code><span class="n">observed</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">collect_observed</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+<span class="n">observation</span> <span class="o">=</span> <span class="n">observed</span><span class="o">.</span><span class="n">observation</span>
 
-assert observation.plan_target.target_id == inspect_plan(summary).plan_id
-assert observation.status == ExecutionObservationStatus.Success
+<span class="k">assert</span> <span class="n">observation</span><span class="o">.</span><span class="n">plan_target</span><span class="o">.</span><span class="n">target_id</span> <span class="o">==</span> <span class="n">inspect_plan</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span><span class="o">.</span><span class="n">plan_id</span>
+<span class="k">assert</span> <span class="n">observation</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="nc">ExecutionObservationStatus</span><span class="o">.</span><span class="nc">Success</span>
 </code></pre></div>
 <p>Execution evidence explains the run. It does not replace plan inspection.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

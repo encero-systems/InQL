@@ -3602,17 +3602,17 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>A tool can produce a verifier statement independently of any particular proof backend:</p>
-<div class="highlight"><pre><span></span><code>statement = verifier_statement(
-    plan=summary,
-    source_commitments=[source_snapshot],
-    result=result_reference,
-    equality=canonical_profile,
-)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">statement</span> <span class="o">=</span> <span class="n">verifier_statement</span><span class="p">(</span>
+    <span class="n">plan</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
+    <span class="n">source_commitments</span><span class="o">=</span><span class="p">[</span><span class="n">source_snapshot</span><span class="p">],</span>
+    <span class="kt">result</span><span class="o">=</span><span class="n">result_reference</span><span class="p">,</span>
+    <span class="n">equality</span><span class="o">=</span><span class="n">canonical_profile</span><span class="p">,</span>
+<span class="p">)</span>
 
-observation = session.verify_statement(statement)
+<span class="n">observation</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">verify_statement</span><span class="p">(</span><span class="n">statement</span><span class="p">)</span>
 </code></pre></div>
 <p>The statement is the stable object. A deterministic verifier might check digests against it, while a proof verifier might validate a proof artifact against the same statement identity.</p>
-<div class="highlight"><pre><span></span><code>statement_id=stmt:sha256:...
+<div class="language-text highlight"><pre><span></span><code>statement_id=stmt:sha256:...
 plan_target=plan:...
 profile=profile:cloud_analytics:v1
 source_commitment=snapshot:sha256:...
@@ -3620,7 +3620,7 @@ result_reference=result:sha256:...
 equality_profile=canonical-equality:v1:keyed_bag
 </code></pre></div>
 <p>A proof verification observation can then cite the statement:</p>
-<div class="highlight"><pre><span></span><code>statement_id=stmt:sha256:...
+<div class="language-text highlight"><pre><span></span><code>statement_id=stmt:sha256:...
 proof_artifact=proof:sha256:...
 verifier_profile=query-proof:v1
 outcome=passed

@@ -3831,10 +3831,10 @@
 <p>It is designed for app-local memory, retrieval-augmented generation stores, edge analytics, durable local caches, and small analytical datasets that should live inside an application without a database server, SQL dependency, or heavyweight runtime stack.</p>
 <p>The product shape is closer to SQLite-style local ownership plus DuckDB-style analytical execution plus Delta-inspired transaction logs than to a general DuckDB clone.</p>
 <p>InQL-DB should be opened directly by an application:</p>
-<div class="highlight"><pre><span></span><code>let db = InQLDB.open(&quot;./agent_memory.inqldb&quot;)
+<div class="language-incan highlight"><pre><span></span><code><span class="k">let</span> <span class="n">db</span> <span class="o">=</span> <span class="nc">InQLDB</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;./agent_memory.inqldb&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>and inspected with the InQL CLI:</p>
-<div class="highlight"><pre><span></span><code>inql<span class="w"> </span>db<span class="w"> </span>inspect<span class="w"> </span>./agent_memory.inqldb
+<div class="language-bash highlight"><pre><span></span><code>inql<span class="w"> </span>db<span class="w"> </span>inspect<span class="w"> </span>./agent_memory.inqldb
 </code></pre></div>
 <h2 id="why-this-belongs-in-inql">Why this belongs in InQL</h2>
 <p>InQL already owns the typed relational authoring layer:</p>
@@ -3854,7 +3854,7 @@
 <p>InQL-DB should inherit that operational model while remaining native to InQL.</p>
 <h3 id="directory-backed-by-default">Directory-backed by default</h3>
 <p>An InQL-DB database should always be a directory ending in <code>.inqldb/</code>.</p>
-<div class="highlight"><pre><span></span><code>agent_memory.inqldb/
+<div class="language-text highlight"><pre><span></span><code>agent_memory.inqldb/
   _inql_log/
   catalog/
   tables/
@@ -3916,7 +3916,7 @@
 </ul>
 <p>Those systems are useful references, not compatibility targets.</p>
 <h2 id="architecture-overview">Architecture overview</h2>
-<div class="highlight"><pre><span></span><code>Incan models
+<div class="language-text highlight"><pre><span></span><code>Incan models
     │
     ▼
 InQL carriers / query DSL
@@ -3943,7 +3943,7 @@ InQL-DB backend
 <p>Delta Lake is relevant because it combines versioned columnar files with a transaction log. Delta documentation describes a table as data files plus "a transaction log that stores metadata about the transactions." Delta's FAQ describes ACID support through "versioned Parquet files" and "a transaction log to keep track of all the commits."</p>
 <p>InQL-DB should adapt that pattern for local embedded use.</p>
 <h3 id="directory-layout">Directory layout</h3>
-<div class="highlight"><pre><span></span><code>agent_memory.inqldb/
+<div class="language-text highlight"><pre><span></span><code>agent_memory.inqldb/
   LOCK
   _inql_log/
     00000000000000000000.commit
@@ -4094,20 +4094,20 @@ InQL-DB backend
 <li>transactionally visible index versions.</li>
 </ul>
 <p>Example authoring goal:</p>
-<div class="highlight"><pre><span></span><code>model Memory:
-    id: str
-    text: str
-    embedding: Vector[float32, 1536]
-    source: str
-    created_at: Instant
+<div class="language-incan highlight"><pre><span></span><code><span class="k">model</span> <span class="nc">Memory</span><span class="p">:</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">embedding</span><span class="p">:</span> <span class="nc">Vector</span><span class="p">[</span><span class="n">float32</span><span class="p">,</span> <span class="mi">1536</span><span class="p">]</span>
+    <span class="n">source</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">created_at</span><span class="p">:</span> <span class="nc">Instant</span>
 
-let db = InQLDB.open(&quot;./agent_memory.inqldb&quot;)
+<span class="k">let</span> <span class="n">db</span> <span class="o">=</span> <span class="nc">InQLDB</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;./agent_memory.inqldb&quot;</span><span class="p">)</span>
 
-let hits = db.table[Memory](&quot;memories&quot;)
-    .filter(.source == &quot;docs&quot;)
-    .nearest(.embedding, query_embedding, k=20)
-    .select(.id, .text, .source, .created_at)
-    .collect()
+<span class="k">let</span> <span class="n">hits</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="nc">Memory</span><span class="p">](</span><span class="s2">&quot;memories&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;docs&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">nearest</span><span class="p">(</span><span class="o">.</span><span class="n">embedding</span><span class="p">,</span> <span class="n">query_embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="o">.</span><span class="n">created_at</span><span class="p">)</span>
+    <span class="o">.</span><span class="nb">collect</span><span class="p">()</span>
 </code></pre></div>
 <p>This should lower through InQL planning into an InQL-DB physical plan that can combine metadata filtering and vector search.</p>
 <h2 id="governed-rag-store">Governed RAG store</h2>
@@ -4115,10 +4115,10 @@ let hits = db.table[Memory](&quot;memories&quot;)
 <p>InQL-DB should support governed RAG stores as a first-class data pattern: retrieval tables where every returned item carries provenance, approval state, corpus version, retrieval evidence, and policy compatibility metadata.</p>
 <p>This matters for advisory systems such as Hees.ai, where the retrieval layer is part of the safety model. A retrieved entry is not merely text. It is an approved evidence unit with constraints.</p>
 <p>A vector index answers:</p>
-<div class="highlight"><pre><span></span><code>What chunks are close to this query?
+<div class="language-text highlight"><pre><span></span><code>What chunks are close to this query?
 </code></pre></div>
 <p>A governed RAG store answers:</p>
-<div class="highlight"><pre><span></span><code>What approved knowledge was eligible, why was it retrieved, under which corpus and policy version, and is it safe to use in this workflow?
+<div class="language-text highlight"><pre><span></span><code>What approved knowledge was eligible, why was it retrieved, under which corpus and policy version, and is it safe to use in this workflow?
 </code></pre></div>
 <p>Governed RAG stores should support:</p>
 <ul>
@@ -4136,43 +4136,43 @@ let hits = db.table[Memory](&quot;memories&quot;)
 <li>reproducible retrieval traces.</li>
 </ul>
 <p>Conceptual model:</p>
-<div class="highlight"><pre><span></span><code>model KnowledgeEntry:
-    id: str
-    corpus_version: str
-    topic: str
-    claim: str
-    guidance: str
-    source_title: str
-    source_url: str
-    source_quote: str
-    source_type: str
-    approval_status: str
-    approved_by: str
-    approved_at: Instant
-    risk_level: str
-    policy_version: str
-    embedding: Vector[float32, 1536]
+<div class="language-incan highlight"><pre><span></span><code><span class="k">model</span> <span class="nc">KnowledgeEntry</span><span class="p">:</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">corpus_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">topic</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">claim</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">guidance</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">source_title</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">source_url</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">source_quote</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">source_type</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">approval_status</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">approved_by</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">approved_at</span><span class="p">:</span> <span class="nc">Instant</span>
+    <span class="n">risk_level</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">policy_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">embedding</span><span class="p">:</span> <span class="nc">Vector</span><span class="p">[</span><span class="n">float32</span><span class="p">,</span> <span class="mi">1536</span><span class="p">]</span>
 
-model RetrievalEvidence:
-    query_id: str
-    entry_id: str
-    retrieval_reason: str
-    retrieval_score: float
-    retrieval_rank: int
-    corpus_version: str
-    policy_version: str
-    eligible: bool
-    rejected_reason: str
+<span class="k">model</span> <span class="nc">RetrievalEvidence</span><span class="p">:</span>
+    <span class="n">query_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">entry_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">retrieval_reason</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">retrieval_score</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">retrieval_rank</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">corpus_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">policy_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">eligible</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">rejected_reason</span><span class="p">:</span> <span class="nb">str</span>
 </code></pre></div>
 <p>The retrieval API should make governed filtering explicit:</p>
-<div class="highlight"><pre><span></span><code>let hits = db.table[KnowledgeEntry](&quot;sleep_corpus&quot;)
-    .filter(.approval_status == &quot;approved&quot;)
-    .filter(.corpus_version == active_corpus_version)
-    .filter(.policy_version == active_policy_version)
-    .filter(.risk_level &lt;= request_risk_level)
-    .nearest(.embedding, query_embedding, k=20)
-    .select(.id, .claim, .guidance, .source_title, .source_url, .source_quote)
-    .collect()
+<div class="language-incan highlight"><pre><span></span><code><span class="k">let</span> <span class="n">hits</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="nc">KnowledgeEntry</span><span class="p">](</span><span class="s2">&quot;sleep_corpus&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">approval_status</span> <span class="o">==</span> <span class="s2">&quot;approved&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">corpus_version</span> <span class="o">==</span> <span class="n">active_corpus_version</span><span class="p">)</span>
+    <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">policy_version</span> <span class="o">==</span> <span class="n">active_policy_version</span><span class="p">)</span>
+    <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">risk_level</span> <span class="o">&lt;=</span> <span class="n">request_risk_level</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">nearest</span><span class="p">(</span><span class="o">.</span><span class="n">embedding</span><span class="p">,</span> <span class="n">query_embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="o">.</span><span class="n">claim</span><span class="p">,</span> <span class="o">.</span><span class="n">guidance</span><span class="p">,</span> <span class="o">.</span><span class="n">source_title</span><span class="p">,</span> <span class="o">.</span><span class="n">source_url</span><span class="p">,</span> <span class="o">.</span><span class="n">source_quote</span><span class="p">)</span>
+    <span class="o">.</span><span class="nb">collect</span><span class="p">()</span>
 </code></pre></div>
 <p>The runtime should persist retrieval evidence separately from generated model output. This allows an agent run to answer:</p>
 <ul>
@@ -4188,7 +4188,7 @@ model RetrievalEvidence:
 <h2 id="hyperquant-evidence-provider-ledger">HyperQuant evidence-provider ledger</h2>
 <p>HyperQuant should be treated as an evidence-provider implementation behind InQL-DB and Hees.ai storage contracts, not as the semantic owner of retrieval behavior.</p>
 <p>The storage problem is not only vector search. HyperQuant needs a durable audit ledger for evidence-provider runs:</p>
-<div class="highlight"><pre><span></span><code>query + package/policy/corpus/index context
+<div class="language-text highlight"><pre><span></span><code>query + package/policy/corpus/index context
   -&gt; candidate evidence
   -&gt; eligibility filtering
   -&gt; eligible evidence
@@ -4197,69 +4197,69 @@ model RetrievalEvidence:
 </code></pre></div>
 <p>This distinction matters because governed systems must explain more than the nearest neighbors. They must explain what was considered, what was eligible, what was rejected, and which package, policy, corpus, index, and provider versions controlled the run.</p>
 <p>InQL-DB should support these logical records:</p>
-<div class="highlight"><pre><span></span><code>model EvidenceProviderRun:
-    provider_run_id: str
-    provider_name: str
-    provider_version: str
-    package_id: str
-    package_version: str
-    policy_version: str
-    corpus_version: str
-    index_version: str
-    query_fingerprint: str
-    intent_fingerprint: str
-    candidate_count: int
-    eligible_count: int
-    rejected_count: int
-    deterministic: bool
-    replayable: bool
-    created_at: Instant
+<div class="language-incan highlight"><pre><span></span><code><span class="k">model</span> <span class="nc">EvidenceProviderRun</span><span class="p">:</span>
+    <span class="n">provider_run_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">provider_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">provider_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">package_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">package_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">policy_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">corpus_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">index_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">query_fingerprint</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">intent_fingerprint</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">candidate_count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">eligible_count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">rejected_count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">deterministic</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">replayable</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">created_at</span><span class="p">:</span> <span class="nc">Instant</span>
 
-model EvidenceCandidate:
-    provider_run_id: str
-    entry_id: str
-    package_id: str
-    corpus_version: str
-    index_version: str
-    score: float
-    rank: int
-    retrieval_reason: str
-    eligibility_status: str
-    rejected_reason: str
-    policy_rule_id: str
-    authority_boundary: str
-    risk_level: str
+<span class="k">model</span> <span class="nc">EvidenceCandidate</span><span class="p">:</span>
+    <span class="n">provider_run_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">entry_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">package_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">corpus_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">index_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">score</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">rank</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">retrieval_reason</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">eligibility_status</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">rejected_reason</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">policy_rule_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">authority_boundary</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">risk_level</span><span class="p">:</span> <span class="nb">str</span>
 
-model EvidenceProviderFingerprint:
-    provider_run_id: str
-    provider_name: str
-    provider_version: str
-    package_version: str
-    policy_version: str
-    corpus_version: str
-    index_version: str
-    query_fingerprint: str
-    result_fingerprint: str
+<span class="k">model</span> <span class="nc">EvidenceProviderFingerprint</span><span class="p">:</span>
+    <span class="n">provider_run_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">provider_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">provider_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">package_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">policy_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">corpus_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">index_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">query_fingerprint</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">result_fingerprint</span><span class="p">:</span> <span class="nb">str</span>
 </code></pre></div>
 <p>Eligible evidence and rejected evidence may be represented as filtered views over <code>EvidenceCandidate</code>, or as separate physical tables if the storage engine needs different retention or indexing behavior. The important contract is that rejected evidence is first-class data, not a log message.</p>
 <p>For federated domain runtimes, InQL-DB should also support a run-level grouping record:</p>
-<div class="highlight"><pre><span></span><code>model FederatedEvidenceRun:
-    federated_run_id: str
-    user_request_id: str
-    selected_package_ids: list[str]
-    rejected_package_ids: list[str]
-    provider_run_ids: list[str]
-    arbitration_version: str
-    global_policy_version: str
-    final_admissibility_status: str
+<div class="language-incan highlight"><pre><span></span><code><span class="k">model</span> <span class="nc">FederatedEvidenceRun</span><span class="p">:</span>
+    <span class="n">federated_run_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">user_request_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">selected_package_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">rejected_package_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">provider_run_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">arbitration_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">global_policy_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">final_admissibility_status</span><span class="p">:</span> <span class="nb">str</span>
 </code></pre></div>
 <p>The governing rule is:</p>
-<div class="highlight"><pre><span></span><code>Vectors nominate evidence. They do not authorize evidence.
+<div class="language-text highlight"><pre><span></span><code>Vectors nominate evidence. They do not authorize evidence.
 </code></pre></div>
 <p>Vector similarity, quantized indexes, and approximate-nearest-neighbor search can propose candidates. Package, policy, corpus, authority, and admissibility rules decide whether those candidates may become evidence. InQL-DB must preserve that boundary in storage so later inspection can distinguish retrieval mechanics from governance decisions.</p>
 <h2 id="cli">CLI</h2>
 <p>The command surface should live under <code>inql db</code>.</p>
-<div class="highlight"><pre><span></span><code>inql<span class="w"> </span>db<span class="w"> </span>init<span class="w"> </span>./agent_memory.inqldb
+<div class="language-bash highlight"><pre><span></span><code>inql<span class="w"> </span>db<span class="w"> </span>init<span class="w"> </span>./agent_memory.inqldb
 inql<span class="w"> </span>db<span class="w"> </span>inspect<span class="w"> </span>./agent_memory.inqldb
 inql<span class="w"> </span>db<span class="w"> </span>tables<span class="w"> </span>./agent_memory.inqldb
 inql<span class="w"> </span>db<span class="w"> </span>schema<span class="w"> </span>./agent_memory.inqldb<span class="w"> </span>memories

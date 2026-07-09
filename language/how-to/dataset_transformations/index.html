@@ -3284,44 +3284,44 @@
 <p>This how-to shows how to combine common carrier methods while keeping work deferred until a Session executes it.</p>
 <h2 id="add-computed-columns">Add computed columns</h2>
 <p>Use <code>with_column(...)</code> to append a new computed column or replace an existing column by name.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import LazyFrame
-from pub::inql.functions import add, col, mul
-from models import Order
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">add</span><span class="o">,</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">mul</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-def enrich(orders: LazyFrame[Order]) -&gt; LazyFrame[Order]:
-    return (
-        orders
-            .with_column(&quot;amount_x2&quot;, mul(col(&quot;amount&quot;), 2))
-            .with_column(&quot;amount_plus_one&quot;, add(col(&quot;amount&quot;), 1))
-    )
+<span class="k">def</span><span class="w"> </span><span class="nf">enrich</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">orders</span>
+            <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;amount_x2&quot;</span><span class="p">,</span> <span class="n">mul</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;amount_plus_one&quot;</span><span class="p">,</span> <span class="n">add</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="p">)</span>
 </code></pre></div>
 <h2 id="filter-group-and-aggregate">Filter, group, and aggregate</h2>
 <p>Use scalar helpers for row predicates and aggregate helpers for grouped measures.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import LazyFrame
-from pub::inql.functions import avg, col, count, eq, sum
-from models import Order
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">avg</span><span class="o">,</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">count</span><span class="o">,</span><span class="w"> </span><span class="nn">eq</span><span class="o">,</span><span class="w"> </span><span class="nn">sum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-def paid_spend_by_customer(orders: LazyFrame[Order]) -&gt; LazyFrame[Order]:
-    return (
-        orders
-            .filter(eq(col(&quot;status&quot;), &quot;paid&quot;))
-            .group_by([col(&quot;customer_id&quot;)])
-            .agg([
-                sum(col(&quot;amount&quot;)),
-                avg(col(&quot;amount&quot;)),
-                count(),
-            ])
-    )
+<span class="k">def</span><span class="w"> </span><span class="nf">paid_spend_by_customer</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">orders</span>
+            <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="nb">eq</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">),</span> <span class="s2">&quot;paid&quot;</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">group_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)])</span>
+            <span class="o">.</span><span class="n">agg</span><span class="p">([</span>
+                <span class="nb">sum</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">)),</span>
+                <span class="nb">avg</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">)),</span>
+                <span class="nb">count</span><span class="p">(),</span>
+            <span class="p">])</span>
+    <span class="p">)</span>
 </code></pre></div>
 <h2 id="sort-and-limit">Sort and limit</h2>
 <p>Use ordering helpers inside <code>order_by(...)</code>, then cap rows with <code>limit(...)</code>.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import col, desc
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">desc</span>
 
-top_orders = (
-    orders
-        .order_by([desc(col(&quot;amount&quot;))])
-        .limit(10)
-)
+<span class="n">top_orders</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">orders</span>
+        <span class="o">.</span><span class="n">order_by</span><span class="p">([</span><span class="nb">desc</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))])</span>
+        <span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>These transforms stay deferred for <code>LazyFrame[T]</code>. Use a <code>Session</code> to execute, collect, or write the result. For exact method signatures and schema behavior, see <a href="../../reference/dataset_methods/">Dataset methods (Reference)</a>.</p>
 

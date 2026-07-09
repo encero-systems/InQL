@@ -3535,27 +3535,27 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors should be able to register a handler and then read data through that format key.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import LazyFrame, Session
-from session.formats import SessionFormatHandler
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">Session</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">session.formats</span><span class="w"> </span><span class="kn">import</span> <span class="nc">SessionFormatHandler</span>
 
-class FooFormatHandler with SessionFormatHandler:
-    def format_name(self) -&gt; str:
-        return &quot;foo&quot;
+<span class="k">class</span><span class="w"> </span><span class="nc">FooFormatHandler</span> <span class="k">with</span> <span class="nc">SessionFormatHandler</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;foo&quot;</span>
 
-    def infer_schema(self, uri: str) -&gt; Result[list[RowColumnSpec], SessionError]:
-        ...
+    <span class="k">def</span><span class="w"> </span><span class="nf">infer_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Result</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nc">RowColumnSpec</span><span class="p">],</span> <span class="nc">SessionError</span><span class="p">]:</span>
+        <span class="o">...</span>
 
-    def register_source(self, ctx: BackendContext, logical_name: str, uri: str) -&gt; Result[None, SessionError]:
-        ...
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="nc">BackendContext</span><span class="p">,</span> <span class="n">logical_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Result</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nc">SessionError</span><span class="p">]:</span>
+        <span class="o">...</span>
 
-def main() -&gt; None:
-    mut session = Session.default()
-    session.register_format_handler(FooFormatHandler())?
-    rows: LazyFrame[OrderLine] = session.read_format(&quot;orders&quot;, &quot;foo://bucket/orders.foo&quot;, &quot;foo&quot;)?
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">mut</span> <span class="n">session</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">register_format_handler</span><span class="p">(</span><span class="nc">FooFormatHandler</span><span class="p">())</span><span class="o">?</span>
+    <span class="n">rows</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">OrderLine</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">read_format</span><span class="p">(</span><span class="s2">&quot;orders&quot;</span><span class="p">,</span> <span class="s2">&quot;foo://bucket/orders.foo&quot;</span><span class="p">,</span> <span class="s2">&quot;foo&quot;</span><span class="p">)</span><span class="o">?</span>
 </code></pre></div>
 <p>Built-ins should follow the same path:</p>
-<div class="highlight"><pre><span></span><code>session = Session.default()
-rows: LazyFrame[OrderLine] = session.read_format(&quot;orders&quot;, &quot;tests/fixtures/orders.csv&quot;, &quot;csv&quot;)?
+<div class="language-incan highlight"><pre><span></span><code><span class="n">session</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+<span class="n">rows</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">OrderLine</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">read_format</span><span class="p">(</span><span class="s2">&quot;orders&quot;</span><span class="p">,</span> <span class="s2">&quot;tests/fixtures/orders.csv&quot;</span><span class="p">,</span> <span class="s2">&quot;csv&quot;</span><span class="p">)</span><span class="o">?</span>
 </code></pre></div>
 <p>Convenience APIs like <code>read_csv</code> remain available and delegate to <code>read_format(..., "csv")</code>.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

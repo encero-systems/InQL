@@ -3566,17 +3566,17 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>An author or CI job can exchange evidence with local artifacts:</p>
-<div class="highlight"><pre><span></span><code>bundle = governed_plan_bundle(summary)
-bundle.export_openlineage(&quot;target/inql/openlineage.json&quot;)
-bundle.export_telemetry(&quot;target/inql/telemetry.json&quot;)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">bundle</span> <span class="o">=</span> <span class="n">governed_plan_bundle</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+<span class="n">bundle</span><span class="o">.</span><span class="n">export_openlineage</span><span class="p">(</span><span class="s2">&quot;target/inql/openlineage.json&quot;</span><span class="p">)</span>
+<span class="n">bundle</span><span class="o">.</span><span class="n">export_telemetry</span><span class="p">(</span><span class="s2">&quot;target/inql/telemetry.json&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>The names are illustrative. The key contract is that outbound exports are generated from InQL evidence artifacts, not from backend logs or reconstructed SQL strings.</p>
 <p>For transformation-project workflows, an exchange bridge can also ingest project artifacts and emit reviewable suggestions:</p>
-<div class="highlight"><pre><span></span><code>project = transformation_project_artifacts(&quot;analytics_project/&quot;)
-bundle = governed_plan_bundle(summary, evidence=[project])
+<div class="language-incan highlight"><pre><span></span><code><span class="n">project</span> <span class="o">=</span> <span class="n">transformation_project_artifacts</span><span class="p">(</span><span class="s2">&quot;analytics_project/&quot;</span><span class="p">)</span>
+<span class="n">bundle</span> <span class="o">=</span> <span class="n">governed_plan_bundle</span><span class="p">(</span><span class="n">summary</span><span class="p">,</span> <span class="n">evidence</span><span class="o">=</span><span class="p">[</span><span class="n">project</span><span class="p">])</span>
 
-sources = bundle.export_transformation_sources()
-tests = bundle.export_transformation_quality_suggestions()
+<span class="n">sources</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">export_transformation_sources</span><span class="p">()</span>
+<span class="k">tests</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">export_transformation_quality_suggestions</span><span class="p">()</span>
 </code></pre></div>
 <p>The bridge may read common artifacts such as manifests, catalogs, run results, source definitions, tests, tags, metadata, and documentation fragments. In a dbt-shaped bridge, for example, those inputs may include <code>manifest.json</code>, <code>catalog.json</code>, <code>run_results.json</code>, source YAML, model YAML, tags, exposures, tests, and documentation blocks. It may emit suggested source declarations, model metadata, test definitions, tags, exposures, or documentation scaffolds. Those suggestions remain projections from InQL evidence and imported artifact evidence; they do not make the transformation framework the semantic owner of the plan.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

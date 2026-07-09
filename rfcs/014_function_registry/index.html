@@ -3800,10 +3800,10 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors should be able to call functions through the normal InQL surfaces and rely on one semantic catalog:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import avg, col, count, lit, lower, trim
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">avg</span><span class="o">,</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">count</span><span class="o">,</span><span class="w"> </span><span class="nn">lit</span><span class="o">,</span><span class="w"> </span><span class="nn">lower</span><span class="o">,</span><span class="w"> </span><span class="nn">trim</span>
 
-cleaned = orders.with_column(&quot;normalized_email&quot;, lower(trim(col(&quot;email&quot;))))
-summary = cleaned.group_by([col(&quot;customer_id&quot;)]).agg([count(), avg(col(&quot;amount&quot;))])
+<span class="n">cleaned</span> <span class="o">=</span> <span class="n">orders</span><span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;normalized_email&quot;</span><span class="p">,</span> <span class="nb">lower</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">))))</span>
+<span class="n">summary</span> <span class="o">=</span> <span class="n">cleaned</span><span class="o">.</span><span class="n">group_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)])</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="nb">count</span><span class="p">(),</span> <span class="nb">avg</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))])</span>
 </code></pre></div>
 <p>The author does not need to know whether <code>avg</code> maps to a core Substrait function, a Substrait extension URI, or a semantics-preserving Substrait rewrite. The author does need clear feedback if a function is known but used in the wrong query context, or if an execution adapter cannot consume the emitted Substrait representation.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>
@@ -3851,32 +3851,32 @@ summary = cleaned.group_by([col(&quot;customer_id&quot;)]).agg([count(), avg(col
 <p>Compatibility aliases must be real callable symbols rather than strings inside a function spec. For example, <code>mean = avg</code> should make <code>mean</code> an alias of the registered <code>avg</code> helper. The function catalog may record that alias after name resolution, but the aggregate spec must not contain <code>aliases=["mean"]</code>. Backend spellings and backend aliases remain backend capability concerns.</p>
 <p>Generated reference pages must render lifecycle metadata in a consistent form. At minimum, generated pages must show when a function was introduced, when user-visible behavior changed, and whether the function is deprecated or removed. Spark's public function docs are useful prior art here: they expose "New in version", "Changed in version", and deprecation notes directly in generated API pages.</p>
 <p>The public helper shape should stay compact enough to preserve authoring ergonomics while still making machine facts inspectable. Incan-standard docstrings are the canonical standard for explanation and examples; typed registry entries are canonical for machine facts. The following shape is illustrative only; constructor names, decorator names, enum/model/class boundaries, and helper implementation details may change:</p>
-<div class="highlight"><pre><span></span><code>@register_function(deterministic_spec(
-    function_class=FunctionClass.Aggregate,
-    lifecycle=FunctionLifecycle(
-        since=v0_2,
-        changed=[
-            FunctionChange(version=v0_3, note=&quot;Added decimal return type rule.&quot;),
-        ],
-        deprecated=None,
-    ),
-    null_behavior=FunctionNullBehavior.NullSkippingAggregate,
-    substrait=extension_mapping(&quot;avg&quot;, AVG_FUNCTION_ANCHOR),
-))
-pub def avg(expr: ScalarExpr[number]) -&gt; AggregateMeasure[number]:
-    &quot;&quot;&quot;
-    Return the average non-null numeric value in each group.
+<div class="language-incan highlight"><pre><span></span><code><span class="nd">@register_function</span><span class="p">(</span><span class="n">deterministic_spec</span><span class="p">(</span>
+    <span class="n">function_class</span><span class="o">=</span><span class="nc">FunctionClass</span><span class="o">.</span><span class="nc">Aggregate</span><span class="p">,</span>
+    <span class="n">lifecycle</span><span class="o">=</span><span class="nc">FunctionLifecycle</span><span class="p">(</span>
+        <span class="n">since</span><span class="o">=</span><span class="n">v0_2</span><span class="p">,</span>
+        <span class="n">changed</span><span class="o">=</span><span class="p">[</span>
+            <span class="nc">FunctionChange</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="n">v0_3</span><span class="p">,</span> <span class="n">note</span><span class="o">=</span><span class="s2">&quot;Added decimal return type rule.&quot;</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="n">deprecated</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">null_behavior</span><span class="o">=</span><span class="nc">FunctionNullBehavior</span><span class="o">.</span><span class="nc">NullSkippingAggregate</span><span class="p">,</span>
+    <span class="n">substrait</span><span class="o">=</span><span class="n">extension_mapping</span><span class="p">(</span><span class="s2">&quot;avg&quot;</span><span class="p">,</span> <span class="nc">AVG_FUNCTION_ANCHOR</span><span class="p">),</span>
+<span class="p">))</span>
+<span class="k">pub</span> <span class="k">def</span><span class="w"> </span><span class="nf">avg</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="nc">ScalarExpr</span><span class="p">[</span><span class="n">number</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nc">AggregateMeasure</span><span class="p">[</span><span class="n">number</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the average non-null numeric value in each group.</span>
 
-    Examples:
-        average_order_value = avg(col(&quot;amount&quot;))
+<span class="sd">    Examples:</span>
+<span class="sd">        average_order_value = avg(col(&quot;amount&quot;))</span>
 
-    Parameters:
-        expr: Numeric scalar expression evaluated for each input row.
+<span class="sd">    Parameters:</span>
+<span class="sd">        expr: Numeric scalar expression evaluated for each input row.</span>
 
-    Returns:
-        One aggregate measure whose value is null when no non-null input values exist.
-    &quot;&quot;&quot;
-    return avg_measure(expr)
+<span class="sd">    Returns:</span>
+<span class="sd">        One aggregate measure whose value is null when no non-null input values exist.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">avg_measure</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
 </code></pre></div>
 <p>The exact type names and helper constructors may change during implementation. Tooling must not infer null behavior, error behavior, determinism, lifecycle status, or Substrait mapping from prose alone, and it must not infer examples or simple user-facing explanation from registry entries alone. A public helper must be explicitly linked to exactly one function reference, and generation or validation must fail if the helper signature and registry signature drift apart.</p>
 <h3 id="interaction-with-other-inql-surfaces">Interaction with other InQL surfaces</h3>

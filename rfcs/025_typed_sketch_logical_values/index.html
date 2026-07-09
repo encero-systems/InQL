@@ -3610,21 +3610,21 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors should think of a sketch as a typed summary value. It can be produced by an aggregate, stored as a column when the carrier supports it, merged with compatible sketches, and estimated later. RFC 025 ships the first concrete family: HyperLogLog.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import col, hll_sketch
-from pub::inql.sketches import hll_estimate, hll_merge, hll_type, sketch_col
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">hll_sketch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">sketches</span> <span class="kn">import</span><span class="w"> </span><span class="nn">hll_estimate</span><span class="o">,</span><span class="w"> </span><span class="nn">hll_merge</span><span class="o">,</span><span class="w"> </span><span class="nn">hll_type</span><span class="o">,</span><span class="w"> </span><span class="nn">sketch_col</span>
 
-daily = events.group_by([col(&quot;event_date&quot;)]).agg([
-    hll_sketch(col(&quot;user_id&quot;), precision=14),
-])
+<span class="n">daily</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">group_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;event_date&quot;</span><span class="p">)])</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span>
+    <span class="n">hll_sketch</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;user_id&quot;</span><span class="p">),</span> <span class="n">precision</span><span class="o">=</span><span class="mi">14</span><span class="p">),</span>
+<span class="p">])</span>
 
-monthly = daily.group_by([col(&quot;month&quot;)]).agg([
-    hll_merge(sketch_col(&quot;hll_sketch_user_id&quot;, hll_type(precision=14))),
-])
+<span class="n">monthly</span> <span class="o">=</span> <span class="n">daily</span><span class="o">.</span><span class="n">group_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;month&quot;</span><span class="p">)])</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span>
+    <span class="n">hll_merge</span><span class="p">(</span><span class="n">sketch_col</span><span class="p">(</span><span class="s2">&quot;hll_sketch_user_id&quot;</span><span class="p">,</span> <span class="n">hll_type</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">14</span><span class="p">))),</span>
+<span class="p">])</span>
 
-reported = monthly.with_column(
-    &quot;estimated_users&quot;,
-    hll_estimate(sketch_col(&quot;hll_merge_hll_sketch_user_id&quot;, hll_type(precision=14))),
-)
+<span class="n">reported</span> <span class="o">=</span> <span class="n">monthly</span><span class="o">.</span><span class="n">with_column</span><span class="p">(</span>
+    <span class="s2">&quot;estimated_users&quot;</span><span class="p">,</span>
+    <span class="n">hll_estimate</span><span class="p">(</span><span class="n">sketch_col</span><span class="p">(</span><span class="s2">&quot;hll_merge_hll_sketch_user_id&quot;</span><span class="p">,</span> <span class="n">hll_type</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">14</span><span class="p">))),</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>The important part is that <code>users_hll</code> is not a <code>str</code> or <code>bytes</code> column. It is a sketch logical value with a family, value domain, precision, and serialized format contract.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

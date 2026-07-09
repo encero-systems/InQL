@@ -3719,51 +3719,51 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors should think of cluster execution as changing where a plan runs, not what the plan means.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import Session
-from pub::inql import backends
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">Session</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">backends</span>
 
-session = (
-    Session.builder()
-    .with_backend(
-        backends.DataFusionCluster(
-            scheduler_uri=&quot;http://ballista.example.internal:50050&quot;,
-            storage_profile=&quot;analytics_lake&quot;,
-        )
-    )
-    .build()
-)
+<span class="n">session</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="kt">Session</span><span class="o">.</span><span class="n">builder</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">with_backend</span><span class="p">(</span>
+        <span class="n">backends</span><span class="o">.</span><span class="nc">DataFusionCluster</span><span class="p">(</span>
+            <span class="n">scheduler_uri</span><span class="o">=</span><span class="s2">&quot;http://ballista.example.internal:50050&quot;</span><span class="p">,</span>
+            <span class="n">storage_profile</span><span class="o">=</span><span class="s2">&quot;analytics_lake&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="p">)</span>
 
-orders = session.table[Order](&quot;orders&quot;)
+<span class="n">orders</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="nc">Order</span><span class="p">](</span><span class="s2">&quot;orders&quot;</span><span class="p">)</span>
 
-result = query {
-    FROM orders
-    WHERE .status == &quot;completed&quot;
-    GROUP BY .region
-    SELECT .region, total = sum(.amount)
-}
+<span class="kt">result</span> <span class="o">=</span> <span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">WHERE</span> <span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;completed&quot;</span>
+    <span class="k">GROUP</span> <span class="k">BY</span> <span class="o">.</span><span class="n">region</span>
+    <span class="k">SELECT</span> <span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span>
+<span class="p">}</span>
 
-session.write_parquet(result, &quot;s3://warehouse/reports/regional_totals/&quot;)
+<span class="n">session</span><span class="o">.</span><span class="n">write_parquet</span><span class="p">(</span><span class="kt">result</span><span class="p">,</span> <span class="s2">&quot;s3://warehouse/reports/regional_totals/&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>The same logical query should be valid with a local DataFusion session when the registered sources and backend capabilities are equivalent:</p>
-<div class="highlight"><pre><span></span><code>local = Session.default()
-cluster = (
-    Session.builder()
-    .with_backend(
-        backends.DataFusionCluster(
-            scheduler_uri=&quot;http://ballista.example.internal:50050&quot;,
-            storage_profile=&quot;analytics_lake&quot;,
-        )
-    )
-    .build()
-)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">local</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+<span class="n">cluster</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="kt">Session</span><span class="o">.</span><span class="n">builder</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">with_backend</span><span class="p">(</span>
+        <span class="n">backends</span><span class="o">.</span><span class="nc">DataFusionCluster</span><span class="p">(</span>
+            <span class="n">scheduler_uri</span><span class="o">=</span><span class="s2">&quot;http://ballista.example.internal:50050&quot;</span><span class="p">,</span>
+            <span class="n">storage_profile</span><span class="o">=</span><span class="s2">&quot;analytics_lake&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>Cluster mode may reject a plan before execution when the selected backend cannot satisfy required capabilities. For example, an InQL-owned UDF, generator relation, typed variant value, sketch value, or extension metadata shape may be unsupported by a cluster backend. That is a backend coverage result, not an invalid InQL program.</p>
 <p>For large outputs, authors and tools should prefer <code>execute(...)</code> and <code>write(...)</code> over <code>collect(...)</code>. <code>collect(...)</code> remains a materialization boundary, but cluster adapters may require limits, previews, or explicit approval for large result collection.</p>
 <p>For streaming inputs, the same pattern becomes a long-running execution:</p>
-<div class="highlight"><pre><span></span><code>events = session.stream[Event](&quot;events&quot;)
-alerts = important_events(events)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">events</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">stream</span><span class="p">[</span><span class="nc">Event</span><span class="p">](</span><span class="s2">&quot;events&quot;</span><span class="p">)</span>
+<span class="n">alerts</span> <span class="o">=</span> <span class="n">important_events</span><span class="p">(</span><span class="n">events</span><span class="p">)</span>
 
-handle = session.execute(alerts.write_to(alert_sink(&quot;ops_alerts&quot;)))
+<span class="n">handle</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">alerts</span><span class="o">.</span><span class="n">write_to</span><span class="p">(</span><span class="n">alert_sink</span><span class="p">(</span><span class="s2">&quot;ops_alerts&quot;</span><span class="p">)))</span>
 </code></pre></div>
 <p>The important difference is lifecycle rather than semantics. A bounded <code>LazyFrame[T]</code> cluster job can finish. A <code>DataStream[T]</code> cluster job may keep running, checkpoint state, recover from worker failure, and emit output continuously. Cluster mode must surface that lifecycle through execution handles and observations instead of pretending streaming execution is a finite <code>collect(...)</code>.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

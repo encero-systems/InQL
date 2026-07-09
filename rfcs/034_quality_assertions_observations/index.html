@@ -3605,22 +3605,22 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors can declare checks and execute them through a session:</p>
-<div class="highlight"><pre><span></span><code>checks = [
-    row_count(min_count=Some(1)),
-    null_rate(col(&quot;customer_id&quot;), max_rate=0.0),
-    unique(col(&quot;order_id&quot;)),
-]
+<div class="language-incan highlight"><pre><span></span><code><span class="n">checks</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">row_count</span><span class="p">(</span><span class="n">min_count</span><span class="o">=</span><span class="nb">Some</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
+    <span class="n">null_rate</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">),</span> <span class="n">max_rate</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span>
+    <span class="n">unique</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;order_id&quot;</span><span class="p">)),</span>
+<span class="p">]</span>
 
-observations = session.observe_quality(orders, checks)
+<span class="n">observations</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">observe_quality</span><span class="p">(</span><span class="n">orders</span><span class="p">,</span> <span class="n">checks</span><span class="p">)</span>
 </code></pre></div>
 <p>Authors can also use the <code>quality</code> vocab surface when they want assertion declarations to read as a compact block. A <code>quality</code> block produces a <code>list[QualityAssertion]</code>; it does not execute the assertions by itself:</p>
-<div class="highlight"><pre><span></span><code>checks = quality {
-    row_count(Some(1)).require()
-    unique(.order_id)
-    group_row_count([.region], 1, Some(10000)).quarantine()
-}
+<div class="language-incan highlight"><pre><span></span><code><span class="n">checks</span> <span class="o">=</span> <span class="k">quality</span> <span class="p">{</span>
+    <span class="n">row_count</span><span class="p">(</span><span class="nb">Some</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">require</span><span class="p">()</span>
+    <span class="n">unique</span><span class="p">(</span><span class="o">.</span><span class="n">order_id</span><span class="p">)</span>
+    <span class="n">group_row_count</span><span class="p">([</span><span class="o">.</span><span class="n">region</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">Some</span><span class="p">(</span><span class="mi">10000</span><span class="p">))</span><span class="o">.</span><span class="n">quarantine</span><span class="p">()</span>
+<span class="p">}</span>
 
-observations = session.observe_quality(orders, checks)
+<span class="n">observations</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">observe_quality</span><span class="p">(</span><span class="n">orders</span><span class="p">,</span> <span class="n">checks</span><span class="p">)</span>
 </code></pre></div>
 <p>The observations report pass, fail, error, or skipped status. The <code>orders</code> relation is not filtered by these checks unless the author separately applies a filter.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>
@@ -3635,10 +3635,10 @@ observations = session.observe_quality(orders, checks)
 <h2 id="design-details">Design details</h2>
 <h3 id="syntax">Syntax</h3>
 <p>This RFC introduces <code>quality { ... }</code> and expression-position <code>quality:</code> syntax for declaring a <code>list[QualityAssertion]</code>. The syntax is activated by importing <code>pub::inql</code>, like <code>query { ... }</code>.</p>
-<div class="highlight"><pre><span></span><code>checks = quality:
-    row_count(Some(1))
-    unique(.order_id).require()
-    group_row_count([.region], 1, Some(10000))
+<div class="language-incan highlight"><pre><span></span><code><span class="n">checks</span> <span class="o">=</span> <span class="k">quality</span><span class="p">:</span>
+    <span class="n">row_count</span><span class="p">(</span><span class="nb">Some</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">unique</span><span class="p">(</span><span class="o">.</span><span class="n">order_id</span><span class="p">)</span><span class="o">.</span><span class="n">require</span><span class="p">()</span>
+    <span class="n">group_row_count</span><span class="p">([</span><span class="o">.</span><span class="n">region</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">Some</span><span class="p">(</span><span class="mi">10000</span><span class="p">))</span>
 </code></pre></div>
 <p>Each body item must be an assertion expression. Brace syntax uses newline-separated assertion expressions; it is not a comma-separated list literal. Leading-dot field references are valid inside quality assertion expressions and lower to ordinary <code>col("field")</code> expressions. <code>quality</code> syntax must lower to the same <code>QualityAssertion</code> helper values as ordinary Incan code. It must not observe, enforce, filter, quarantine, or mutate a relation by itself.</p>
 <h3 id="semantics">Semantics</h3>

@@ -3267,28 +3267,28 @@
 <p>Use sketch helpers when approximate state itself needs to flow through a plan. Use <code>approx_count_distinct(...)</code> when the plan only needs one aggregate estimate.</p>
 <h2 id="build-daily-sketches">Build daily sketches</h2>
 <p>Aggregate source values into typed sketch state with <code>hll_sketch(...)</code>.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import col, hll_sketch
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">hll_sketch</span>
 
-daily = events.group_by([col(&quot;event_date&quot;)]).agg([
-    hll_sketch(col(&quot;user_id&quot;), precision=14),
-])
+<span class="n">daily</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">group_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;event_date&quot;</span><span class="p">)])</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span>
+    <span class="n">hll_sketch</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;user_id&quot;</span><span class="p">),</span> <span class="n">precision</span><span class="o">=</span><span class="mi">14</span><span class="p">),</span>
+<span class="p">])</span>
 
-literal_seed = events.group_by([col(&quot;event_date&quot;)]).agg([
-    hll_sketch(&quot;anonymous-user&quot;, precision=14),
-])
+<span class="n">literal_seed</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">group_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;event_date&quot;</span><span class="p">)])</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span>
+    <span class="n">hll_sketch</span><span class="p">(</span><span class="s2">&quot;anonymous-user&quot;</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">14</span><span class="p">),</span>
+<span class="p">])</span>
 </code></pre></div>
 <h2 id="merge-and-estimate-sketches">Merge and estimate sketches</h2>
 <p>Reference sketch columns with matching logical type metadata, then merge and estimate them.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.sketches import hll_estimate, hll_merge, hll_type, sketch_col
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">sketches</span> <span class="kn">import</span><span class="w"> </span><span class="nn">hll_estimate</span><span class="o">,</span><span class="w"> </span><span class="nn">hll_merge</span><span class="o">,</span><span class="w"> </span><span class="nn">hll_type</span><span class="o">,</span><span class="w"> </span><span class="nn">sketch_col</span>
 
-monthly = daily.group_by([col(&quot;month&quot;)]).agg([
-    hll_merge(sketch_col(&quot;hll_sketch_user_id&quot;, hll_type(precision=14))),
-])
+<span class="n">monthly</span> <span class="o">=</span> <span class="n">daily</span><span class="o">.</span><span class="n">group_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;month&quot;</span><span class="p">)])</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span>
+    <span class="n">hll_merge</span><span class="p">(</span><span class="n">sketch_col</span><span class="p">(</span><span class="s2">&quot;hll_sketch_user_id&quot;</span><span class="p">,</span> <span class="n">hll_type</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">14</span><span class="p">))),</span>
+<span class="p">])</span>
 
-reported = monthly.with_column(
-    &quot;estimated_users&quot;,
-    hll_estimate(sketch_col(&quot;hll_merge_hll_sketch_user_id&quot;, hll_type(precision=14))),
-)
+<span class="n">reported</span> <span class="o">=</span> <span class="n">monthly</span><span class="o">.</span><span class="n">with_column</span><span class="p">(</span>
+    <span class="s2">&quot;estimated_users&quot;</span><span class="p">,</span>
+    <span class="n">hll_estimate</span><span class="p">(</span><span class="n">sketch_col</span><span class="p">(</span><span class="s2">&quot;hll_merge_hll_sketch_user_id&quot;</span><span class="p">,</span> <span class="n">hll_type</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">14</span><span class="p">))),</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>Sketches can merge only when family, value domain, precision, and serialization format match. For exact helper contracts, see <a href="../../reference/functions/sketches/">Sketch functions</a>.</p>
 

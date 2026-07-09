@@ -3539,12 +3539,12 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Given a grouped relation:</p>
-<div class="highlight"><pre><span></span><code>summary = (
-    orders
-        .filter(col(&quot;status&quot;) == &quot;paid&quot;)
-        .group_by([col(&quot;customer_id&quot;)])
-        .agg([sum(col(&quot;amount&quot;)).alias(&quot;total_amount&quot;)])
-)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">summary</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">orders</span>
+        <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;paid&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">group_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)])</span>
+        <span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="nb">sum</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">)])</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>InQL should be able to explain that <code>total_amount</code> has value lineage from <code>orders.amount</code>, grouping lineage from <code>orders.customer_id</code>, and control lineage from <code>orders.status</code>.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

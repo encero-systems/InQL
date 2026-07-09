@@ -3555,20 +3555,20 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Most authors should encounter profiles through inspection, coverage, and execution evidence:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.inspect import inspect_plan
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="nb">inspect</span> <span class="kn">import</span><span class="w"> </span><span class="nn">inspect_plan</span>
 
-inspection = inspect_plan(summary)
-profile = inspection.semantic_profile(&quot;portable_relational&quot;)
+<span class="n">inspection</span> <span class="o">=</span> <span class="n">inspect_plan</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+<span class="n">profile</span> <span class="o">=</span> <span class="n">inspection</span><span class="o">.</span><span class="n">semantic_profile</span><span class="p">(</span><span class="s2">&quot;portable_relational&quot;</span><span class="p">)</span>
 
-requirements = inspection.adapter_requirements(profile)
-coverage = session.check_coverage(summary, target_profile=profile)
+<span class="n">requirements</span> <span class="o">=</span> <span class="n">inspection</span><span class="o">.</span><span class="n">adapter_requirements</span><span class="p">(</span><span class="n">profile</span><span class="p">)</span>
+<span class="n">coverage</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">check_coverage</span><span class="p">(</span><span class="n">summary</span><span class="p">,</span> <span class="n">target_profile</span><span class="o">=</span><span class="n">profile</span><span class="p">)</span>
 </code></pre></div>
 <p>The exact API names are illustrative. The important model is that the target profile is explicit. A coverage report should be able to say which semantic profile was used and which dimensions are covered, constrained, mismatched, or unknown.</p>
 <p>Execution can attach the same evidence context:</p>
-<div class="highlight"><pre><span></span><code>result = session.collect(summary, target_profile=profile)
-observation = result.execution_observation()
+<div class="language-incan highlight"><pre><span></span><code><span class="kt">result</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="nb">collect</span><span class="p">(</span><span class="n">summary</span><span class="p">,</span> <span class="n">target_profile</span><span class="o">=</span><span class="n">profile</span><span class="p">)</span>
+<span class="n">observation</span> <span class="o">=</span> <span class="kt">result</span><span class="o">.</span><span class="n">execution_observation</span><span class="p">()</span>
 
-assert observation.requested_profile == profile.id
+<span class="k">assert</span> <span class="n">observation</span><span class="o">.</span><span class="n">requested_profile</span> <span class="o">==</span> <span class="n">profile</span><span class="o">.</span><span class="n">id</span>
 </code></pre></div>
 <p>If the runtime adapter reports a different engine version, configuration, or semantic mode than the requested profile expected, the observation should record that difference as structured evidence.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

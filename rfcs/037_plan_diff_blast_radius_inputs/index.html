@@ -3535,12 +3535,12 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>A CI job can compare two plan artifacts:</p>
-<div class="highlight"><pre><span></span><code>before = read_plan_artifact(&quot;main/summary.plan.json&quot;)
-after = inspect_plan(summary)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">before</span> <span class="o">=</span> <span class="n">read_plan_artifact</span><span class="p">(</span><span class="s2">&quot;main/summary.plan.json&quot;</span><span class="p">)</span>
+<span class="n">after</span> <span class="o">=</span> <span class="n">inspect_plan</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
 
-diff = diff_plans(before, after)
-diff.changed_output_fields()
-diff.changed_adapter_requirements()
+<span class="n">diff</span> <span class="o">=</span> <span class="n">diff_plans</span><span class="p">(</span><span class="n">before</span><span class="p">,</span> <span class="n">after</span><span class="p">)</span>
+<span class="n">diff</span><span class="o">.</span><span class="n">changed_output_fields</span><span class="p">()</span>
+<span class="n">diff</span><span class="o">.</span><span class="n">changed_adapter_requirements</span><span class="p">()</span>
 </code></pre></div>
 <p>The diff tells InQL-local facts. A higher-level system may combine those facts with dependency indexes and approvals.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

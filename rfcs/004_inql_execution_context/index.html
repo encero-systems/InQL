@@ -3931,95 +3931,95 @@
 </ul>
 <h2 id="guide-level-explanation">Guide-level explanation</h2>
 <h3 id="creating-a-session">Creating a session</h3>
-<div class="highlight"><pre><span></span><code>from pub::inql import Session
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">Session</span>
 
-session = Session.default()
+<span class="n">session</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
 </code></pre></div>
 <p>A session holds registered data sources and configuration. <code>Session.default()</code> creates a context with the default backend (DataFusion). Authors who need custom configuration use a builder; backend-specific configuration lives under <code>pub::inql.backends</code>. Higher operational layers may wrap this construction behind step- or pipeline-level runtime setup, but the core InQL surface remains an explicit <code>Session</code>:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import Session, backends
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">Session</span><span class="o">,</span><span class="w"> </span><span class="nn">backends</span>
 
-session = Session.builder()
-    .with_backend(backends.DataFusion())
-    .build()
+<span class="n">session</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">builder</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">with_backend</span><span class="p">(</span><span class="n">backends</span><span class="o">.</span><span class="nc">DataFusion</span><span class="p">())</span>
+    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
 </code></pre></div>
 <h3 id="reading-data">Reading data</h3>
-<div class="highlight"><pre><span></span><code>from pub::inql import Session, LazyFrame, csv_source
-from models import Order
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">Session</span><span class="o">,</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">csv_source</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-session = Session.default()
+<span class="n">session</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
 
-# Register a named table (logical name → physical source)
-session.register(&quot;orders&quot;, csv_source(&quot;s3://bucket/orders.csv&quot;))
+<span class="c1"># Register a named table (logical name → physical source)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;orders&quot;</span><span class="p">,</span> <span class="n">csv_source</span><span class="p">(</span><span class="s2">&quot;s3://bucket/orders.csv&quot;</span><span class="p">))</span>
 
-# Create a lazy plan from the registered table
-orders: LazyFrame[Order] = session.table(&quot;orders&quot;)
+<span class="c1"># Create a lazy plan from the registered table</span>
+<span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;orders&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p><code>session.table("orders")</code> returns a <code>LazyFrame[Order]</code> — a deferred plan rooted in a <code>ReadRel</code> (InQL RFC 002) that carries the logical name <code>"orders"</code>. No data moves until the plan is executed.</p>
 <p>For file-based sources:</p>
-<div class="highlight"><pre><span></span><code>from models import Event
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Event</span>
 
-events: LazyFrame[Event] = session.read_parquet(&quot;events&quot;, &quot;s3://bucket/events/*.parquet&quot;)
+<span class="n">events</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Event</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;events&quot;</span><span class="p">,</span> <span class="s2">&quot;s3://bucket/events/*.parquet&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>For inline data:</p>
-<div class="highlight"><pre><span></span><code>sample: LazyFrame[Order] = session.from_values([
-    Order(order_id=&quot;1&quot;, customer_id=&quot;c1&quot;, amount=100.0),
-    Order(order_id=&quot;2&quot;, customer_id=&quot;c2&quot;, amount=250.0),
-])
+<div class="language-incan highlight"><pre><span></span><code><span class="n">sample</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">from_values</span><span class="p">([</span>
+    <span class="nc">Order</span><span class="p">(</span><span class="n">order_id</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="n">customer_id</span><span class="o">=</span><span class="s2">&quot;c1&quot;</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mf">100.0</span><span class="p">),</span>
+    <span class="nc">Order</span><span class="p">(</span><span class="n">order_id</span><span class="o">=</span><span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="n">customer_id</span><span class="o">=</span><span class="s2">&quot;c2&quot;</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mf">250.0</span><span class="p">),</span>
+<span class="p">])</span>
 </code></pre></div>
 <h3 id="transforming-data">Transforming data</h3>
 <p>Once you have a <code>LazyFrame[T]</code>, use <code>query {}</code> (InQL RFC 003) or method chains (InQL RFC 001):</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import count, sum
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">count</span><span class="o">,</span><span class="w"> </span><span class="nn">sum</span>
 
-result = query {
-    FROM orders
-    WHERE .amount &gt; 100
-    GROUP BY .region
-    SELECT
-        region,
-        count() as order_count,
-        sum(.amount) as total_revenue,
-    ORDER BY total_revenue DESC
-}
+<span class="kt">result</span> <span class="o">=</span> <span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">WHERE</span> <span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span>
+    <span class="k">GROUP</span> <span class="k">BY</span> <span class="o">.</span><span class="n">region</span>
+    <span class="k">SELECT</span>
+        <span class="n">region</span><span class="p">,</span>
+        <span class="nb">count</span><span class="p">()</span> <span class="k">as</span> <span class="n">order_count</span><span class="p">,</span>
+        <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_revenue</span><span class="p">,</span>
+    <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">total_revenue</span> <span class="k">DESC</span>
+<span class="p">}</span>
 </code></pre></div>
 <h3 id="executing-and-collecting">Executing and collecting</h3>
-<div class="highlight"><pre><span></span><code>from pub::inql import DataFrame
-from models import OrderSummary
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">DataFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">OrderSummary</span>
 
-# Execute the plan and materialize results
-materialized: DataFrame[OrderSummary] = session.collect(result)
+<span class="c1"># Execute the plan and materialize results</span>
+<span class="n">materialized</span><span class="p">:</span> <span class="kt">DataFrame</span><span class="p">[</span><span class="nc">OrderSummary</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="nb">collect</span><span class="p">(</span><span class="kt">result</span><span class="p">)</span>
 </code></pre></div>
 <p><code>session.collect(result)</code> takes the <code>LazyFrame</code>, lowers to Substrait (InQL RFC 002), passes the plan through DataFusion's optimizer, executes it, and wraps the resulting Arrow record batches in a typed <code>DataFrame[T]</code>.</p>
 <h3 id="writing-results">Writing results</h3>
-<div class="highlight"><pre><span></span><code>from pub::inql import parquet_sink
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">parquet_sink</span>
 
-# Write to a registered output target
-session.write(materialized, parquet_sink(&quot;s3://bucket/summaries/&quot;))
+<span class="c1"># Write to a registered output target</span>
+<span class="n">session</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">materialized</span><span class="p">,</span> <span class="n">parquet_sink</span><span class="p">(</span><span class="s2">&quot;s3://bucket/summaries/&quot;</span><span class="p">))</span>
 
-# Or write a deferred plan through a file-format convenience helper
-session.write_parquet(result, &quot;s3://bucket/summaries/&quot;)
+<span class="c1"># Or write a deferred plan through a file-format convenience helper</span>
+<span class="n">session</span><span class="o">.</span><span class="n">write_parquet</span><span class="p">(</span><span class="kt">result</span><span class="p">,</span> <span class="s2">&quot;s3://bucket/summaries/&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="end-to-end-example">End-to-end example</h3>
-<div class="highlight"><pre><span></span><code>from pub::inql import Session, LazyFrame, DataFrame, csv_source, parquet_sink
-from pub::inql.functions import count, sum
-from models import Order, OrderSummary
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">Session</span><span class="o">,</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">DataFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">csv_source</span><span class="o">,</span><span class="w"> </span><span class="nn">parquet_sink</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">count</span><span class="o">,</span><span class="w"> </span><span class="nn">sum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span><span class="p">,</span> <span class="nc">OrderSummary</span>
 
-session = Session.default()
-session.register(&quot;orders&quot;, csv_source(&quot;s3://bucket/orders.csv&quot;))
+<span class="n">session</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+<span class="n">session</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;orders&quot;</span><span class="p">,</span> <span class="n">csv_source</span><span class="p">(</span><span class="s2">&quot;s3://bucket/orders.csv&quot;</span><span class="p">))</span>
 
-orders: LazyFrame[Order] = session.table(&quot;orders&quot;)
+<span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;orders&quot;</span><span class="p">)</span>
 
-summary: LazyFrame[OrderSummary] = query {
-    FROM orders
-    WHERE .status == &quot;completed&quot;
-    GROUP BY .region
-    SELECT
-        region,
-        count() as order_count,
-        sum(.amount) as total_revenue,
-}
+<span class="n">summary</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">OrderSummary</span><span class="p">]</span> <span class="o">=</span> <span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">WHERE</span> <span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;completed&quot;</span>
+    <span class="k">GROUP</span> <span class="k">BY</span> <span class="o">.</span><span class="n">region</span>
+    <span class="k">SELECT</span>
+        <span class="n">region</span><span class="p">,</span>
+        <span class="nb">count</span><span class="p">()</span> <span class="k">as</span> <span class="n">order_count</span><span class="p">,</span>
+        <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_revenue</span><span class="p">,</span>
+<span class="p">}</span>
 
-result: DataFrame[OrderSummary] = session.collect(summary)
-session.write(result, parquet_sink(&quot;s3://bucket/summaries/&quot;))
+<span class="kt">result</span><span class="p">:</span> <span class="kt">DataFrame</span><span class="p">[</span><span class="nc">OrderSummary</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="nb">collect</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="kt">result</span><span class="p">,</span> <span class="n">parquet_sink</span><span class="p">(</span><span class="s2">&quot;s3://bucket/summaries/&quot;</span><span class="p">))</span>
 </code></pre></div>
 <h2 id="reference-level-explanation">Reference-level explanation</h2>
 <h3 id="session-object"><code>Session</code> object</h3>
@@ -4193,7 +4193,7 @@ session.write(result, parquet_sink(&quot;s3://bucket/summaries/&quot;))
 <li><strong>Arrow as data plane</strong>: DataFusion operates natively on Arrow columnar data. InQL's <code>DataFrame[T]</code> wraps Arrow record batches with the typed model <code>T</code> on top.</li>
 </ul>
 <p>The data flow:</p>
-<div class="highlight"><pre><span></span><code>InQL query / method chain
+<div class="language-text highlight"><pre><span></span><code>InQL query / method chain
   → Substrait Plan (protobuf, InQL RFC 002)
   → DataFusion LogicalPlan (via substrait consumer)
   → DataFusion optimizer

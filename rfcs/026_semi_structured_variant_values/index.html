@@ -3580,17 +3580,17 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors should parse payload text into a variant value before using variant predicates:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import col, is_array, is_null_value, parse_variant_json, typeof, variant_get
-from pub::inql.variants import variant_col
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">is_array</span><span class="o">,</span><span class="w"> </span><span class="nn">is_null_value</span><span class="o">,</span><span class="w"> </span><span class="nn">parse_variant_json</span><span class="o">,</span><span class="w"> </span><span class="nn">typeof</span><span class="o">,</span><span class="w"> </span><span class="nn">variant_get</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">variants</span> <span class="kn">import</span><span class="w"> </span><span class="nn">variant_col</span>
 
-events_with_payload = events.with_column(&quot;payload_value&quot;, parse_variant_json(col(&quot;payload&quot;)))
+<span class="n">events_with_payload</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;payload_value&quot;</span><span class="p">,</span> <span class="n">parse_variant_json</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;payload&quot;</span><span class="p">)))</span>
 
-projected = (
-    events_with_payload
-        .with_column(&quot;payload_kind&quot;, typeof(variant_col(&quot;payload_value&quot;)))
-        .with_column(&quot;is_items_array&quot;, is_array(variant_get(variant_col(&quot;payload_value&quot;), &quot;$.items&quot;)))
-        .with_column(&quot;deleted_was_json_null&quot;, is_null_value(variant_get(variant_col(&quot;payload_value&quot;), &quot;$.deleted_at&quot;)))
-)
+<span class="n">projected</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">events_with_payload</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;payload_kind&quot;</span><span class="p">,</span> <span class="nb">typeof</span><span class="p">(</span><span class="n">variant_col</span><span class="p">(</span><span class="s2">&quot;payload_value&quot;</span><span class="p">)))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;is_items_array&quot;</span><span class="p">,</span> <span class="nb">is_array</span><span class="p">(</span><span class="n">variant_get</span><span class="p">(</span><span class="n">variant_col</span><span class="p">(</span><span class="s2">&quot;payload_value&quot;</span><span class="p">),</span> <span class="s2">&quot;$.items&quot;</span><span class="p">)))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;deleted_was_json_null&quot;</span><span class="p">,</span> <span class="n">is_null_value</span><span class="p">(</span><span class="n">variant_get</span><span class="p">(</span><span class="n">variant_col</span><span class="p">(</span><span class="s2">&quot;payload_value&quot;</span><span class="p">),</span> <span class="s2">&quot;$.deleted_at&quot;</span><span class="p">)))</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>Authors who only need text validation or normalized JSON strings should keep using the RFC 022 helpers. Variant helpers are for plans that need logical semi-structured values and type-aware predicates.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

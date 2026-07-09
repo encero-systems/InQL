@@ -3746,66 +3746,66 @@
 </ul>
 <h2 id="guide-level-explanation">Guide-level explanation</h2>
 <p>Authors import dataset types from the InQL package and parameterize with a <code>model</code>:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import LazyFrame
-from models import Order
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-def load_orders() -&gt; LazyFrame[Order]:
-    ...
+<span class="k">def</span><span class="w"> </span><span class="nf">load_orders</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
+    <span class="o">...</span>
 </code></pre></div>
 <p>They compose data using methods exposed through the <code>DataSet[T]</code> trait:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import LazyFrame
-from models import Order
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-def high_value_orders(orders: LazyFrame[Order]) -&gt; LazyFrame[Order]:
-    return orders.filter(.amount &gt; 100)
+<span class="k">def</span><span class="w"> </span><span class="nf">high_value_orders</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="n">orders</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">)</span>
 </code></pre></div>
 <p>Authors can derive computed columns through <code>with_column(...)</code>:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import LazyFrame
-from pub::inql.functions import col, int_expr, mul
-from models import Order
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">int_expr</span><span class="o">,</span><span class="w"> </span><span class="nn">mul</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-def enrich_orders(orders: LazyFrame[Order]) -&gt; LazyFrame[Order]:
-    return orders.with_column(&quot;amount_x2&quot;, mul(col(&quot;amount&quot;), int_expr(2)))
+<span class="k">def</span><span class="w"> </span><span class="nf">enrich_orders</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="n">orders</span><span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;amount_x2&quot;</span><span class="p">,</span> <span class="n">mul</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">),</span> <span class="n">int_expr</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
 </code></pre></div>
 <p>Because <code>DataStream[T]</code> shares the same operation API, streaming code looks identical — only the type signature changes:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import DataStream
-from models import Event
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">DataStream</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Event</span>
 
-def important_events(events: DataStream[Event]) -&gt; DataStream[Event]:
-    return events.filter(.severity == &quot;critical&quot;)
+<span class="k">def</span><span class="w"> </span><span class="nf">important_events</span><span class="p">(</span><span class="n">events</span><span class="p">:</span> <span class="nc">DataStream</span><span class="p">[</span><span class="nc">Event</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nc">DataStream</span><span class="p">[</span><span class="nc">Event</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="n">events</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">severity</span> <span class="o">==</span> <span class="s2">&quot;critical&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="type-signature-levels">Type signature levels</h3>
 <p>The trait hierarchy gives authors three levels of specificity:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import DataSet, BoundedDataSet, UnboundedDataSet
-from models import Order, Event
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">DataSet</span><span class="o">,</span><span class="w"> </span><span class="nn">BoundedDataSet</span><span class="o">,</span><span class="w"> </span><span class="nn">UnboundedDataSet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span><span class="p">,</span> <span class="nc">Event</span>
 
-# Accepts any carrier — generic utilities
-def row_count[T](data: DataSet[T]) -&gt; int:
-    ...
+<span class="c1"># Accepts any carrier — generic utilities</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">row_count</span><span class="p">[</span><span class="nc">T</span><span class="p">](</span><span class="n">data</span><span class="p">:</span> <span class="kt">DataSet</span><span class="p">[</span><span class="nc">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="o">...</span>
 
-# Batch only — Parquet writers, batch sinks
-def write_parquet(data: BoundedDataSet[Order]) -&gt; None:
-    ...
+<span class="c1"># Batch only — Parquet writers, batch sinks</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_parquet</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nc">BoundedDataSet</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="o">...</span>
 
-# Streaming only — Kafka sinks, event processors
-def write_to_kafka(events: UnboundedDataSet[Event]) -&gt; None:
-    ...
+<span class="c1"># Streaming only — Kafka sinks, event processors</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_to_kafka</span><span class="p">(</span><span class="n">events</span><span class="p">:</span> <span class="nc">UnboundedDataSet</span><span class="p">[</span><span class="nc">Event</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="o">...</span>
 </code></pre></div>
 <p>And two levels of concrete-type specificity:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import DataFrame, LazyFrame, DataStream
-from models import Order, Summary, Event, Alert
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">DataFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">DataStream</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span><span class="p">,</span> <span class="nc">Summary</span><span class="p">,</span> <span class="nc">Event</span><span class="p">,</span> <span class="nc">Alert</span>
 
-# Materialized data in hand
-def inspect(data: DataFrame[Order]) -&gt; None:
-    ...
+<span class="c1"># Materialized data in hand</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">inspect</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="kt">DataFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="o">...</span>
 
-# Deferred plan — compose before execution
-def build_pipeline(orders: LazyFrame[Order]) -&gt; LazyFrame[Summary]:
-    ...
+<span class="c1"># Deferred plan — compose before execution</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_pipeline</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Summary</span><span class="p">]:</span>
+    <span class="o">...</span>
 
-# Streaming specifically
-def process_stream(events: DataStream[Event]) -&gt; DataStream[Alert]:
-    ...
+<span class="c1"># Streaming specifically</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_stream</span><span class="p">(</span><span class="n">events</span><span class="p">:</span> <span class="nc">DataStream</span><span class="p">[</span><span class="nc">Event</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nc">DataStream</span><span class="p">[</span><span class="nc">Alert</span><span class="p">]:</span>
+    <span class="o">...</span>
 </code></pre></div>
 <h2 id="reference-level-explanation">Reference-level explanation</h2>
 <h3 id="packaging">Packaging</h3>
@@ -3814,7 +3814,7 @@ def process_stream(events: DataStream[Event]) -&gt; DataStream[Alert]:
 <li>This RFC <strong>may</strong> require vocabulary only for symbols strictly needed for the dataset API surface; vocabulary for other InQL authoring surfaces is a separate concern.</li>
 </ul>
 <h3 id="type-hierarchy">Type hierarchy</h3>
-<div class="highlight"><pre><span></span><code>DataSet[T]                       (root trait — any tabular data)
+<div class="language-text highlight"><pre><span></span><code>DataSet[T]                       (root trait — any tabular data)
 ├── BoundedDataSet[T]            (trait — finite extent)
 │   ├── DataFrame[T]             (concrete — materialized/eager)
 │   └── LazyFrame[T]             (concrete — deferred plan, bounded source)

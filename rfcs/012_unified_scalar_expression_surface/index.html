@@ -3906,28 +3906,28 @@
 <p>Authors should be able to think in terms of one row-level expression language.</p>
 <p>The canonical public literal helper is <code>lit(...)</code>. Typed literal helpers are entrypoints over the same scalar-literal representation rather than a separate predicate-only or projection-only literal family.</p>
 <p>If an author filters rows or computes a new column, those operations should be using the same underlying scalar expression model:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import LazyFrame
-from pub::inql.functions import col, lit, gt, add
-from models import Order
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">lit</span><span class="o">,</span><span class="w"> </span><span class="nn">gt</span><span class="o">,</span><span class="w"> </span><span class="nn">add</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-def enrich_orders(orders: LazyFrame[Order]) -&gt; LazyFrame[Order]:
-    return (
-        orders
-            .filter(gt(col(&quot;amount&quot;), lit(100)))
-            .with_column(&quot;amount_plus_fee&quot;, add(col(&quot;amount&quot;), lit(5)))
-    )
+<span class="k">def</span><span class="w"> </span><span class="nf">enrich_orders</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">orders</span>
+            <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="nb">gt</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="mi">100</span><span class="p">)))</span>
+            <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;amount_plus_fee&quot;</span><span class="p">,</span> <span class="n">add</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="mi">5</span><span class="p">)))</span>
+    <span class="p">)</span>
 </code></pre></div>
 <p>If an author groups rows and supplies arguments to aggregates, those aggregate inputs should still be ordinary scalar expressions even though the aggregate outputs are not:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import LazyFrame
-from pub::inql.functions import col, sum, count
-from models import Order, OrderSummary
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">sum</span><span class="o">,</span><span class="w"> </span><span class="nn">count</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span><span class="p">,</span> <span class="nc">OrderSummary</span>
 
-def summarize_orders(orders: LazyFrame[Order]) -&gt; LazyFrame[OrderSummary]:
-    return (
-        orders
-            .group_by([col(&quot;customer_id&quot;)])
-            .agg([sum(col(&quot;amount&quot;)), count()])
-    )
+<span class="k">def</span><span class="w"> </span><span class="nf">summarize_orders</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">OrderSummary</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">orders</span>
+            <span class="o">.</span><span class="n">group_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)])</span>
+            <span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="nb">sum</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">)),</span> <span class="nb">count</span><span class="p">()])</span>
+    <span class="p">)</span>
 </code></pre></div>
 <p>In that example:</p>
 <ul>
@@ -3940,11 +3940,11 @@ def summarize_orders(orders: LazyFrame[Order]) -&gt; LazyFrame[OrderSummary]:
 <li><code>count()</code> is a distinct aggregate form because it does not require a scalar input</li>
 </ul>
 <p>This RFC does not require concise sugar, but it defines what concise sugar should mean later. If InQL later supports surfaces such as:</p>
-<div class="highlight"><pre><span></span><code>orders
-    .filter(.amount &gt; 100)
-    .with_column(&quot;amount_plus_fee&quot;, .amount + 5)
-    .group_by([.customer_id])
-    .agg([sum(.amount), count()])
+<div class="language-incan highlight"><pre><span></span><code><span class="n">orders</span>
+    <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;amount_plus_fee&quot;</span><span class="p">,</span> <span class="o">.</span><span class="n">amount</span> <span class="o">+</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">group_by</span><span class="p">([</span><span class="o">.</span><span class="n">customer_id</span><span class="p">])</span>
+    <span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">),</span> <span class="nb">count</span><span class="p">()])</span>
 </code></pre></div>
 <p>those surfaces should lower into the same scalar-expression and aggregate-measure model, not into a separate semantic system.</p>
 <p>Authors should also get explicit failure for unsupported shapes. If a library or backend only supports direct column references in one position, <code>group_by([add(col("a"), lit(1))])</code> must fail clearly. It must not be silently treated as if no grouping key had been provided.</p>

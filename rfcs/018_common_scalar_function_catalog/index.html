@@ -3665,15 +3665,15 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors should be able to clean and enrich ordinary scalar columns using familiar functions:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import col, concat, date_trunc, lower, round, substring, trim
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">concat</span><span class="o">,</span><span class="w"> </span><span class="nn">date_trunc</span><span class="o">,</span><span class="w"> </span><span class="nn">lower</span><span class="o">,</span><span class="w"> </span><span class="nn">round</span><span class="o">,</span><span class="w"> </span><span class="nn">substring</span><span class="o">,</span><span class="w"> </span><span class="nn">trim</span>
 
-cleaned = (
-    orders
-        .with_column(&quot;email_norm&quot;, lower(trim(col(&quot;email&quot;))))
-        .with_column(&quot;order_month&quot;, date_trunc(&quot;month&quot;, col(&quot;created_at&quot;)))
-        .with_column(&quot;amount_rounded&quot;, round(col(&quot;amount&quot;), 2))
-        .with_column(&quot;sku_prefix&quot;, substring(col(&quot;sku&quot;), 1, 3))
-)
+<span class="n">cleaned</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">orders</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;email_norm&quot;</span><span class="p">,</span> <span class="nb">lower</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">))))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;order_month&quot;</span><span class="p">,</span> <span class="n">date_trunc</span><span class="p">(</span><span class="s2">&quot;month&quot;</span><span class="p">,</span> <span class="nb">col</span><span class="p">(</span><span class="s2">&quot;created_at&quot;</span><span class="p">)))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;amount_rounded&quot;</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;sku_prefix&quot;</span><span class="p">,</span> <span class="nb">substring</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;sku&quot;</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>Compatibility aliases are useful, but authors should see one canonical InQL name in docs for each semantic function.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

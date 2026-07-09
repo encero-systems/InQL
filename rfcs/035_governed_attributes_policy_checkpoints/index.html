@@ -3806,11 +3806,11 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>An inspection may show that an output field carries derived attributes:</p>
-<div class="highlight"><pre><span></span><code>lineage = inspect_lineage(report)
-field = lineage.output_field(&quot;email_domain&quot;)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">lineage</span> <span class="o">=</span> <span class="n">inspect_lineage</span><span class="p">(</span><span class="n">report</span><span class="p">)</span>
+<span class="n">field</span> <span class="o">=</span> <span class="n">lineage</span><span class="o">.</span><span class="n">output_field</span><span class="p">(</span><span class="s2">&quot;email_domain&quot;</span><span class="p">)</span>
 
-for attribute in field.governed_attributes():
-    print(attribute.key, attribute.status, attribute.confidence)
+<span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">field</span><span class="o">.</span><span class="n">governed_attributes</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">attribute</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">attribute</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="n">attribute</span><span class="o">.</span><span class="n">confidence</span><span class="p">)</span>
 </code></pre></div>
 <p>If a policy engine or session binding later allows, masks, warns, or rejects part of the plan, that result appears as a policy checkpoint record attached to the relevant target.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

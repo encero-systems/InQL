@@ -3267,25 +3267,25 @@
 <p>Generators return <code>GeneratorApplication</code> values. Apply them through <code>generate(...)</code> so the relation keeps its input columns and appends the generated output aliases.</p>
 <h2 id="explode-array-values">Explode array values</h2>
 <p>Use <code>explode(...)</code> when each array element should become a generated row.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import LazyFrame
-from pub::inql.functions import col, explode
-from models import Order
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">explode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-def order_lines(orders: LazyFrame[Order]) -&gt; LazyFrame[Order]:
-    return orders.generate(explode(col(&quot;line_items&quot;), &quot;line_item&quot;))
+<span class="k">def</span><span class="w"> </span><span class="nf">order_lines</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="n">orders</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">explode</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;line_items&quot;</span><span class="p">),</span> <span class="s2">&quot;line_item&quot;</span><span class="p">))</span>
 </code></pre></div>
 <h2 id="inline-struct-arrays">Inline struct arrays</h2>
 <p>Use <code>inline(...)</code> when the generated rows should expose one output column per struct field.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import LazyFrame
-from pub::inql.functions import array, inline, lit, named_struct
-from models import Order
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">array</span><span class="o">,</span><span class="w"> </span><span class="nn">inline</span><span class="o">,</span><span class="w"> </span><span class="nn">lit</span><span class="o">,</span><span class="w"> </span><span class="nn">named_struct</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-def fixed_items(orders: LazyFrame[Order]) -&gt; LazyFrame[Order]:
-    rows = array([
-        named_struct([&quot;sku&quot;, &quot;quantity&quot;], [lit(&quot;A&quot;), lit(1)]),
-        named_struct([&quot;sku&quot;, &quot;quantity&quot;], [lit(&quot;B&quot;), lit(2)]),
-    ])
-    return orders.generate(inline(rows, [&quot;sku&quot;, &quot;quantity&quot;]))
+<span class="k">def</span><span class="w"> </span><span class="nf">fixed_items</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span>
+        <span class="n">named_struct</span><span class="p">([</span><span class="s2">&quot;sku&quot;</span><span class="p">,</span> <span class="s2">&quot;quantity&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">lit</span><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">)]),</span>
+        <span class="n">named_struct</span><span class="p">([</span><span class="s2">&quot;sku&quot;</span><span class="p">,</span> <span class="s2">&quot;quantity&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">lit</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="mi">2</span><span class="p">)]),</span>
+    <span class="p">])</span>
+    <span class="k">return</span> <span class="n">orders</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">inline</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;sku&quot;</span><span class="p">,</span> <span class="s2">&quot;quantity&quot;</span><span class="p">]))</span>
 </code></pre></div>
 <p>For the full generator catalog and alias rules, see <a href="../../reference/functions/generators/">Generator and table-valued functions</a>.</p>
 

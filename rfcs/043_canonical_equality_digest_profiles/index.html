@@ -3602,23 +3602,23 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>An author or verification tool can choose an equality profile before comparing two relations:</p>
-<div class="highlight"><pre><span></span><code>profile = canonical_equality_profile(
-    relation_mode=&quot;keyed_bag&quot;,
-    key=[col(&quot;order_id&quot;)],
-    decimal_mode=&quot;normalize_scale&quot;,
-    timestamp_mode=&quot;utc_microseconds&quot;,
-    string_mode=&quot;unicode_nfc_binary&quot;,
-)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">profile</span> <span class="o">=</span> <span class="n">canonical_equality_profile</span><span class="p">(</span>
+    <span class="n">relation_mode</span><span class="o">=</span><span class="s2">&quot;keyed_bag&quot;</span><span class="p">,</span>
+    <span class="n">key</span><span class="o">=</span><span class="p">[</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;order_id&quot;</span><span class="p">)],</span>
+    <span class="n">decimal_mode</span><span class="o">=</span><span class="s2">&quot;normalize_scale&quot;</span><span class="p">,</span>
+    <span class="n">timestamp_mode</span><span class="o">=</span><span class="s2">&quot;utc_microseconds&quot;</span><span class="p">,</span>
+    <span class="n">string_mode</span><span class="o">=</span><span class="s2">&quot;unicode_nfc_binary&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 
-check = verify_relation(
-    source=operational_orders,
-    target=analytics_orders,
-    equality=profile,
-    checks=[partition_digest_equal(by=[col(&quot;order_date&quot;)])],
-)
+<span class="n">check</span> <span class="o">=</span> <span class="n">verify_relation</span><span class="p">(</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">operational_orders</span><span class="p">,</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">analytics_orders</span><span class="p">,</span>
+    <span class="n">equality</span><span class="o">=</span><span class="n">profile</span><span class="p">,</span>
+    <span class="n">checks</span><span class="o">=</span><span class="p">[</span><span class="n">partition_digest_equal</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;order_date&quot;</span><span class="p">)])],</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>The exact API names are illustrative. Other checks may compare customer dimensions between a warehouse and a lakehouse, reconcile billing events between a stream sink and an analytical store, or compare a SaaS export with a curated mart. The key behavior is that digest evidence refers to a named profile rather than silently inheriting one engine's comparison behavior.</p>
-<div class="highlight"><pre><span></span><code>scope=orders/order_date=2026-06-19
+<div class="language-text highlight"><pre><span></span><code>scope=orders/order_date=2026-06-19
 profile=canonical-equality:v1:keyed_bag
 algorithm=sha256
 source_digest=sha256:...
@@ -3627,7 +3627,7 @@ outcome=passed
 assurance=verified
 </code></pre></div>
 <p>If the profile cannot represent a column or a semantic dimension, the check reports unsupported or unknown evidence instead of producing a misleading digest:</p>
-<div class="highlight"><pre><span></span><code>scope=orders
+<div class="language-text highlight"><pre><span></span><code>scope=orders
 outcome=unsupported
 assurance=unknown
 diagnostic=unsupported_collation: locale-specific string comparison has no selected canonical profile

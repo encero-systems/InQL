@@ -3461,15 +3461,15 @@
 <p>The first implementation evaluates these helpers through ordinary InQL plans and <code>Session.collect_observed(...)</code>. Row-count checks use structured materialization row counts. Field and group checks build filter and aggregate plans and evaluate the resulting row counts. They do not scrape rendered preview text.</p>
 <h2 id="quality-syntax">Quality syntax</h2>
 <p>Importing <code>pub::inql</code> activates <code>quality { ... }</code> and expression-position <code>quality:</code> syntax. Both forms return <code>list[QualityAssertion]</code>.</p>
-<div class="highlight"><pre><span></span><code>checks = quality {
-    row_count(Some(1)).require()
-    unique(.order_id)
-    group_row_count([.region], 1, Some(10000)).quarantine()
-}
+<div class="language-incan highlight"><pre><span></span><code><span class="n">checks</span> <span class="o">=</span> <span class="k">quality</span> <span class="p">{</span>
+    <span class="n">row_count</span><span class="p">(</span><span class="nb">Some</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">require</span><span class="p">()</span>
+    <span class="n">unique</span><span class="p">(</span><span class="o">.</span><span class="n">order_id</span><span class="p">)</span>
+    <span class="n">group_row_count</span><span class="p">([</span><span class="o">.</span><span class="n">region</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">Some</span><span class="p">(</span><span class="mi">10000</span><span class="p">))</span><span class="o">.</span><span class="n">quarantine</span><span class="p">()</span>
+<span class="p">}</span>
 </code></pre></div>
-<div class="highlight"><pre><span></span><code>checks = quality:
-    row_count(Some(1))
-    unique(.order_id)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">checks</span> <span class="o">=</span> <span class="k">quality</span><span class="p">:</span>
+    <span class="n">row_count</span><span class="p">(</span><span class="nb">Some</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">unique</span><span class="p">(</span><span class="o">.</span><span class="n">order_id</span><span class="p">)</span>
 </code></pre></div>
 <p>Each body item must be an assertion expression. Brace syntax uses newline-separated assertion expressions, not comma-separated list items. Leading-dot field references are valid inside quality blocks and lower to ordinary <code>col("field")</code> expressions. The syntax only declares assertions; call <code>session.observe_quality(...)</code> or <code>session.observe_quality_pair(...)</code> to evaluate them.</p>
 <h2 id="policy-intent">Policy intent</h2>

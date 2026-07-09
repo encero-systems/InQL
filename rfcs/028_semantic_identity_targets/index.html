@@ -3534,11 +3534,11 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>An InQL author should not usually construct semantic IDs manually. They appear when tools inspect a plan:</p>
-<div class="highlight"><pre><span></span><code>lineage = inspect_lineage(summary)
-field = lineage.output_field(&quot;total_amount&quot;)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">lineage</span> <span class="o">=</span> <span class="n">inspect_lineage</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+<span class="n">field</span> <span class="o">=</span> <span class="n">lineage</span><span class="o">.</span><span class="n">output_field</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">)</span>
 
-assert field.target.kind == &quot;field&quot;
-assert field.target.plan_id == lineage.plan_id
+<span class="k">assert</span> <span class="n">field</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;field&quot;</span>
+<span class="k">assert</span> <span class="n">field</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">plan_id</span> <span class="o">==</span> <span class="n">lineage</span><span class="o">.</span><span class="n">plan_id</span>
 </code></pre></div>
 <p>The target lets tools attach evidence to the field even if the field was produced by an aggregate measure, renamed by a projection, lowered through Substrait, and executed by a backend adapter.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

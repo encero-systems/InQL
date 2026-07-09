@@ -3249,18 +3249,18 @@
 <p>Use variant helpers when the plan needs kind-aware semi-structured inspection. Use RFC 022 JSON helpers when normalized JSON text is enough.</p>
 <h2 id="parse-and-inspect-a-payload">Parse and inspect a payload</h2>
 <p>Parse once, then apply <code>typeof(...)</code>, <code>variant_get(...)</code>, and variant predicates to the typed value.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import col, is_array, is_null_value, parse_variant_json, typeof, variant_get
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">is_array</span><span class="o">,</span><span class="w"> </span><span class="nn">is_null_value</span><span class="o">,</span><span class="w"> </span><span class="nn">parse_variant_json</span><span class="o">,</span><span class="w"> </span><span class="nn">typeof</span><span class="o">,</span><span class="w"> </span><span class="nn">variant_get</span>
 
-payload = parse_variant_json(col(&quot;payload&quot;))
-literal_payload = parse_variant_json(&quot;{\&quot;status\&quot;:\&quot;paid\&quot;}&quot;)
+<span class="n">payload</span> <span class="o">=</span> <span class="n">parse_variant_json</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;payload&quot;</span><span class="p">))</span>
+<span class="n">literal_payload</span> <span class="o">=</span> <span class="n">parse_variant_json</span><span class="p">(</span><span class="s2">&quot;{</span><span class="se">\&quot;</span><span class="s2">status</span><span class="se">\&quot;</span><span class="s2">:</span><span class="se">\&quot;</span><span class="s2">paid</span><span class="se">\&quot;</span><span class="s2">}&quot;</span><span class="p">)</span>
 
-projected = (
-    events
-        .with_column(&quot;payload_kind&quot;, typeof(payload))
-        .with_column(&quot;items_are_array&quot;, is_array(variant_get(payload, &quot;$.items&quot;)))
-        .with_column(&quot;dynamic_value&quot;, variant_get(literal_payload, col(&quot;json_path&quot;)))
-        .with_column(&quot;deleted_was_variant_null&quot;, is_null_value(variant_get(payload, &quot;$.deleted_at&quot;)))
-)
+<span class="n">projected</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">events</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;payload_kind&quot;</span><span class="p">,</span> <span class="nb">typeof</span><span class="p">(</span><span class="n">payload</span><span class="p">))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;items_are_array&quot;</span><span class="p">,</span> <span class="nb">is_array</span><span class="p">(</span><span class="n">variant_get</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="s2">&quot;$.items&quot;</span><span class="p">)))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;dynamic_value&quot;</span><span class="p">,</span> <span class="n">variant_get</span><span class="p">(</span><span class="n">literal_payload</span><span class="p">,</span> <span class="nb">col</span><span class="p">(</span><span class="s2">&quot;json_path&quot;</span><span class="p">)))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;deleted_was_variant_null&quot;</span><span class="p">,</span> <span class="n">is_null_value</span><span class="p">(</span><span class="n">variant_get</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="s2">&quot;$.deleted_at&quot;</span><span class="p">)))</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>Variant predicates accept <code>VariantExpr</code> values. They do not parse strings directly. For exact helper contracts, see <a href="../../reference/functions/variants/">Variant functions</a>.</p>
 

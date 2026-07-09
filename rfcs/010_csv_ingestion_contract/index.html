@@ -3689,71 +3689,71 @@
 <li>what should happen when the input is malformed or ambiguous</li>
 </ul>
 <p>The public surface should therefore expose one structured options value for CSV reads.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import LazyFrame, Session
-from pub::inql.formats import (
-    CsvDialect,
-    CsvHeaderMode,
-    CsvInference,
-    CsvReadOptions,
-    MalformedRowPolicy,
-    NumericGroupingPolicy,
-)
-from models import Order
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">Session</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">formats</span> <span class="kn">import</span><span class="w"> </span><span class="p">(</span>
+    <span class="nc">CsvDialect</span><span class="p">,</span>
+    <span class="nc">CsvHeaderMode</span><span class="p">,</span>
+    <span class="nc">CsvInference</span><span class="p">,</span>
+    <span class="nc">CsvReadOptions</span><span class="p">,</span>
+    <span class="nc">MalformedRowPolicy</span><span class="p">,</span>
+    <span class="nc">NumericGroupingPolicy</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-session = Session.default()
+<span class="n">session</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
 
-orders: LazyFrame[Order] = session.read_csv(
-    &quot;orders&quot;,
-    &quot;s3://warehouse/orders.csv&quot;,
-    CsvReadOptions(
-        dialect=CsvDialect(
-            delimiter=&quot;,&quot;,
-            quote=&quot;\&quot;&quot;,
-            header=CsvHeaderMode.Present,
-            multiline_fields=true,
-        ),
-        inference=CsvInference(
-            null_tokens=[&quot;&quot;, &quot;NULL&quot;],
-            numeric_grouping=NumericGroupingPolicy.AllowCommonSeparators,
-        ),
-        malformed_rows=MalformedRowPolicy.Error,
-    ),
-)
+<span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="s2">&quot;orders&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;s3://warehouse/orders.csv&quot;</span><span class="p">,</span>
+    <span class="nc">CsvReadOptions</span><span class="p">(</span>
+        <span class="n">dialect</span><span class="o">=</span><span class="nc">CsvDialect</span><span class="p">(</span>
+            <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span>
+            <span class="n">quote</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">header</span><span class="o">=</span><span class="nc">CsvHeaderMode</span><span class="o">.</span><span class="nc">Present</span><span class="p">,</span>
+            <span class="n">multiline_fields</span><span class="o">=</span><span class="k">true</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">inference</span><span class="o">=</span><span class="nc">CsvInference</span><span class="p">(</span>
+            <span class="n">null_tokens</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;NULL&quot;</span><span class="p">],</span>
+            <span class="n">numeric_grouping</span><span class="o">=</span><span class="nc">NumericGroupingPolicy</span><span class="o">.</span><span class="nc">AllowCommonSeparators</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">malformed_rows</span><span class="o">=</span><span class="nc">MalformedRowPolicy</span><span class="o">.</span><span class="nc">Error</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>The same contract should be reachable through the generic format-dispatch path. <code>read_csv</code> is convenience API surface, not a separate semantic contract.</p>
-<div class="highlight"><pre><span></span><code>orders: LazyFrame[Order] = session.read_format(
-    logical_name=&quot;orders&quot;,
-    source=&quot;s3://warehouse/orders.csv&quot;,
-    format=&quot;csv&quot;,
-    options=CsvReadOptions(
-        dialect=CsvDialect(
-            delimiter=&quot;,&quot;,
-            quote=&quot;\&quot;&quot;,
-            header=CsvHeaderMode.Present,
-            multiline_fields=true,
-        ),
-        inference=CsvInference(
-            null_tokens=[&quot;&quot;, &quot;NULL&quot;],
-            numeric_grouping=NumericGroupingPolicy.AllowCommonSeparators,
-        ),
-        malformed_rows=MalformedRowPolicy.Error,
-    ),
-)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">read_format</span><span class="p">(</span>
+    <span class="n">logical_name</span><span class="o">=</span><span class="s2">&quot;orders&quot;</span><span class="p">,</span>
+    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;s3://warehouse/orders.csv&quot;</span><span class="p">,</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span>
+    <span class="n">options</span><span class="o">=</span><span class="nc">CsvReadOptions</span><span class="p">(</span>
+        <span class="n">dialect</span><span class="o">=</span><span class="nc">CsvDialect</span><span class="p">(</span>
+            <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span>
+            <span class="n">quote</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">header</span><span class="o">=</span><span class="nc">CsvHeaderMode</span><span class="o">.</span><span class="nc">Present</span><span class="p">,</span>
+            <span class="n">multiline_fields</span><span class="o">=</span><span class="k">true</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">inference</span><span class="o">=</span><span class="nc">CsvInference</span><span class="p">(</span>
+            <span class="n">null_tokens</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;NULL&quot;</span><span class="p">],</span>
+            <span class="n">numeric_grouping</span><span class="o">=</span><span class="nc">NumericGroupingPolicy</span><span class="o">.</span><span class="nc">AllowCommonSeparators</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">malformed_rows</span><span class="o">=</span><span class="nc">MalformedRowPolicy</span><span class="o">.</span><span class="nc">Error</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>If an author does not provide options, InQL still has a defined default contract rather than an implementation accident.</p>
-<div class="highlight"><pre><span></span><code>orders: LazyFrame[Order] = session.read_csv(&quot;orders&quot;, &quot;s3://warehouse/orders.csv&quot;)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;orders&quot;</span><span class="p">,</span> <span class="s2">&quot;s3://warehouse/orders.csv&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>That default should mean "standard CSV with headers, quoted-field support, strict malformed-row handling, and deterministic type interpretation rules", not "whatever the current backend happened to do this week."</p>
 <p>Headerless CSV is still allowed, but it should be explicit because it changes how schema is established.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.formats import CsvDialect, CsvHeaderMode, CsvReadOptions
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">formats</span> <span class="kn">import</span><span class="w"> </span><span class="nn">CsvDialect</span><span class="o">,</span><span class="w"> </span><span class="nn">CsvHeaderMode</span><span class="o">,</span><span class="w"> </span><span class="nn">CsvReadOptions</span>
 
-rows: LazyFrame[Order] = session.read_csv(
-    &quot;orders&quot;,
-    &quot;file:///tmp/orders_no_header.csv&quot;,
-    CsvReadOptions(
-        dialect=CsvDialect(header=CsvHeaderMode.Absent),
-    ),
-)
+<span class="n">rows</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="s2">&quot;orders&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;file:///tmp/orders_no_header.csv&quot;</span><span class="p">,</span>
+    <span class="nc">CsvReadOptions</span><span class="p">(</span>
+        <span class="n">dialect</span><span class="o">=</span><span class="nc">CsvDialect</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="nc">CsvHeaderMode</span><span class="o">.</span><span class="nc">Absent</span><span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
 </code></pre></div>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>
 <h3 id="public-configuration-model">Public configuration model</h3>

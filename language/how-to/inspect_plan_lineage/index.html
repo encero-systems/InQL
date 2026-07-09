@@ -3284,35 +3284,35 @@
 <p>This how-to shows how to inspect a Prism-backed lazy plan without executing it.</p>
 <p>Use <code>inspect_plan(...)</code> when you need the full inspection record. Use <code>inspect_lineage(...)</code> when you only need the lineage graph.</p>
 <h2 id="build-a-lazy-plan">Build a lazy plan</h2>
-<div class="highlight"><pre><span></span><code>from pub::inql import LazyFrame
-from pub::inql.functions import col, eq, str_lit, sum
-from models import Order
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">eq</span><span class="o">,</span><span class="w"> </span><span class="nn">str_lit</span><span class="o">,</span><span class="w"> </span><span class="nn">sum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-def paid_spend_summary(orders: LazyFrame[Order]) -&gt; LazyFrame[Order]:
-    return (
-        orders
-            .filter(eq(col(&quot;status&quot;), str_lit(&quot;paid&quot;)))
-            .group_by([col(&quot;customer_id&quot;)])
-            .agg([sum(col(&quot;amount&quot;))])
-    )
+<span class="k">def</span><span class="w"> </span><span class="nf">paid_spend_summary</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">orders</span>
+            <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="nb">eq</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">),</span> <span class="n">str_lit</span><span class="p">(</span><span class="s2">&quot;paid&quot;</span><span class="p">)))</span>
+            <span class="o">.</span><span class="n">group_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)])</span>
+            <span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="nb">sum</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))])</span>
+    <span class="p">)</span>
 </code></pre></div>
 <h2 id="inspect-the-plan">Inspect the plan</h2>
-<div class="highlight"><pre><span></span><code>from pub::inql import inspect_plan
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">inspect_plan</span>
 
-summary = paid_spend_summary(orders)
-inspection = inspect_plan(summary)
+<span class="n">summary</span> <span class="o">=</span> <span class="n">paid_spend_summary</span><span class="p">(</span><span class="n">orders</span><span class="p">)</span>
+<span class="n">inspection</span> <span class="o">=</span> <span class="n">inspect_plan</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
 
-println(inspection.plan_id)
-println(inspection.output_fields[0].name)
+<span class="nb">println</span><span class="p">(</span><span class="n">inspection</span><span class="o">.</span><span class="n">plan_id</span><span class="p">)</span>
+<span class="nb">println</span><span class="p">(</span><span class="n">inspection</span><span class="o">.</span><span class="n">output_fields</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 </code></pre></div>
 <p><code>inspect_plan(...)</code> does not execute the plan. It reads the local Prism state behind the lazy carrier and returns plan targets, output fields, Prism nodes, lineage, artifacts, diagnostics, and unsupported-evidence markers.</p>
 <h2 id="read-lineage-directly">Read lineage directly</h2>
-<div class="highlight"><pre><span></span><code>from pub::inql import inspect_lineage
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">inspect_lineage</span>
 
-lineage = inspect_lineage(summary)
+<span class="n">lineage</span> <span class="o">=</span> <span class="n">inspect_lineage</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
 
-for edge in lineage.edges:
-    println(edge.relationship.value())
+<span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">lineage</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
+    <span class="nb">println</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">relationship</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
 </code></pre></div>
 <p>Lineage is plan-local evidence. It explains how the authored plan relates fields and relations before backend binding or execution. For exact record fields and current limits, see <a href="../../reference/inspection/">Local inspection (Reference)</a>.</p>
 

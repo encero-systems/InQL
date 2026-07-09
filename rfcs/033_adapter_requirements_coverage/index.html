@@ -3607,13 +3607,13 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>An inspection can reveal backend requirements:</p>
-<div class="highlight"><pre><span></span><code>inspection = inspect_plan(summary)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">inspection</span> <span class="o">=</span> <span class="n">inspect_plan</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
 
-for requirement in inspection.adapter_requirements:
-    print(requirement.capability, requirement.guarantee)
+<span class="k">for</span> <span class="n">requirement</span> <span class="ow">in</span> <span class="n">inspection</span><span class="o">.</span><span class="n">adapter_requirements</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">requirement</span><span class="o">.</span><span class="n">capability</span><span class="p">,</span> <span class="n">requirement</span><span class="o">.</span><span class="n">guarantee</span><span class="p">)</span>
 </code></pre></div>
 <p>A session can then report whether the selected adapter covers the inferred requirements:</p>
-<div class="highlight"><pre><span></span><code>coverage = session.check_inspection_coverage(inspection)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">coverage</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">check_inspection_coverage</span><span class="p">(</span><span class="n">inspection</span><span class="p">)</span>
 </code></pre></div>
 <p>If coverage is unknown for a requirement whose guarantee level is required, tools should not present that as enforced behavior.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

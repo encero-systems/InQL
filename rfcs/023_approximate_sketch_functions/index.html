@@ -3620,16 +3620,16 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors should see approximate functions as explicit approximate choices:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import approx_count_distinct, approx_percentile, col
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">approx_count_distinct</span><span class="o">,</span><span class="w"> </span><span class="nn">approx_percentile</span><span class="o">,</span><span class="w"> </span><span class="nn">col</span>
 
-summary = (
-    events
-        .group_by([col(&quot;campaign_id&quot;)])
-        .agg([
-            approx_count_distinct(col(&quot;user_id&quot;)),
-            approx_percentile(col(&quot;latency_ms&quot;), 0.95, accuracy=10000),
-        ])
-)
+<span class="n">summary</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">events</span>
+        <span class="o">.</span><span class="n">group_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;campaign_id&quot;</span><span class="p">)])</span>
+        <span class="o">.</span><span class="n">agg</span><span class="p">([</span>
+            <span class="n">approx_count_distinct</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;user_id&quot;</span><span class="p">)),</span>
+            <span class="n">approx_percentile</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;latency_ms&quot;</span><span class="p">),</span> <span class="mf">0.95</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="mi">10000</span><span class="p">),</span>
+        <span class="p">])</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>The function names and arguments should make it clear that results are approximate and parameterized.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

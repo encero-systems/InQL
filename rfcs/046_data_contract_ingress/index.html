@@ -3611,15 +3611,15 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>An author or CI workflow can import a contract artifact and bind it to InQL semantic targets:</p>
-<div class="highlight"><pre><span></span><code>contract = import_data_contract(&quot;contracts/orders.odcs.yaml&quot;)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">contract</span> <span class="o">=</span> <span class="n">import_data_contract</span><span class="p">(</span><span class="s2">&quot;contracts/orders.odcs.yaml&quot;</span><span class="p">)</span>
 
-bundle = governed_plan_bundle(
-    orders_summary,
-    evidence=[contract],
-)
+<span class="n">bundle</span> <span class="o">=</span> <span class="n">governed_plan_bundle</span><span class="p">(</span>
+    <span class="n">orders_summary</span><span class="p">,</span>
+    <span class="n">evidence</span><span class="o">=</span><span class="p">[</span><span class="n">contract</span><span class="p">],</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>The names are illustrative. The contract importer records the artifact as evidence, validates the known external schema where possible, maps recognized clauses to InQL evidence records, and reports unsupported clauses instead of silently dropping them.</p>
-<div class="highlight"><pre><span></span><code>artifact=contracts/orders.odcs.yaml
+<div class="language-text highlight"><pre><span></span><code>artifact=contracts/orders.odcs.yaml
 format=odcs
 format_version=v3.1.0
 contract_id=53581432-6c55-4ba2-a65f-72344a91553a
@@ -3629,22 +3629,22 @@ unsupported=pricing
 assurance=attested
 </code></pre></div>
 <p>An imported field declaration does not mean the field was checked in the source system:</p>
-<div class="highlight"><pre><span></span><code>target=orders.order_id
+<div class="language-text highlight"><pre><span></span><code>target=orders.order_id
 constraint=unique_key(order_id)
 source=contract:orders.odcs.yaml
 outcome=passed
 assurance=attested
 </code></pre></div>
 <p>A later verification run may upgrade that constraint for a specific snapshot:</p>
-<div class="highlight"><pre><span></span><code>target=orders.order_id
+<div class="language-text highlight"><pre><span></span><code>target=orders.order_id
 constraint=unique_key(order_id)
 source_snapshot=orders:2026-06-20T10:00:00Z
 outcome=passed
 assurance=verified
 </code></pre></div>
 <p>Product topology works the same way. A data product may declare output ports tied to contract identifiers and input dependencies on other contract identifiers. InQL imports those as topology evidence so an evidence graph can answer dependency and impact questions without pretending the product format owns relational semantics.</p>
-<div class="highlight"><pre><span></span><code>product = import_data_product(&quot;products/customer.odps.yaml&quot;)
-graph = evidence_graph(bundle, evidence=[product])
+<div class="language-incan highlight"><pre><span></span><code><span class="n">product</span> <span class="o">=</span> <span class="n">import_data_product</span><span class="p">(</span><span class="s2">&quot;products/customer.odps.yaml&quot;</span><span class="p">)</span>
+<span class="n">graph</span> <span class="o">=</span> <span class="n">evidence_graph</span><span class="p">(</span><span class="n">bundle</span><span class="p">,</span> <span class="n">evidence</span><span class="o">=</span><span class="p">[</span><span class="n">product</span><span class="p">])</span>
 </code></pre></div>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>
 <p>A contract artifact record must include artifact identity, source location or inline source reference, format family, format version when available, artifact fingerprint, parse time, parse status, validation status when available, contract identity when present, contract version when present, contract status when present, source authority when known, evidence references, mapping profile, mapping coverage, unsupported fields, redaction behavior, and diagnostics.</p>

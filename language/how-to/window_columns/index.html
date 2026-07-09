@@ -3249,21 +3249,21 @@
 <p>Window helpers produce one output value per input row while reading related rows from a partition. Place them with <code>with_window_column(...)</code>.</p>
 <h2 id="rank-and-compare-rows-inside-a-partition">Rank and compare rows inside a partition</h2>
 <p>Build a window spec, call <code>.over(spec)</code> on each window helper, and attach the resulting applications as named columns.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import LazyFrame
-from pub::inql.functions import col, current_row, desc, lag, rank, sum, unbounded_preceding, window
-from models import Order
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">current_row</span><span class="o">,</span><span class="w"> </span><span class="nn">desc</span><span class="o">,</span><span class="w"> </span><span class="nn">lag</span><span class="o">,</span><span class="w"> </span><span class="nn">rank</span><span class="o">,</span><span class="w"> </span><span class="nn">sum</span><span class="o">,</span><span class="w"> </span><span class="nn">unbounded_preceding</span><span class="o">,</span><span class="w"> </span><span class="nn">window</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-def ranked_orders(orders: LazyFrame[Order]) -&gt; LazyFrame[Order]:
-    spec = window().partition_by([col(&quot;customer_id&quot;)]).order_by([desc(col(&quot;amount&quot;))])
-    return (
-        orders
-            .with_window_column(&quot;customer_rank&quot;, rank().over(spec))
-            .with_window_column(&quot;previous_amount&quot;, lag(col(&quot;amount&quot;)).over(spec))
-            .with_window_column(
-                &quot;running_amount&quot;,
-                sum(col(&quot;amount&quot;)).over(spec.rows_between(unbounded_preceding(), current_row())),
-            )
-    )
+<span class="k">def</span><span class="w"> </span><span class="nf">ranked_orders</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">window</span><span class="p">()</span><span class="o">.</span><span class="n">partition_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)])</span><span class="o">.</span><span class="n">order_by</span><span class="p">([</span><span class="nb">desc</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))])</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">orders</span>
+            <span class="o">.</span><span class="n">with_window_column</span><span class="p">(</span><span class="s2">&quot;customer_rank&quot;</span><span class="p">,</span> <span class="n">rank</span><span class="p">()</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">spec</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">with_window_column</span><span class="p">(</span><span class="s2">&quot;previous_amount&quot;</span><span class="p">,</span> <span class="n">lag</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">spec</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">with_window_column</span><span class="p">(</span>
+                <span class="s2">&quot;running_amount&quot;</span><span class="p">,</span>
+                <span class="nb">sum</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">rows_between</span><span class="p">(</span><span class="n">unbounded_preceding</span><span class="p">(),</span> <span class="n">current_row</span><span class="p">())),</span>
+            <span class="p">)</span>
+    <span class="p">)</span>
 </code></pre></div>
 <p>Ranking, distribution, offset, and value helpers require explicit ordering. For exact helper contracts, see <a href="../../reference/functions/windows/">Window functions</a>.</p>
 

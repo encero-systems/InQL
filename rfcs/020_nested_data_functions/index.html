@@ -3565,15 +3565,15 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors can inspect and manipulate nested values without changing relation cardinality:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import array_contains, cardinality, col, element_at, lit, map_keys
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">array_contains</span><span class="o">,</span><span class="w"> </span><span class="nn">cardinality</span><span class="o">,</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">element_at</span><span class="o">,</span><span class="w"> </span><span class="nn">lit</span><span class="o">,</span><span class="w"> </span><span class="nn">map_keys</span>
 
-enriched = (
-    events
-        .filter(array_contains(col(&quot;tags&quot;), lit(&quot;purchase&quot;)))
-        .with_column(&quot;tag_count&quot;, cardinality(col(&quot;tags&quot;)))
-        .with_column(&quot;first_item&quot;, element_at(col(&quot;items&quot;), lit(1)))
-        .with_column(&quot;metadata_keys&quot;, map_keys(col(&quot;metadata&quot;)))
-)
+<span class="n">enriched</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">events</span>
+        <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="n">array_contains</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;purchase&quot;</span><span class="p">)))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;tag_count&quot;</span><span class="p">,</span> <span class="n">cardinality</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">)))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;first_item&quot;</span><span class="p">,</span> <span class="n">element_at</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;items&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;metadata_keys&quot;</span><span class="p">,</span> <span class="n">map_keys</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">)))</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>If an author wants one output row per item, that is a generator/table-valued operation rather than a nested scalar function.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

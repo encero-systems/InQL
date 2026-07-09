@@ -3615,37 +3615,37 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>An author or tool can build a graph projection from a governed bundle and selected evidence records:</p>
-<div class="highlight"><pre><span></span><code>graph = evidence_graph(
-    bundle,
-    include=[
-        &quot;semantic_lineage&quot;,
-        &quot;contracts&quot;,
-        &quot;runtime_observations&quot;,
-        &quot;verification&quot;,
-        &quot;product_topology&quot;,
-    ],
-)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">graph</span> <span class="o">=</span> <span class="n">evidence_graph</span><span class="p">(</span>
+    <span class="n">bundle</span><span class="p">,</span>
+    <span class="n">include</span><span class="o">=</span><span class="p">[</span>
+        <span class="s2">&quot;semantic_lineage&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;contracts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;runtime_observations&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;verification&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;product_topology&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>The graph can answer provenance questions without asking a model to infer lineage from raw logs:</p>
-<div class="highlight"><pre><span></span><code>graph.where_does_field_come_from(&quot;orders.total_amount&quot;)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">graph</span><span class="o">.</span><span class="n">where_does_field_come_from</span><span class="p">(</span><span class="s2">&quot;orders.total_amount&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>A result is a path with evidence on every hop:</p>
-<div class="highlight"><pre><span></span><code>orders.total_amount
+<div class="language-text highlight"><pre><span></span><code>orders.total_amount
   &lt;- value_lineage verified by prism-plan:...
 payments.amount
   &lt;- runtime_observed attested by openlineage-run:...
 raw_payments.amount
 </code></pre></div>
 <p>If the graph has no mapping for a term or field, the query returns no evidence instead of inventing a path:</p>
-<div class="highlight"><pre><span></span><code>query=where_does_term_come_from(&quot;Margin&quot;)
+<div class="language-text highlight"><pre><span></span><code>query=where_does_term_come_from(&quot;Margin&quot;)
 result=no_evidence
 diagnostic=no selected evidence graph node matched term Margin
 </code></pre></div>
 <p>The same graph can answer impact questions:</p>
-<div class="highlight"><pre><span></span><code>graph.what_depends_on(target(&quot;payments.amount&quot;))
-graph.which_outputs_depend_on(assurance=&quot;waived&quot;)
-graph.which_products_consume_contract(&quot;customer-contract&quot;)
-graph.which_runtime_jobs_wrote(target(&quot;analytics.orders&quot;))
+<div class="language-incan highlight"><pre><span></span><code><span class="n">graph</span><span class="o">.</span><span class="n">what_depends_on</span><span class="p">(</span><span class="n">target</span><span class="p">(</span><span class="s2">&quot;payments.amount&quot;</span><span class="p">))</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">which_outputs_depend_on</span><span class="p">(</span><span class="n">assurance</span><span class="o">=</span><span class="s2">&quot;waived&quot;</span><span class="p">)</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">which_products_consume_contract</span><span class="p">(</span><span class="s2">&quot;customer-contract&quot;</span><span class="p">)</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">which_runtime_jobs_wrote</span><span class="p">(</span><span class="n">target</span><span class="p">(</span><span class="s2">&quot;analytics.orders&quot;</span><span class="p">))</span>
 </code></pre></div>
 <p>For streaming and async verification evidence, graph queries are relative to a selected observation window, snapshot, or watermark. A graph projection can therefore show that a relation was unknown yesterday, sampled this morning, verified for one watermark, and later proven for a bounded result without overwriting the older evidence.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

@@ -3605,18 +3605,18 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors should be able to parse and produce semi-structured scalar values inside relational transformations:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import col, from_json, get_json_object, sha2, to_json
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">from_json</span><span class="o">,</span><span class="w"> </span><span class="nn">get_json_object</span><span class="o">,</span><span class="w"> </span><span class="nn">sha2</span><span class="o">,</span><span class="w"> </span><span class="nn">to_json</span>
 
-model EventPayload:
-    type_ as &quot;type&quot;: str
+<span class="k">model</span> <span class="nc">EventPayload</span><span class="p">:</span>
+    <span class="n">type_</span> <span class="k">as</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="nb">str</span>
 
-events = (
-    raw_events
-        .with_column(&quot;payload_obj&quot;, from_json[EventPayload](col(&quot;payload&quot;)))
-        .with_column(&quot;event_type&quot;, get_json_object(col(&quot;payload&quot;), &quot;$.type&quot;))
-        .with_column(&quot;user_hash&quot;, sha2(col(&quot;user_id&quot;), 256))
-        .with_column(&quot;payload_out&quot;, to_json(col(&quot;payload_obj&quot;)))
-)
+<span class="n">events</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">raw_events</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;payload_obj&quot;</span><span class="p">,</span> <span class="nb">from_json</span><span class="p">[</span><span class="nc">EventPayload</span><span class="p">](</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;payload&quot;</span><span class="p">)))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;event_type&quot;</span><span class="p">,</span> <span class="n">get_json_object</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;payload&quot;</span><span class="p">),</span> <span class="s2">&quot;$.type&quot;</span><span class="p">))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;user_hash&quot;</span><span class="p">,</span> <span class="n">sha2</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;user_id&quot;</span><span class="p">),</span> <span class="mi">256</span><span class="p">))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;payload_out&quot;</span><span class="p">,</span> <span class="n">to_json</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;payload_obj&quot;</span><span class="p">)))</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>Reading a JSON file into a dataset remains a session/source operation, not a scalar function call.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

@@ -3554,20 +3554,20 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors can summarize grouped or whole-relation data with the core aggregate set:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import avg, col, count, max, min, sum
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">avg</span><span class="o">,</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">count</span><span class="o">,</span><span class="w"> </span><span class="nn">max</span><span class="o">,</span><span class="w"> </span><span class="nn">min</span><span class="o">,</span><span class="w"> </span><span class="nn">sum</span>
 
-summary = (
-    orders
-        .group_by([col(&quot;customer_id&quot;)])
-        .agg([
-            count(),
-            count(col(&quot;discount_code&quot;)),
-            sum(col(&quot;amount&quot;)),
-            avg(col(&quot;amount&quot;)),
-            min(col(&quot;created_at&quot;)),
-            max(col(&quot;created_at&quot;)),
-        ])
-)
+<span class="n">summary</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">orders</span>
+        <span class="o">.</span><span class="n">group_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)])</span>
+        <span class="o">.</span><span class="n">agg</span><span class="p">([</span>
+            <span class="nb">count</span><span class="p">(),</span>
+            <span class="nb">count</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;discount_code&quot;</span><span class="p">)),</span>
+            <span class="nb">sum</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">)),</span>
+            <span class="nb">avg</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">)),</span>
+            <span class="nb">min</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;created_at&quot;</span><span class="p">)),</span>
+            <span class="nb">max</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;created_at&quot;</span><span class="p">)),</span>
+        <span class="p">])</span>
+<span class="p">)</span>
 </code></pre></div>
 <p><code>count()</code> counts rows. <code>count(col("discount_code"))</code> counts non-null values in that expression. Numeric aggregates ignore null input values unless every value is null or the group is empty, in which case result behavior follows the rules below.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

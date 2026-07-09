@@ -3604,23 +3604,23 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>A verification tool may first inspect available constraints:</p>
-<div class="highlight"><pre><span></span><code>constraints = inspect_constraints(operational_orders, analytics_orders)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">constraints</span> <span class="o">=</span> <span class="n">inspect_constraints</span><span class="p">(</span><span class="n">operational_orders</span><span class="p">,</span> <span class="n">analytics_orders</span><span class="p">)</span>
 
-plan = plan_verification(
-    relation=orders_comparison,
-    requested_assurance=&quot;verified&quot;,
-    constraints=constraints,
-)
+<span class="n">plan</span> <span class="o">=</span> <span class="n">plan_verification</span><span class="p">(</span>
+    <span class="n">relation</span><span class="o">=</span><span class="n">orders_comparison</span><span class="p">,</span>
+    <span class="n">requested_assurance</span><span class="o">=</span><span class="s2">&quot;verified&quot;</span><span class="p">,</span>
+    <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>If uniqueness of <code>order_id</code> is only declared by a catalog, a planner can use it for diagnostics or suggestions but cannot silently treat it as verified:</p>
-<div class="highlight"><pre><span></span><code>constraint=unique(order_id)
+<div class="language-text highlight"><pre><span></span><code>constraint=unique(order_id)
 scope=operational_orders
 outcome=passed
 assurance=attested
 source=catalog
 </code></pre></div>
 <p>A planner that needs deterministic uniqueness can schedule a uniqueness check before using keyed digest comparison:</p>
-<div class="highlight"><pre><span></span><code>planned_step=verify_unique(order_id)
+<div class="language-text highlight"><pre><span></span><code>planned_step=verify_unique(order_id)
 required_for=keyed_digest(order_id)
 required_assurance=verified
 </code></pre></div>

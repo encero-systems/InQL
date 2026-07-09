@@ -3587,29 +3587,29 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors and tools should be able to inspect an InQL plan as structured evidence rather than formatted prose:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.inspect import inspect_lineage
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="nb">inspect</span> <span class="kn">import</span><span class="w"> </span><span class="nn">inspect_lineage</span>
 
-summary = (
-    orders
-        .filter(col(&quot;status&quot;) == &quot;paid&quot;)
-        .group_by([col(&quot;customer_id&quot;)])
-        .agg([sum(col(&quot;amount&quot;)).alias(&quot;total_amount&quot;)])
-)
+<span class="n">summary</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">orders</span>
+        <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;paid&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">group_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)])</span>
+        <span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="nb">sum</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">)])</span>
+<span class="p">)</span>
 
-lineage = inspect_lineage(summary)
-total = lineage.field(&quot;total_amount&quot;)
+<span class="n">lineage</span> <span class="o">=</span> <span class="n">inspect_lineage</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+<span class="n">total</span> <span class="o">=</span> <span class="n">lineage</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>The exact API is defined in the child RFCs. The important user model is stable: InQL can explain typed relational computation locally, before a backend runs it and without requiring an external governance service.</p>
 <p>The same evidence model should also support migration and modernization workbenches. A tool can ingest source-system metadata, target-environment profiles, transformation project artifacts, catalog metadata, and orchestration metadata; attach them to InQL semantic targets; assess compatibility gaps; and export reviewable suggestions back into the transformation stack. Representative ecosystems include legacy and operational SQL systems such as Oracle, PostgreSQL, SQL Server, and MySQL; cloud and lakehouse targets such as Athena, Presto, Trino, Spark, Snowflake, BigQuery, Redshift, and Databricks; catalogs such as Glue Data Catalog and Hive Metastore; transformation projects such as dbt; and orchestrators such as Airflow, MWAA, Dagster, and Prefect:</p>
-<div class="highlight"><pre><span></span><code>brief = migration_evidence_brief(
-    source_profile=&quot;legacy_sql&quot;,
-    target_profile=&quot;cloud_analytics&quot;,
-    transformation_project=&quot;analytics_project&quot;,
-)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">brief</span> <span class="o">=</span> <span class="n">migration_evidence_brief</span><span class="p">(</span>
+    <span class="n">source_profile</span><span class="o">=</span><span class="s2">&quot;legacy_sql&quot;</span><span class="p">,</span>
+    <span class="n">target_profile</span><span class="o">=</span><span class="s2">&quot;cloud_analytics&quot;</span><span class="p">,</span>
+    <span class="n">transformation_project</span><span class="o">=</span><span class="s2">&quot;analytics_project&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 
-inspection = inspect_migration(brief)
-risk = inspection.profile_gaps()
-suggestions = inspection.export_transformation_suggestions()
+<span class="n">inspection</span> <span class="o">=</span> <span class="n">inspect_migration</span><span class="p">(</span><span class="n">brief</span><span class="p">)</span>
+<span class="n">risk</span> <span class="o">=</span> <span class="n">inspection</span><span class="o">.</span><span class="n">profile_gaps</span><span class="p">()</span>
+<span class="n">suggestions</span> <span class="o">=</span> <span class="n">inspection</span><span class="o">.</span><span class="n">export_transformation_suggestions</span><span class="p">()</span>
 </code></pre></div>
 <p>The names are illustrative. The important boundary is not the exact migration stack. InQL owns semantic targets, profile assessments, lineage, and evidence; external projects, catalogs, and orchestrators remain consumers or evidence sources.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

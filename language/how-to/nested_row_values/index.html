@@ -3249,15 +3249,15 @@
 <p>Use nested scalar helpers when each input row should remain one output row. Use generator helpers such as <code>explode(...)</code> only when an array or struct should reshape the relation.</p>
 <h2 id="add-array-derived-columns">Add array-derived columns</h2>
 <p>Build arrays with <code>array(...)</code>, then inspect them with row-level helpers such as <code>cardinality(...)</code>, <code>array_contains(...)</code>, and <code>element_at(...)</code>.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import array, array_contains, cardinality, col, element_at, lit
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">array</span><span class="o">,</span><span class="w"> </span><span class="nn">array_contains</span><span class="o">,</span><span class="w"> </span><span class="nn">cardinality</span><span class="o">,</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">element_at</span><span class="o">,</span><span class="w"> </span><span class="nn">lit</span>
 
-projected = (
-    events
-        .with_column(&quot;tags&quot;, array([lit(&quot;paid&quot;), col(&quot;source&quot;)]))
-        .with_column(&quot;tag_count&quot;, cardinality(col(&quot;tags&quot;)))
-        .with_column(&quot;has_paid_tag&quot;, array_contains(col(&quot;tags&quot;), &quot;paid&quot;))
-        .with_column(&quot;first_tag&quot;, element_at(col(&quot;tags&quot;), 1))
-)
+<span class="n">projected</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">events</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">,</span> <span class="n">array</span><span class="p">([</span><span class="n">lit</span><span class="p">(</span><span class="s2">&quot;paid&quot;</span><span class="p">),</span> <span class="nb">col</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">)]))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;tag_count&quot;</span><span class="p">,</span> <span class="n">cardinality</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">)))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;has_paid_tag&quot;</span><span class="p">,</span> <span class="n">array_contains</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">),</span> <span class="s2">&quot;paid&quot;</span><span class="p">))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;first_tag&quot;</span><span class="p">,</span> <span class="n">element_at</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+<span class="p">)</span>
 </code></pre></div>
 <p><code>element_at(...)</code>, <code>array_position(...)</code>, and <code>array_slice(...)</code> use one-based array positions. For exact helper contracts, see <a href="../../reference/functions/nested/">Nested data functions</a>.</p>
 

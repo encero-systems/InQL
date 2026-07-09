@@ -3989,13 +3989,13 @@
 </ul>
 <h2 id="guide-level-explanation">Guide-level explanation</h2>
 <p>From an author's point of view, Prism is not something they use directly. Authors work with InQL carriers such as <code>LazyFrame[T]</code>, <code>DataFrame[T]</code>, and (later) <code>DataStream[T]</code>. Those carriers build or operate over logical work that Prism stores and optimizes internally.</p>
-<div class="highlight"><pre><span></span><code>orders: LazyFrame[Order] = session.table(&quot;orders&quot;)?
-cutoff = ...  # some appropriate value
+<div class="language-incan highlight"><pre><span></span><code><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;orders&quot;</span><span class="p">)</span><span class="o">?</span>
+<span class="n">cutoff</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># some appropriate value</span>
 
-high_value = orders.filter(.amount &gt; 1000)
-recent = orders.filter(.created_at &gt;= cutoff)
+<span class="n">high_value</span> <span class="o">=</span> <span class="n">orders</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">recent</span> <span class="o">=</span> <span class="n">orders</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">created_at</span> <span class="o">&gt;=</span> <span class="n">cutoff</span><span class="p">)</span>
 
-summary = high_value.join(recent, on=.order_id)
+<span class="n">summary</span> <span class="o">=</span> <span class="n">high_value</span><span class="o">.</span><span class="nb">join</span><span class="p">(</span><span class="n">recent</span><span class="p">,</span> <span class="n">on</span><span class="o">=.</span><span class="n">order_id</span><span class="p">)</span>
 </code></pre></div>
 <p>The important user-visible behavior is:</p>
 <ul>

@@ -3505,7 +3505,7 @@
 <p>This separation keeps internal planning concerns, portable interchange semantics, and runtime execution concerns from collapsing into one another.</p>
 <h2 id="conceptual-pipeline">Conceptual pipeline</h2>
 <p>InQL follows this shape:</p>
-<div class="highlight"><pre><span></span><code>Incan models / model-derived schema
+<div class="language-text highlight"><pre><span></span><code>Incan models / model-derived schema
         │
         ▼
   DataSet[T] carriers
@@ -3672,7 +3672,7 @@
 <p>Normative behavior lives in the RFC series first. Current package behavior and usage belong in the language docs. If code and RFCs disagree, treat that as a bug or transition state to resolve explicitly.</p>
 <h2 id="repository-vs-compiler">Repository vs compiler</h2>
 <p>The InQL repository and the Incan compiler have different responsibilities.</p>
-<div class="highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────────────────────────────┐
+<div class="language-text highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────────────────────────────┐
 │  InQL repo                                                                  │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  RFCs, package modules, tests, docs, architecture, conformance corpus       │
@@ -3691,7 +3691,7 @@
 <p>That distinction matters because package design and compiler implementation move at different speeds. The repo owns the package and its design records; the compiler owns the language and tooling machinery that makes those surfaces executable.</p>
 <h2 id="build-and-test">Build and test</h2>
 <p>From the repo root, with <code>incan</code> on <code>PATH</code>:</p>
-<div class="highlight"><pre><span></span><code>incan build --lib
+<div class="language-text highlight"><pre><span></span><code>incan build --lib
 incan test tests
 </code></pre></div>
 <p>In practice:</p>

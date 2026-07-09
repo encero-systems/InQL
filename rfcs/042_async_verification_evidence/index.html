@@ -3617,24 +3617,24 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>An author or tool starts with a verification assertion. The assertion says what should be checked; it is stable even while evidence is still streaming:</p>
-<div class="highlight"><pre><span></span><code>check = verify_relation(
-    source=operational_orders,
-    target=analytics_orders,
-    key=[col(&quot;order_id&quot;)],
-    checks=[
-        row_count_equal(),
-        partition_digest_equal(by=[col(&quot;order_date&quot;)]),
-    ],
-)
+<div class="language-incan highlight"><pre><span></span><code><span class="n">check</span> <span class="o">=</span> <span class="n">verify_relation</span><span class="p">(</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">operational_orders</span><span class="p">,</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">analytics_orders</span><span class="p">,</span>
+    <span class="n">key</span><span class="o">=</span><span class="p">[</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;order_id&quot;</span><span class="p">)],</span>
+    <span class="n">checks</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">row_count_equal</span><span class="p">(),</span>
+        <span class="n">partition_digest_equal</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;order_date&quot;</span><span class="p">)]),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
 
-run = session.start_verification(check)
+<span class="n">run</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">start_verification</span><span class="p">(</span><span class="n">check</span><span class="p">)</span>
 </code></pre></div>
 <p>The names are illustrative. The same shape applies to operational tables replicated into cloud query stores, warehouse dimensions mirrored into lakehouse tables, SaaS exports loaded into analytical marts, streaming events materialized into batch stores, and outsourced query results checked against committed inputs. The important model is that verification creates evidence over time instead of returning one final boolean immediately.</p>
-<div class="highlight"><pre><span></span><code>for event in run.events():
-    print(event.scope, event.lifecycle, event.outcome, event.assurance)
+<div class="language-incan highlight"><pre><span></span><code><span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">run</span><span class="o">.</span><span class="n">events</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">scope</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">lifecycle</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">outcome</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">assurance</span><span class="p">)</span>
 </code></pre></div>
 <p>A stream of observations might first report an external fact, then deterministic partition matches, then a mismatch, then a waiver for that mismatch:</p>
-<div class="highlight"><pre><span></span><code>scope=orders                         lifecycle=running   outcome=mixed   assurance=attested
+<div class="language-text highlight"><pre><span></span><code>scope=orders                         lifecycle=running   outcome=mixed   assurance=attested
 scope=orders/order_date=2026-06-18   lifecycle=complete  outcome=passed  assurance=verified
 scope=orders/order_date=2026-06-19   lifecycle=complete  outcome=failed  assurance=verified
 scope=orders/order_date=2026-06-19   lifecycle=complete  outcome=failed  assurance=waived
@@ -3642,21 +3642,21 @@ projection=orders                    lifecycle=complete  outcome=mixed   assuran
 </code></pre></div>
 <p>The waiver does not rewrite the failed deterministic check. It adds an accepted exception with its own evidence and reason. A report can then say that all non-waived partitions were verified while one partition was waived.</p>
 <p>For streaming or incremental relations, observations can be scoped by watermark or stream position:</p>
-<div class="highlight"><pre><span></span><code>scope=orders
+<div class="language-text highlight"><pre><span></span><code>scope=orders
 watermark=2026-06-20T10:15:00Z
 coverage=37/400 partitions
 outcome=mixed
 assurance=sampled
 </code></pre></div>
 <p>Later evidence may upgrade the current projection for the same scope:</p>
-<div class="highlight"><pre><span></span><code>scope=orders
+<div class="language-text highlight"><pre><span></span><code>scope=orders
 watermark=2026-06-20T10:15:00Z
 coverage=400/400 partitions
 outcome=passed
 assurance=verified
 </code></pre></div>
 <p>If a proof verifier verifies a cryptographic proof for the same bounded scope, it emits another observation rather than changing the assertion model:</p>
-<div class="highlight"><pre><span></span><code>scope=orders
+<div class="language-text highlight"><pre><span></span><code>scope=orders
 source_commitment=operational_snapshot:123456789
 target_commitment=target_manifest:sha256:...
 outcome=passed

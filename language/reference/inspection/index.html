@@ -3319,10 +3319,10 @@
 <h1 id="local-inspection-reference">Local inspection (Reference)</h1>
 <p>Local inspection exposes structured evidence records for Prism-backed lazy plans without executing the plan or binding a backend. The first implementation slice covers <code>LazyFrame[T]</code> because that carrier owns Prism state today; <code>DataFrame[T]</code> and <code>DataStream[T]</code> still converge at the Substrait boundary through their documented carrier paths.</p>
 <h2 id="entry-points">Entry points</h2>
-<div class="highlight"><pre><span></span><code>from pub::inql import inspect_plan, inspect_lineage
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">inspect_plan</span><span class="o">,</span><span class="w"> </span><span class="nn">inspect_lineage</span>
 
-inspection = inspect_plan(summary)
-lineage = inspect_lineage(summary)
+<span class="n">inspection</span> <span class="o">=</span> <span class="n">inspect_plan</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+<span class="n">lineage</span> <span class="o">=</span> <span class="n">inspect_lineage</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
 </code></pre></div>
 <p><code>inspect_plan(data)</code> returns a <code>PlanInspection</code> record. <code>inspect_lineage(data)</code> returns the lineage graph directly from the same Prism-authored plan state when callers do not need the full inspection record.</p>
 <h2 id="evidence-records">Evidence records</h2>

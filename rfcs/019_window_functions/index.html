@@ -3582,22 +3582,22 @@
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
 <p>Authors can rank rows within a partition using the builder surface:</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import col, current_row, desc, lag, rank, sum, unbounded_preceding, window
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">current_row</span><span class="o">,</span><span class="w"> </span><span class="nn">desc</span><span class="o">,</span><span class="w"> </span><span class="nn">lag</span><span class="o">,</span><span class="w"> </span><span class="nn">rank</span><span class="o">,</span><span class="w"> </span><span class="nn">sum</span><span class="o">,</span><span class="w"> </span><span class="nn">unbounded_preceding</span><span class="o">,</span><span class="w"> </span><span class="nn">window</span>
 
-ranked = (
-    orders
-        .with_window_column(&quot;customer_rank&quot;, rank().over(window().partition_by([col(&quot;customer_id&quot;)]).order_by([desc(col(&quot;amount&quot;))])))
-        .with_window_column(&quot;previous_amount&quot;, lag(col(&quot;amount&quot;)).over(window().partition_by([col(&quot;customer_id&quot;)]).order_by([desc(col(&quot;amount&quot;))])))
-        .with_window_column(
-            &quot;running_amount&quot;,
-            sum(col(&quot;amount&quot;)).over(
-                window()
-                    .partition_by([col(&quot;customer_id&quot;)])
-                    .order_by([desc(col(&quot;amount&quot;))])
-                    .rows_between(unbounded_preceding(), current_row())
-            ),
-        )
-)
+<span class="n">ranked</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">orders</span>
+        <span class="o">.</span><span class="n">with_window_column</span><span class="p">(</span><span class="s2">&quot;customer_rank&quot;</span><span class="p">,</span> <span class="n">rank</span><span class="p">()</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">window</span><span class="p">()</span><span class="o">.</span><span class="n">partition_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)])</span><span class="o">.</span><span class="n">order_by</span><span class="p">([</span><span class="nb">desc</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))])))</span>
+        <span class="o">.</span><span class="n">with_window_column</span><span class="p">(</span><span class="s2">&quot;previous_amount&quot;</span><span class="p">,</span> <span class="n">lag</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">window</span><span class="p">()</span><span class="o">.</span><span class="n">partition_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)])</span><span class="o">.</span><span class="n">order_by</span><span class="p">([</span><span class="nb">desc</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))])))</span>
+        <span class="o">.</span><span class="n">with_window_column</span><span class="p">(</span>
+            <span class="s2">&quot;running_amount&quot;</span><span class="p">,</span>
+            <span class="nb">sum</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
+                <span class="n">window</span><span class="p">()</span>
+                    <span class="o">.</span><span class="n">partition_by</span><span class="p">([</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)])</span>
+                    <span class="o">.</span><span class="n">order_by</span><span class="p">([</span><span class="nb">desc</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))])</span>
+                    <span class="o">.</span><span class="n">rows_between</span><span class="p">(</span><span class="n">unbounded_preceding</span><span class="p">(),</span> <span class="n">current_row</span><span class="p">())</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>The exact query-block syntax may evolve, but authors should understand that a window function returns a row-level value computed with access to nearby or related rows.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

@@ -3702,26 +3702,26 @@
 <p>Authors should think about source discovery as one layer below format parsing. First, InQL figures out what concrete parse units exist. Then the selected format handler parses each unit according to its own contract.</p>
 <p>For the common path, authors should not have to restate obvious discovery behavior. A file target should imply one parse unit. A directory or prefix target should imply expansion.</p>
 <p>For a single file, the discovery contract is trivial.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import LazyFrame, Session
-from pub::inql.sources import SourceDiscovery, SourceTarget
-from models import Order
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">Session</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">sources</span> <span class="kn">import</span><span class="w"> </span><span class="nn">SourceDiscovery</span><span class="o">,</span><span class="w"> </span><span class="nn">SourceTarget</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-session = Session.default()
+<span class="n">session</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
 
-orders: LazyFrame[Order] = session.read_format(
-    logical_name=&quot;orders&quot;,
-    source=SourceTarget.file(&quot;s3://warehouse/orders.csv&quot;),
-    format=&quot;csv&quot;,
-)
+<span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">read_format</span><span class="p">(</span>
+    <span class="n">logical_name</span><span class="o">=</span><span class="s2">&quot;orders&quot;</span><span class="p">,</span>
+    <span class="n">source</span><span class="o">=</span><span class="nc">SourceTarget</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;s3://warehouse/orders.csv&quot;</span><span class="p">),</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>For a directory or prefix, the discovery contract becomes explicit: discover multiple files, then parse them individually under the same format contract.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.sources import ParseUnitExpansion, SourceDiscovery, SourceTarget
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">sources</span> <span class="kn">import</span><span class="w"> </span><span class="nn">ParseUnitExpansion</span><span class="o">,</span><span class="w"> </span><span class="nn">SourceDiscovery</span><span class="o">,</span><span class="w"> </span><span class="nn">SourceTarget</span>
 
-orders: LazyFrame[Order] = session.read_format(
-    logical_name=&quot;orders&quot;,
-    source=SourceTarget.directory(&quot;s3://warehouse/orders/&quot;),
-    format=&quot;csv&quot;,
-)
+<span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">read_format</span><span class="p">(</span>
+    <span class="n">logical_name</span><span class="o">=</span><span class="s2">&quot;orders&quot;</span><span class="p">,</span>
+    <span class="n">source</span><span class="o">=</span><span class="nc">SourceTarget</span><span class="o">.</span><span class="n">directory</span><span class="p">(</span><span class="s2">&quot;s3://warehouse/orders/&quot;</span><span class="p">),</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>If the default implied by target kind is not sufficient, an explicit discovery override may still exist for ambiguous or advanced cases. The important mental model is that discovery does not parse bytes. It only decides which parse units exist and in what structural category they belong.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>

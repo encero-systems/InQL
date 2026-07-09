@@ -3282,28 +3282,28 @@
 
 <h1 id="query-blocks-reference">Query blocks (Reference)</h1>
 <p>Query blocks are dependency-activated InQL expressions. Import <code>pub::inql</code> to make the vocabulary and helper surface available in a downstream Incan package.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql import DataFrame, count, desc, sum
-from models import Order, OrderSummary
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">DataFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">count</span><span class="o">,</span><span class="w"> </span><span class="nn">desc</span><span class="o">,</span><span class="w"> </span><span class="nn">sum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span><span class="p">,</span> <span class="nc">OrderSummary</span>
 
-def summarize_orders(orders: DataFrame[Order]) -&gt; DataFrame[OrderSummary]:
-    return query {
-        FROM orders
-        GROUP BY .customer_id
-        SELECT
-            .customer_id as customer_id,
-            sum(.amount) as total,
-            count() as order_count,
-        ORDER BY desc(.total)
-        LIMIT 10
-    }
+<span class="k">def</span><span class="w"> </span><span class="nf">summarize_orders</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">DataFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">DataFrame</span><span class="p">[</span><span class="nc">OrderSummary</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="k">query</span> <span class="p">{</span>
+        <span class="k">FROM</span> <span class="n">orders</span>
+        <span class="k">GROUP</span> <span class="k">BY</span> <span class="o">.</span><span class="n">customer_id</span>
+        <span class="k">SELECT</span>
+            <span class="o">.</span><span class="n">customer_id</span> <span class="k">as</span> <span class="n">customer_id</span><span class="p">,</span>
+            <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total</span><span class="p">,</span>
+            <span class="nb">count</span><span class="p">()</span> <span class="k">as</span> <span class="n">order_count</span><span class="p">,</span>
+        <span class="k">ORDER</span> <span class="k">BY</span> <span class="nb">desc</span><span class="p">(</span><span class="o">.</span><span class="n">total</span><span class="p">)</span>
+        <span class="k">LIMIT</span> <span class="mi">10</span>
+    <span class="p">}</span>
 </code></pre></div>
 <p>The <code>OrderSummary</code> type parameter documents the intended output row model. The v0.1 implementation checks query schema evolution and selected aliases through the carrier planning surface; full field/type compatibility validation against annotated output models is tracked as schema-validation follow-up work.</p>
 <p>InQL also accepts the colon spelling in expression position:</p>
-<div class="highlight"><pre><span></span><code>selected = query:
-    FROM orders
-    SELECT:
-        .customer_id as customer_id
-        .amount as amount
+<div class="language-incan highlight"><pre><span></span><code><span class="n">selected</span> <span class="o">=</span> <span class="k">query</span><span class="p">:</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">SELECT</span><span class="p">:</span>
+        <span class="o">.</span><span class="n">customer_id</span> <span class="k">as</span> <span class="n">customer_id</span>
+        <span class="o">.</span><span class="n">amount</span> <span class="k">as</span> <span class="n">amount</span>
 </code></pre></div>
 <h2 id="clauses">Clauses</h2>
 <p>The implemented v0.1 query-block surface supports:</p>

@@ -3249,24 +3249,24 @@
 <p>Use format helpers when the payload should stay a scalar expression in the current row. Use typed variant helpers when the plan needs kind-aware semi-structured inspection rather than normalized text.</p>
 <h2 id="derive-normalized-fields">Derive normalized fields</h2>
 <p>Hash identifiers, extract URL and JSON fields, and validate schema-bearing payloads with model type parameters.</p>
-<div class="highlight"><pre><span></span><code>from pub::inql.functions import col, from_csv, from_json, get_json_object, parse_url, sha2, to_json
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">from_csv</span><span class="o">,</span><span class="w"> </span><span class="nn">from_json</span><span class="o">,</span><span class="w"> </span><span class="nn">get_json_object</span><span class="o">,</span><span class="w"> </span><span class="nn">parse_url</span><span class="o">,</span><span class="w"> </span><span class="nn">sha2</span><span class="o">,</span><span class="w"> </span><span class="nn">to_json</span>
 
-model EventPayload:
-    type_ as &quot;type&quot;: str
+<span class="k">model</span> <span class="nc">EventPayload</span><span class="p">:</span>
+    <span class="n">type_</span> <span class="k">as</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="nb">str</span>
 
-model CsvRow:
-    id: int
-    status: str
+<span class="k">model</span> <span class="nc">CsvRow</span><span class="p">:</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">status</span><span class="p">:</span> <span class="nb">str</span>
 
-projected = (
-    events
-        .with_column(&quot;user_hash&quot;, sha2(col(&quot;user_id&quot;), 256))
-        .with_column(&quot;campaign&quot;, parse_url(col(&quot;landing_page&quot;), &quot;utm_campaign&quot;))
-        .with_column(&quot;event_type&quot;, get_json_object(col(&quot;payload&quot;), &quot;$.type&quot;))
-        .with_column(&quot;payload_obj&quot;, from_json[EventPayload](col(&quot;payload&quot;)))
-        .with_column(&quot;row_fields&quot;, from_csv[CsvRow](col(&quot;csv_line&quot;)))
-        .with_column(&quot;payload_out&quot;, to_json(col(&quot;event_type&quot;)))
-)
+<span class="n">projected</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">events</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;user_hash&quot;</span><span class="p">,</span> <span class="n">sha2</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;user_id&quot;</span><span class="p">),</span> <span class="mi">256</span><span class="p">))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;campaign&quot;</span><span class="p">,</span> <span class="n">parse_url</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;landing_page&quot;</span><span class="p">),</span> <span class="s2">&quot;utm_campaign&quot;</span><span class="p">))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;event_type&quot;</span><span class="p">,</span> <span class="n">get_json_object</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;payload&quot;</span><span class="p">),</span> <span class="s2">&quot;$.type&quot;</span><span class="p">))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;payload_obj&quot;</span><span class="p">,</span> <span class="nb">from_json</span><span class="p">[</span><span class="nc">EventPayload</span><span class="p">](</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;payload&quot;</span><span class="p">)))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;row_fields&quot;</span><span class="p">,</span> <span class="nb">from_csv</span><span class="p">[</span><span class="nc">CsvRow</span><span class="p">](</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;csv_line&quot;</span><span class="p">)))</span>
+        <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;payload_out&quot;</span><span class="p">,</span> <span class="n">to_json</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;event_type&quot;</span><span class="p">)))</span>
+<span class="p">)</span>
 </code></pre></div>
 <p><code>from_json[Model](...)</code> and <code>from_csv[Model](...)</code> derive their validation schema from the Incan model type argument. For the complete helper catalog, see <a href="../../reference/functions/format/">Format functions</a>.</p>
 
