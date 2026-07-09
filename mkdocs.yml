@@ -37,7 +37,7 @@ markdown_extensions:
       custom_checkbox: true
 
 extra_css:
-  - stylesheets/prismplane.css?v=20260709-prism-wow
+  - stylesheets/prismplane.css?v=20260709-prism-real-assets-2
 
 nav:
   - Home: index.md

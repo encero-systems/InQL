@@ -1,111 +1,125 @@
 <main class="inql-launch" markdown="1">
-<section class="inql-launch-hero" markdown="1">
-<div class="inql-launch-hero__copy" markdown="1">
+<section class="inql-hero" markdown="1">
+<div class="inql-hero__copy" markdown="1">
 <p class="inql-eyebrow">One semantic model. Multiple ways to think.</p>
 
-<h1 id="write-once-run-anywhere-inspect-everything">Write data logic <span class="inql-gradient-text">once</span>.<br>Run it <span class="inql-gradient-text">anywhere</span>.<br>Inspect <span class="inql-gradient-text">everything</span>.</h1>
+<h1 id="write-data-logic-once-run-it-anywhere-inspect-everything">Write data logic <span class="inql-gradient-text">once</span>.<br>Run it <span class="inql-gradient-text">anywhere</span>.<br>Inspect <span class="inql-gradient-text">everything</span>.</h1>
 
-<p class="inql-launch-hero__intro">InQL keeps query blocks, DataFrame-style chains, LazyFrames, and execution evidence attached to one typed relational model. Prism makes that model visible before a backend runs.</p>
-
-<p class="inql-hero-kicker">Different syntax. Exactly the same semantics.</p>
+<p class="inql-hero__intro">InQL unifies query blocks, DataFrame-style chains, LazyFrames, and pipelines into one typed relational model. Prism makes the compiler visible before execution.</p>
 
 <div class="inql-actions">
-<a class="inql-button inql-button--primary" href="language/how-to/dataset_transformations/">Start with dataset transformations</a>
+<a class="inql-button inql-button--primary" href="language/how-to/dataset_transformations/">Get started</a>
 <a class="inql-button" href="language/how-to/inspect_plan_lineage/">See Prism in action</a>
 </div>
+
+<div class="inql-proof-row" aria-label="InQL proof points">
+<span><strong>Typed & safe</strong> Catch errors early with static typing</span>
+<span><strong>Inspectable</strong> See every stage with Prism before execution</span>
+<span><strong>Portable</strong> Compile to Substrait and run on many engines</span>
+<span><strong>Governed</strong> Observe, assert, and prove behavior</span>
+</div>
 </div>
 
-<div class="inql-launch-hero__visual" aria-label="Prism refracts data intent into typed planning stages and portable execution boundaries.">
-<img class="inql-launch-hero__image" src="shared/prismplane/prismplane-hero.jpg" alt="">
-<div class="inql-prism-story" aria-hidden="true">
-<span>Intent</span>
-<span>Semantic model</span>
-<span>Prism</span>
-<span>Portable plan</span>
-<span>Execution</span>
-</div>
+<div class="inql-hero__visual" aria-label="Prism refracts data logic into inspectable typed plan layers.">
+<img src="shared/prismplane/prismplane-hero.jpg" alt="">
 </div>
 </section>
 
-<section class="inql-fracture-section" markdown="1">
-<div class="inql-fracture-copy" markdown="1">
-## Data logic is fragmented
+<section class="inql-problem-panel" markdown="1">
+<div class="inql-problem-panel__left" markdown="1">
+## The problem with data logic today
 
-The same business rule often gets rewritten across SQL, DataFrames, lazy plans, notebook glue, validation scripts, and backend-specific execution paths. The syntax changes, and too often the semantics change with it.
+<div class="inql-problem-grid" markdown="1">
+<article markdown="1">
+### Too many ways to express logic
+
+SQL, DataFrames, pipelines, and notebooks each carry their own shape.
+</article>
+
+<article markdown="1">
+### Different semantics and behaviors
+
+Small rewrites can change meaning before anyone sees the plan.
+</article>
+
+<article markdown="1">
+### Hard to inspect and debug
+
+You see results, but not the typed relational model that produced them.
+</article>
+
+<article markdown="1">
+### Tied to specific engines
+
+Porting usually means rewriting logic and rechecking behavior.
+</article>
+</div>
 </div>
 
-<div class="inql-fracture-map" aria-label="Many data authoring surfaces converge into InQL and Prism">
-<div class="inql-source-cloud">
-<span class="inql-source-chip">SQL</span>
-<span class="inql-source-chip">DataFrames</span>
-<span class="inql-source-chip">LazyFrames</span>
-<span class="inql-source-chip">Pipelines</span>
-<span class="inql-source-chip">Quality checks</span>
-<span class="inql-source-chip">Backend adapters</span>
-</div>
-<div class="inql-convergence-line" aria-hidden="true"></div>
-<div class="inql-unifier">
-<span>InQL</span>
-<strong>typed relational intent</strong>
-</div>
-<div class="inql-convergence-line inql-convergence-line--out" aria-hidden="true"></div>
-<div class="inql-outcome-stack">
-<span>Prism inspection</span>
-<span>Substrait boundary</span>
-<span>DataFusion / DuckDB / Spark</span>
-</div>
+<div class="inql-problem-panel__right" markdown="1">
+## InQL is the unifying layer
+
+Different surfaces. One semantic model. One compiler. Multiple execution targets.
+
+<p class="inql-thesis">Write once. Understand always. Run anywhere.</p>
 </div>
 </section>
 
-<section class="inql-compiler-section" markdown="1">
+<section class="inql-process" markdown="1">
 <div class="inql-section-heading" markdown="1">
-## The compiler becomes visible
+## How InQL works
 
-InQL is not another string builder. Author intent becomes a typed semantic model, then a Prism plan, then a portable execution boundary.
+Author in the surface that fits the task. InQL keeps the semantics attached as the work moves from intent to execution.
 </div>
 
-<div class="inql-demo-panel" markdown="1">
-<div class="inql-demo-code" markdown="1">
-```incan
-paid_rollup = query {
-    FROM orders
-    WHERE .status == "paid"
-    GROUP BY .region
-    SELECT
-        .region as region,
-        sum(.amount) as total_amount,
-        count() as order_count
-}
-```
-</div>
+<div class="inql-process-rail">
+<article class="inql-step-card">
+<span>01</span>
+<h3>Author</h3>
+<p>Write query blocks, DataFrames, LazyFrames, or pipelines.</p>
+<p class="inql-tag-row">SQL · DF · Lazy · Pipe</p>
+</article>
 
-<div class="inql-visible-compiler-flow" aria-label="Query intent flows through InQL, Prism, Substrait, and backend execution">
-<span class="inql-flow-node">Intent</span>
-<span class="inql-flow-node">Semantic model</span>
-<span class="inql-flow-node inql-flow-node--focus">Prism</span>
-<span class="inql-flow-node">Portable plan</span>
-<span class="inql-flow-node">Execution</span>
-</div>
+<article class="inql-step-card">
+<span>02</span>
+<h3>Compile</h3>
+<p>Lower authoring intent into a typed relational model and Substrait boundary.</p>
+<p class="inql-tag-row">Substrait</p>
+</article>
 
-<div class="inql-engine-row" aria-label="Execution engines">
-<span>DataFusion</span>
-<span>DuckDB</span>
-<span>Spark</span>
-<span>Substrait consumers</span>
-</div>
+<article class="inql-step-card inql-step-card--focus">
+<span>03</span>
+<h3>Prism</h3>
+<p>Inspect schema flow, lineage, projections, filters, and optimizer choices.</p>
+<p class="inql-tag-row">Inspect everything</p>
+</article>
+
+<article class="inql-step-card">
+<span>04</span>
+<h3>Optimize</h3>
+<p>Apply rule-based and cost-aware planning without making an engine the semantic owner.</p>
+<p class="inql-tag-row">Smart optimizer</p>
+</article>
+
+<article class="inql-step-card">
+<span>05</span>
+<h3>Execute</h3>
+<p>Run on DataFusion first, and keep the boundary open for compatible engines.</p>
+<p class="inql-tag-row">DataFusion · DuckDB · Spark</p>
+</article>
 </div>
 </section>
 
-<section class="inql-same-semantics" markdown="1">
-<div class="inql-section-heading inql-section-heading--center" markdown="1">
-## Different syntax. Exactly the same semantics.
+<section class="inql-prism-visible" markdown="1">
+<div class="inql-section-heading" markdown="1">
+## Prism makes the compiler <span class="inql-gradient-text">visible</span>
 
-This is the moment InQL is built for: familiar authoring shapes collapsing into one inspectable plan.
+InQL plans are not opaque strings handed to a backend engine. Prism exposes the typed model and evidence before execution.
 </div>
 
-<div class="inql-syntax-collapse" markdown="1">
-<article class="inql-syntax-card" markdown="1">
-<span>Query block</span>
+<div class="inql-prism-board" markdown="1">
+<article class="inql-code-card" markdown="1">
+<span>Your query</span>
 
 ```incan
 query {
@@ -114,100 +128,108 @@ query {
     GROUP BY .region
     SELECT
         .region as region,
-        sum(.amount) as total_amount
+        sum(.amount) as total
 }
 ```
 </article>
 
-<article class="inql-syntax-card" markdown="1">
-<span>Carrier chain</span>
+<div class="inql-prism-image">
+<img src="shared/prismplane/prismplane-hero.jpg" alt="Prism refracting a query into plan layers.">
+</div>
 
-```incan
-orders
-    .filter(eq(col("status"), "paid"))
-    .group_by([col("region")])
-    .agg([sum(col("amount"))])
+<article class="inql-plan-card" markdown="1">
+<span>Substrait plan</span>
+
+```text
+Root
+  Aggregate
+    GroupBy: region
+    Filter: status = paid
+    Scan: orders
 ```
 </article>
 
-<article class="inql-syntax-card" markdown="1">
-<span>Deferred session flow</span>
+<article class="inql-engine-card" markdown="1">
+<span>Execution engines</span>
+
+- DataFusion
+- DuckDB
+- Spark
+- Other Substrait consumers
+</article>
+</div>
+</section>
+
+<section class="inql-surfaces" markdown="1">
+<div class="inql-surfaces__copy" markdown="1">
+## One language. Many surfaces.
+
+Different ways to write. Same plan. Same result.
+</div>
+
+<div class="inql-surface-demo" markdown="1">
+<div class="inql-tabs" aria-label="Example authoring surfaces">
+<span>Query blocks</span>
+<span>SQL</span>
+<span>DataFrames</span>
+<span>LazyFrames</span>
+<span>Pipelines</span>
+</div>
 
 ```incan
-orders = session.read_csv(
-    "orders",
-    "orders.csv",
-)?
-
-paid = orders.filter(
-    eq(col("status"), "paid"),
-)
+query {
+    FROM orders
+    WHERE .status == "paid"
+    GROUP BY .region
+    SELECT
+        .region as region,
+        sum(.amount) as total
+}
 ```
-</article>
-
-<div class="inql-collapse-target" markdown="1">
-<strong>Same Prism plan</strong>
-<div class="inql-stage-strip inql-stage-strip--large" aria-label="Same Prism plan">
-<span>Source</span>
-<span>Filter</span>
-<span>Aggregate</span>
-<span>Project</span>
-</div>
-</div>
-</div>
-</section>
-
-<section class="inql-prism-moment" markdown="1">
-<div class="inql-prism-moment__visual" markdown="1">
-<img src="shared/prismplane/prismplane-hero.jpg" alt="">
-<div class="inql-stage-strip" aria-label="Prism inspection stages">
-<span>Schema</span>
-<span>Lineage</span>
-<span>Coverage</span>
-<span>Quality</span>
-</div>
 </div>
 
-<div class="inql-prism-moment__copy" markdown="1">
-## Prism is the reason InQL becomes obvious
+<div class="inql-same-plan" markdown="1">
+### Same Prism plan
 
-Prism shows the compiler’s relational model before execution. Source relations, predicates, projections, aggregates, windows, generators, lineage edges, quality observations, and adapter coverage become inspectable artifacts instead of backend side effects.
-
-That visibility is what lets InQL support governance without becoming a single-engine framework.
+<ol class="inql-plan-list">
+<li><strong>Source</strong><span>Read the same typed relation.</span></li>
+<li><strong>Filter</strong><span>Apply the same predicate semantics.</span></li>
+<li><strong>Aggregate</strong><span>Keep grouping and measures attached.</span></li>
+<li><strong>Project</strong><span>Expose the same output shape.</span></li>
+</ol>
 </div>
 </section>
 
-<section class="inql-trust-section" markdown="1">
-<div class="inql-trust-block" markdown="1">
+<section class="inql-trust" markdown="1">
+<article markdown="1">
 ## Built for trust
 
 - Static typing and schema flow for confidence
-- Prism inspection before backend execution
+- Prism for deep visibility before execution
 - Deterministic, backend-neutral semantics
-- Reproducible observations and quality evidence
-</div>
+- Reproducible, testable, observable evidence
+</article>
 
-<div class="inql-trust-block" markdown="1">
+<article markdown="1">
 ## Engineered for developers
 
-- Familiar if you know SQL or DataFrames
-- Stronger when a workflow needs governance
-- Extension-aware without giving up portability
-- Designed for humans and AI agents to inspect
-</div>
+- Familiar when you know SQL or DataFrames
+- Powerful when governance matters
+- Extensible, open, and community-driven
+- Designed for humans and AI agents
+</article>
 </section>
 
-<section class="inql-learn-section" markdown="1">
+<section class="inql-final-cta" markdown="1">
 <div markdown="1">
 ## Ready to experience InQL?
 
-Start with a hands-on guide, inspect a plan, or jump straight into the API reference.
+Start with a quickstart, explore examples, or jump straight into the reference.
 </div>
 
 <div class="inql-actions">
 <a class="inql-button inql-button--primary" href="language/how-to/dataset_transformations/">Get started</a>
-<a class="inql-button" href="language/reference/query_blocks/">Query blocks</a>
-<a class="inql-button" href="docs_map/">Explore the docs</a>
+<a class="inql-button" href="docs_map/">Explore examples</a>
 </div>
 </section>
 </main>
