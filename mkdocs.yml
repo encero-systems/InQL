@@ -37,7 +37,7 @@ markdown_extensions:
       custom_checkbox: true
 
 extra_css:
-  - stylesheets/prismplane.css?v=20260709-font-stack
+  - stylesheets/prismplane.css?v=20260709-structured-glass
 
 nav:
   - Home: index.md
