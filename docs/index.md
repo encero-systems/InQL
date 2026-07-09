@@ -5,23 +5,23 @@
 
 <h1 id="write-data-logic-once-run-it-anywhere-inspect-everything">Write data logic <span class="inql-gradient-text">once</span>.<br>Run it <span class="inql-gradient-text">anywhere</span>.<br>Inspect <span class="inql-gradient-text">everything</span>.</h1>
 
-<p class="inql-hero__intro">InQL unifies query blocks, DataFrame-style chains, LazyFrames, and pipelines into one typed relational model. Prism makes the compiler visible before execution.</p>
+<p class="inql-hero__intro">InQL unifies query blocks, DataFrame-style chains, LazyFrames, and pipelines into one typed relational model. Prism lets you see exactly what the compiler sees before execution.</p>
 
 <div class="inql-actions">
-<a class="inql-button inql-button--primary" href="language/how-to/dataset_transformations/">Get started</a>
+<a class="inql-button inql-button--primary" href="language/how-to/dataset_transformations/">Start with transformations</a>
 <a class="inql-button" href="language/how-to/inspect_plan_lineage/">See Prism in action</a>
 </div>
 
 <div class="inql-proof-row" aria-label="InQL proof points">
-<span><strong>Typed & safe</strong> Catch errors early with static typing</span>
-<span><strong>Inspectable</strong> See every stage with Prism before execution</span>
-<span><strong>Portable</strong> Compile to Substrait and run on many engines</span>
-<span><strong>Governed</strong> Observe, assert, and prove behavior</span>
+<span><strong>Typed & safe</strong> Catch issues early with static typing</span>
+<span><strong>Inspectable</strong> See the plan before execution</span>
+<span><strong>Portable</strong> Compile to Substrait</span>
+<span><strong>Governed</strong> Observe and verify behavior</span>
 </div>
 </div>
 
 <div class="inql-hero__visual" aria-label="Prism refracts data logic into inspectable typed plan layers.">
-<img src="shared/prismplane/prismplane-hero.jpg" alt="">
+<img src="shared/prismplane/prismplane-hero-light.png" alt="A glass prism refracting data logic into layered plan stages.">
 </div>
 </section>
 
@@ -97,14 +97,14 @@ Author in the surface that fits the task. InQL keeps the semantics attached as t
 <article class="inql-step-card">
 <span>04</span>
 <h3>Optimize</h3>
-<p>Apply rule-based and cost-aware planning without making an engine the semantic owner.</p>
+<p>Apply planning rules without making one engine the semantic owner.</p>
 <p class="inql-tag-row">Smart optimizer</p>
 </article>
 
 <article class="inql-step-card">
 <span>05</span>
 <h3>Execute</h3>
-<p>Run on DataFusion first, and keep the boundary open for compatible engines.</p>
+<p>Run on DataFusion first, with room for compatible Substrait engines.</p>
 <p class="inql-tag-row">DataFusion · DuckDB · Spark</p>
 </article>
 </div>
@@ -133,24 +133,19 @@ query {
 ```
 </article>
 
-<div class="inql-prism-image">
-<img src="shared/prismplane/prismplane-hero.jpg" alt="Prism refracting a query into plan layers.">
-</div>
-
 <article class="inql-plan-card" markdown="1">
-<span>Substrait plan</span>
+<span>Prism inspection</span>
 
 ```text
-Root
-  Aggregate
-    GroupBy: region
-    Filter: status = paid
-    Scan: orders
+Source(orders)
+  Filter(status == paid)
+  Aggregate(group: region)
+  Project(region, total)
 ```
 </article>
 
 <article class="inql-engine-card" markdown="1">
-<span>Execution engines</span>
+<span>Execution targets</span>
 
 - DataFusion
 - DuckDB
