@@ -3649,7 +3649,7 @@
 </div>
 <div aria-label="Five InQL stages moving from authoring intent through Prism inspection to portable execution." class="inql-process-stage">
 <div class="inql-process-rail">
-<article class="inql-step-card">
+<article class="inql-step-card inql-step-card--author">
 <span>01</span>
 <h3 id="author">Author</h3>
 <p>Write in the interface that matches your workflow and context.</p>
@@ -3660,7 +3660,7 @@
 <li>Pipelines</li>
 </ul>
 </article>
-<article class="inql-step-card">
+<article class="inql-step-card inql-step-card--compile">
 <span>02</span>
 <h3 id="compile">Compile</h3>
 <p>Lower authoring intent into a typed relational model and Substrait plan.</p>
@@ -3671,7 +3671,7 @@
 }</code></pre>
 <p class="inql-tag-row">Substrait</p>
 </article>
-<article class="inql-step-card inql-step-card--focus">
+<article class="inql-step-card inql-step-card--focus inql-step-card--prism">
 <span>03</span>
 <h3 id="prism">Prism</h3>
 <p>InQL's semantic core makes the compiler's decisions visible.</p>
@@ -3683,7 +3683,7 @@
 <li>Optimizer choices</li>
 </ul>
 </article>
-<article class="inql-step-card">
+<article class="inql-step-card inql-step-card--optimize">
 <span>04</span>
 <h3 id="optimize">Optimize</h3>
 <p>Apply rule- and cost-based optimizations for the best execution plan.</p>
@@ -3695,7 +3695,7 @@
 </ul>
 <p class="inql-tag-row">Smart optimizer</p>
 </article>
-<article class="inql-step-card">
+<article class="inql-step-card inql-step-card--execute">
 <span>05</span>
 <h3 id="execute">Execute</h3>
 <p>Run on the engine that fits: local, in-process, or distributed.</p>
