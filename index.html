@@ -42,7 +42,7 @@
       
     
     
-      <link rel="stylesheet" href="stylesheets/prismplane.css?v=20260709-font-stack">
+      <link rel="stylesheet" href="stylesheets/prismplane.css?v=20260709-structured-glass">
     
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -3366,49 +3366,60 @@
   
 
 
-<section class="prism-hero">
-<div class="prism-hero__copy">
-<p class="prism-eyebrow">InQL documentation</p>
-<h1 id="the-typed-data-logic-plane">The typed data logic plane</h1>
-<p>InQL is a typed relational layer for authoring, inspecting, and executing data logic. Query blocks, dataset carriers, portable function calls, Prism plan inspection, and Substrait boundaries share one backend-neutral model.</p>
-<div class="prism-actions">
-<p><a class="prism-button prism-button--primary" href="language/how-to/dataset_transformations/">Start with dataset transformations</a>
-<a class="prism-button" href="language/reference/query_blocks/">Read the query block reference</a></p>
+<section class="inql-hero">
+<div class="inql-hero__copy">
+<p class="inql-eyebrow">InQL documentation</p>
+<h1 id="the-typed-data-logic-plane">The <span class="inql-gradient-text">typed</span> data logic plane</h1>
+<p class="inql-hero__intro">InQL is a typed relational layer for authoring, inspecting, and executing data logic. Query blocks, dataset carriers, portable function calls, Prism plan inspection, and Substrait boundaries share one backend-neutral model.</p>
+<div class="inql-actions">
+<a class="inql-button inql-button--primary" href="language/how-to/dataset_transformations/">Start with dataset transformations</a>
+<a class="inql-button" href="language/reference/query_blocks/">Read the query block reference</a>
 </div>
 </div>
-<div aria-label="A glass prism refracts typed data logic into floating planning stages." class="prism-hero__visual">
-<img class="prism-hero__image" src="shared/prismplane/prismplane-hero.jpg" alt="">
+<div aria-label="A glass prism refracts typed data logic into floating planning stages." class="inql-hero__visual">
+<img class="inql-hero__image" src="shared/prismplane/prismplane-hero.jpg" alt="">
 </div>
 </section>
+<section class="inql-section inql-glass-panel">
 <h2 id="choose-the-right-path">Choose the right path</h2>
-<div class="prism-card-grid">
-<article class="prism-card">
-<p><span class="prism-card__label">Write logic</span></p>
+<div class="inql-card-grid">
+<article class="inql-glass-card inql-nav-card">
+<p><span class="inql-card-icon" aria-hidden="true"></span>
+<span class="inql-card-label">Write logic</span></p>
 <h3 id="build-typed-transformations">Build typed transformations</h3>
 <p>Start with <code>DataSet[T]</code>, <code>LazyFrame[T]</code>, and query blocks when you want relational intent in source code instead of untyped SQL strings.</p>
 <p><a href="language/how-to/dataset_transformations/">Use dataset transformations</a></p>
 </article>
-<article class="prism-card">
-<p><span class="prism-card__label">Understand plans</span></p>
+<article class="inql-glass-card inql-nav-card">
+<p><span class="inql-card-icon" aria-hidden="true"></span>
+<span class="inql-card-label">Understand plans</span></p>
 <h3 id="inspect-prism-and-lineage">Inspect Prism and lineage</h3>
 <p>Use inspection docs when you need to see output schema, relation nodes, lineage edges, semantic targets, and evidence markers.</p>
 <p><a href="language/how-to/inspect_plan_lineage/">Inspect plan lineage</a></p>
 </article>
-<article class="prism-card">
-<p><span class="prism-card__label">Execute deliberately</span></p>
+<article class="inql-glass-card inql-nav-card">
+<p><span class="inql-card-icon" aria-hidden="true"></span>
+<span class="inql-card-label">Execute deliberately</span></p>
 <h3 id="keep-sessions-downstream">Keep sessions downstream</h3>
 <p>Execution context docs explain how reads, bindings, observations, adapter coverage, and backend execution stay below InQL semantics.</p>
 <p><a href="language/reference/execution_context/">Read execution context</a></p>
 </article>
-<article class="prism-card">
-<p><span class="prism-card__label">Verify behavior</span></p>
+<article class="inql-glass-card inql-nav-card">
+<p><span class="inql-card-icon" aria-hidden="true"></span>
+<span class="inql-card-label">Verify behavior</span></p>
 <h3 id="track-quality-and-governance">Track quality and governance</h3>
 <p>Quality and governed evidence docs show how InQL records assertions, observations, targets, and policy checkpoints without making a backend the semantic owner.</p>
 <p><a href="language/how-to/quality_observations/">Observe quality checks</a></p>
 </article>
 </div>
+</section>
+<section class="inql-section inql-glass-panel inql-loop">
 <h2 id="a-first-useful-loop">A first useful loop</h2>
+<div class="inql-loop__layout">
+<div class="inql-loop__copy">
 <p>InQL is easiest to learn by following the shape of a real workflow: declare row models, build a typed relational plan, inspect the plan before execution, then run it through a session when you intentionally cross the backend boundary.</p>
+</div>
+<div class="inql-loop__example">
 <div class="highlight"><pre><span></span><code>model Order:
     order_id: str
     region: str
@@ -3426,72 +3437,67 @@ paid_rollup = query {
     ORDER BY desc(.total_amount)
 }
 </code></pre></div>
+<div aria-label="Simplified Prism plan flow" class="inql-schema-flow">
+<span>Source</span>
+<span>Filter</span>
+<span>Aggregate</span>
+<span>Project</span>
+</div>
+</div>
+</div>
 <p>That example is not trying to teach every surface at once. It shows the core promise: the query reads like relational logic, but it remains typed source that can flow through Prism inspection and Substrait lowering before any adapter executes it.</p>
+</section>
+<section class="inql-section inql-glass-panel">
 <h2 id="what-the-docs-cover">What the docs cover</h2>
-<div class="prism-track-list">
-<div class="prism-track">
+<div class="inql-track-grid">
+<div class="inql-glass-card inql-doc-card">
 <p><strong>How-to guides</strong></p>
 <p>Task-oriented workflows for building transformations, normalizing semi-structured data, expanding rows, adding windows, observing execution, and inspecting lineage.</p>
 <p><a href="language/how-to/">Browse how-to guides</a></p>
 </div>
-<div class="prism-track">
+<div class="inql-glass-card inql-doc-card">
 <p><strong>Reference</strong></p>
 <p>Current API contracts for carriers, methods, query blocks, execution context, inspection, quality, governance, functions, builders, and Substrait boundaries.</p>
 <p><a href="language/reference/dataset_carriers/">Open the reference</a></p>
 </div>
-<div class="prism-track">
+<div class="inql-glass-card inql-doc-card">
 <p><strong>Architecture and RFCs</strong></p>
 <p>Design context for how InQL sits next to Incan, Prism, Substrait, sessions, backend adapters, quality evidence, and future extension points.</p>
 <p><a href="architecture/">Read the architecture</a></p>
 </div>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Where InQL stops</p>
+<div class="inql-glass-callout">
+<p><strong>Where InQL stops</strong></p>
 <p>InQL owns typed data logic and portable logical intent. It does not own workflow orchestration, credential binding, physical planning, or backend-specific execution semantics; those belong downstream in sessions, adapters, runners, or adjacent Encero projects.</p>
 </div>
+</section>
+<section class="inql-section inql-glass-panel">
 <h2 id="navigation-shortcuts">Navigation shortcuts</h2>
-<table>
-<thead>
-<tr>
-<th>If you want to...</th>
-<th>Start here</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Learn the carrier model</td>
-<td><a href="language/explanation/dataset_carriers/">Dataset carriers explanation</a></td>
-</tr>
-<tr>
-<td>See the method surface</td>
-<td><a href="language/reference/dataset_methods/">Dataset methods reference</a></td>
-</tr>
-<tr>
-<td>Write SQL-familiar blocks</td>
-<td><a href="language/reference/query_blocks/">Query blocks reference</a></td>
-</tr>
-<tr>
-<td>Normalize JSON, CSV, and variants</td>
-<td><a href="language/how-to/normalize_semistructured_fields/">Normalize semi-structured fields</a></td>
-</tr>
-<tr>
-<td>Add windows or aggregates</td>
-<td><a href="language/how-to/window_columns/">Window columns</a></td>
-</tr>
-<tr>
-<td>Inspect plan structure and lineage</td>
-<td><a href="language/how-to/inspect_plan_lineage/">Inspect plan lineage</a></td>
-</tr>
-<tr>
-<td>Understand Substrait boundaries</td>
-<td><a href="language/reference/substrait/read_root_binding_contract/">Read-root binding contract</a></td>
-</tr>
-<tr>
-<td>Review the design record</td>
-<td><a href="rfcs/">RFC index</a></td>
-</tr>
-</tbody>
-</table>
+<div class="inql-shortcut-grid">
+<div class="inql-compact-nav-card">
+<span>If you want to...</span><span>Start here</span>
+<a href="language/explanation/dataset_carriers/">Learn the carrier model</a>
+<a href="language/explanation/dataset_carriers/">Dataset carriers explanation</a>
+<a href="language/reference/dataset_methods/">See the method surface</a>
+<a href="language/reference/dataset_methods/">Dataset methods reference</a>
+<a href="language/reference/query_blocks/">Write SQL-familiar blocks</a>
+<a href="language/reference/query_blocks/">Query blocks reference</a>
+<a href="language/how-to/normalize_semistructured_fields/">Normalize JSON, CSV, and variants</a>
+<a href="language/how-to/normalize_semistructured_fields/">Normalize semi-structured fields</a>
+</div>
+<div class="inql-compact-nav-card">
+<span>If you want to...</span><span>Start here</span>
+<a href="language/how-to/window_columns/">Add windows or aggregates</a>
+<a href="language/how-to/window_columns/">Window columns</a>
+<a href="language/how-to/inspect_plan_lineage/">Inspect plan structure and lineage</a>
+<a href="language/how-to/inspect_plan_lineage/">Inspect plan lineage</a>
+<a href="language/reference/substrait/read_root_binding_contract/">Understand Substrait boundaries</a>
+<a href="language/reference/substrait/read_root_binding_contract/">Read-root binding contract</a>
+<a href="rfcs/">Review the design record</a>
+<a href="rfcs/">RFC index</a>
+</div>
+</div>
+</section>
 
 
 
