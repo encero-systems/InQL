@@ -538,7 +538,7 @@ body:has(.inql-launch) .md-typeset li {
   display: grid;
   grid-template-columns: minmax(21rem, 0.72fr) minmax(0, 1.28fr);
   gap: clamp(1.4rem, 4vw, 4rem);
-  align-items: center;
+  align-items: stretch;
   padding: clamp(1.25rem, 2.6vw, 2.15rem);
 }
 
@@ -651,10 +651,35 @@ body:has(.inql-launch) .md-typeset li {
   min-width: 0;
 }
 
+.inql-diagnosis {
+  align-self: center;
+}
+
 .inql-convergence {
-  padding-left: clamp(1rem, 2.4vw, 2.2rem);
-  border-left: 1px solid var(--inql-page-line);
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: clamp(23rem, 38vw, 31rem);
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid rgba(71, 109, 255, 0.14);
+  border-radius: clamp(1.1rem, 2vw, 1.6rem);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.78) 33%, rgba(255, 255, 255, 0.22) 66%, rgba(255, 255, 255, 0.02) 100%),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.08) 56%),
+    url("../shared/prismplane/semantic-convergence.jpg") center / cover no-repeat;
   min-width: 0;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(55, 74, 123, 0.12);
+}
+
+.inql-convergence::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 63% 50%, rgba(255, 255, 255, 0.02), transparent 19rem),
+    radial-gradient(circle at 88% 45%, rgba(123, 92, 255, 0.14), transparent 18rem);
+  pointer-events: none;
 }
 
 .inql-problem-panel__right p:not(.inql-thesis) {
@@ -664,41 +689,31 @@ body:has(.inql-launch) .md-typeset li {
   line-height: 1.56;
 }
 
-.inql-convergence-figure {
+.inql-convergence__copy {
   position: relative;
-  margin: clamp(1.15rem, 2vw, 1.7rem) 0 0;
-  border: 0;
-  border-radius: 22px;
-  background: transparent;
-  box-shadow: 0 24px 64px rgba(55, 74, 123, 0.09);
-  overflow: hidden;
+  z-index: 1;
+  width: min(24rem, 58%);
+  padding: clamp(1rem, 2vw, 1.45rem);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: var(--inql-radius-lg);
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88), 0 18px 44px rgba(55, 74, 123, 0.11);
 }
 
-.inql-convergence-figure::after {
-  display: none;
+.inql-convergence__copy h2 {
+  max-width: 18rem;
 }
 
-.inql-convergence-figure img {
-  display: block;
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  aspect-ratio: 1280 / 600;
-  object-fit: cover;
-  object-position: center;
-}
-
-.inql-convergence-figure figcaption {
-  position: relative;
+.inql-convergence-flow {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
   align-items: center;
-  margin-top: 0.64rem;
+  margin-top: 1rem;
 }
 
-.inql-convergence-figure figcaption span,
-.inql-convergence-figure figcaption strong {
+.inql-convergence-flow span,
+.inql-convergence-flow strong {
   display: inline-flex;
   align-items: center;
   min-height: 1.65rem;
@@ -713,7 +728,7 @@ body:has(.inql-launch) .md-typeset li {
   box-shadow: 0 10px 24px rgba(55, 74, 123, 0.08);
 }
 
-.inql-convergence-figure figcaption strong {
+.inql-convergence-flow strong {
   border-color: rgba(123, 92, 255, 0.34);
   background: rgba(255, 255, 255, 0.86);
   color: var(--inql-page-blue);
@@ -989,10 +1004,14 @@ body:has(.inql-launch) .md-typeset li {
   }
 
   .inql-convergence {
-    padding-left: 0;
-    border-left: 0;
-    border-top: 1px solid var(--inql-page-line);
-    padding-top: 1.4rem;
+    min-height: 26rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.66) 38%, rgba(255, 255, 255, 0.18) 100%),
+      url("../shared/prismplane/semantic-convergence.jpg") center / cover no-repeat;
+  }
+
+  .inql-convergence__copy {
+    width: min(100%, 30rem);
   }
 }
 
@@ -1055,15 +1074,28 @@ body:has(.inql-launch) .md-typeset li {
     font-size: 0.62rem;
   }
 
-  .inql-convergence-figure {
-    border-radius: var(--inql-radius-lg);
+  .inql-convergence {
+    min-height: 29rem;
+    padding: 0.8rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.72) 46%, rgba(255, 255, 255, 0.2) 100%),
+      url("../shared/prismplane/semantic-convergence.jpg") center / cover no-repeat;
   }
 
-  .inql-convergence-figure figcaption {
-    position: relative;
-    inset: auto;
-    padding: 0.72rem;
-    background: rgba(255, 255, 255, 0.72);
+  .inql-convergence__copy {
+    width: 100%;
+    padding: 0.9rem;
+  }
+
+  .inql-convergence-flow {
+    gap: 0.36rem;
+  }
+
+  .inql-convergence-flow span,
+  .inql-convergence-flow strong {
+    min-height: 1.5rem;
+    padding: 0.28rem 0.46rem;
+    font-size: 0.58rem;
   }
 
   .inql-proof-row {
