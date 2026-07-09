@@ -394,7 +394,7 @@ body:has(.inql-launch) .md-sidebar {
 .inql-launch > section {
   position: relative;
   z-index: 1;
-  width: min(100% - 2rem, 1240px);
+  width: min(100% - 2rem, 1440px);
   margin: 0 auto;
 }
 
@@ -421,32 +421,48 @@ body:has(.inql-launch) .md-sidebar {
 
 .inql-launch-hero {
   display: grid;
-  grid-template-columns: minmax(28rem, 0.92fr) minmax(32rem, 1.08fr);
-  gap: clamp(1.8rem, 3.6vw, 4rem);
+  grid-template-columns: minmax(30rem, 0.76fr) minmax(38rem, 1.24fr);
+  gap: clamp(1.5rem, 3vw, 3.2rem);
   align-items: center;
-  min-height: calc(100vh - 6rem);
-  padding: clamp(2.6rem, 4.6vw, 4.8rem) 0 clamp(1.8rem, 3vw, 3rem);
+  min-height: calc(100vh - 5.5rem);
+  padding: clamp(2rem, 3.8vw, 4rem) 0 clamp(1.4rem, 3vw, 3rem);
 }
 
 .inql-launch-hero__copy {
-  max-width: 40rem;
+  max-width: 42rem;
+  transform: translateY(-3.2rem);
 }
 
 .inql-launch-hero h1 {
-  max-width: 11.2em;
-  margin: 0 0 1.4rem;
-  font-size: clamp(2.75rem, 3.6vw, 4.2rem);
-  font-weight: 780;
-  line-height: 1;
+  max-width: 10em;
+  margin: 0 0 1.25rem;
+  font-size: clamp(3.25rem, 4.55vw, 6rem);
+  font-weight: 820;
+  line-height: 0.96;
   letter-spacing: 0;
 }
 
 .inql-launch-hero__intro {
-  max-width: 35rem;
+  max-width: 33rem;
   margin: 0;
   color: var(--inql-text-secondary);
-  font-size: clamp(1.02rem, 1.5vw, 1.18rem);
-  line-height: 1.68;
+  font-size: clamp(1.02rem, 1.25vw, 1.18rem);
+  line-height: 1.62;
+}
+
+.inql-hero-kicker {
+  width: fit-content;
+  margin: 1rem 0 0;
+  padding: 0.52rem 0.74rem;
+  border: 1px solid rgba(214, 108, 255, 0.32);
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(88, 220, 255, 0.1), rgba(214, 108, 255, 0.12)),
+    rgba(3, 8, 17, 0.72);
+  color: var(--inql-text);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
 }
 
 .inql-actions {
@@ -511,8 +527,8 @@ body:has(.inql-launch) .md-sidebar {
 
 .inql-launch-hero__visual {
   position: relative;
-  min-height: clamp(25rem, 42vw, 34rem);
-  margin-right: max(-5rem, calc(50% - 50vw));
+  min-height: clamp(32rem, 68vh, 48rem);
+  margin-right: -4rem;
   border-radius: var(--inql-radius-xl) 0 0 var(--inql-radius-xl);
   background:
     radial-gradient(circle at 35% 58%, rgba(88, 220, 255, 0.2), transparent 18rem),
@@ -552,7 +568,8 @@ body:has(.inql-launch) .md-sidebar {
   object-fit: cover;
   object-position: center;
   filter: saturate(1.14) contrast(1.08);
-  transform: scale(1.06);
+  transform: scale(1.035);
+  animation: inql-prism-drift 16s ease-in-out infinite alternate;
 }
 
 .inql-prism-story {
@@ -562,9 +579,9 @@ body:has(.inql-launch) .md-sidebar {
   bottom: clamp(1rem, 4vw, 3rem);
   z-index: 3;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.4rem;
-  width: min(31rem, calc(100% - 2rem));
+  width: min(30rem, calc(100% - 2rem));
   padding: 0.55rem;
   border: 1px solid rgba(118, 226, 255, 0.22);
   border-radius: var(--inql-radius-lg);
@@ -591,21 +608,28 @@ body:has(.inql-launch) .md-sidebar {
   max-width: 48rem;
 }
 
+.inql-section-heading--center {
+  max-width: 64rem;
+  margin-right: auto;
+  margin-left: auto;
+  text-align: center;
+}
+
 .inql-section-heading h2,
-.inql-problem-section h2,
-.inql-how-section h2,
+.inql-fracture-section h2,
+.inql-compiler-section h2,
 .inql-prism-moment h2,
 .inql-same-semantics h2,
 .inql-trust-section h2,
 .inql-learn-section h2 {
   margin: 0 0 0.8rem;
-  font-size: clamp(2rem, 3.4vw, 3.4rem);
-  line-height: 1.04;
+  font-size: clamp(2.4rem, 4.6vw, 5.4rem);
+  line-height: 0.98;
 }
 
 .inql-section-heading p,
-.inql-problem-section p,
-.inql-how-section p,
+.inql-fracture-section p,
+.inql-compiler-section p,
 .inql-prism-moment p,
 .inql-same-semantics p,
 .inql-trust-section p,
@@ -615,34 +639,30 @@ body:has(.inql-launch) .md-sidebar {
   font-size: 1rem;
 }
 
-.inql-problem-section,
-.inql-how-section,
+.inql-fracture-section,
+.inql-compiler-section,
 .inql-same-semantics,
 .inql-trust-section,
 .inql-learn-section {
-  padding: clamp(3.6rem, 7vw, 7rem) 0;
+  padding: clamp(4.5rem, 8vw, 9rem) 0;
 }
 
-.inql-problem-layout {
+.inql-fracture-section {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.75fr);
-  gap: clamp(1.2rem, 3vw, 2.4rem);
-  align-items: stretch;
-  margin-top: 2rem;
+  grid-template-columns: minmax(20rem, 0.72fr) minmax(30rem, 1.28fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: center;
 }
 
-.inql-problem-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.85rem;
+.inql-fracture-copy {
+  max-width: 38rem;
 }
 
-.inql-quiet-card,
-.inql-thesis-panel,
-.inql-process-rail article,
+.inql-fracture-map,
+.inql-demo-panel,
 .inql-prism-moment,
-.inql-code-panel,
-.inql-plan-panel,
+.inql-syntax-card,
+.inql-collapse-target,
 .inql-trust-block,
 .inql-learn-section {
   border: 1px solid var(--inql-glass-border);
@@ -652,104 +672,217 @@ body:has(.inql-launch) .md-sidebar {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055), var(--inql-shadow-soft);
 }
 
-.inql-quiet-card {
-  min-height: 10rem;
-  padding: 1.05rem;
-  border-radius: var(--inql-radius-md);
-}
-
-.inql-quiet-card strong {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: var(--inql-text);
-  font-size: 1rem;
-}
-
-.inql-thesis-panel {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 100%;
-  padding: clamp(1.3rem, 3vw, 2rem);
-  border-color: rgba(214, 108, 255, 0.34);
-  border-radius: var(--inql-radius-lg);
-  background:
-    radial-gradient(circle at 100% 0, rgba(214, 108, 255, 0.16), transparent 18rem),
-    var(--inql-surface-raised);
-}
-
-.inql-thesis-panel h3 {
-  margin: 0 0 0.8rem;
-  color: var(--inql-cyan-strong);
-  font-size: clamp(1.6rem, 2.7vw, 2.5rem);
-  line-height: 1.05;
-}
-
-.inql-thesis-panel span {
-  display: inline-flex;
-  width: fit-content;
-  margin-top: 1rem;
-  padding: 0.48rem 0.7rem;
-  border: 1px solid rgba(118, 226, 255, 0.2);
-  border-radius: var(--inql-radius-md);
-  color: var(--inql-cyan-strong);
-  font-size: 0.78rem;
-  font-weight: 740;
-}
-
-.inql-process-rail {
+.inql-fracture-map {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 0.85fr) minmax(0, 1.35fr) minmax(0, 0.85fr) minmax(0, 0.85fr);
-  gap: 0.85rem;
-  margin-top: 2rem;
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr) 4rem minmax(12rem, 0.72fr) 4rem minmax(13rem, 0.9fr);
+  gap: 0.9rem;
+  align-items: center;
+  min-height: 25rem;
+  padding: clamp(1.2rem, 3vw, 2rem);
+  border-radius: var(--inql-radius-xl);
+  overflow: hidden;
 }
 
-.inql-process-rail article {
-  min-height: 15rem;
-  padding: 1.15rem;
-  border-radius: var(--inql-radius-lg);
+.inql-fracture-map::before,
+.inql-demo-panel::before,
+.inql-same-semantics::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 30% 45%, rgba(88, 220, 255, 0.14), transparent 18rem),
+    radial-gradient(circle at 78% 30%, rgba(214, 108, 255, 0.12), transparent 20rem);
+  opacity: 0.85;
 }
 
-.inql-process-rail article span {
+.inql-source-cloud,
+.inql-unifier,
+.inql-outcome-stack,
+.inql-demo-panel > *,
+.inql-syntax-card,
+.inql-collapse-target {
+  position: relative;
+  z-index: 1;
+}
+
+.inql-source-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-content: center;
+}
+
+.inql-source-chip,
+.inql-outcome-stack span,
+.inql-engine-row span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.4rem;
+  padding: 0.5rem 0.72rem;
+  border: 1px solid rgba(118, 226, 255, 0.22);
+  border-radius: var(--inql-radius-md);
+  background: rgba(3, 8, 17, 0.66);
+  color: var(--inql-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 780;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.inql-convergence-line {
+  position: relative;
+  height: 2px;
+  background: var(--inql-rail);
+  box-shadow: 0 0 22px rgba(88, 220, 255, 0.38);
+}
+
+.inql-convergence-line::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -0.2rem;
+  width: 0.62rem;
+  height: 0.62rem;
+  border-top: 2px solid var(--inql-cyan);
+  border-right: 2px solid var(--inql-cyan);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.inql-unifier {
+  display: grid;
+  place-items: center;
+  min-height: 12rem;
+  padding: 1rem;
+  border: 1px solid rgba(214, 108, 255, 0.42);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(88, 220, 255, 0.22), transparent 6rem),
+    radial-gradient(circle at 50% 60%, rgba(214, 108, 255, 0.22), transparent 7rem),
+    rgba(6, 17, 31, 0.88);
+  text-align: center;
+  box-shadow: inset 0 0 42px rgba(88, 220, 255, 0.1), 0 0 54px rgba(214, 108, 255, 0.14);
+}
+
+.inql-unifier span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--inql-text);
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  font-weight: 850;
+  line-height: 1;
+}
+
+.inql-unifier strong {
   color: var(--inql-cyan-strong);
   font-size: 0.72rem;
-  font-weight: 820;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.inql-process-rail article strong {
-  display: block;
-  margin: 2rem 0 0.65rem;
+.inql-outcome-stack {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.inql-compiler-section {
+  width: min(100% - 2rem, 1320px) !important;
+}
+
+.inql-demo-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(26rem, 0.95fr) minmax(26rem, 1.05fr);
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: center;
+  margin-top: 2rem;
+  padding: clamp(1rem, 2.6vw, 2rem);
+  border-radius: var(--inql-radius-xl);
+  overflow: hidden;
+}
+
+.inql-demo-code .highlight,
+.inql-syntax-card .highlight {
+  margin: 0;
+  border-radius: var(--inql-radius-lg);
+}
+
+.inql-demo-code pre > code {
+  min-height: 23rem;
+}
+
+.inql-visible-compiler-flow {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.inql-flow-node {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 4.8rem;
+  border: 1px solid rgba(118, 226, 255, 0.22);
+  border-radius: var(--inql-radius-lg);
+  background: rgba(3, 8, 17, 0.66);
   color: var(--inql-text);
-  font-size: 1.18rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.25rem);
+  font-weight: 830;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-.inql-process-rail__focus {
-  border-color: rgba(214, 108, 255, 0.5) !important;
+.inql-flow-node::after {
+  content: "";
+  position: absolute;
+  bottom: -0.75rem;
+  left: 50%;
+  width: 2px;
+  height: 0.75rem;
+  background: var(--inql-rail);
+  box-shadow: 0 0 18px rgba(88, 220, 255, 0.38);
+}
+
+.inql-flow-node:last-child::after {
+  display: none;
+}
+
+.inql-flow-node--focus {
+  border-color: rgba(214, 108, 255, 0.54);
   background:
-    radial-gradient(circle at 50% 0, rgba(214, 108, 255, 0.18), transparent 17rem),
-    var(--inql-surface-strong) !important;
+    radial-gradient(circle at 50% 0, rgba(214, 108, 255, 0.2), transparent 8rem),
+    rgba(10, 22, 38, 0.88);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.075), 0 0 42px rgba(214, 108, 255, 0.18);
+  animation: inql-node-pulse 4.8s ease-in-out infinite;
+}
+
+.inql-engine-row {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 0.65rem;
+  padding-top: 0.4rem;
 }
 
 .inql-prism-moment {
   display: grid;
-  grid-template-columns: minmax(22rem, 0.8fr) minmax(26rem, 1.2fr);
-  gap: clamp(1.5rem, 4vw, 3.6rem);
+  grid-template-columns: minmax(31rem, 1.25fr) minmax(23rem, 0.75fr);
+  gap: clamp(1.6rem, 4vw, 4rem);
   align-items: center;
-  width: min(100% - 2rem, 1320px) !important;
+  width: min(100% - 2rem, 1440px) !important;
   margin: 0 auto;
-  padding: clamp(1.2rem, 2.5vw, 2.2rem);
+  padding: clamp(1rem, 2.2vw, 2rem);
   border-radius: var(--inql-radius-xl);
 }
 
 .inql-prism-moment__copy {
-  padding: clamp(0.5rem, 2vw, 1.5rem);
+  padding: clamp(0.6rem, 2vw, 2rem);
 }
 
 .inql-prism-moment__visual {
   position: relative;
-  min-height: clamp(24rem, 44vw, 34rem);
+  min-height: clamp(29rem, 49vw, 42rem);
   border-radius: var(--inql-radius-lg);
   overflow: hidden;
   background: var(--inql-bg-deep);
@@ -789,42 +922,64 @@ body:has(.inql-launch) .md-sidebar {
   margin-top: 1.6rem;
 }
 
-.inql-code-panel,
-.inql-plan-panel {
-  min-height: 20rem;
-  border-radius: var(--inql-radius-lg);
+.inql-stage-strip--large span {
+  min-height: 5rem;
 }
 
-.inql-code-panel {
-  padding: 0;
+.inql-same-semantics {
+  position: relative;
+  width: min(100% - 2rem, 1440px) !important;
+  min-height: min(58rem, calc(100vh + 10rem));
   overflow: hidden;
 }
 
-.inql-code-panel .highlight {
-  margin: 0;
-  min-height: 100%;
-  border-radius: inherit;
-}
-
-.inql-code-panel pre > code {
-  min-height: 20rem;
-}
-
-.inql-plan-panel {
+.inql-syntax-collapse {
+  position: relative;
+  z-index: 1;
   display: grid;
-  align-content: center;
-  gap: 1.2rem;
-  padding: clamp(1.1rem, 3vw, 2rem);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.85rem, 2vw, 1.3rem);
+  margin-top: clamp(2rem, 5vw, 4rem);
 }
 
-.inql-plan-panel p {
-  margin: 0;
+.inql-syntax-card {
+  min-height: 24rem;
+  padding: 0.8rem;
+  border-radius: var(--inql-radius-lg);
+}
+
+.inql-syntax-card > span {
+  display: inline-flex;
+  margin-bottom: 0.7rem;
+  color: var(--inql-cyan-strong);
+  font-size: 0.68rem;
+  font-weight: 820;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.inql-syntax-card pre > code {
+  min-height: 17rem;
+  font-size: 0.68rem;
+}
+
+.inql-collapse-target {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 1.1rem;
+  align-items: center;
+  min-height: 12rem;
+  padding: clamp(1rem, 2.4vw, 2rem);
+  border-color: rgba(214, 108, 255, 0.4);
+  border-radius: var(--inql-radius-xl);
+  background:
+    radial-gradient(circle at 50% 0, rgba(214, 108, 255, 0.16), transparent 25rem),
+    var(--inql-surface-raised);
+}
+
+.inql-collapse-target strong {
   color: var(--inql-text);
-  font-weight: 760;
-}
-
-.inql-stage-strip--large span {
-  min-height: 5rem;
+  font-size: clamp(1.3rem, 2vw, 1.8rem);
 }
 
 .inql-trust-section {
@@ -856,15 +1011,37 @@ body:has(.inql-launch) .md-sidebar {
   margin-right: auto;
 }
 
+@keyframes inql-node-pulse {
+  0%,
+  100% {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.075), 0 0 30px rgba(214, 108, 255, 0.12);
+  }
+
+  50% {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 0 60px rgba(88, 220, 255, 0.24);
+  }
+}
+
+@keyframes inql-prism-drift {
+  from {
+    transform: scale(1.035) translate3d(-0.35rem, 0, 0);
+  }
+
+  to {
+    transform: scale(1.055) translate3d(0.35rem, -0.25rem, 0);
+  }
+}
+
 @media screen and (max-width: 76.25em) {
   body:has(.inql-launch) .md-main__inner {
     margin-top: 0;
   }
 
   .inql-launch-hero,
-  .inql-problem-layout,
+  .inql-fracture-section,
+  .inql-demo-panel,
   .inql-prism-moment,
-  .inql-semantics-layout,
+  .inql-syntax-collapse,
   .inql-trust-section {
     grid-template-columns: 1fr;
   }
@@ -874,26 +1051,36 @@ body:has(.inql-launch) .md-sidebar {
     padding-top: 3rem;
   }
 
+  .inql-launch-hero__copy {
+    transform: none;
+  }
+
   .inql-launch-hero__visual {
     min-height: 28rem;
     margin-right: 0;
     border-radius: var(--inql-radius-xl);
   }
 
-  .inql-process-rail {
+  .inql-fracture-map {
     grid-template-columns: 1fr;
   }
 
-  .inql-process-rail article {
+  .inql-convergence-line {
+    width: 2px;
+    height: 3rem;
+    justify-self: center;
+  }
+
+  .inql-convergence-line::after {
+    top: auto;
+    right: auto;
+    bottom: -0.2rem;
+    left: 50%;
+    transform: translateX(-50%) rotate(135deg);
+  }
+
+  .inql-syntax-card {
     min-height: 0;
-  }
-
-  .inql-process-rail article strong {
-    margin-top: 1rem;
-  }
-
-  .inql-hero-proof {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -915,18 +1102,25 @@ body:has(.inql-launch) .md-sidebar {
   .inql-launch-hero h1 {
     max-width: 12ch;
     margin-bottom: 0.9rem;
-    font-size: clamp(2.25rem, 9.6vw, 2.65rem);
-    line-height: 1.02;
+    font-size: clamp(2.15rem, 9.2vw, 2.5rem);
+    line-height: 1;
   }
 
   .inql-launch-hero__intro {
-    font-size: 0.86rem;
-    line-height: 1.44;
+    font-size: 0.84rem;
+    line-height: 1.4;
   }
 
   .inql-actions {
     display: grid;
     gap: 0.65rem;
+    margin-top: 1rem;
+  }
+
+  .inql-hero-kicker {
+    margin-top: 0.75rem;
+    padding: 0.46rem 0.62rem;
+    font-size: 0.72rem;
   }
 
   .md-typeset .inql-button {
@@ -934,8 +1128,7 @@ body:has(.inql-launch) .md-sidebar {
     padding: 0.54rem 0.78rem;
   }
 
-  .inql-hero-proof,
-  .inql-problem-list,
+  .inql-source-cloud,
   .inql-prism-story,
   .inql-stage-strip {
     grid-template-columns: 1fr;
@@ -953,12 +1146,37 @@ body:has(.inql-launch) .md-sidebar {
     display: none;
   }
 
-  .inql-problem-section,
-  .inql-how-section,
+  .inql-fracture-section,
+  .inql-compiler-section,
   .inql-same-semantics,
   .inql-trust-section,
   .inql-learn-section {
     padding: 3rem 0;
+  }
+
+  .inql-section-heading h2,
+  .inql-fracture-section h2,
+  .inql-compiler-section h2,
+  .inql-prism-moment h2,
+  .inql-same-semantics h2,
+  .inql-trust-section h2,
+  .inql-learn-section h2 {
+    font-size: clamp(2rem, 10vw, 2.8rem);
+  }
+
+  .inql-fracture-map,
+  .inql-demo-panel,
+  .inql-syntax-card,
+  .inql-collapse-target {
+    border-radius: var(--inql-radius-lg);
+  }
+
+  .inql-fracture-map {
+    min-height: 0;
+  }
+
+  .inql-unifier {
+    min-height: 9rem;
   }
 
   .inql-prism-moment {
@@ -971,6 +1189,12 @@ body:has(.inql-launch) .md-sidebar {
 
   .inql-stage-strip--large span {
     min-height: 3.5rem;
+  }
+
+  .inql-syntax-card pre > code,
+  .inql-demo-code pre > code {
+    min-height: 0;
+    font-size: 0.64rem;
   }
 
   .inql-learn-section {
