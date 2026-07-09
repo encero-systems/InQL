@@ -349,7 +349,7 @@ body:has(.inql-launch) .md-typeset li {
 }
 
 .inql-launch > section {
-  width: min(100% - 3rem, 1390px);
+  width: min(100% - 3rem, 1320px);
   margin: 0 auto;
 }
 
@@ -385,14 +385,14 @@ body:has(.inql-launch) .md-typeset li {
 .inql-hero__copy {
   position: relative;
   z-index: 2;
-  max-width: 38rem;
+  max-width: 36rem;
 }
 
 .inql-hero h1 {
   max-width: 13ch;
   margin: 0 0 1.18rem;
   color: var(--inql-page-ink);
-  font-size: clamp(3rem, 4.25vw, 4.65rem);
+  font-size: clamp(2.8rem, 3.65vw, 4.15rem);
   font-weight: 850;
   line-height: 0.98;
   letter-spacing: 0;
@@ -448,7 +448,7 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-proof-row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(6.2rem, 1fr));
   gap: 1.1rem;
   margin-top: clamp(2rem, 3.4vw, 3rem);
   padding-top: 1.15rem;
@@ -505,11 +505,12 @@ body:has(.inql-launch) .md-typeset li {
   border-radius: var(--inql-radius-xl);
   background: var(--inql-page-panel);
   box-shadow: var(--inql-page-shadow);
+  overflow: hidden;
 }
 
 .inql-problem-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1.18fr) minmax(22rem, 0.82fr);
+  grid-template-columns: minmax(0, 1.18fr) minmax(18rem, 0.82fr);
   gap: clamp(1.4rem, 4vw, 4.4rem);
   align-items: center;
   padding: clamp(1.35rem, 3vw, 2.4rem);
@@ -523,13 +524,13 @@ body:has(.inql-launch) .md-typeset li {
 .inql-final-cta h2 {
   margin: 0 0 0.7rem;
   color: var(--inql-page-ink);
-  font-size: clamp(1.65rem, 2.2vw, 2.35rem);
+  font-size: clamp(1.45rem, 1.85vw, 2rem);
   line-height: 1.08;
 }
 
 .inql-problem-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr));
   gap: 1rem;
   margin-top: 1.45rem;
 }
@@ -546,6 +547,8 @@ body:has(.inql-launch) .md-typeset li {
   border-radius: var(--inql-radius-lg);
   background: rgba(255, 255, 255, 0.66);
   box-shadow: 0 16px 44px rgba(55, 74, 123, 0.07);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .inql-problem-grid article {
@@ -556,21 +559,24 @@ body:has(.inql-launch) .md-typeset li {
 .inql-step-card h3 {
   margin: 0 0 0.45rem;
   color: var(--inql-page-ink);
-  font-size: 0.96rem;
+  font-size: 0.9rem;
   line-height: 1.28;
+  overflow-wrap: anywhere;
 }
 
 .inql-problem-grid p,
 .inql-step-card p {
   margin: 0;
   color: var(--inql-page-copy) !important;
-  font-size: 0.78rem;
-  line-height: 1.55;
+  font-size: 0.76rem;
+  line-height: 1.52;
+  overflow-wrap: anywhere;
 }
 
 .inql-problem-panel__right {
   padding-left: clamp(1rem, 3vw, 2.6rem);
   border-left: 1px solid var(--inql-page-line-strong);
+  min-width: 0;
 }
 
 .inql-problem-panel__right p:not(.inql-thesis) {
@@ -610,13 +616,13 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-process-rail {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr));
   gap: clamp(0.85rem, 1.5vw, 1.15rem);
 }
 
 .inql-step-card {
-  min-height: 13.2rem;
-  padding: 1.15rem;
+  min-height: 12.2rem;
+  padding: 1rem;
 }
 
 .inql-step-card > span {
@@ -646,7 +652,7 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-prism-board {
   display: grid;
-  grid-template-columns: minmax(22rem, 1fr) minmax(20rem, 0.86fr) minmax(16rem, 0.64fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
   gap: 1rem;
   align-items: stretch;
 }
@@ -655,6 +661,7 @@ body:has(.inql-launch) .md-typeset li {
 .inql-plan-card,
 .inql-engine-card {
   padding: 0.85rem;
+  min-width: 0;
 }
 
 .inql-code-card > span,
@@ -673,6 +680,7 @@ body:has(.inql-launch) .md-typeset li {
 .inql-plan-card .highlight,
 .inql-surface-demo .highlight {
   margin: 0;
+  overflow-x: auto;
 }
 
 .inql-code-card pre > code,
@@ -681,7 +689,8 @@ body:has(.inql-launch) .md-typeset li {
   border-color: rgba(62, 91, 164, 0.12);
   background: #f7faff;
   color: #16213c;
-  font-size: 0.67rem;
+  font-size: 0.64rem;
+  white-space: pre;
 }
 
 .inql-engine-card ul {
@@ -696,7 +705,7 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-surfaces {
   display: grid;
-  grid-template-columns: minmax(18rem, 0.55fr) minmax(25rem, 1fr) minmax(20rem, 0.82fr);
+  grid-template-columns: minmax(14rem, 0.58fr) minmax(20rem, 1fr) minmax(16rem, 0.82fr);
   gap: 1rem;
   align-items: stretch;
 }
@@ -708,6 +717,7 @@ body:has(.inql-launch) .md-typeset li {
 .inql-surface-demo,
 .inql-same-plan {
   padding: 0.95rem;
+  min-width: 0;
 }
 
 .inql-tabs {
@@ -740,7 +750,7 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-plan-list li {
   display: grid;
-  grid-template-columns: 7rem minmax(0, 1fr);
+  grid-template-columns: minmax(5.8rem, 0.62fr) minmax(0, 1fr);
   gap: 0.8rem;
   align-items: baseline;
   padding: 0.7rem 0;
@@ -765,7 +775,7 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-trust {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
   gap: 1rem;
 }
 
