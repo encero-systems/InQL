@@ -37,7 +37,7 @@ markdown_extensions:
       custom_checkbox: true
 
 extra_css:
-  - stylesheets/prismplane.css?v=20260709-structured-glass
+  - stylesheets/prismplane.css?v=20260709-launch-page
 
 nav:
   - Home: index.md
