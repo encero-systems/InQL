@@ -3589,31 +3589,57 @@
 <img src="shared/prismplane/prismplane-hero-light.png" alt="A glass prism refracting data logic into layered plan stages.">
 </div>
 </section>
-<section class="inql-problem-panel">
-<div class="inql-problem-panel__left">
+<section class="inql-problem-panel inql-convergence-section">
+<div class="inql-problem-panel__left inql-diagnosis">
+<p class="inql-section-kicker">Why it exists</p>
 <h2 id="the-problem-with-data-logic-today">The problem with data logic today</h2>
-<div class="inql-problem-grid">
+<p>Teams lose time to expression drift, backend rewrites, and plans that stay hidden until runtime.</p>
+<div class="inql-friction-list">
 <article>
+<span>01</span>
+<div>
 <h3 id="too-many-ways-to-express-logic">Too many ways to express logic</h3>
 <p>SQL, DataFrames, pipelines, and notebooks each carry their own shape.</p>
+</div>
 </article>
 <article>
+<span>02</span>
+<div>
 <h3 id="different-semantics-and-behaviors">Different semantics and behaviors</h3>
 <p>Small rewrites can change meaning before anyone sees the plan.</p>
+</div>
 </article>
 <article>
+<span>03</span>
+<div>
 <h3 id="hard-to-inspect-and-debug">Hard to inspect and debug</h3>
-<p>You see results, but not the typed relational model that produced them.</p>
+<p>You see results, but not the logic, lineage, or rechecking behavior.</p>
+</div>
 </article>
 <article>
+<span>04</span>
+<div>
 <h3 id="tied-to-specific-engines">Tied to specific engines</h3>
-<p>Porting usually means rewriting logic and rechecking behavior.</p>
+<p>Porting usually means rewriting logic and revalidating behavior.</p>
+</div>
 </article>
 </div>
 </div>
-<div class="inql-problem-panel__right">
+<div class="inql-problem-panel__right inql-convergence">
+<p class="inql-section-kicker">The InQL idea</p>
 <h2 id="inql-is-the-unifying-layer">InQL is the unifying layer</h2>
-<p>Different surfaces. One semantic model. One compiler. Multiple execution targets.</p>
+<p>Different surfaces. One compiler. Multiple execution targets.</p>
+<figure class="inql-convergence-figure">
+<img src="shared/prismplane/semantic-convergence.jpg" alt="Authoring surfaces converging into one typed relational model and refracting into portable execution paths.">
+<figcaption>
+<span>SQL</span>
+<span>DataFrames</span>
+<span>LazyFrames</span>
+<span>Pipelines</span>
+<strong>One typed relational model</strong>
+<span>Execution targets</span>
+</figcaption>
+</figure>
 <p class="inql-thesis">Write once. Understand always. Run anywhere.</p>
 </div>
 </section>

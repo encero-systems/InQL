@@ -536,10 +536,17 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-problem-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1.18fr) minmax(18rem, 0.82fr);
-  gap: clamp(1.4rem, 4vw, 4.4rem);
+  grid-template-columns: minmax(21rem, 0.72fr) minmax(0, 1.28fr);
+  gap: clamp(1.4rem, 4vw, 4rem);
   align-items: center;
-  padding: clamp(1.35rem, 3vw, 2.4rem);
+  padding: clamp(1.25rem, 2.6vw, 2.15rem);
+}
+
+.inql-convergence-section {
+  background:
+    radial-gradient(circle at 66% 46%, rgba(108, 158, 255, 0.16), transparent 32rem),
+    radial-gradient(circle at 95% 50%, rgba(190, 98, 255, 0.1), transparent 27rem),
+    rgba(255, 255, 255, 0.76);
 }
 
 .inql-problem-panel h2,
@@ -554,14 +561,61 @@ body:has(.inql-launch) .md-typeset li {
   line-height: 1.08;
 }
 
-.inql-problem-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr));
-  gap: 1rem;
-  margin-top: 1.45rem;
+.inql-section-kicker {
+  margin: 0 0 0.75rem !important;
+  color: var(--inql-page-blue) !important;
+  font-size: 0.66rem !important;
+  font-weight: 830;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
-.inql-problem-grid article,
+.inql-friction-list {
+  display: grid;
+  gap: 0;
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--inql-page-line);
+}
+
+.inql-friction-list article {
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  padding: 0.82rem 0;
+  border-bottom: 1px solid var(--inql-page-line);
+}
+
+.inql-friction-list article > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  border: 1px solid rgba(71, 109, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--inql-page-blue);
+  font-size: 0.68rem;
+  font-weight: 830;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 10px 28px rgba(55, 74, 123, 0.07);
+}
+
+.inql-friction-list h3 {
+  margin: 0 0 0.32rem;
+  color: var(--inql-page-ink);
+  font-size: 0.94rem;
+  line-height: 1.25;
+}
+
+.inql-friction-list p {
+  margin: 0;
+  color: var(--inql-page-copy) !important;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
 .inql-step-card,
 .inql-code-card,
 .inql-plan-card,
@@ -577,11 +631,6 @@ body:has(.inql-launch) .md-typeset li {
   overflow: hidden;
 }
 
-.inql-problem-grid article {
-  padding: 1rem;
-}
-
-.inql-problem-grid h3,
 .inql-step-card h3 {
   margin: 0 0 0.45rem;
   color: var(--inql-page-ink);
@@ -590,7 +639,6 @@ body:has(.inql-launch) .md-typeset li {
   overflow-wrap: anywhere;
 }
 
-.inql-problem-grid p,
 .inql-step-card p {
   margin: 0;
   color: var(--inql-page-copy) !important;
@@ -600,8 +648,12 @@ body:has(.inql-launch) .md-typeset li {
 }
 
 .inql-problem-panel__right {
-  padding-left: clamp(1rem, 3vw, 2.6rem);
-  border-left: 1px solid var(--inql-page-line-strong);
+  min-width: 0;
+}
+
+.inql-convergence {
+  padding-left: clamp(1rem, 2.4vw, 2.2rem);
+  border-left: 1px solid var(--inql-page-line);
   min-width: 0;
 }
 
@@ -612,9 +664,64 @@ body:has(.inql-launch) .md-typeset li {
   line-height: 1.56;
 }
 
+.inql-convergence-figure {
+  position: relative;
+  margin: clamp(1.15rem, 2vw, 1.7rem) 0 0;
+  border: 0;
+  border-radius: 22px;
+  background: transparent;
+  box-shadow: 0 24px 64px rgba(55, 74, 123, 0.09);
+  overflow: hidden;
+}
+
+.inql-convergence-figure::after {
+  display: none;
+}
+
+.inql-convergence-figure img {
+  display: block;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  aspect-ratio: 1280 / 600;
+  object-fit: cover;
+  object-position: center;
+}
+
+.inql-convergence-figure figcaption {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  margin-top: 0.64rem;
+}
+
+.inql-convergence-figure figcaption span,
+.inql-convergence-figure figcaption strong {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.65rem;
+  padding: 0.34rem 0.56rem;
+  border: 1px solid rgba(71, 109, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--inql-page-copy);
+  font-size: 0.62rem;
+  font-weight: 760;
+  line-height: 1;
+  box-shadow: 0 10px 24px rgba(55, 74, 123, 0.08);
+}
+
+.inql-convergence-figure figcaption strong {
+  border-color: rgba(123, 92, 255, 0.34);
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--inql-page-blue);
+}
+
 .inql-thesis {
   width: fit-content;
-  margin-top: 1.2rem;
+  margin-top: 0.9rem;
   padding: 0.72rem 1rem;
   border: 1px solid rgba(71, 109, 255, 0.2);
   border-radius: var(--inql-radius-md);
@@ -877,12 +984,11 @@ body:has(.inql-launch) .md-typeset li {
     margin-right: 0;
   }
 
-  .inql-problem-grid,
   .inql-process-rail {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .inql-problem-panel__right {
+  .inql-convergence {
     padding-left: 0;
     border-left: 0;
     border-top: 1px solid var(--inql-page-line);
@@ -932,9 +1038,32 @@ body:has(.inql-launch) .md-typeset li {
     padding: 0.58rem 0.8rem;
   }
 
-  .inql-problem-grid,
   .inql-process-rail {
     grid-template-columns: 1fr;
+  }
+
+  .inql-friction-list article {
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: 0.82rem;
+    padding: 0.85rem 0;
+  }
+
+  .inql-friction-list article > span {
+    width: 1.85rem;
+    height: 1.85rem;
+    border-radius: 10px;
+    font-size: 0.62rem;
+  }
+
+  .inql-convergence-figure {
+    border-radius: var(--inql-radius-lg);
+  }
+
+  .inql-convergence-figure figcaption {
+    position: relative;
+    inset: auto;
+    padding: 0.72rem;
+    background: rgba(255, 255, 255, 0.72);
   }
 
   .inql-proof-row {
