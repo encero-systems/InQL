@@ -68,26 +68,25 @@ Teams lose time to expression drift, backend rewrites, and plans that stay hidde
 </div>
 </div>
 
-<div class="inql-problem-panel__right inql-convergence" markdown="1">
+<div class="inql-problem-panel__right inql-convergence" role="img" aria-label="Authoring surfaces converging into one typed relational model and refracting into portable execution paths.">
+<div class="inql-convergence__copy">
 <p class="inql-section-kicker">The InQL idea</p>
 
-## InQL is the unifying layer
+<h2>InQL is the unifying layer</h2>
 
-Different surfaces. One compiler. Multiple execution targets.
+<p>Different surfaces. One compiler. Multiple execution targets.</p>
 
-<figure class="inql-convergence-figure">
-<img src="shared/prismplane/semantic-convergence.jpg" alt="Authoring surfaces converging into one typed relational model and refracting into portable execution paths.">
-<figcaption>
+<div class="inql-convergence-flow" aria-label="InQL semantic convergence flow">
 <span>SQL</span>
 <span>DataFrames</span>
 <span>LazyFrames</span>
 <span>Pipelines</span>
 <strong>One typed relational model</strong>
 <span>Execution targets</span>
-</figcaption>
-</figure>
+</div>
 
 <p class="inql-thesis">Write once. Understand always. Run anywhere.</p>
+</div>
 </div>
 </section>
 
