@@ -2,390 +2,390 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://encero-systems.github.io/InQL/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/architecture/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/docs_map/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/contributing/prismplane_docs_theme/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/contributing/writing_rfcs/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/explanation/dataset_carriers/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/explanation/execution_context/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/how-to/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/how-to/approximate_metrics/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/how-to/dataset_transformations/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/how-to/execution_observations/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/how-to/generator_rows/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/how-to/governed_evidence/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/how-to/inspect_plan_lineage/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/how-to/nested_row_values/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/how-to/normalize_semistructured_fields/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/how-to/quality_observations/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/how-to/typed_hll_sketches/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/how-to/variant_payloads/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/how-to/window_columns/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/dataset_carriers/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/dataset_methods/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/execution_context/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/governance/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/inspection/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/quality/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/query_blocks/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/builders/aggregates/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/builders/filters/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/builders/projections/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/functions/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/functions/approximate/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/functions/format/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/functions/generators/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/functions/nested/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/functions/sketches/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/functions/variants/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/functions/windows/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/substrait/conformance/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/substrait/operator_catalog/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/substrait/read_root_binding_contract/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/language/reference/substrait/revision_and_extension_policy/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/release_notes/v0_1/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/000_inql_syntax/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/001_inql_dataset/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/002_apache_substrait_integration/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/003_inql_query_blocks/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/004_inql_execution_context/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/005_inql_pipe_forward/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/006_unnest_core_substrait/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/007_prism_planning_engine/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/008_optimizer_boundary_stats_cbo_aqe/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/009_session_format_handler_registry/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/010_csv_ingestion_contract/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/011_source_discovery_contract/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/012_unified_scalar_expression_surface/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/013_function_catalog_program/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/014_function_registry/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/015_core_scalar_functions/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/016_core_aggregate_functions/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/017_aggregate_modifiers/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/018_common_scalar_function_catalog/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/019_window_functions/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/020_nested_data_functions/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/021_generator_table_functions/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/022_semi_structured_format_functions/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/023_approximate_sketch_functions/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/024_function_extension_policy/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/025_typed_sketch_logical_values/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/026_semi_structured_variant_values/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/027_relational_evidence_program/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/028_semantic_identity_targets/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/029_metadata_attachments/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/030_prism_lineage_graph/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/031_inspection_artifacts/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/032_execution_observations/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/033_adapter_requirements_coverage/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/034_quality_assertions_observations/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/035_governed_attributes_policy_checkpoints/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/036_governed_plan_bundle/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/037_plan_diff_blast_radius_inputs/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/038_evidence_exchange_bridges/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/039_pandas_familiar_exploration_api/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/040_interoperability_semantic_profiles/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/041_prism_plan_ingress_frontends/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/042_async_verification_evidence/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/043_canonical_equality_digest_profiles/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/044_verifier_statements_proof_artifacts/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/045_constraint_evidence_verification_planning/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/046_data_contract_ingress/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/047_semantic_evidence_graph_agent_surface/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/048_cluster_execution_backend_mode/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/rfcs/TEMPLATE/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/whitepapers/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
     <url>
          <loc>https://encero-systems.github.io/InQL/whitepapers/inql_db/</loc>
-         <lastmod>2026-07-09</lastmod>
+         <lastmod>2026-07-10</lastmod>
     </url>
 </urlset>
