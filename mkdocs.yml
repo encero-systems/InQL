@@ -49,7 +49,7 @@ markdown_extensions:
       custom_checkbox: true
 
 extra_css:
-  - stylesheets/prismplane.css?v=20260709-reference-fit-2
+  - stylesheets/prismplane.css?v=20260710-layout-fit-1
 
 nav:
   - Home: index.md
