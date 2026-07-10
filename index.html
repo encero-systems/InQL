@@ -42,7 +42,7 @@
       
     
     
-      <link rel="stylesheet" href="stylesheets/prismplane.css?v=20260710-layout-fit-1">
+      <link rel="stylesheet" href="stylesheets/prismplane.css?v=20260710-semantic-map-1">
     
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -3589,11 +3589,10 @@
 <img src="shared/prismplane/prismplane-hero-light.png" alt="A glass prism refracting data logic into layered plan stages.">
 </div>
 </section>
-<section class="inql-problem-panel inql-convergence-section">
-<div class="inql-problem-panel__left inql-diagnosis">
-<p class="inql-section-kicker">Why it exists</p>
+<section class="inql-convergence-section">
+<div class="inql-diagnosis">
 <h2 id="the-problem-with-data-logic-today">The problem with data logic today</h2>
-<p>Teams lose time to expression drift, backend rewrites, and plans that stay hidden until runtime.</p>
+<p>Teams lose time to expression, semantics drift, and opaque pipelines that lock them to engines.</p>
 <div class="inql-friction-list">
 <article>
 <span>01</span>
@@ -3625,20 +3624,48 @@
 </article>
 </div>
 </div>
-<div aria-label="Authoring surfaces converging into one typed relational model and refracting into portable execution paths." class="inql-problem-panel__right inql-convergence" role="img">
-<div class="inql-convergence__copy">
-<p class="inql-section-kicker">The InQL idea</p>
+<div aria-label="Different authoring surfaces converging into InQL's typed relational model and portable execution targets." class="inql-semantic-map">
+<div class="inql-map-heading">
 <h2 id="inql-is-the-unifying-layer">InQL is the unifying layer</h2>
 <p>Different surfaces. One compiler. Multiple execution targets.</p>
-<div aria-label="InQL semantic convergence flow" class="inql-convergence-flow">
-<span>SQL</span>
-<span>DataFrames</span>
-<span>LazyFrames</span>
-<span>Pipelines</span>
-<strong>One typed relational model</strong>
-<span>Execution targets</span>
 </div>
-<p class="inql-thesis">Write once. Understand always. Run anywhere.</p>
+<div class="inql-map-body">
+<div aria-label="Authoring surfaces" class="inql-map-sources">
+<article>
+<span>SQL</span>
+<div><strong>SQL</strong><p>Query blocks</p></div>
+</article>
+<article>
+<span>DF</span>
+<div><strong>DataFrames</strong><p>Python, Rust, JS</p></div>
+</article>
+<article>
+<span>Lazy</span>
+<div><strong>LazyFrames</strong><p>Polars, Ibis, DataFusion</p></div>
+</article>
+<article>
+<span>Pipe</span>
+<div><strong>Pipelines</strong><p>Airflow, dbt, custom</p></div>
+</article>
+</div>
+<div class="inql-map-core">
+<img src="shared/brand/inql-mark.png" alt="">
+<strong>InQL</strong>
+<p>Typed relational model</p>
+<ul>
+<li>Schema flow</li>
+<li>Lineage</li>
+<li>Optimizer choices</li>
+<li>Type-checked</li>
+</ul>
+</div>
+<div class="inql-map-bridge">One semantic model</div>
+<div aria-label="Execution targets" class="inql-map-targets">
+<article><strong>DuckDB</strong><p>In-process</p></article>
+<article><strong>DataFusion</strong><p>Rust</p></article>
+<article><strong>Spark</strong><p>JVM</p></article>
+<article><strong>Substrait consumers</strong><p>Any engine</p></article>
+</div>
 </div>
 </div>
 </section>
