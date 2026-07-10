@@ -737,8 +737,8 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-map-sources {
   top: 19%;
-  left: 3.2%;
-  width: 27%;
+  left: 6.2%;
+  width: 24%;
 }
 
 .inql-map-targets {
@@ -801,7 +801,7 @@ body:has(.inql-launch) .md-typeset li {
   position: absolute;
   z-index: 3;
   top: 23%;
-  left: 43.2%;
+  left: 40.6%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -872,7 +872,7 @@ body:has(.inql-launch) .md-typeset li {
   position: absolute;
   z-index: 3;
   top: 50%;
-  left: 65.1%;
+  left: 63.2%;
   transform: translate(-50%, -50%);
   width: max-content;
   padding: clamp(0.34rem, 0.5vw, 0.48rem) clamp(0.42rem, 0.62vw, 0.58rem);
