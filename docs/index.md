@@ -25,13 +25,11 @@
 </div>
 </section>
 
-<section class="inql-problem-panel inql-convergence-section" markdown="1">
-<div class="inql-problem-panel__left inql-diagnosis" markdown="1">
-<p class="inql-section-kicker">Why it exists</p>
-
+<section class="inql-convergence-section" markdown="1">
+<div class="inql-diagnosis" markdown="1">
 ## The problem with data logic today
 
-Teams lose time to expression drift, backend rewrites, and plans that stay hidden until runtime.
+Teams lose time to expression, semantics drift, and opaque pipelines that lock them to engines.
 
 <div class="inql-friction-list">
 <article>
@@ -68,24 +66,52 @@ Teams lose time to expression drift, backend rewrites, and plans that stay hidde
 </div>
 </div>
 
-<div class="inql-problem-panel__right inql-convergence" role="img" aria-label="Authoring surfaces converging into one typed relational model and refracting into portable execution paths.">
-<div class="inql-convergence__copy">
-<p class="inql-section-kicker">The InQL idea</p>
-
+<div class="inql-semantic-map" aria-label="Different authoring surfaces converging into InQL's typed relational model and portable execution targets.">
+<div class="inql-map-heading">
 <h2>InQL is the unifying layer</h2>
-
 <p>Different surfaces. One compiler. Multiple execution targets.</p>
-
-<div class="inql-convergence-flow" aria-label="InQL semantic convergence flow">
-<span>SQL</span>
-<span>DataFrames</span>
-<span>LazyFrames</span>
-<span>Pipelines</span>
-<strong>One typed relational model</strong>
-<span>Execution targets</span>
 </div>
 
-<p class="inql-thesis">Write once. Understand always. Run anywhere.</p>
+<div class="inql-map-body">
+<div class="inql-map-sources" aria-label="Authoring surfaces">
+<article>
+<span>SQL</span>
+<div><strong>SQL</strong><p>Query blocks</p></div>
+</article>
+<article>
+<span>DF</span>
+<div><strong>DataFrames</strong><p>Python, Rust, JS</p></div>
+</article>
+<article>
+<span>Lazy</span>
+<div><strong>LazyFrames</strong><p>Polars, Ibis, DataFusion</p></div>
+</article>
+<article>
+<span>Pipe</span>
+<div><strong>Pipelines</strong><p>Airflow, dbt, custom</p></div>
+</article>
+</div>
+
+<div class="inql-map-core">
+<img src="shared/brand/inql-mark.png" alt="">
+<strong>InQL</strong>
+<p>Typed relational model</p>
+<ul>
+<li>Schema flow</li>
+<li>Lineage</li>
+<li>Optimizer choices</li>
+<li>Type-checked</li>
+</ul>
+</div>
+
+<div class="inql-map-bridge">One semantic model</div>
+
+<div class="inql-map-targets" aria-label="Execution targets">
+<article><strong>DuckDB</strong><p>In-process</p></article>
+<article><strong>DataFusion</strong><p>Rust</p></article>
+<article><strong>Spark</strong><p>JVM</p></article>
+<article><strong>Substrait consumers</strong><p>Any engine</p></article>
+</div>
 </div>
 </div>
 </section>
