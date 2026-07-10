@@ -538,11 +538,11 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-convergence-section {
   display: grid;
-  grid-template-columns: minmax(22rem, 0.4fr) minmax(0, 1fr);
-  gap: clamp(2rem, 3.5vw, 4.4rem);
+  grid-template-columns: minmax(19rem, 0.38fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 2.8vw, 3.2rem);
   align-items: center;
-  min-height: clamp(34rem, 39vw, 43rem);
-  padding: clamp(2.4rem, 4vw, 4.8rem);
+  min-height: clamp(27rem, 32vw, 34rem);
+  padding: clamp(1.65rem, 3.1vw, 3.3rem);
   background:
     radial-gradient(circle at 72% 48%, rgba(92, 148, 255, 0.13), transparent 34rem),
     radial-gradient(circle at 88% 54%, rgba(190, 98, 255, 0.09), transparent 28rem),
@@ -575,16 +575,16 @@ body:has(.inql-launch) .md-typeset li {
 .inql-friction-list {
   display: grid;
   gap: 0;
-  margin-top: clamp(1.4rem, 2.4vw, 2rem);
+  margin-top: clamp(1rem, 1.7vw, 1.4rem);
   border-top: 1px solid var(--inql-page-line);
 }
 
 .inql-friction-list article {
   display: grid;
-  grid-template-columns: 4.2rem minmax(0, 1fr);
-  gap: 1.2rem;
+  grid-template-columns: 3.1rem minmax(0, 1fr);
+  gap: 0.9rem;
   align-items: start;
-  padding: clamp(1rem, 1.5vw, 1.35rem) 0;
+  padding: clamp(0.7rem, 1vw, 0.9rem) 0;
   border-bottom: 1px solid var(--inql-page-line);
 }
 
@@ -592,29 +592,29 @@ body:has(.inql-launch) .md-typeset li {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3.4rem;
-  height: 3.4rem;
+  width: 2.45rem;
+  height: 2.45rem;
   border: 1px solid rgba(71, 109, 255, 0.2);
-  border-radius: 14px;
+  border-radius: 11px;
   background: rgba(255, 255, 255, 0.68);
   color: var(--inql-page-blue);
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   font-weight: 830;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 10px 28px rgba(55, 74, 123, 0.07);
 }
 
 .inql-friction-list h3 {
-  margin: 0 0 0.38rem;
+  margin: 0 0 0.22rem;
   color: var(--inql-page-ink);
-  font-size: clamp(0.92rem, 1vw, 1.08rem);
-  line-height: 1.25;
+  font-size: clamp(0.78rem, 0.86vw, 0.94rem);
+  line-height: 1.22;
 }
 
 .inql-friction-list p {
   margin: 0;
   color: var(--inql-page-copy) !important;
-  font-size: clamp(0.78rem, 0.9vw, 0.9rem);
-  line-height: 1.55;
+  font-size: clamp(0.66rem, 0.74vw, 0.8rem);
+  line-height: 1.42;
 }
 
 .inql-step-card,
@@ -650,7 +650,7 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-diagnosis {
   align-self: center;
-  max-width: 37rem;
+  max-width: 30rem;
   min-width: 0;
   padding: 0;
   border: 0;
@@ -660,23 +660,23 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-diagnosis h2 {
   max-width: 13ch;
-  margin-bottom: 1.35rem;
-  font-size: clamp(2.25rem, 2.7vw, 3.25rem);
-  line-height: 1.12;
+  margin-bottom: 0.95rem;
+  font-size: clamp(1.85rem, 2.05vw, 2.55rem);
+  line-height: 1.1;
 }
 
 .inql-diagnosis > p {
-  max-width: 31rem;
+  max-width: 27rem;
   margin: 0;
   color: var(--inql-page-copy) !important;
-  font-size: clamp(0.95rem, 1.05vw, 1.1rem);
-  line-height: 1.65;
+  font-size: clamp(0.82rem, 0.9vw, 0.96rem);
+  line-height: 1.55;
 }
 
 .inql-semantic-map {
   position: relative;
   min-width: 0;
-  padding-left: clamp(1.6rem, 3vw, 3.8rem);
+  padding-left: clamp(1.2rem, 2.4vw, 2.8rem);
   border-left: 1px solid var(--inql-page-line);
 }
 
@@ -686,88 +686,96 @@ body:has(.inql-launch) .md-typeset li {
 }
 
 .inql-map-heading h2 {
-  margin-bottom: 0.55rem;
-  font-size: clamp(2rem, 2.25vw, 2.7rem);
+  margin-bottom: 0.4rem;
+  font-size: clamp(1.55rem, 1.75vw, 2.05rem);
   line-height: 1.08;
 }
 
 .inql-map-heading p {
   margin: 0;
   color: var(--inql-page-copy) !important;
-  font-size: clamp(0.98rem, 1vw, 1.1rem);
+  font-size: clamp(0.82rem, 0.9vw, 0.96rem);
   line-height: 1.45;
 }
 
 .inql-map-body {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(9rem, 0.86fr) minmax(10.8rem, 1fr) minmax(8.2rem, 0.82fr);
-  gap: clamp(0.65rem, 1vw, 1.15rem);
-  align-items: center;
-  min-height: clamp(24rem, 28vw, 30rem);
-  margin-top: clamp(2rem, 3vw, 3.35rem);
+  display: block;
+  min-height: clamp(24rem, 31vw, 34rem);
+  margin-top: clamp(1.15rem, 2vw, 1.8rem);
+  border-radius: clamp(1rem, 1.55vw, 1.4rem);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.08) 42%, rgba(255, 255, 255, 0.5) 100%),
+    url("../shared/prismplane/semantic-convergence.jpg") 100% 50% / 138% auto no-repeat;
   isolation: isolate;
+  overflow: visible;
 }
 
 .inql-map-body::before {
-  content: "";
-  position: absolute;
-  z-index: -2;
-  inset: -8% 0 -10%;
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.38) 38%, rgba(255, 255, 255, 0.46) 66%, rgba(255, 255, 255, 0.9) 100%),
-    url("../shared/prismplane/semantic-convergence.jpg") center / cover no-repeat;
-  opacity: 0.9;
-  pointer-events: none;
+  display: none;
 }
 
 .inql-map-body::after {
   content: "";
   position: absolute;
   z-index: -1;
-  inset: 19% 18% 10% 20%;
+  inset: 23% 24% 14% 31%;
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(86, 139, 255, 0.16), rgba(190, 98, 255, 0.08) 46%, transparent 72%);
-  filter: blur(18px);
+  background: radial-gradient(circle, rgba(86, 139, 255, 0.12), rgba(190, 98, 255, 0.06) 46%, transparent 72%);
+  filter: blur(14px);
   pointer-events: none;
 }
 
 .inql-map-sources,
 .inql-map-targets {
+  position: absolute;
+  z-index: 2;
   display: grid;
-  gap: clamp(0.78rem, 1vw, 1rem);
+  gap: clamp(1.1rem, 1.8vw, 1.95rem);
   min-width: 0;
+}
+
+.inql-map-sources {
+  top: 14%;
+  left: 4.5%;
+  width: 25%;
+}
+
+.inql-map-targets {
+  top: 14%;
+  right: 1.8%;
+  width: 23%;
 }
 
 .inql-map-sources article,
 .inql-map-targets article {
   min-width: 0;
-  min-height: 4.65rem;
-  border: 1px solid rgba(91, 115, 255, 0.16);
-  border-radius: var(--inql-radius-lg);
-  background: rgba(255, 255, 255, 0.76);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84), 0 18px 42px rgba(55, 74, 123, 0.1);
+  min-height: clamp(2.5rem, 3.2vw, 3.35rem);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .inql-map-sources article {
   display: grid;
-  grid-template-columns: 2.75rem minmax(0, 1fr);
-  gap: 0.72rem;
+  grid-template-columns: clamp(1.85rem, 2.25vw, 2.4rem) minmax(0, 1fr);
+  gap: clamp(0.46rem, 0.6vw, 0.62rem);
   align-items: center;
-  padding: 0.76rem 0.95rem;
+  padding: clamp(0.28rem, 0.46vw, 0.42rem) clamp(0.3rem, 0.5vw, 0.48rem);
 }
 
 .inql-map-sources article > span {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  border: 1px solid rgba(71, 109, 255, 0.18);
-  border-radius: 10px;
-  background: rgba(249, 252, 255, 0.86);
+  width: clamp(1.7rem, 2vw, 2.1rem);
+  height: clamp(1.7rem, 2vw, 2.1rem);
+  border: 1px solid rgba(71, 109, 255, 0.14);
+  border-radius: 9px;
+  background: rgba(249, 252, 255, 0.58);
   color: var(--inql-page-blue);
-  font-size: 0.68rem;
+  font-size: clamp(0.5rem, 0.55vw, 0.6rem);
   font-weight: 820;
   letter-spacing: 0.02em;
 }
@@ -776,66 +784,66 @@ body:has(.inql-launch) .md-typeset li {
 .inql-map-targets strong {
   display: block;
   color: var(--inql-page-ink);
-  font-size: clamp(0.9rem, 0.92vw, 1.05rem);
-  line-height: 1.2;
-  overflow-wrap: anywhere;
+  font-size: clamp(0.72rem, 0.82vw, 0.92rem);
+  line-height: 1.16;
+  overflow-wrap: normal;
 }
 
 .inql-map-sources p,
 .inql-map-targets p {
-  margin: 0.18rem 0 0;
+  margin: 0.12rem 0 0;
   color: var(--inql-page-copy) !important;
-  font-size: clamp(0.72rem, 0.78vw, 0.84rem);
-  line-height: 1.35;
+  font-size: clamp(0.58rem, 0.66vw, 0.74rem);
+  line-height: 1.28;
 }
 
 .inql-map-core {
-  align-self: stretch;
+  position: absolute;
+  z-index: 3;
+  top: 10.5%;
+  left: 38.3%;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  width: 25.5%;
+  height: 80%;
   min-width: 0;
-  min-height: clamp(21rem, 24vw, 25.5rem);
-  padding: clamp(1.35rem, 2vw, 1.95rem);
-  border: 1px solid rgba(123, 92, 255, 0.36);
-  border-radius: clamp(1.3rem, 2vw, 1.8rem);
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(244, 249, 255, 0.64)),
-    rgba(255, 255, 255, 0.72);
+  min-height: 0;
+  padding: clamp(0.7rem, 1.15vw, 1.05rem);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   text-align: center;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 0 0 1px rgba(75, 210, 255, 0.1),
-    0 30px 86px rgba(84, 99, 190, 0.2);
+  box-shadow: none;
 }
 
 .inql-map-core img {
   display: block;
-  width: clamp(3.2rem, 3.8vw, 4.5rem);
+  width: clamp(2rem, 2.6vw, 3rem);
   height: auto;
-  margin: 0 auto 0.55rem;
+  margin: 0 auto 0.38rem;
   filter: drop-shadow(0 12px 28px rgba(80, 108, 255, 0.24));
 }
 
 .inql-map-core > strong {
   display: block;
   color: var(--inql-page-ink);
-  font-size: clamp(2rem, 2.1vw, 2.45rem);
+  font-size: clamp(1.35rem, 1.55vw, 1.9rem);
   line-height: 1;
 }
 
 .inql-map-core > p {
-  margin: 0.55rem 0 0;
+  margin: 0.36rem 0 0;
   color: var(--inql-page-ink) !important;
-  font-size: clamp(0.9rem, 0.98vw, 1.05rem);
+  font-size: clamp(0.68rem, 0.76vw, 0.88rem);
   font-weight: 740;
   line-height: 1.35;
 }
 
 .inql-map-core ul {
   display: grid;
-  gap: 0.62rem;
-  margin: clamp(1.15rem, 1.6vw, 1.5rem) 0 0 !important;
+  gap: clamp(0.25rem, 0.38vw, 0.4rem);
+  margin: clamp(0.65rem, 1vw, 0.92rem) 0 0 !important;
   padding: 0 !important;
   list-style: none !important;
   text-align: left;
@@ -843,12 +851,12 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-map-core li {
   margin: 0 !important;
-  padding: 0.56rem 0.72rem;
+  padding: clamp(0.28rem, 0.44vw, 0.42rem) clamp(0.42rem, 0.6vw, 0.58rem);
   border: 1px solid rgba(71, 109, 255, 0.12);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.62);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.56);
   color: var(--inql-page-copy) !important;
-  font-size: 0.82rem;
+  font-size: clamp(0.56rem, 0.64vw, 0.74rem);
   font-weight: 670;
   line-height: 1.25;
   list-style: none !important;
@@ -863,16 +871,16 @@ body:has(.inql-launch) .md-typeset li {
 .inql-map-bridge {
   position: absolute;
   z-index: 3;
-  top: 51%;
-  left: 71%;
+  top: 48%;
+  left: 69%;
   transform: translate(-50%, -50%);
   width: max-content;
-  padding: 0.64rem 0.72rem;
-  border: 1px solid rgba(71, 109, 255, 0.16);
-  border-radius: var(--inql-radius-lg);
-  background: rgba(255, 255, 255, 0.62);
+  padding: clamp(0.34rem, 0.5vw, 0.48rem) clamp(0.42rem, 0.62vw, 0.58rem);
+  border: 1px solid rgba(71, 109, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
   color: var(--inql-page-blue);
-  font-size: 0.64rem;
+  font-size: clamp(0.5rem, 0.56vw, 0.62rem);
   font-weight: 800;
   line-height: 1.25;
   text-align: center;
@@ -881,15 +889,20 @@ body:has(.inql-launch) .md-typeset li {
 }
 
 .inql-map-targets {
-  padding: 1rem;
-  border: 1px solid rgba(91, 115, 255, 0.14);
-  border-radius: var(--inql-radius-lg);
-  background: rgba(255, 255, 255, 0.36);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  padding: clamp(0.24rem, 0.4vw, 0.38rem) clamp(0.34rem, 0.55vw, 0.5rem);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .inql-map-targets article {
-  padding: 0.86rem 1rem;
+  min-height: clamp(2.7rem, 3.35vw, 3.6rem);
+  padding: clamp(0.44rem, 0.62vw, 0.56rem) clamp(0.58rem, 0.8vw, 0.76rem);
+  border: 1px solid rgba(91, 115, 255, 0.12);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 14px 34px rgba(55, 74, 123, 0.08);
 }
 
 .inql-process,
@@ -1293,9 +1306,13 @@ body:has(.inql-launch) .md-typeset li {
 
 @media screen and (max-width: 62em) {
   .inql-map-body {
+    display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
     min-height: 0;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.56)),
+      url("../shared/prismplane/semantic-convergence.jpg") center / cover no-repeat;
   }
 
   .inql-map-body::before {
@@ -1309,11 +1326,21 @@ body:has(.inql-launch) .md-typeset li {
 
   .inql-map-sources,
   .inql-map-targets {
+    position: relative;
+    inset: auto;
+    width: auto;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .inql-map-core {
+    position: relative;
+    inset: auto;
+    width: auto;
+    height: auto;
     min-height: 0;
+    border: 1px solid rgba(123, 92, 255, 0.22);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.62);
   }
 
   .inql-process-rail {
