@@ -706,7 +706,7 @@ body:has(.inql-launch) .md-typeset li {
   border-radius: clamp(1rem, 1.55vw, 1.4rem);
   background:
     linear-gradient(90deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.06) 42%, rgba(255, 255, 255, 0.22) 100%),
-    url("../shared/prismplane/semantic-convergence-stage.png") center / cover no-repeat;
+    url("../shared/prismplane/semantic-convergence-stage.png") center / 80% auto no-repeat;
   isolation: isolate;
   overflow: visible;
 }
@@ -736,15 +736,15 @@ body:has(.inql-launch) .md-typeset li {
 }
 
 .inql-map-sources {
-  top: 17%;
-  left: 2.3%;
-  width: 28.5%;
+  top: 19%;
+  left: 3.2%;
+  width: 27%;
 }
 
 .inql-map-targets {
-  top: 17%;
-  right: 2.4%;
-  width: 25.5%;
+  top: 19%;
+  right: 3.4%;
+  width: 23.4%;
 }
 
 .inql-map-sources article,
@@ -800,13 +800,13 @@ body:has(.inql-launch) .md-typeset li {
 .inql-map-core {
   position: absolute;
   z-index: 3;
-  top: 16%;
-  left: 39.5%;
+  top: 23%;
+  left: 43.2%;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: 25.2%;
-  height: 70%;
+  width: 18.8%;
+  height: 52%;
   min-width: 0;
   min-height: 0;
   padding: clamp(0.72rem, 1.05vw, 1rem);
@@ -872,7 +872,7 @@ body:has(.inql-launch) .md-typeset li {
   position: absolute;
   z-index: 3;
   top: 50%;
-  left: 65.8%;
+  left: 65.1%;
   transform: translate(-50%, -50%);
   width: max-content;
   padding: clamp(0.34rem, 0.5vw, 0.48rem) clamp(0.42rem, 0.62vw, 0.58rem);
