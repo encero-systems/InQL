@@ -16,7 +16,7 @@
   - InQL RFC 041 (Prism plan ingress and external client frontends)
   - InQL RFC 048 (cluster execution backend mode)
 - **Issue:** [InQL #101](https://github.com/encero-systems/InQL/issues/101)
-- **RFC PR:** —
+- **RFC PR:** [InQL #102](https://github.com/encero-systems/InQL/pull/102)
 - **Written against:** Incan 0.4.0 and InQL 0.1.0
 - **Shipped in:** —
 
