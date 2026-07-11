@@ -800,13 +800,13 @@ body:has(.inql-launch) .md-typeset li {
 .inql-map-core {
   position: absolute;
   z-index: 3;
-  top: 23%;
-  left: 40.6%;
+  top: 16%;
+  left: 39.6%;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: 18.8%;
-  height: 52%;
+  width: 20.8%;
+  height: 66%;
   min-width: 0;
   min-height: 0;
   padding: clamp(0.72rem, 1.05vw, 1rem);
@@ -819,25 +819,26 @@ body:has(.inql-launch) .md-typeset li {
 
 .inql-map-core img {
   display: block;
-  width: clamp(2.55rem, 3.3vw, 3.9rem);
+  width: clamp(4.5rem, 5.25vw, 5.75rem);
   height: auto;
-  margin: 0 auto 0.46rem;
+  margin: 0 auto 0.5rem;
   filter: drop-shadow(0 12px 28px rgba(80, 108, 255, 0.24));
 }
 
 .inql-map-core > strong {
   display: block;
   color: var(--inql-page-ink);
-  font-size: clamp(1.48rem, 1.72vw, 2.05rem);
+  font-size: clamp(2rem, 2.35vw, 2.75rem);
   line-height: 1;
 }
 
 .inql-map-core > p {
-  margin: 0.42rem 0 0;
+  margin: 0.36rem 0 0;
   color: var(--inql-page-ink) !important;
-  font-size: clamp(0.66rem, 0.74vw, 0.84rem);
+  font-size: clamp(0.72rem, 0.78vw, 0.8rem);
   font-weight: 740;
   line-height: 1.35;
+  white-space: nowrap;
 }
 
 .inql-map-core ul {
@@ -872,7 +873,7 @@ body:has(.inql-launch) .md-typeset li {
   position: absolute;
   z-index: 3;
   top: 50%;
-  left: 63.2%;
+  left: 66%;
   transform: translate(-50%, -50%);
   width: max-content;
   padding: clamp(0.34rem, 0.5vw, 0.48rem) clamp(0.42rem, 0.62vw, 0.58rem);
