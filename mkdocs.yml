@@ -49,7 +49,7 @@ markdown_extensions:
       custom_checkbox: true
 
 extra_css:
-  - stylesheets/prismplane.css?v=20260711-semantic-stage-5
+  - stylesheets/prismplane.css?v=20260711-process-stage-3
 
 nav:
   - Home: index.md

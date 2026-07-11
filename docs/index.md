@@ -126,8 +126,10 @@ Author in the surface that fits the task. InQL keeps the semantics attached as t
 <div class="inql-process-stage" aria-label="Five InQL stages moving from authoring intent through Prism inspection to portable execution.">
 <div class="inql-process-rail">
 <article class="inql-step-card inql-step-card--author">
+<header class="inql-step-card__title">
 <span>01</span>
 <h3>Author</h3>
+</header>
 <p>Write in the interface that matches your workflow and context.</p>
 <ul class="inql-process-list">
 <li>Query blocks</li>
@@ -138,8 +140,10 @@ Author in the surface that fits the task. InQL keeps the semantics attached as t
 </article>
 
 <article class="inql-step-card inql-step-card--compile">
+<header class="inql-step-card__title">
 <span>02</span>
 <h3>Compile</h3>
+</header>
 <p>Lower authoring intent into a typed relational model and Substrait plan.</p>
 <pre class="inql-mini-code"><code>model Orders {
   id: uuid
@@ -149,11 +153,13 @@ Author in the surface that fits the task. InQL keeps the semantics attached as t
 <p class="inql-tag-row">Substrait</p>
 </article>
 
-<article class="inql-step-card inql-step-card--focus inql-step-card--prism">
+<article class="inql-step-card inql-step-card--prism">
+<header class="inql-step-card__title">
 <span>03</span>
 <h3>Prism</h3>
+</header>
 <p>InQL's semantic core makes the compiler's decisions visible.</p>
-<ul class="inql-process-list inql-process-list--prism">
+<ul class="inql-process-list">
 <li>Schema flow</li>
 <li>Lineage</li>
 <li>Projections</li>
@@ -163,8 +169,10 @@ Author in the surface that fits the task. InQL keeps the semantics attached as t
 </article>
 
 <article class="inql-step-card inql-step-card--optimize">
+<header class="inql-step-card__title">
 <span>04</span>
 <h3>Optimize</h3>
+</header>
 <p>Apply rule- and cost-based optimizations for the best execution plan.</p>
 <ul class="inql-process-list">
 <li>Aggregate</li>
@@ -176,8 +184,10 @@ Author in the surface that fits the task. InQL keeps the semantics attached as t
 </article>
 
 <article class="inql-step-card inql-step-card--execute">
+<header class="inql-step-card__title">
 <span>05</span>
 <h3>Execute</h3>
+</header>
 <p>Run on the engine that fits: local, in-process, or distributed.</p>
 <ul class="inql-process-list">
 <li>DataFusion</li>
