@@ -14,7 +14,7 @@ Thank you for your interest in IncQL — the typed relational layer for [Incan][
 | [Incan `CONTRIBUTING.md`][incan-contributing] | Compiler, tooling, and Rust workspace workflow |
 | [Incan docs-site contributor loop][incan-docsite-loop] | Divio layout, snippets, checklist for Incan’s MkDocs site — mirror these patterns when shaping IncQL `docs/` |
 | [Incan AGENTS — Docs-site workflow][incan-agents-docs-workflow] | Prose **without hard wrapping**, `mkdocs build --strict`, Material-friendly Markdown |
-| [Prismplane docs theme][prismplane-theme] | InQL-specific docs visual rules adapted from the local Prismplane prototype |
+| [Prismplane docs theme][prismplane-theme] | IncQL-specific docs visual rules adapted from the local Prismplane prototype |
 
 **Compiler and language implementation** (lexer, parser, typechecker, lowering, codegen for `query {}` and related surfaces) lives in the **Incan** repository. Use that project’s docs and gates when you change the toolchain. Use **this** repo for the IncQL **library source** (`.incn`) and **IncQL RFCs** that specify the relational surface.
 
@@ -62,7 +62,7 @@ Thank you for your interest in IncQL — the typed relational layer for [Incan][
 
 5. **Preview or publish the documentation site**
 
-   The public documentation site is published at [encero-systems.github.io/InQL/][docs-site]. The docs workflow publishes to the `gh-pages` branch after a successful strict build on `main` or manual dispatch. Repository Pages settings should use **Deploy from a branch**, branch `gh-pages`, folder `/ (root)`.
+   The public documentation site is published at [encero-systems.github.io/IncQL/][docs-site]. The docs workflow publishes to the `gh-pages` branch after a successful strict build on `main` or manual dispatch. Repository Pages settings should use **Deploy from a branch**, branch `gh-pages`, folder `/ (root)`.
 
 ## Project structure
 
@@ -182,4 +182,4 @@ Open an issue on this repository for IncQL-specific design or package questions;
 [incan-docsite-loop]: https://github.com/encero-systems/incan/blob/main/workspaces/docs-site/docs/contributing/tutorials/book/08_docsite_contributor_loop.md
 [incan-agents-docs-workflow]: https://github.com/encero-systems/incan/blob/main/AGENTS.md#docs-site-workflow-mkdocs-material
 [prismplane-theme]: docs/contributing/prismplane_docs_theme.md
-[docs-site]: https://encero-systems.github.io/InQL/
+[docs-site]: https://encero-systems.github.io/IncQL/

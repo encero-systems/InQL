@@ -1,1 +1,1 @@
-"""MkDocs helper modules for the InQL documentation site."""
+"""MkDocs helper modules for the IncQL documentation site."""

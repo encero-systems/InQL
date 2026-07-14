@@ -221,7 +221,7 @@ incan run examples/session_grouped_aggregate_csv.incn
 
 <!-- References -->
 
-[session-grouped-aggregate-csv]: https://github.com/encero-systems/InQL/blob/main/examples/session_grouped_aggregate_csv.incn
+[session-grouped-aggregate-csv]: https://github.com/encero-systems/IncQL/blob/main/examples/session_grouped_aggregate_csv.incn
 
 It will:
 

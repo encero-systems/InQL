@@ -219,7 +219,7 @@ def _fallback_keywords() -> list[str]:
 
 
 def _keywords() -> Iterable[str]:
-    # InQL query blocks are Incan vocab syntax, so include the docs-facing clause keywords here
+    # IncQL query blocks are Incan vocab syntax, so include the docs-facing clause keywords here
     # instead of relying on generic Python highlighting for uppercase words.
     extras = {
         "derive",
@@ -259,7 +259,7 @@ def _keywords() -> Iterable[str]:
 
 
 class IncanLexer(PythonLexer):
-    """Pygments lexer for Incan and InQL code examples."""
+    """Pygments lexer for Incan and IncQL code examples."""
 
     name = "Incan"
     aliases = ["incan", "incn"]

@@ -1,15 +1,15 @@
-site_name: InQL
+site_name: IncQL
 site_description: Typed relational logic for governed data systems
-site_url: https://encero-systems.github.io/InQL/
-repo_url: https://github.com/encero-systems/InQL
-repo_name: encero-systems/InQL
+site_url: https://encero-systems.github.io/IncQL/
+repo_url: https://github.com/encero-systems/IncQL
+repo_name: encero-systems/IncQL
 docs_dir: docs
 site_dir: site
 strict: true
 
 theme:
   name: material
-  logo: shared/brand/inql-mark.png
+  logo: shared/brand/incql-mark.png
   font: false
   highlightjs: false
   pygments_style: default
@@ -103,12 +103,12 @@ nav:
   - RFCs:
       - Index: rfcs/README.md
       - Template: rfcs/TEMPLATE.md
-      - RFC 000 - Language specification: rfcs/000_inql_syntax.md
-      - RFC 001 - Dataset types: rfcs/001_inql_dataset.md
+      - RFC 000 - Language specification: rfcs/000_incql_syntax.md
+      - RFC 001 - Dataset types: rfcs/001_incql_dataset.md
       - RFC 002 - Apache Substrait integration: rfcs/002_apache_substrait_integration.md
-      - RFC 003 - Query blocks: rfcs/003_inql_query_blocks.md
-      - RFC 004 - Execution context: rfcs/004_inql_execution_context.md
-      - RFC 005 - Pipe-forward syntax: rfcs/005_inql_pipe_forward.md
+      - RFC 003 - Query blocks: rfcs/003_incql_query_blocks.md
+      - RFC 004 - Execution context: rfcs/004_incql_execution_context.md
+      - RFC 005 - Pipe-forward syntax: rfcs/005_incql_pipe_forward.md
       - RFC 006 - Unnest core Substrait: rfcs/006_unnest_core_substrait.md
       - RFC 007 - Prism planning engine: rfcs/007_prism_planning_engine.md
       - RFC 008 - Optimizer boundary: rfcs/008_optimizer_boundary_stats_cbo_aqe.md
@@ -156,7 +156,7 @@ nav:
       - v0.1: release_notes/v0_1.md
   - Whitepapers:
       - Overview: whitepapers/README.md
-      - InQL DB: whitepapers/inql_db.md
+      - IncQL DB: whitepapers/incql_db.md
   - Contributing:
       - Writing RFCs: contributing/writing_rfcs.md
       - Prismplane docs theme: contributing/prismplane_docs_theme.md

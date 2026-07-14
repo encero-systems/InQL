@@ -1,19 +1,19 @@
-# InQL architecture
+# IncQL architecture
 
-This document describes the architectural model of **InQL**. It is scoped to the InQL repository and its relationship to the Incan compiler, not to product orchestration or engine-specific operational concerns.
+This document describes the architectural model of **IncQL**. It is scoped to the IncQL repository and its relationship to the Incan compiler, not to product orchestration or engine-specific operational concerns.
 
-## What InQL is
+## What IncQL is
 
-InQL is two things that evolve together:
+IncQL is two things that evolve together:
 
-1. **A specification** under [docs/rfcs/][inql-rfcs]: naming and core semantics, dataset carriers, Substrait emission, query authoring, the execution boundary, and the internal planning substrate.
+1. **A specification** under [docs/rfcs/][incql-rfcs]: naming and core semantics, dataset carriers, Substrait emission, query authoring, the execution boundary, and the internal planning substrate.
 2. **An Incan library package**: `.incn` modules built with `incan build --lib`, consumed by Incan programs as a typed relational package.
 
-The Incan compiler remains responsible for parsing, typechecking, lowering, and Rust/code generation. The InQL repo holds the author-facing package, its documentation, and the RFCs that define what that package is supposed to mean.
+The Incan compiler remains responsible for parsing, typechecking, lowering, and Rust/code generation. The IncQL repo holds the author-facing package, its documentation, and the RFCs that define what that package is supposed to mean.
 
 ## Architectural model
 
-InQL is organized around three layers:
+IncQL is organized around three layers:
 
 - **Prism internally** — the immutable planning and optimization engine over persistent authored plan state and derived optimized views
 - **Substrait at the boundary** — the normative emitted logical interchange contract
@@ -35,7 +35,7 @@ This separation keeps internal planning concerns, portable interchange semantics
 
 ## Conceptual pipeline
 
-InQL follows this shape:
+IncQL follows this shape:
 
 ```text
 Incan models / model-derived schema
@@ -87,7 +87,7 @@ For current package behavior, see [Dataset carriers (Reference)][dataset-ref] an
 
 ### Prism
 
-Per [RFC 007][rfc-007], Prism is InQL’s internal logical planning and optimization engine.
+Per [RFC 007][rfc-007], Prism is IncQL’s internal logical planning and optimization engine.
 
 Prism is responsible for:
 
@@ -100,7 +100,7 @@ Prism is not the normative interchange format and not the execution engine.
 
 ### Substrait
 
-Per [RFC 002][rfc-002], Apache Substrait is the normative logical interchange boundary for InQL.
+Per [RFC 002][rfc-002], Apache Substrait is the normative logical interchange boundary for IncQL.
 
 That means:
 
@@ -168,11 +168,11 @@ Normative behavior lives in the RFC series first. Current package behavior and u
 
 ## Repository vs compiler
 
-The InQL repository and the Incan compiler have different responsibilities.
+The IncQL repository and the Incan compiler have different responsibilities.
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  InQL repo                                                                  │
+│  IncQL repo                                                                  │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  RFCs, package modules, tests, docs, architecture, conformance corpus       │
 │  Defines the relational package surface and its normative contracts         │
@@ -184,7 +184,7 @@ The InQL repository and the Incan compiler have different responsibilities.
 │  Incan compiler                                                             │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  Parsing, typechecking, lowering, Rust emission, LSP, test runner, builds   │
-│  Makes InQL package code executable and supports language surfaces          │
+│  Makes IncQL package code executable and supports language surfaces          │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -201,10 +201,10 @@ incan test tests
 
 In practice:
 
-- `incan build --lib` parses, typechecks, lowers, and emits a Rust crate for the InQL library
+- `incan build --lib` parses, typechecks, lowers, and emits a Rust crate for the IncQL library
 - `incan test tests` discovers and runs package tests under `tests/`
 
-CI builds `incan` first, then runs the InQL package checks against that compiler.
+CI builds `incan` first, then runs the IncQL package checks against that compiler.
 
 ## Reading order
 
@@ -228,27 +228,27 @@ If you want the clearest current story, read in this order:
 | Execution context           | [Reference][execution-ref] · [Explanation][execution-expl] |
 | Substrait integration       | [Reference docs][substrait-read-root] · [RFC 002][rfc-002] |
 | Prism planning engine       | [RFC 007][rfc-007]                                         |
-| InQL RFC index              | [docs/rfcs/README.md][inql-rfcs]                           |
+| IncQL RFC index              | [docs/rfcs/README.md][incql-rfcs]                           |
 | Incan compiler architecture | [Incan architecture docs][incan-architecture]              |
-| Contributing                | [CONTRIBUTING.md][inql-contributing]                       |
+| Contributing                | [CONTRIBUTING.md][incql-contributing]                       |
 
 <!-- References -->
 [incan-architecture]: https://github.com/encero-systems/incan/blob/main/workspaces/docs-site/docs/contributing/explanation/architecture.md
 [docs-root]: index.md
 [docs-map]: docs_map.md
 [language-root]: language/README.md
-[inql-rfcs]: rfcs/README.md
-[inql-contributing]: https://github.com/encero-systems/InQL/blob/main/CONTRIBUTING.md
-[src-dataset-mod]: https://github.com/encero-systems/InQL/blob/main/src/dataset/mod.incn
-[src-dataset-ops]: https://github.com/encero-systems/InQL/blob/main/src/dataset/ops.incn
-[src-prism]: https://github.com/encero-systems/InQL/tree/main/src/prism
-[src-substrait]: https://github.com/encero-systems/InQL/tree/main/src/substrait
+[incql-rfcs]: rfcs/README.md
+[incql-contributing]: https://github.com/encero-systems/IncQL/blob/main/CONTRIBUTING.md
+[src-dataset-mod]: https://github.com/encero-systems/IncQL/blob/main/src/dataset/mod.incn
+[src-dataset-ops]: https://github.com/encero-systems/IncQL/blob/main/src/dataset/ops.incn
+[src-prism]: https://github.com/encero-systems/IncQL/tree/main/src/prism
+[src-substrait]: https://github.com/encero-systems/IncQL/tree/main/src/substrait
 [dataset-ref]: language/reference/dataset_carriers.md
 [dataset-expl]: language/explanation/dataset_carriers.md
 [execution-ref]: language/reference/execution_context.md
 [execution-expl]: language/explanation/execution_context.md
 [substrait-read-root]: language/reference/substrait/read_root_binding_contract.md
 [rfc-002]: rfcs/002_apache_substrait_integration.md
-[rfc-004]: rfcs/004_inql_execution_context.md
+[rfc-004]: rfcs/004_incql_execution_context.md
 [rfc-007]: rfcs/007_prism_planning_engine.md
 [rfc-008]: rfcs/008_optimizer_boundary_stats_cbo_aqe.md

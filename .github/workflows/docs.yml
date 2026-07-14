@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out InQL
+      - name: Check out IncQL
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -55,7 +55,7 @@ jobs:
       contents: write
 
     steps:
-      - name: Check out InQL
+      - name: Check out IncQL
         uses: actions/checkout@v4
         with:
           fetch-depth: 0

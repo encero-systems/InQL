@@ -1,10 +1,10 @@
 # Substrait read-root and binding contract (Reference)
 
-This page is the **operational reference** for InQL's normative boundary between logical read roots in Substrait plans and execution-context binding. The normative rule — that logical reads carry names and virtual values rather than secrets, and that the execution context resolves them — lives in [InQL RFC 002][rfc-002]. This page expands on the `ReadRel` variant requirements, what a read must and must not contain, the execution context's obligations, and the adapter layer boundary.
+This page is the **operational reference** for IncQL's normative boundary between logical read roots in Substrait plans and execution-context binding. The normative rule — that logical reads carry names and virtual values rather than secrets, and that the execution context resolves them — lives in [IncQL RFC 002][rfc-002]. This page expands on the `ReadRel` variant requirements, what a read must and must not contain, the execution context's obligations, and the adapter layer boundary.
 
 ## Normative boundary
 
-InQL relational plans **must** express all new data entering the plan as logical reads. A logical read carries a **logical identity** — a name, a virtual row set, or an opaque extension type — without normative dependence on:
+IncQL relational plans **must** express all new data entering the plan as logical reads. A logical read carries a **logical identity** — a name, a virtual row set, or an opaque extension type — without normative dependence on:
 
 - Secret material: credentials, tokens, API keys, or passwords.
 - Host-specific connection strings, DSNs, or URIs that encode execution-context policy.
@@ -14,7 +14,7 @@ The execution context **must** resolve logical reads to physical resources throu
 
 ## `ReadRel` variant reference
 
-| Variant        | Substrait field                            | Typical InQL use                                                 | Portability                                                                            |
+| Variant        | Substrait field                            | Typical IncQL use                                                 | Portability                                                                            |
 | -------------- | ------------------------------------------ | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | `NamedTable`   | `named_table` (list of name parts)         | Registered logical table name; resolved by session registry      | Portable across conforming consumers that have registered the same logical name        |
 | `LocalFiles`   | `local_files` (file list + format options) | Parquet, CSV, Arrow IPC scan from a URI                          | Portable if consumers can resolve the URI; URI format is not standardized by Substrait |
@@ -35,7 +35,7 @@ The execution context **must** resolve logical reads to physical resources throu
 
 ## Execution context responsibilities
 
-The execution context ([InQL RFC 004][rfc-004] `Session`) **must**:
+The execution context ([IncQL RFC 004][rfc-004] `Session`) **must**:
 
 1. Maintain a **table registry** that maps logical names to physical data source definitions (connection parameters, catalog references, or file paths).
 2. **Resolve** `ReadRel` logical names through this registry at execution time — not at plan authoring time — so the serialized plan remains independent of execution-context state.
@@ -51,11 +51,11 @@ Product SDKs and higher operational layers **may** provide convenience read APIs
 - **Must not** embed execution-context state — resolved credentials, session tokens, resolved endpoint URLs — in the `ReadRel` payload of the normative plan.
 - **May** pass execution-context configuration through separate, non-normative channels (for example, `AdvancedExtension` hints, out-of-band session configuration) when needed for optimization, provided the plan remains semantically valid without them.
 
-Adapter-specific "open connection" or "bind source" APIs **should not** be specified as core InQL. They are thin wrappers at most, with the binding contract owned by the execution context per InQL RFC 004.
+Adapter-specific "open connection" or "bind source" APIs **should not** be specified as core IncQL. They are thin wrappers at most, with the binding contract owned by the execution context per IncQL RFC 004.
 
-## Interaction with InQL RFC 001 types
+## Interaction with IncQL RFC 001 types
 
-The following table summarizes how each `Session` read method maps to a `ReadRel` variant and the resulting InQL carrier type.
+The following table summarizes how each `Session` read method maps to a `ReadRel` variant and the resulting IncQL carrier type.
 
 | `Session` method                     | Returns        | `ReadRel` variant                                 |
 | ------------------------------------ | -------------- | ------------------------------------------------- |
@@ -69,4 +69,4 @@ In all cases the `LazyFrame[T]` holds a deferred plan — no data is fetched unt
 <!-- References -->
 
 [rfc-002]: ../../../rfcs/002_apache_substrait_integration.md
-[rfc-004]: ../../../rfcs/004_inql_execution_context.md
+[rfc-004]: ../../../rfcs/004_incql_execution_context.md

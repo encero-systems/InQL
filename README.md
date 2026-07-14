@@ -1,12 +1,12 @@
-# InQL
+# IncQL
 
-**InQL** is the **typed data logic plane** for governed relational work, implemented as an [Incan](https://github.com/encero-systems/incan) library package. It is where you express **relational queries**, **schema-aware table transformations**, and **streaming-shaped relational work** with compile-time checks, without folding orchestration, catalogs, or engine-specific runtime into the authoring model. Row shapes come from Incan `model` types; column, join, and alias rules are part of one semantic core whether you use `query { }` blocks, method chains on `DataSet[T]` carriers, or (later) optional pipe-forward (`|>`).
+**IncQL** is the **typed data logic plane** for governed relational work, implemented as an [Incan](https://github.com/encero-systems/incan) library package. It is where you express **relational queries**, **schema-aware table transformations**, and **streaming-shaped relational work** with compile-time checks, without folding orchestration, catalogs, or engine-specific runtime into the authoring model. Row shapes come from Incan `model` types; column, join, and alias rules are part of one semantic core whether you use `query { }` blocks, method chains on `DataSet[T]` carriers, or (later) optional pipe-forward (`|>`).
 
-**What InQL is not:** It is not a pipeline or workflow framework, not a semantic catalog, and not a catch-all that swallows execution concerns. It owns **data logic**: query authoring, relational plan shape, resolution and schema flow, typed carrier semantics, and **backend-neutral logical intent**. Execution, binding, and operational semantics live in the layer below (session, adapters, runners).
+**What IncQL is not:** It is not a pipeline or workflow framework, not a semantic catalog, and not a catch-all that swallows execution concerns. It owns **data logic**: query authoring, relational plan shape, resolution and schema flow, typed carrier semantics, and **backend-neutral logical intent**. Execution, binding, and operational semantics live in the layer below (session, adapters, runners).
 
-**Why it matters:** Raw SQL strings and untyped rows defer mistakes to runtime. InQL keeps relational work **in source**: schemas are ordinary models, invalid references and many aggregation mistakes are caught by the typechecked authoring surface, and plans are intended to lower to **Apache Substrait** so logical intent stays portable while credentials and physical reads are resolved outside the normative plan story.
+**Why it matters:** Raw SQL strings and untyped rows defer mistakes to runtime. IncQL keeps relational work **in source**: schemas are ordinary models, invalid references and many aggregation mistakes are caught by the typechecked authoring surface, and plans are intended to lower to **Apache Substrait** so logical intent stays portable while credentials and physical reads are resolved outside the normative plan story.
 
-**Bottom line:** InQL provides **checked relational logic** for data systems: the same naming and schema rules apply to `query { }` blocks and `DataSet[T]` APIs, and **execution stays downstream** (sessions, adapters, runners) and consistent.
+**Bottom line:** IncQL provides **checked relational logic** for data systems: the same naming and schema rules apply to `query { }` blocks and `DataSet[T]` APIs, and **execution stays downstream** (sessions, adapters, runners) and consistent.
 
 ## What you get
 
@@ -19,7 +19,7 @@
 
 Design is **RFC-driven**; **[docs/rfcs/](docs/rfcs/README.md)** is the source of truth.
 
-Documentation site: **https://encero-systems.github.io/InQL/**
+Documentation site: **https://encero-systems.github.io/IncQL/**
 
 ## Contributing
 
@@ -27,7 +27,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for workflow and [architecture.md](docs/a
 
 ## Design (RFCs)
 
-Normative proposals live under **[docs/rfcs/](docs/rfcs/README.md)**. InQL’s RFC series is separate from [Incan’s RFC index](https://github.com/encero-systems/incan/tree/main/workspaces/docs-site/docs/RFCs).
+Normative proposals live under **[docs/rfcs/](docs/rfcs/README.md)**. IncQL’s RFC series is separate from [Incan’s RFC index](https://github.com/encero-systems/incan/tree/main/workspaces/docs-site/docs/RFCs).
 
 | RFC     | Topic                                                                                            |
 | ------- | ------------------------------------------------------------------------------------------------ |
