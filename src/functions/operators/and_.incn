@@ -2,7 +2,7 @@
 Boolean conjunction helper.
 
 `and_` uses a trailing underscore to avoid host-language keyword collisions while keeping the canonical helper spelling
-stable for InQL users.
+stable for IncQL users.
 """
 
 from function_registry import (

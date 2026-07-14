@@ -1,6 +1,6 @@
 # Execution context (Explanation)
 
-This page explains how to think about InQL's execution model as it works today.
+This page explains how to think about IncQL's execution model as it works today.
 
 ## The mental model
 
@@ -72,7 +72,7 @@ This keeps materialization convenient while leaving sink ownership explicit at t
 
 ## Runtime evidence is separate from plan evidence
 
-Plan inspection explains the relational work InQL has authored. Execution observations explain a concrete runtime attempt to run that work through a Session and backend adapter.
+Plan inspection explains the relational work IncQL has authored. Execution observations explain a concrete runtime attempt to run that work through a Session and backend adapter.
 
 That split matters because the same plan can be attempted more than once, with different backends, bindings, diagnostics, timings, or trace IDs. The plan target remains the semantic anchor. The execution attempt target records what happened in one runtime lifecycle event.
 
@@ -90,13 +90,13 @@ Adapter coverage answers a different question from execution success. Execution 
 
 Coverage can come from two places. Tools can pass explicit `AdapterRequirement` records to `session.check_coverage(...)` when the requirement comes from policy, governance, or another caller-owned contract. For requirements that are visible in local plan evidence, `inspect_plan(...)` records inferred requirements and `session.check_inspection_coverage(...)` or `session.check_plan_coverage(...)` evaluates them against the selected adapter.
 
-Inferred requirements are intentionally evidence-backed. InQL infers concrete plan needs such as row filters, ordered execution, extension functions, variant semantics, baseline null semantics, and lineage-preservation evidence; it does not fabricate policy requirements such as masking, audit emission, region binding, or cryptographic proofs when no inspected evidence asks for them. Unknown coverage is therefore not a soft success; it means InQL does not have evidence that the adapter enforces that capability.
+Inferred requirements are intentionally evidence-backed. IncQL infers concrete plan needs such as row filters, ordered execution, extension functions, variant semantics, baseline null semantics, and lineage-preservation evidence; it does not fabricate policy requirements such as masking, audit emission, region binding, or cryptographic proofs when no inspected evidence asks for them. Unknown coverage is therefore not a soft success; it means IncQL does not have evidence that the adapter enforces that capability.
 
 ## Typical flow
 
 ```incan
-from pub::inql import LazyFrame, Session
-from pub::inql.functions import col, gt, lit, mul
+from pub::incql import LazyFrame, Session
+from pub::incql.functions import col, gt, lit, mul
 from models import Order
 
 session = Session.default()

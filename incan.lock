@@ -1863,7 +1863,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "inql"
+name = "incql"
 version = "0.3.0"
 dependencies = [
  "blake2",

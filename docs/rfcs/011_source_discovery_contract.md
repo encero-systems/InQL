@@ -1,12 +1,12 @@
-# InQL RFC 011: Source discovery and parse-unit expansion
+# IncQL RFC 011: Source discovery and parse-unit expansion
 
 - **Status:** Draft
 - **Created:** 2026-04-19
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 004 (execution context and session read boundaries)
-  - InQL RFC 009 (session format handler registry)
-  - InQL RFC 010 (CSV dialect and interpretation contract)
+  - IncQL RFC 004 (execution context and session read boundaries)
+  - IncQL RFC 009 (session format handler registry)
+  - IncQL RFC 010 (CSV dialect and interpretation contract)
 - **Issue:** —
 - **RFC PR:** —
 - **Written against:** Incan v0.2-rc5
@@ -14,7 +14,7 @@
 
 ## Summary
 
-This RFC defines InQL's north-star source-discovery contract for file-backed reads. It standardizes how a logical input target becomes one or more parse units before any format-specific handler such as `csv`, `parquet`, or `arrow` interprets those units. The core claim is that input discovery must be its own contract layer, separate from format dialect or schema inference, so that InQL can describe single-file reads, directory or prefix expansion, and future container-aware discovery without mixing storage semantics into format semantics.
+This RFC defines IncQL's north-star source-discovery contract for file-backed reads. It standardizes how a logical input target becomes one or more parse units before any format-specific handler such as `csv`, `parquet`, or `arrow` interprets those units. The core claim is that input discovery must be its own contract layer, separate from format dialect or schema inference, so that IncQL can describe single-file reads, directory or prefix expansion, and future container-aware discovery without mixing storage semantics into format semantics.
 
 ## Core model
 
@@ -26,15 +26,15 @@ This RFC defines InQL's north-star source-discovery contract for file-backed rea
 
 ## Motivation
 
-InQL already needs a clean distinction between "what is a CSV" and "what does this path mean." Those are not the same question. A folder, prefix, archive, or compressed object changes how input is enumerated, but it says nothing by itself about delimiter rules, headers, null tokens, or numeric inference. If those concerns are collapsed into a single format-specific options bag, the API becomes harder to reason about and portability becomes fragile.
+IncQL already needs a clean distinction between "what is a CSV" and "what does this path mean." Those are not the same question. A folder, prefix, archive, or compressed object changes how input is enumerated, but it says nothing by itself about delimiter rules, headers, null tokens, or numeric inference. If those concerns are collapsed into a single format-specific options bag, the API becomes harder to reason about and portability becomes fragile.
 
-This matters even before advanced runtime ingestion work exists. A simple read API still needs to answer whether a target is one file, many files, or some higher-level container that expands into parse units. Without a source-discovery contract, those semantics become accidental backend behavior. That is precisely the kind of ambiguity InQL should own and remove.
+This matters even before advanced runtime ingestion work exists. A simple read API still needs to answer whether a target is one file, many files, or some higher-level container that expands into parse units. Without a source-discovery contract, those semantics become accidental backend behavior. That is precisely the kind of ambiguity IncQL should own and remove.
 
 At the same time, this space can expand too far if we are not disciplined. Incremental discovery, checkpoints, file notifications, and streaming progress semantics belong to a different RFC. This document is about source discovery and parse-unit expansion only.
 
 ## Goals
 
-- Define a stable InQL-level contract for source discovery ahead of format parsing.
+- Define a stable IncQL-level contract for source discovery ahead of format parsing.
 - Let source target kind drive default discovery behavior for the common path.
 - Distinguish single-target reads from multi-target expansion such as directory or prefix discovery.
 - Define parse-unit expansion as a format-agnostic concept that can be reused by CSV and other file-backed formats.
@@ -51,15 +51,15 @@ At the same time, this space can expand too far if we are not disciplined. Incre
 
 ## Guide-level explanation (how authors think about it)
 
-Authors should think about source discovery as one layer below format parsing. First, InQL figures out what concrete parse units exist. Then the selected format handler parses each unit according to its own contract.
+Authors should think about source discovery as one layer below format parsing. First, IncQL figures out what concrete parse units exist. Then the selected format handler parses each unit according to its own contract.
 
 For the common path, authors should not have to restate obvious discovery behavior. A file target should imply one parse unit. A directory or prefix target should imply expansion.
 
 For a single file, the discovery contract is trivial.
 
 ```incan
-from pub::inql import LazyFrame, Session
-from pub::inql.sources import SourceDiscovery, SourceTarget
+from pub::incql import LazyFrame, Session
+from pub::incql.sources import SourceDiscovery, SourceTarget
 from models import Order
 
 session = Session.default()
@@ -74,7 +74,7 @@ orders: LazyFrame[Order] = session.read_format(
 For a directory or prefix, the discovery contract becomes explicit: discover multiple files, then parse them individually under the same format contract.
 
 ```incan
-from pub::inql.sources import ParseUnitExpansion, SourceDiscovery, SourceTarget
+from pub::incql.sources import ParseUnitExpansion, SourceDiscovery, SourceTarget
 
 orders: LazyFrame[Order] = session.read_format(
     logical_name="orders",
@@ -89,7 +89,7 @@ If the default implied by target kind is not sufficient, an explicit discovery o
 
 ### Public configuration model
 
-InQL must expose a stable structured source-discovery surface for file-backed reads. The exact namespace may evolve, but the public API must include the equivalent of:
+IncQL must expose a stable structured source-discovery surface for file-backed reads. The exact namespace may evolve, but the public API must include the equivalent of:
 
 - `SourceTarget`
 - `SourceDiscovery`
@@ -114,13 +114,13 @@ Source discovery must define how a logical target expands into parse units befor
 
 When the target is one concrete file or object, the default discovery result is one parse unit.
 
-When the target is a directory, prefix, or file set, the default discovery result must be a set of individually parsed units. InQL must not define multi-file reads as raw byte concatenation unless a future RFC explicitly standardizes such behavior.
+When the target is a directory, prefix, or file set, the default discovery result must be a set of individually parsed units. IncQL must not define multi-file reads as raw byte concatenation unless a future RFC explicitly standardizes such behavior.
 
 Discovery must remain format-agnostic. It may determine parse-unit boundaries, but it must not define delimiter, quoting, schema inference, or malformed-record rules. Those belong to the selected format contract.
 
 ### Explicit overrides
 
-InQL may expose explicit discovery overrides, but those overrides must refine or replace default target-kind behavior in a well-defined way. They must not be required in cases where the target kind already determines the obvious default.
+IncQL may expose explicit discovery overrides, but those overrides must refine or replace default target-kind behavior in a well-defined way. They must not be required in cases where the target kind already determines the obvious default.
 
 ### Capability validation
 
@@ -128,11 +128,11 @@ If a backend or format handler cannot honor the requested discovery contract, it
 
 ### Ordering and determinism
 
-If the discovery contract does not guarantee parse-unit ordering for a target class, that lack of ordering must be explicit. InQL must not leave discovered-unit ordering as an undocumented backend accident.
+If the discovery contract does not guarantee parse-unit ordering for a target class, that lack of ordering must be explicit. IncQL must not leave discovered-unit ordering as an undocumented backend accident.
 
 ### Containers and archive-like targets
 
-Container-aware discovery such as archive-member expansion may be supported in the future, but this RFC does not fully standardize that behavior. If an implementation supports container-aware discovery before a follow-on RFC exists, that support should be treated as implementation-specific rather than as portable InQL semantics.
+Container-aware discovery such as archive-member expansion may be supported in the future, but this RFC does not fully standardize that behavior. If an implementation supports container-aware discovery before a follow-on RFC exists, that support should be treated as implementation-specific rather than as portable IncQL semantics.
 
 ## Design details
 
@@ -144,17 +144,17 @@ This RFC does not introduce new core language grammar. It standardizes library-s
 
 Source discovery is the contract layer that maps a logical input target to parse units. Format handlers sit downstream from that mapping and interpret each unit according to their own contract.
 
-That separation is not cosmetic. It is what lets InQL describe folder or prefix expansion once, instead of reinventing those semantics inside each format-specific API.
+That separation is not cosmetic. It is what lets IncQL describe folder or prefix expansion once, instead of reinventing those semantics inside each format-specific API.
 
 The target kind should carry as much default meaning as possible. Discovery overrides are for non-default cases, not for making authors repeat what the target already says.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
-This RFC composes directly with InQL RFC 004 because Session-owned reads need a stable pre-execution boundary for input resolution.
+This RFC composes directly with IncQL RFC 004 because Session-owned reads need a stable pre-execution boundary for input resolution.
 
-This RFC composes with InQL RFC 009 because a format-handler registry should receive already-classified parse units or discovery configuration, not be forced to invent global discovery semantics independently per format.
+This RFC composes with IncQL RFC 009 because a format-handler registry should receive already-classified parse units or discovery configuration, not be forced to invent global discovery semantics independently per format.
 
-This RFC composes with InQL RFC 010 because CSV dialect and interpretation begin only after source discovery has established the parse units to which that dialect applies. The same pattern should hold for other format contracts as well.
+This RFC composes with IncQL RFC 010 because CSV dialect and interpretation begin only after source discovery has established the parse units to which that dialect applies. The same pattern should hold for other format contracts as well.
 
 ### Compatibility / migration
 
@@ -165,19 +165,19 @@ Implementations may begin with a small subset of target kinds while still adopti
 ## Alternatives considered
 
 - Fold discovery into each format-specific RFC: rejected, because that duplicates storage semantics across formats and makes the API harder to reason about.
-- Leave discovery entirely backend-defined: rejected, because InQL would lose control over path meaning and parse-unit semantics.
+- Leave discovery entirely backend-defined: rejected, because IncQL would lose control over path meaning and parse-unit semantics.
 - Combine discovery with future streaming ingestion/runtime semantics: rejected, because discovery and runtime progress are related but distinct design layers.
 
 ## Drawbacks
 
 - Adds another explicit configuration layer to read APIs.
-- Forces InQL to decide where portability stops instead of inheriting backend behavior wholesale.
+- Forces IncQL to decide where portability stops instead of inheriting backend behavior wholesale.
 - Raises design pressure around containers and archive-like sources before backend convergence exists.
 
 ## Layers affected
 
-- **InQL specification** must define source discovery as a contract distinct from format parsing.
-- **InQL library package** must expose structured discovery configuration for file-backed reads.
+- **IncQL specification** must define source discovery as a contract distinct from format parsing.
+- **IncQL library package** must expose structured discovery configuration for file-backed reads.
 - **Execution / interchange** must validate that the selected backend or handler can satisfy the requested discovery contract before execution starts.
 - **Documentation** must explain the distinction between source discovery and format interpretation.
 
@@ -187,6 +187,6 @@ Implementations may begin with a small subset of target kinds while still adopti
 - Should directory and prefix expansion be one portable target class, or should they remain distinct because storage systems expose them differently?
 - What should the explicit discovery-override surface look like once target-kind defaults cover the common path?
 - Should parse-unit ordering for multi-file discovery be explicitly unspecified by default, or should the contract require stable ordering when the backend can provide it?
-- How much of container-aware discovery should become portable InQL behavior, and how much should remain backend- or integration-specific until a dedicated follow-on RFC exists?
+- How much of container-aware discovery should become portable IncQL behavior, and how much should remain backend- or integration-specific until a dedicated follow-on RFC exists?
 
 <!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->

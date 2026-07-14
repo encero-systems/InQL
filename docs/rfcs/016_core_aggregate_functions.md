@@ -1,26 +1,26 @@
-# InQL RFC 016: Core aggregate functions
+# IncQL RFC 016: Core aggregate functions
 
 - **Status:** Implemented
 - **Created:** 2026-04-27
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 001 (dataset carriers and aggregation surface)
-  - InQL RFC 003 (`query {}` aggregate rules)
-  - InQL RFC 012 (scalar expressions and aggregate measures)
-  - InQL RFC 013 (function catalog program)
-  - InQL RFC 014 (function registry and catalog governance)
-- **Issue:** [InQL #33](https://github.com/encero-systems/InQL/issues/33)
-- **RFC PR:** [InQL #44](https://github.com/encero-systems/InQL/pull/44)
+  - IncQL RFC 001 (dataset carriers and aggregation surface)
+  - IncQL RFC 003 (`query {}` aggregate rules)
+  - IncQL RFC 012 (scalar expressions and aggregate measures)
+  - IncQL RFC 013 (function catalog program)
+  - IncQL RFC 014 (function registry and catalog governance)
+- **Issue:** [IncQL #33](https://github.com/encero-systems/IncQL/issues/33)
+- **RFC PR:** [IncQL #44](https://github.com/encero-systems/IncQL/pull/44)
 - **Written against:** Incan v0.2
 - **Shipped in:** v0.1
 
 ## Summary
 
-This RFC defines InQL's core aggregate function set: `count`, `sum`, `avg`, `min`, and `max`, including argument forms, input type rules, null behavior, empty-input behavior, result type rules, aliases, and required diagnostics. These aggregates form the minimum portable aggregate surface for dataframe and query-block work.
+This RFC defines IncQL's core aggregate function set: `count`, `sum`, `avg`, `min`, and `max`, including argument forms, input type rules, null behavior, empty-input behavior, result type rules, aliases, and required diagnostics. These aggregates form the minimum portable aggregate surface for dataframe and query-block work.
 
 ## Motivation
 
-InQL already exposes `sum` and argument-free `count`, but real grouped analysis needs a stable minimum aggregate family. Beam's SQL aggregate surface centers on `COUNT`, `AVG`, `SUM`, `MAX`, and `MIN`; DataFusion, Spark, and Snowflake also support these as foundational aggregates. InQL should define these before broader statistical, collection, approximate, or ordered aggregates.
+IncQL already exposes `sum` and argument-free `count`, but real grouped analysis needs a stable minimum aggregate family. Beam's SQL aggregate surface centers on `COUNT`, `AVG`, `SUM`, `MAX`, and `MIN`; DataFusion, Spark, and Snowflake also support these as foundational aggregates. IncQL should define these before broader statistical, collection, approximate, or ordered aggregates.
 
 Without explicit rules, aggregate behavior can drift across authoring surfaces and backends. Null skipping, empty groups, `count(*)` versus `count(expr)`, and numeric result type rules are observable semantics, not implementation details.
 
@@ -45,7 +45,7 @@ Without explicit rules, aggregate behavior can drift across authoring surfaces a
 Authors can summarize grouped or whole-relation data with the core aggregate set:
 
 ```incan
-from pub::inql.functions import avg, col, count, max, min, sum
+from pub::incql.functions import avg, col, count, max, min, sum
 
 summary = (
     orders
@@ -65,7 +65,7 @@ summary = (
 
 ## Reference-level explanation (precise rules)
 
-InQL must define canonical aggregate entries for `count`, `sum`, `avg`, `min`, and `max`.
+IncQL must define canonical aggregate entries for `count`, `sum`, `avg`, `min`, and `max`.
 
 `count()` must count input rows in the current relation or group. `count(expr)` must count rows where `expr` evaluates to a non-null value. `count_expr(expr)` remains available as a compatibility spelling for `count(expr)`, but must lower through the same canonical aggregate mapping. `count` must return a non-null integer count. For an empty input relation or empty group, `count()` and expression-count semantics must return zero.
 
@@ -77,7 +77,7 @@ InQL must define canonical aggregate entries for `count`, `sum`, `avg`, `min`, a
 
 Aggregate outputs must be aggregate measures, not row-level scalar expressions. They may appear only in aggregate-capable positions defined by query blocks, dataframe aggregation methods, or later RFCs.
 
-The registry must record compatibility aliases where useful. `mean` may be an alias for `avg` if InQL accepts dataframe-style naming. Warehouse compatibility names such as `count_if` remain outside this core RFC unless modeled as aggregate modifiers by InQL RFC 017.
+The registry must record compatibility aliases where useful. `mean` may be an alias for `avg` if IncQL accepts dataframe-style naming. Warehouse compatibility names such as `count_if` remain outside this core RFC unless modeled as aggregate modifiers by IncQL RFC 017.
 
 ## Design details
 
@@ -89,9 +89,9 @@ This RFC requires importable aggregate functions. Query syntax may support SQL s
 
 Core aggregates skip null values except for `count()`, which counts rows regardless of null values. Expression-count semantics count non-null expression results and are exposed by `count(expr)`.
 
-Aggregate argument expressions must be scalar expressions under InQL RFC 012. Aggregate arguments must not themselves contain aggregate outputs unless a later RFC defines nested aggregate semantics.
+Aggregate argument expressions must be scalar expressions under IncQL RFC 012. Aggregate arguments must not themselves contain aggregate outputs unless a later RFC defines nested aggregate semantics.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 `query {}` blocks must apply grouped-reference rules consistently with these aggregate definitions. Dataframe `.group_by(...).agg(...)` calls must produce the same aggregate semantics as equivalent query-block aggregates.
 
@@ -113,8 +113,8 @@ Existing `sum` and `count` helpers should be treated as compatibility-compatible
 
 ## Layers affected
 
-- **InQL specification** — aggregate measures must remain distinct from scalar expressions and consistent with InQL RFC 012.
-- **InQL library package** — public aggregate helpers should support the core aggregate set and argument forms.
+- **IncQL specification** — aggregate measures must remain distinct from scalar expressions and consistent with IncQL RFC 012.
+- **IncQL library package** — public aggregate helpers should support the core aggregate set and argument forms.
 - **Incan compiler** — query-block aggregate checking must validate grouped and aggregated positions against these rules.
 - **Execution / interchange** — Prism and Substrait lowering must preserve null skipping, empty-input behavior, and count forms.
 - **Documentation** — aggregate reference docs should document null and empty-input behavior explicitly.
@@ -130,5 +130,5 @@ Existing `sum` and `count` helpers should be treated as compatibility-compatible
 ## Design Decisions
 
 - **Expression-count spelling:** v0.1 exposes canonical `count(expr)` for expression-count semantics. `count_expr(expr)` remains a compatibility spelling that returns the same canonical aggregate measure.
-- **Count result type:** the v0.1 package records count as a non-null aggregate count measure and validates concrete execution through DataFusion-backed session tests. A more precise static numeric return type belongs with the broader InQL numeric type policy.
+- **Count result type:** the v0.1 package records count as a non-null aggregate count measure and validates concrete execution through DataFusion-backed session tests. A more precise static numeric return type belongs with the broader IncQL numeric type policy.
 - **Average result type:** the v0.1 package records `avg` as a numeric aggregate and relies on the backend/interchange path for concrete materialized numeric representation. Static decimal/floating promotion rules remain tied to the broader numeric type policy rather than this aggregate helper slice.

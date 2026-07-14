@@ -13,7 +13,7 @@ Those belong in tests so production conformance code remains about contract vali
 generation.
 
 These validators are designed to prove boundary facts about emitted plans. They are not a complete semantic oracle for
-every relational operation InQL may eventually support.
+every relational operation IncQL may eventually support.
 """
 
 from rust::substrait::proto import Plan

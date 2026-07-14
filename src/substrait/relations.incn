@@ -462,7 +462,7 @@ def _resolved_window_projection(
 
 
 def _window_function_options(output_name: str, application: WindowFunctionApplication) -> list[FunctionOption]:
-    """Encode InQL-only window metadata that Substrait consumers must preserve."""
+    """Encode IncQL-only window metadata that Substrait consumers must preserve."""
     return [FunctionOption(name=WINDOW_OUTPUT_NAME_OPTION, preference=[output_name]), FunctionOption(
         name=WINDOW_NULL_TREATMENT_OPTION,
         preference=[application.null_treatment.value()],
@@ -477,14 +477,14 @@ def _window_invocation(application: WindowFunctionApplication) -> AggregationInv
 
 
 def _window_bounds_type(frame: WindowFrame) -> BoundsType:
-    """Map InQL frame kind to Substrait bounds type."""
+    """Map IncQL frame kind to Substrait bounds type."""
     match frame.kind:
         WindowFrameKind.Rows => return BoundsType.Rows
         WindowFrameKind.Range => return BoundsType.Range
 
 
 def _window_bound(bound: WindowBound) -> Bound:
-    """Map one InQL frame bound to the Substrait window-bound oneof."""
+    """Map one IncQL frame bound to the Substrait window-bound oneof."""
     match bound.kind:
         WindowBoundKind.UnboundedPreceding => return Bound(kind=Some(BoundKind.Unbounded(SubstraitUnbounded())))
         WindowBoundKind.Preceding =>
@@ -710,7 +710,7 @@ def _sort_field_direction_detail(application: ScalarFunctionApplicationExpr) -> 
 
 
 def _sort_field(input_columns: list[str], key: ColumnExpr) -> Result[SortField, SubstraitLoweringError]:
-    """Lower one InQL sort-key expression into a Substrait SortField."""
+    """Lower one IncQL sort-key expression into a Substrait SortField."""
     return _sort_field_for_columns(scalar_columns_from_names(input_columns), key)
 
 
@@ -718,7 +718,7 @@ def _sort_field_for_columns(
     input_columns: list[ScalarColumnSpec],
     key: ColumnExpr,
 ) -> Result[SortField, SubstraitLoweringError]:
-    """Lower one InQL sort-key expression against typed-or-name-only input columns."""
+    """Lower one IncQL sort-key expression against typed-or-name-only input columns."""
     key_expr = untyped_column_expr(key)
     match key_expr:
         ScalarFunctionApplicationExpr(application) =>

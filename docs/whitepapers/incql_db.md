@@ -1,36 +1,36 @@
-# InQL-DB: local ACID analytical memory for InQL applications
+# IncQL-DB: local ACID analytical memory for IncQL applications
 
 **Status:** Exploratory whitepaper
 
 **Date:** 2026-05-06
 
-**Audience:** InQL and Incan contributors, application authors evaluating local analytical state, and implementers of future InQL execution backends.
+**Audience:** IncQL and Incan contributors, application authors evaluating local analytical state, and implementers of future IncQL execution backends.
 
-**Scope:** This document is non-normative. It defines a product and architecture north star for InQL-DB. Normative behavior should later be split into focused InQL RFCs for backend selection, storage layout, transaction semantics, vector search, and CLI contracts.
+**Scope:** This document is non-normative. It defines a product and architecture north star for IncQL-DB. Normative behavior should later be split into focused IncQL RFCs for backend selection, storage layout, transaction semantics, vector search, and CLI contracts.
 
 ## Thesis
 
-InQL-DB is an embedded, directory-backed, ACID, columnar store for typed InQL data logic.
+IncQL-DB is an embedded, directory-backed, ACID, columnar store for typed IncQL data logic.
 
 It is designed for app-local memory, retrieval-augmented generation stores, edge analytics, durable local caches, and small analytical datasets that should live inside an application without a database server, SQL dependency, or heavyweight runtime stack.
 
 The product shape is closer to SQLite-style local ownership plus DuckDB-style analytical execution plus Delta-inspired transaction logs than to a general DuckDB clone.
 
-InQL-DB should be opened directly by an application:
+IncQL-DB should be opened directly by an application:
 
 ```incan
-let db = InQLDB.open("./agent_memory.inqldb")
+let db = IncQLDB.open("./agent_memory.incqldb")
 ```
 
-and inspected with the InQL CLI:
+and inspected with the IncQL CLI:
 
 ```bash
-inql db inspect ./agent_memory.inqldb
+incql db inspect ./agent_memory.incqldb
 ```
 
-## Why this belongs in InQL
+## Why this belongs in IncQL
 
-InQL already owns the typed relational authoring layer:
+IncQL already owns the typed relational authoring layer:
 
 - Incan `model` types provide row shapes.
 - `DataSet[T]`, `LazyFrame[T]`, `DataFrame[T]`, and `DataStream[T]` define carrier semantics.
@@ -38,7 +38,7 @@ InQL already owns the typed relational authoring layer:
 - Substrait is the portable logical boundary.
 - `Session` owns execution and binding.
 
-InQL-DB should therefore be an InQL execution and storage backend, not a separate query language. Authors should use InQL's DSL and carrier APIs. InQL-DB should consume the resulting logical plans and provide a local physical data plane.
+IncQL-DB should therefore be an IncQL execution and storage backend, not a separate query language. Authors should use IncQL's DSL and carrier APIs. IncQL-DB should consume the resulting logical plans and provide a local physical data plane.
 
 No SQL support is required for the core product.
 
@@ -46,19 +46,19 @@ No SQL support is required for the core product.
 
 ### Embedded and zero-admin
 
-InQL-DB should run in-process with the host Incan application. It should not require a daemon, local service, external coordinator, warehouse, object store, or administrator-owned catalog.
+IncQL-DB should run in-process with the host Incan application. It should not require a daemon, local service, external coordinator, warehouse, object store, or administrator-owned catalog.
 
 DuckDB demonstrates the value of this shape for analytical workloads. DuckDB describes itself as having "zero external dependencies" and running "in-process in its host application or as a single binary." SQLite demonstrates the same deployment principle for transactional embedded storage: "There is no intermediary server process."
 
-InQL-DB should inherit that operational model while remaining native to InQL.
+IncQL-DB should inherit that operational model while remaining native to IncQL.
 
 ### Directory-backed by default
 
-An InQL-DB database should always be a directory ending in `.inqldb/`.
+An IncQL-DB database should always be a directory ending in `.incqldb/`.
 
 ```text
-agent_memory.inqldb/
-  _inql_log/
+agent_memory.incqldb/
+  _incql_log/
   catalog/
   tables/
   indexes/
@@ -67,21 +67,21 @@ agent_memory.inqldb/
   LOCK
 ```
 
-A directory gives InQL-DB room for immutable column segments, transaction logs, checkpoints, vector indexes, blobs, temporary files, and future compaction artifacts without overloading a single monolithic file format too early.
+A directory gives IncQL-DB room for immutable column segments, transaction logs, checkpoints, vector indexes, blobs, temporary files, and future compaction artifacts without overloading a single monolithic file format too early.
 
-### InQL and Substrait only
+### IncQL and Substrait only
 
 The core query surfaces are:
 
-- InQL DSL and `DataSet[T]` APIs for authors.
+- IncQL DSL and `DataSet[T]` APIs for authors.
 - Prism for internal logical plan state.
 - Substrait for portable logical interchange where needed.
 
-SQL is not part of the core. A future compatibility package may translate a SQL dialect into InQL or Substrait, but that is outside the InQL-DB identity.
+SQL is not part of the core. A future compatibility package may translate a SQL dialect into IncQL or Substrait, but that is outside the IncQL-DB identity.
 
 ### ACID from the start
 
-InQL-DB should be a real database, not a collection of best-effort files.
+IncQL-DB should be a real database, not a collection of best-effort files.
 
 The north star is full ACID semantics for local embedded use:
 
@@ -95,7 +95,7 @@ The initial concurrency model should remain deliberately small: single writer, m
 
 ### Analytical and retrieval-native
 
-InQL-DB should be optimized for local analytical scans and retrieval workflows:
+IncQL-DB should be optimized for local analytical scans and retrieval workflows:
 
 - Columnar scans over typed vectors.
 - Predicate and projection pushdown.
@@ -114,7 +114,7 @@ The target use cases include:
 
 ## Non-goals
 
-InQL-DB should not initially attempt to be:
+IncQL-DB should not initially attempt to be:
 
 - a DuckDB-compatible engine,
 - a SQL dialect,
@@ -134,16 +134,16 @@ Those systems are useful references, not compatibility targets.
 Incan models
     │
     ▼
-InQL carriers / query DSL
+IncQL carriers / query DSL
     │
     ▼
 Prism logical planning
     │
     ▼
-Substrait / InQL logical plan boundary
+Substrait / IncQL logical plan boundary
     │
     ▼
-InQL-DB backend
+IncQL-DB backend
     │
     ├── transaction manager
     ├── catalog
@@ -153,22 +153,22 @@ InQL-DB backend
     └── recovery / compaction
 ```
 
-The important boundary is that InQL-DB owns physical execution and local storage. It does not own authoring semantics.
+The important boundary is that IncQL-DB owns physical execution and local storage. It does not own authoring semantics.
 
 ## Storage model
 
-InQL-DB should take direct inspiration from Delta-style storage: immutable columnar data files plus an append-only transaction log that defines the current table state.
+IncQL-DB should take direct inspiration from Delta-style storage: immutable columnar data files plus an append-only transaction log that defines the current table state.
 
 Delta Lake is relevant because it combines versioned columnar files with a transaction log. Delta documentation describes a table as data files plus "a transaction log that stores metadata about the transactions." Delta's FAQ describes ACID support through "versioned Parquet files" and "a transaction log to keep track of all the commits."
 
-InQL-DB should adapt that pattern for local embedded use.
+IncQL-DB should adapt that pattern for local embedded use.
 
 ### Directory layout
 
 ```text
-agent_memory.inqldb/
+agent_memory.incqldb/
   LOCK
-  _inql_log/
+  _incql_log/
     00000000000000000000.commit
     00000000000000000001.commit
     00000000000000000064.checkpoint
@@ -189,7 +189,7 @@ agent_memory.inqldb/
   tmp/
 ```
 
-This layout is intentionally database-directory-first rather than table-directory-first. Delta's table model is useful, but InQL-DB needs a single local database artifact that can hold many tables, indexes, and catalog entries.
+This layout is intentionally database-directory-first rather than table-directory-first. Delta's table model is useful, but IncQL-DB needs a single local database artifact that can hold many tables, indexes, and catalog entries.
 
 ### Commit log
 
@@ -226,17 +226,17 @@ Segments should be Parquet-inspired:
 - checksums,
 - footer metadata.
 
-Apache Parquet is the right reference point because it is a column-oriented format designed for efficient storage and retrieval, with compression and encoding schemes. InQL-DB should borrow those physical ideas while keeping its own format contract.
+Apache Parquet is the right reference point because it is a column-oriented format designed for efficient storage and retrieval, with compression and encoding schemes. IncQL-DB should borrow those physical ideas while keeping its own format contract.
 
 The internal format should be called something like `iqseg`, not Parquet, unless the project deliberately chooses full Parquet compatibility later.
 
-Reasons to keep an InQL-owned segment format:
+Reasons to keep an IncQL-owned segment format:
 
-- InQL type metadata can be represented directly.
+- IncQL type metadata can be represented directly.
 - Fixed-dimension vectors can be encoded as a native physical type.
 - Vector index references can be tied to segment versions.
 - Delete/tombstone handling can be optimized for local MVCC.
-- Format evolution can follow InQL-DB's own protocol.
+- Format evolution can follow IncQL-DB's own protocol.
 - The implementation can start smaller than full Parquet.
 
 ### Catalog
@@ -257,7 +257,7 @@ Catalog changes are committed through the same log as data changes. There should
 
 ## Transaction model
 
-InQL-DB should target local ACID with single-writer, multi-reader MVCC.
+IncQL-DB should target local ACID with single-writer, multi-reader MVCC.
 
 ### Write path
 
@@ -266,7 +266,7 @@ InQL-DB should target local ACID with single-writer, multi-reader MVCC.
 3. Write new segment/index files under `tmp/`.
 4. Flush and checksum new files.
 5. Move files into their final content-addressed or version-addressed locations.
-6. Write a commit file under `_inql_log/` with all add/remove/schema actions.
+6. Write a commit file under `_incql_log/` with all add/remove/schema actions.
 7. Flush the commit file and containing directory.
 8. Release the writer lock.
 
@@ -297,7 +297,7 @@ Recovery must not require application-specific code.
 
 ## Execution model
 
-InQL-DB execution should be vectorized.
+IncQL-DB execution should be vectorized.
 
 Core runtime types:
 
@@ -327,7 +327,7 @@ Execution should work in batches so operators can stream chunks without material
 
 Vector support is part of the product center, not an extension afterthought.
 
-InQL-DB should support:
+IncQL-DB should support:
 
 - fixed-dimension vector columns,
 - distance functions such as cosine, dot product, and L2,
@@ -348,7 +348,7 @@ model Memory:
     source: str
     created_at: Instant
 
-let db = InQLDB.open("./agent_memory.inqldb")
+let db = IncQLDB.open("./agent_memory.incqldb")
 
 let hits = db.table[Memory]("memories")
     .filter(.source == "docs")
@@ -357,13 +357,13 @@ let hits = db.table[Memory]("memories")
     .collect()
 ```
 
-This should lower through InQL planning into an InQL-DB physical plan that can combine metadata filtering and vector search.
+This should lower through IncQL planning into an IncQL-DB physical plan that can combine metadata filtering and vector search.
 
 ## Governed RAG store
 
 Vector search is not enough for agentic retrieval.
 
-InQL-DB should support governed RAG stores as a first-class data pattern: retrieval tables where every returned item carries provenance, approval state, corpus version, retrieval evidence, and policy compatibility metadata.
+IncQL-DB should support governed RAG stores as a first-class data pattern: retrieval tables where every returned item carries provenance, approval state, corpus version, retrieval evidence, and policy compatibility metadata.
 
 This matters for advisory systems such as Hees.ai, where the retrieval layer is part of the safety model. A retrieved entry is not merely text. It is an approved evidence unit with constraints.
 
@@ -453,7 +453,7 @@ This makes RAG auditable rather than merely semantic.
 
 ## HyperQuant evidence-provider ledger
 
-HyperQuant should be treated as an evidence-provider implementation behind InQL-DB and Hees.ai storage contracts, not as the semantic owner of retrieval behavior.
+HyperQuant should be treated as an evidence-provider implementation behind IncQL-DB and Hees.ai storage contracts, not as the semantic owner of retrieval behavior.
 
 The storage problem is not only vector search. HyperQuant needs a durable audit ledger for evidence-provider runs:
 
@@ -468,7 +468,7 @@ query + package/policy/corpus/index context
 
 This distinction matters because governed systems must explain more than the nearest neighbors. They must explain what was considered, what was eligible, what was rejected, and which package, policy, corpus, index, and provider versions controlled the run.
 
-InQL-DB should support these logical records:
+IncQL-DB should support these logical records:
 
 ```incan
 model EvidenceProviderRun:
@@ -518,7 +518,7 @@ model EvidenceProviderFingerprint:
 
 Eligible evidence and rejected evidence may be represented as filtered views over `EvidenceCandidate`, or as separate physical tables if the storage engine needs different retention or indexing behavior. The important contract is that rejected evidence is first-class data, not a log message.
 
-For federated domain runtimes, InQL-DB should also support a run-level grouping record:
+For federated domain runtimes, IncQL-DB should also support a run-level grouping record:
 
 ```incan
 model FederatedEvidenceRun:
@@ -538,30 +538,30 @@ The governing rule is:
 Vectors nominate evidence. They do not authorize evidence.
 ```
 
-Vector similarity, quantized indexes, and approximate-nearest-neighbor search can propose candidates. Package, policy, corpus, authority, and admissibility rules decide whether those candidates may become evidence. InQL-DB must preserve that boundary in storage so later inspection can distinguish retrieval mechanics from governance decisions.
+Vector similarity, quantized indexes, and approximate-nearest-neighbor search can propose candidates. Package, policy, corpus, authority, and admissibility rules decide whether those candidates may become evidence. IncQL-DB must preserve that boundary in storage so later inspection can distinguish retrieval mechanics from governance decisions.
 
 ## CLI
 
-The command surface should live under `inql db`.
+The command surface should live under `incql db`.
 
 ```bash
-inql db init ./agent_memory.inqldb
-inql db inspect ./agent_memory.inqldb
-inql db tables ./agent_memory.inqldb
-inql db schema ./agent_memory.inqldb memories
-inql db verify ./agent_memory.inqldb
-inql db compact ./agent_memory.inqldb
-inql db recover ./agent_memory.inqldb
-inql db export ./agent_memory.inqldb memories --to memories.parquet
+incql db init ./agent_memory.incqldb
+incql db inspect ./agent_memory.incqldb
+incql db tables ./agent_memory.incqldb
+incql db schema ./agent_memory.incqldb memories
+incql db verify ./agent_memory.incqldb
+incql db compact ./agent_memory.incqldb
+incql db recover ./agent_memory.incqldb
+incql db export ./agent_memory.incqldb memories --to memories.parquet
 ```
 
 The CLI is not the primary runtime. It exists for inspection, verification, maintenance, local workflows, and debugging.
 
 ## Relationship to interop
 
-CSV, Parquet, Arrow, and other external formats are important, but they should not define InQL-DB's core identity.
+CSV, Parquet, Arrow, and other external formats are important, but they should not define IncQL-DB's core identity.
 
-InQL already owns source and sink concepts at the session layer. InQL-DB should provide a native store and expose import/export or scan/write adapters through InQL's source/sink system.
+IncQL already owns source and sink concepts at the session layer. IncQL-DB should provide a native store and expose import/export or scan/write adapters through IncQL's source/sink system.
 
 This keeps the database small and avoids making every external format a storage dependency.
 
@@ -569,11 +569,11 @@ This keeps the database small and avoids making every external format a storage 
 
 ### SurrealDB
 
-SurrealDB is a useful product reference for InQL-DB's app-local AI memory direction, but not the storage or query architecture to copy.
+SurrealDB is a useful product reference for IncQL-DB's app-local AI memory direction, but not the storage or query architecture to copy.
 
-SurrealDB describes itself as a multi-model database that combines document, graph, time-series, relational, geospatial, and key-value data models with "vector, full-text, hybrid" retrieval. It also explicitly targets the same deployment zone InQL-DB cares about: a single Rust binary that can run "embedded (in-app), in the browser (via WebAssembly), in the edge."
+SurrealDB describes itself as a multi-model database that combines document, graph, time-series, relational, geospatial, and key-value data models with "vector, full-text, hybrid" retrieval. It also explicitly targets the same deployment zone IncQL-DB cares about: a single Rust binary that can run "embedded (in-app), in the browser (via WebAssembly), in the edge."
 
-That validates several InQL-DB product bets:
+That validates several IncQL-DB product bets:
 
 - embedded local deployment matters for AI and edge applications,
 - vector retrieval should sit next to structured filtering rather than in a separate service,
@@ -582,10 +582,10 @@ That validates several InQL-DB product bets:
 
 SurrealDB's features also show that native vector indexing belongs in the core. Its feature documentation describes HNSW vector indexing for approximate nearest-neighbour search with euclidean, cosine, and manhattan distance metrics, and its vector docs distinguish brute-force exact search from HNSW approximate search.
 
-InQL-DB should not adopt SurrealDB's center of gravity. SurrealDB says it is "at its core, a document database" where each record is stored on an underlying key-value engine. InQL-DB should remain typed, InQL-native, analytical, and columnar:
+IncQL-DB should not adopt SurrealDB's center of gravity. SurrealDB says it is "at its core, a document database" where each record is stored on an underlying key-value engine. IncQL-DB should remain typed, IncQL-native, analytical, and columnar:
 
-- InQL models define schemas.
-- InQL and Substrait define the query boundary.
+- IncQL models define schemas.
+- IncQL and Substrait define the query boundary.
 - Columnar segments are the primary physical store.
 - Vectorized execution is the primary execution model.
 - SQL-like or SurrealQL-like syntax is not part of the core.
@@ -597,7 +597,7 @@ The useful comparison is therefore:
 | SurrealDB | multi-model document/KV database with SurrealQL        |
 | DuckDB    | embedded analytical SQL engine                         |
 | Delta     | immutable columnar files plus transaction log          |
-| InQL-DB   | embedded typed analytical memory store for InQL plans  |
+| IncQL-DB   | embedded typed analytical memory store for IncQL plans  |
 
 ## Implementation path
 
@@ -605,11 +605,11 @@ The whitepaper north star should be split into RFCs before implementation.
 
 Recommended RFC sequence:
 
-1. **InQL-DB backend RFC**
-   Define `BackendKind.InQLDBEngine`, session selection, plan execution boundary, error classes, and compatibility with existing DataFusion-backed sessions.
+1. **IncQL-DB backend RFC**
+   Define `BackendKind.IncQLDBEngine`, session selection, plan execution boundary, error classes, and compatibility with existing DataFusion-backed sessions.
 
 2. **Directory and transaction-log RFC**
-   Define `.inqldb/` layout, commit file format, checkpointing, locking, recovery, and snapshot semantics.
+   Define `.incqldb/` layout, commit file format, checkpointing, locking, recovery, and snapshot semantics.
 
 3. **Column segment RFC**
    Define `iqseg` physical layout, primitive types, nullability, statistics, compression hooks, and checksums.
@@ -624,13 +624,13 @@ Recommended RFC sequence:
    Define evidence-provider runs, candidate evidence, rejected evidence, provider fingerprints, index provenance, federated evidence-run grouping, and replay/debug contracts.
 
 7. **CLI RFC**
-   Define `inql db` commands and diagnostics.
+   Define `incql db` commands and diagnostics.
 
 ## First useful vertical slice
 
 The first implementation should prove the whole architecture with a narrow plan subset:
 
-- open/create `.inqldb/`,
+- open/create `.incqldb/`,
 - create one table from an Incan model-derived schema,
 - append batches,
 - commit with WAL/log semantics,
@@ -638,23 +638,23 @@ The first implementation should prove the whole architecture with a narrow plan 
 - filter/project/limit,
 - collect into `DataFrame[T]`,
 - persist one evidence-provider run with eligible and rejected candidate rows,
-- inspect and verify with `inql db`.
+- inspect and verify with `incql db`.
 
 Vector search can follow immediately after this slice, starting with brute-force search over fixed-dimension vectors before adding ANN index files.
 
 ## Open questions
 
-- Should the segment format target later Parquet compatibility, or remain permanently InQL-native?
+- Should the segment format target later Parquet compatibility, or remain permanently IncQL-native?
 - Should commit files be binary from the start, or use a temporary text format until the transaction protocol stabilizes?
 - What is the smallest ACID guarantee acceptable for the first implementation while still preserving the north star?
-- How should InQL model field IDs be assigned and preserved across schema evolution?
+- How should IncQL model field IDs be assigned and preserved across schema evolution?
 - Should vector indexes be table-level, segment-level, or both?
 - Should eligible and rejected evidence be stored as separate physical tables or as status-filtered candidate rows?
 - What fingerprint inputs are required to replay or compare a HyperQuant provider run?
 - How should federated evidence runs group package-specific provider runs without merging specialist evidence into one
   anonymous context?
 - How should compaction coordinate data segments, delete files, and index rebuilds?
-- What is the compatibility story for opening old `.inqldb/` directories after protocol changes?
+- What is the compatibility story for opening old `.incqldb/` directories after protocol changes?
 
 ## References
 
@@ -668,6 +668,6 @@ Vector search can follow immediately after this slice, starting with brute-force
 - [SurrealDB concepts](https://surrealdb.com/docs/surrealdb/introduction/concepts)
 - [SurrealDB features](https://surrealdb.com/features)
 - [SurrealDB vector database docs](https://surrealdb.com/docs/surrealdb/models/vector)
-- [InQL architecture](../architecture.md)
-- [InQL RFC 004: Execution context](../rfcs/004_inql_execution_context.md)
-- [InQL RFC 007: Prism logical planning and optimization engine](../rfcs/007_prism_planning_engine.md)
+- [IncQL architecture](../architecture.md)
+- [IncQL RFC 004: Execution context](../rfcs/004_incql_execution_context.md)
+- [IncQL RFC 007: Prism logical planning and optimization engine](../rfcs/007_prism_planning_engine.md)

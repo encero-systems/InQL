@@ -8,7 +8,7 @@ use incan_vocab::{
 use crate::{helper_exported, QUERY_FIELD_DESCRIPTOR, QUALITY_KW, QUERY_KW};
 
 #[derive(Default)]
-pub struct InqlVocabDesugarer;
+pub struct IncqlVocabDesugarer;
 
 struct PendingJoin {
     source: IncanExpr,
@@ -16,7 +16,7 @@ struct PendingJoin {
     method_name: &'static str,
 }
 
-impl VocabDesugarer for InqlVocabDesugarer {
+impl VocabDesugarer for IncqlVocabDesugarer {
     fn desugar(&self, node: &VocabSyntaxNode) -> Result<DesugarOutput, DesugarError> {
         let declaration = match node {
             VocabSyntaxNode::Declaration(declaration)
@@ -26,12 +26,12 @@ impl VocabDesugarer for InqlVocabDesugarer {
             }
             VocabSyntaxNode::Declaration(_) => {
                 return Err(DesugarError::new(
-                    "InQL desugarer expected a `query:` or `quality:` declaration",
+                    "IncQL desugarer expected a `query:` or `quality:` declaration",
                 ));
             }
             _ => {
                 return Err(DesugarError::new(
-                    "InQL query desugarer expected a declaration node",
+                    "IncQL query desugarer expected a declaration node",
                 ))
             }
         };
@@ -39,7 +39,7 @@ impl VocabDesugarer for InqlVocabDesugarer {
             QUERY_KW => Ok(DesugarOutput::Expression(lower_query(declaration)?)),
             QUALITY_KW => Ok(DesugarOutput::Expression(lower_quality(declaration)?)),
             _ => Err(DesugarError::new(
-                "InQL desugarer received an unsupported declaration keyword",
+                "IncQL desugarer received an unsupported declaration keyword",
             )),
         }
     }
@@ -555,7 +555,7 @@ fn lower_expression_list(clause: &VocabClause) -> Result<Vec<IncanExpr>, Desugar
 
 fn lower_column_expr(expr: &IncanExpr) -> Result<IncanExpr, DesugarError> {
     // The vocab AST distinguishes query-only field shorthands from ordinary Incan expressions. Normalize every
-    // supported query expression into the public InQL helper surface before the compiler typechecks the generated call.
+    // supported query expression into the public IncQL helper surface before the compiler typechecks the generated call.
     match expr {
         IncanExpr::ScopedSurface(surface) if surface.descriptor_key == QUERY_FIELD_DESCRIPTOR => {
             if let IncanScopedSurfacePayload::LeadingDotPath { segments, .. } = &surface.payload {

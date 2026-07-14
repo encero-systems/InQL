@@ -1,7 +1,7 @@
-//! InQL vocabulary companion.
+//! IncQL vocabulary companion.
 //!
-//! The Incan compiler owns the generic vocabulary contract. InQL owns package-specific surfaces such as `query:`
-//! and `quality:`, then lowers them into ordinary InQL helper/method calls that continue through Prism, Substrait,
+//! The Incan compiler owns the generic vocabulary contract. IncQL owns package-specific surfaces such as `query:`
+//! and `quality:`, then lowers them into ordinary IncQL helper/method calls that continue through Prism, Substrait,
 //! quality observation, and the active backend.
 
 mod desugar;
@@ -12,15 +12,15 @@ use incan_vocab::{
     ScopedSurfaceEligibility, ScopedSurfaceMisuseScope, ScopedSurfaceReceiver, VocabRegistration,
 };
 
-pub use desugar::InqlVocabDesugarer;
+pub use desugar::IncqlVocabDesugarer;
 
-pub const NAMESPACE: &str = "inql";
+pub const NAMESPACE: &str = "incql";
 pub const QUERY_KW: &str = "query";
 pub const QUALITY_KW: &str = "quality";
-pub const QUERY_FIELD_DESCRIPTOR: &str = "inql.query.field";
+pub const QUERY_FIELD_DESCRIPTOR: &str = "incql.query.field";
 
 // Incan's current vocab manifest API requires desugarers to name helper bindings explicitly. Keep these lists in
-// lock-step with the public helper surfaces so vocab blocks do not silently drift away from ordinary `pub::inql`
+// lock-step with the public helper surfaces so vocab blocks do not silently drift away from ordinary `pub::incql`
 // helper calls.
 const QUERY_BLOCK_HELPER_EXPORTS: &[&str] = &[
     "col",
@@ -312,9 +312,9 @@ pub fn library_vocab() -> VocabRegistration {
                         .with_misuse_scope(ScopedSurfaceMisuseScope::ActivatingFile)
                         .with_diagnostic(
                             ScopedSurfaceDiagnosticTemplate::new(
-                                "inql-query-field-outside-scope",
+                                "incql-query-field-outside-scope",
                                 ScopedSurfaceDiagnosticKind::OutsideScope,
-                                "query field shorthand is only valid inside InQL query clauses",
+                                "query field shorthand is only valid inside IncQL query clauses",
                             )
                             .with_help(
                                 "move the leading-dot field reference into a `query:` clause",
@@ -326,7 +326,7 @@ pub fn library_vocab() -> VocabRegistration {
             helper_bindings: helper_bindings(),
             ..LibraryManifest::default()
         })
-        .with_desugarer(InqlVocabDesugarer)
+        .with_desugarer(IncqlVocabDesugarer)
 }
 
 fn helper_bindings() -> Vec<HelperBinding> {
@@ -344,7 +344,7 @@ pub(crate) fn helper_exported(name: &str) -> bool {
     QUERY_BLOCK_HELPER_EXPORTS.contains(&name) || QUALITY_BLOCK_HELPER_EXPORTS.contains(&name)
 }
 
-incan_vocab::export_wasm_desugarer!(InqlVocabDesugarer);
+incan_vocab::export_wasm_desugarer!(IncqlVocabDesugarer);
 
 #[cfg(test)]
 mod tests {

@@ -520,7 +520,7 @@ def test_plan__ordering_helper_is_invalid_outside_sort_context() -> None:
     match result:
         Err(err) =>
             assert err.kind == SubstraitLoweringErrorKind.InvalidScalarExpression, "context errors should be invalid scalar expressions"
-            assert err.message.contains("inql.functions.asc"), "diagnostic should name the registered function reference"
+            assert err.message.contains("incql.functions.asc"), "diagnostic should name the registered function reference"
             assert err.message.contains("sort_field context"), "diagnostic should explain the valid lowering context"
         Ok(_) => return fail_t("asc should not lower as a standalone scalar expression")
 
@@ -968,7 +968,7 @@ def test_plan__aggregate_rel_lowers_approximate_aggregates() -> None:
     assert relation_kind_name(aggregated) == "AggregateRel", "approximate aggregate lowering should emit AggregateRel"
     assert plan_has_extension_urn(plan, registered_substrait_extension_uris()[0]), "approximate aggregate plans should register aggregate extensions"
     assert output_columns == ["id", "approx_count_distinct_id", "approx_percentile_id_p0_5_a10000", "approx_percentile_id_p0_95_a2500"], "approximate aggregate output names should preserve percentile and accuracy parameters"
-    assert aggregate_functions == ["approx_count_distinct", "approx_percentile", "approx_percentile"], "approximate aggregates should keep their InQL Substrait extension names"
+    assert aggregate_functions == ["approx_count_distinct", "approx_percentile", "approx_percentile"], "approximate aggregates should keep their IncQL Substrait extension names"
     assert aggregate_invocations == ["All", "All", "All"], "approximate aggregates should not lower as exact DISTINCT invocations"
 
 
@@ -991,7 +991,7 @@ def test_plan__aggregate_rel_lowers_typed_hll_sketches() -> None:
     # -- Assert --
     assert relation_kind_name(aggregated) == "AggregateRel", "typed sketch aggregates should still lower through AggregateRel"
     assert output_columns == ["id", "hll_sketch_id_p12", "hll_merge_id_p12"], "typed sketch aggregate outputs should include non-default sketch compatibility metadata"
-    assert aggregate_functions == ["hll_sketch", "hll_merge"], "typed sketch aggregates should keep their InQL extension names"
+    assert aggregate_functions == ["hll_sketch", "hll_merge"], "typed sketch aggregates should keep their IncQL extension names"
     assert aggregate_measure_option_value(aggregated, 0, SKETCH_FAMILY_OPTION) == "hyperloglog", "hll_sketch should carry sketch family metadata"
     assert aggregate_measure_option_value(aggregated, 0, SKETCH_PRECISION_OPTION) == "12", "hll_sketch should carry sketch precision metadata"
     assert aggregate_measure_option_value(aggregated, 1, SKETCH_FAMILY_OPTION) == "hyperloglog", "hll_merge should carry sketch family metadata"
@@ -1323,7 +1323,7 @@ def test_plan__revision_pin_and_extension_registry_are_exported() -> None:
 
     # -- Assert --
     assert tag == "v0.63.0", "revision helpers should expose the currently targeted Substrait release tag"
-    assert producer == "inql-rfc002", "revision helpers should expose the package producer label"
+    assert producer == "incql-rfc002", "revision helpers should expose the package producer label"
     assert len(registered) == 9, "current package boundary should register function and generator extension URIs"
     assert registered[0] == FUNCTION_EXTENSION_URI, "registry should include the shared function extension URI first"
     assert registered[1] == EXPLODE_EXTENSION_URI, "registry should include the emitted explode extension URI"

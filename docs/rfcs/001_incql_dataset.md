@@ -1,21 +1,21 @@
-# InQL RFC 001: Dataset types and carriers (`DataSet[T]`)
+# IncQL RFC 001: Dataset types and carriers (`DataSet[T]`)
 
 - **Status:** In Progress
 - **Created:** 2026-03-22
 - **Author(s):** Danny Meijer
 - **Related:**
-  - InQL RFC 000 (language specification — naming, schema shapes, layer boundaries)
+  - IncQL RFC 000 (language specification — naming, schema shapes, layer boundaries)
   - Incan compiler — static capability gating enforcement: [incan#187](https://github.com/encero-systems/incan/issues/187)
-  - InQL follow-up when enforcement lands: [InQL #10](https://github.com/encero-systems/InQL/issues/10)
-  - InQL aggregate helper semantics follow-up: [InQL #23](https://github.com/encero-systems/InQL/issues/23)
-- **Issue:** [InQL #2](https://github.com/encero-systems/InQL/issues/2)
+  - IncQL follow-up when enforcement lands: [IncQL #10](https://github.com/encero-systems/IncQL/issues/10)
+  - IncQL aggregate helper semantics follow-up: [IncQL #23](https://github.com/encero-systems/IncQL/issues/23)
+- **Issue:** [IncQL #2](https://github.com/encero-systems/IncQL/issues/2)
 - **RFC PR:** -
 - **Written against:** Incan v0.2
 - **Shipped in:** —
 
 ## Summary
 
-This RFC specifies the **dataset type hierarchy** for InQL: the traits and concrete types that carry schema-parameterized tabular data through relational pipelines. The hierarchy is rooted in the **`DataSet[T]`** trait, split into **`BoundedDataSet[T]`** (finite extent) and **`UnboundedDataSet[T]`** (streaming/unbounded), with three concrete types: **`DataFrame[T]`** (materialized/eager), **`LazyFrame[T]`** (deferred plan), and **`DataStream[T]`** (streaming). The bounded/unbounded split enables **static capability gating**: operations that require unbounded state are rejected at compile time when the target is unbounded, without requiring a separate streaming API. This RFC also defines the **relational operation API** on `DataSet[T]` and the **execution backend boundary** so implementations can delegate without exposing engine internals as the author contract.
+This RFC specifies the **dataset type hierarchy** for IncQL: the traits and concrete types that carry schema-parameterized tabular data through relational pipelines. The hierarchy is rooted in the **`DataSet[T]`** trait, split into **`BoundedDataSet[T]`** (finite extent) and **`UnboundedDataSet[T]`** (streaming/unbounded), with three concrete types: **`DataFrame[T]`** (materialized/eager), **`LazyFrame[T]`** (deferred plan), and **`DataStream[T]`** (streaming). The bounded/unbounded split enables **static capability gating**: operations that require unbounded state are rejected at compile time when the target is unbounded, without requiring a separate streaming API. This RFC also defines the **relational operation API** on `DataSet[T]` and the **execution backend boundary** so implementations can delegate without exposing engine internals as the author contract.
 
 ## Core model
 
@@ -43,20 +43,20 @@ Typed pipelines need a first-class carrier for columnar data indexed by `T`. Wit
 
 ## Non-Goals
 
-- Normative naming rules (four naming forms, current query schema, resolution order) — InQL RFC 000.
-- Apache Substrait `Rel`-level mapping and extension policy — InQL RFC 002.
-- Clause-based relational grammar, aggregate rules, Substrait lowering from that surface — InQL RFC 003.
-- Execution context, session, DataFusion — InQL RFC 004.
-- Pipe-forward (`|>`) grammar — InQL RFC 005 (not in v0.1 scope).
+- Normative naming rules (four naming forms, current query schema, resolution order) — IncQL RFC 000.
+- Apache Substrait `Rel`-level mapping and extension policy — IncQL RFC 002.
+- Clause-based relational grammar, aggregate rules, Substrait lowering from that surface — IncQL RFC 003.
+- Execution context, session, DataFusion — IncQL RFC 004.
+- Pipe-forward (`|>`) grammar — IncQL RFC 005 (not in v0.1 scope).
 - Cluster-scale scheduling, shuffle, distributed fault tolerance — orchestration layer.
 - Drop-in API compatibility with Apache Beam, Flink, or Spark SDKs.
 
 ## Guide-level explanation
 
-Authors import dataset types from the InQL package and parameterize with a `model`:
+Authors import dataset types from the IncQL package and parameterize with a `model`:
 
 ```incan
-from pub::inql import LazyFrame
+from pub::incql import LazyFrame
 from models import Order
 
 def load_orders() -> LazyFrame[Order]:
@@ -66,7 +66,7 @@ def load_orders() -> LazyFrame[Order]:
 They compose data using methods exposed through the `DataSet[T]` trait:
 
 ```incan
-from pub::inql import LazyFrame
+from pub::incql import LazyFrame
 from models import Order
 
 def high_value_orders(orders: LazyFrame[Order]) -> LazyFrame[Order]:
@@ -76,8 +76,8 @@ def high_value_orders(orders: LazyFrame[Order]) -> LazyFrame[Order]:
 Authors can derive computed columns through `with_column(...)`:
 
 ```incan
-from pub::inql import LazyFrame
-from pub::inql.functions import col, int_expr, mul
+from pub::incql import LazyFrame
+from pub::incql.functions import col, int_expr, mul
 from models import Order
 
 def enrich_orders(orders: LazyFrame[Order]) -> LazyFrame[Order]:
@@ -87,7 +87,7 @@ def enrich_orders(orders: LazyFrame[Order]) -> LazyFrame[Order]:
 Because `DataStream[T]` shares the same operation API, streaming code looks identical — only the type signature changes:
 
 ```incan
-from pub::inql import DataStream
+from pub::incql import DataStream
 from models import Event
 
 def important_events(events: DataStream[Event]) -> DataStream[Event]:
@@ -99,7 +99,7 @@ def important_events(events: DataStream[Event]) -> DataStream[Event]:
 The trait hierarchy gives authors three levels of specificity:
 
 ```incan
-from pub::inql import DataSet, BoundedDataSet, UnboundedDataSet
+from pub::incql import DataSet, BoundedDataSet, UnboundedDataSet
 from models import Order, Event
 
 # Accepts any carrier — generic utilities
@@ -118,7 +118,7 @@ def write_to_kafka(events: UnboundedDataSet[Event]) -> None:
 And two levels of concrete-type specificity:
 
 ```incan
-from pub::inql import DataFrame, LazyFrame, DataStream
+from pub::incql import DataFrame, LazyFrame, DataStream
 from models import Order, Summary, Event, Alert
 
 # Materialized data in hand
@@ -139,7 +139,7 @@ def process_stream(events: DataStream[Event]) -> DataStream[Alert]:
 ### Packaging
 
 - The dataset types and traits in this RFC **must** be exposed from a buildable Incan library package with public exports.
-- This RFC **may** require vocabulary only for symbols strictly needed for the dataset API surface; vocabulary for other InQL authoring surfaces is a separate concern.
+- This RFC **may** require vocabulary only for symbols strictly needed for the dataset API surface; vocabulary for other IncQL authoring surfaces is a separate concern.
 
 ### Type hierarchy
 
@@ -175,7 +175,7 @@ For `UnboundedDataSet[T]`, the governing rule is semantic rather than ad hoc: op
 
 ### Operation API (for lowering and direct use)
 
-The InQL library **must** expose the following instance methods on `DataSet[T]` (exact signatures may live in companion library docs; semantics **must** match this table and stay consistent with any normative lowering rules for the same logical operators elsewhere in InQL). Method names are illustrative; implementations **may** use equivalent spellings if the compiler maps them consistently.
+The IncQL library **must** expose the following instance methods on `DataSet[T]` (exact signatures may live in companion library docs; semantics **must** match this table and stay consistent with any normative lowering rules for the same logical operators elsewhere in IncQL). Method names are illustrative; implementations **may** use equivalent spellings if the compiler maps them consistently.
 
 | Method            | Role                                                                                                                                                                                    |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -193,16 +193,16 @@ Additional requirements:
 
 - Operations **must** preserve or update `T` (or output model `U`) in a way the typechecker can verify.
 - Operations that are statically invalid on `UnboundedDataSet[T]` (e.g. unbounded-state operations) **must** produce compile-time errors, not runtime failures.
-- Aggregate helpers used with `.agg(...)` are imported library symbols (from `pub::inql.functions`), not ambient builtins.
+- Aggregate helpers used with `.agg(...)` are imported library symbols (from `pub::incql.functions`), not ambient builtins.
 - The minimum required aggregate-helper surface for the current package slice is `col`, `sum`, and `count`.
-- The current InQL-only implementation uses `col(...)` builders as the semantic target that later `.column` sugar and query-block lowering should compile to.
-- The current InQL-only projection implementation uses `with_column(name, expr)` plus projection builders such as `add(...)`, `mul(...)`, and `int_expr(...)` as the semantic target that later projection sugar should compile to.
-- This RFC defines the minimum required aggregate-function import model for `.agg(...)`; it is not an exhaustive catalog of all present or future InQL functions. Additional functions **may** be added later through additive library evolution or follow-up RFCs, provided they do not change the semantics of the required set defined by the InQL RFC suite.
+- The current IncQL-only implementation uses `col(...)` builders as the semantic target that later `.column` sugar and query-block lowering should compile to.
+- The current IncQL-only projection implementation uses `with_column(name, expr)` plus projection builders such as `add(...)`, `mul(...)`, and `int_expr(...)` as the semantic target that later projection sugar should compile to.
+- This RFC defines the minimum required aggregate-function import model for `.agg(...)`; it is not an exhaustive catalog of all present or future IncQL functions. Additional functions **may** be added later through additive library evolution or follow-up RFCs, provided they do not change the semantics of the required set defined by the IncQL RFC suite.
 
 ### Execution backend boundary
 
 - Implementations **must** separate the author-facing `DataSet` API from engine-specific code (Rust crates, Substrait consumers, etc.).
-- Substrait consumption or emission at the collection/plan layer **may** be specified here as optional; the Substrait contract (InQL RFC 002) governs plan semantics. If more than one relational authoring surface emits Substrait, they **must not** produce contradictory plans for the same logical pipeline.
+- Substrait consumption or emission at the collection/plan layer **may** be specified here as optional; the Substrait contract (IncQL RFC 002) governs plan semantics. If more than one relational authoring surface emits Substrait, they **must not** produce contradictory plans for the same logical pipeline.
 - The execution context owns the session, plan optimization, and concrete execution backend (DataFusion as reference implementation).
 - Materialization helpers such as `collect(data)` or `display(data)` belong to the execution context and concrete implementation model, not to the `DataSet[T]` trait surface defined in this RFC.
 
@@ -219,7 +219,7 @@ The design draws on Spark Structured Streaming's core insight: a stream is an un
 
 ### Trait naming
 
-- **`DataSet[T]`** is InQL's root trait for any schema-parameterized relational carrier. It is intentionally aligned with the Spark notion of a typed `Dataset`, but spelled `DataSet` for Incan style.
+- **`DataSet[T]`** is IncQL's root trait for any schema-parameterized relational carrier. It is intentionally aligned with the Spark notion of a typed `Dataset`, but spelled `DataSet` for Incan style.
 - **`DataFrame[T]`** is a concrete eager kind, not Spark's untyped `DataFrame = Dataset[Row]` alias.
 - **`BoundedDataSet[T]`** and **`UnboundedDataSet[T]`** are intermediate traits that give clean type signatures for batch-only and streaming-only consumers respectively.
 
@@ -247,7 +247,7 @@ Future RFCs **may** add methods on `BoundedDataSet[T]` or `UnboundedDataSet[T]`,
 
 ## Layers affected
 
-- **InQL library** (primary): types, traits, Rust companion / interop.
+- **IncQL library** (primary): types, traits, Rust companion / interop.
 - **Typechecker**: generics for `DataFrame[T]` etc.; static streaming constraint checks for `UnboundedDataSet[T]`; capability gating based on trait bounds.
 - **Parser**: only if dataset API introduces new surface syntax beyond ordinary calls.
 
@@ -257,6 +257,6 @@ Future RFCs **may** add methods on `BoundedDataSet[T]` or `UnboundedDataSet[T]`,
 
 - **`UnboundedDataSet[T]` restrictions:** Operations requiring end-of-input semantics or unbounded retained state are not valid unless a later RFC gives them bounded-state semantics. In v0.1, disallowed examples include global `order_by`, global `limit`, unwindowed `group_by` / `agg`, eager materialization to a finite `DataFrame[T]`, and finite file writes.
 
-- **`collect` / `display`:** Not part of the `DataSet[T]` trait surface. Helpers such as `collect(data)` or `display(data)` belong to the execution context and concrete implementation model defined in InQL RFC 004, not in this RFC.
+- **`collect` / `display`:** Not part of the `DataSet[T]` trait surface. Helpers such as `collect(data)` or `display(data)` belong to the execution context and concrete implementation model defined in IncQL RFC 004, not in this RFC.
 
 - **Intermediate traits:** `BoundedDataSet[T]` and `UnboundedDataSet[T]` do not add required core relational methods in v0.1. Future RFCs may add additional methods only where the semantics are inherently boundedness-specific and remain backend-neutral.

@@ -1,7 +1,7 @@
 """
-Scenario catalog for InQL's Substrait conformance corpus.
+Scenario catalog for IncQL's Substrait conformance corpus.
 
-This module owns the machine-readable contract metadata for the current InQL Substrait profile:
+This module owns the machine-readable contract metadata for the current IncQL Substrait profile:
 
 - stable scenario identifiers
 - scenario taxonomy and portability classification
@@ -12,7 +12,7 @@ It does not own synthetic fixture plans. Production code defines the contract; t
 validate them against this catalog.
 
 The catalog is intentionally narrower than full semantic correctness. A scenario entry describes what boundary facts
-InQL claims to emit or preserve in a plan. It does not, by itself, prove that higher-level query semantics are
+IncQL claims to emit or preserve in a plan. It does not, by itself, prove that higher-level query semantics are
 complete.
 """
 
@@ -163,7 +163,7 @@ pub def core_scenario(key: CoreScenarioKey) -> SubstraitConformanceScenario:
     match key:
         CoreScenarioKey.ReadNamedTable =>
             return _core_scenario(
-                scenario_id=str("inql.substrait.core.read_named_table.001"),
+                scenario_id=str("incql.substrait.core.read_named_table.001"),
                 title=str("ReadRel named table without secret material"),
                 capability_tags=_capability_tags([str("read"), str("named-table")]),
                 root_rel=ConformanceRel.Read,
@@ -177,7 +177,7 @@ pub def core_scenario(key: CoreScenarioKey) -> SubstraitConformanceScenario:
             )
         CoreScenarioKey.ReadLocalFiles =>
             return _core_scenario(
-                scenario_id=str("inql.substrait.core.read_local_files.001"),
+                scenario_id=str("incql.substrait.core.read_local_files.001"),
                 title=str("ReadRel local files with portable format fields"),
                 capability_tags=_capability_tags([str("read"), str("local-files")]),
                 root_rel=ConformanceRel.Read,
@@ -189,7 +189,7 @@ pub def core_scenario(key: CoreScenarioKey) -> SubstraitConformanceScenario:
             )
         CoreScenarioKey.ReadVirtualTable =>
             return _core_scenario(
-                scenario_id=str("inql.substrait.core.read_virtual_table.001"),
+                scenario_id=str("incql.substrait.core.read_virtual_table.001"),
                 title=str("ReadRel virtual table with schema-aligned rows"),
                 capability_tags=_capability_tags([str("read"), str("virtual-table"), str("literal-rows")]),
                 root_rel=ConformanceRel.Read,
@@ -201,7 +201,7 @@ pub def core_scenario(key: CoreScenarioKey) -> SubstraitConformanceScenario:
             )
         CoreScenarioKey.FilterRows =>
             return _core_scenario(
-                scenario_id=str("inql.substrait.core.filter_rows.001"),
+                scenario_id=str("incql.substrait.core.filter_rows.001"),
                 title=str("FilterRel boolean row predicate"),
                 capability_tags=_capability_tags([str("filter"), str("predicate")]),
                 root_rel=ConformanceRel.Filter,
@@ -215,7 +215,7 @@ pub def core_scenario(key: CoreScenarioKey) -> SubstraitConformanceScenario:
             )
         CoreScenarioKey.ProjectComputedColumns =>
             return _core_scenario(
-                scenario_id=str("inql.substrait.core.project_computed_columns.001"),
+                scenario_id=str("incql.substrait.core.project_computed_columns.001"),
                 title=str("ProjectRel boundary scaffold"),
                 capability_tags=_capability_tags([str("project"), str("shape-scaffold")]),
                 root_rel=ConformanceRel.Project,
@@ -229,7 +229,7 @@ pub def core_scenario(key: CoreScenarioKey) -> SubstraitConformanceScenario:
             )
         CoreScenarioKey.JoinRelVariants =>
             return _core_scenario(
-                scenario_id=str("inql.substrait.core.join_rel_variants.001"),
+                scenario_id=str("incql.substrait.core.join_rel_variants.001"),
                 title=str("JoinRel variant emission boundary"),
                 capability_tags=_capability_tags(
                     [str("join"), str("inner"), str("left"), str("semi"), str("anti"), str("single"), str("mark")],
@@ -245,7 +245,7 @@ pub def core_scenario(key: CoreScenarioKey) -> SubstraitConformanceScenario:
             )
         CoreScenarioKey.CrossRelCartesian =>
             return _core_scenario(
-                scenario_id=str("inql.substrait.core.cross_rel_cartesian.001"),
+                scenario_id=str("incql.substrait.core.cross_rel_cartesian.001"),
                 title=str("CrossRel cartesian product semantics"),
                 capability_tags=_capability_tags([str("cross"), str("cartesian-product")]),
                 root_rel=ConformanceRel.Cross,
@@ -257,7 +257,7 @@ pub def core_scenario(key: CoreScenarioKey) -> SubstraitConformanceScenario:
             )
         CoreScenarioKey.AggregateGroupingSets =>
             return _core_scenario(
-                scenario_id=str("inql.substrait.core.aggregate_grouping_sets.001"),
+                scenario_id=str("incql.substrait.core.aggregate_grouping_sets.001"),
                 title=str("AggregateRel boundary scaffold"),
                 capability_tags=_capability_tags([str("aggregate"), str("shape-scaffold")]),
                 root_rel=ConformanceRel.Aggregate,
@@ -271,7 +271,7 @@ pub def core_scenario(key: CoreScenarioKey) -> SubstraitConformanceScenario:
             )
         CoreScenarioKey.SortRelOrdering =>
             return _core_scenario(
-                scenario_id=str("inql.substrait.core.sort_rel_ordering.001"),
+                scenario_id=str("incql.substrait.core.sort_rel_ordering.001"),
                 title=str("SortRel deterministic ordering contract"),
                 capability_tags=_capability_tags([str("sort"), str("order-by"), str("collation")]),
                 root_rel=ConformanceRel.Sort,
@@ -283,7 +283,7 @@ pub def core_scenario(key: CoreScenarioKey) -> SubstraitConformanceScenario:
             )
         CoreScenarioKey.FetchRelLimitOffset =>
             return _core_scenario(
-                scenario_id=str("inql.substrait.core.fetch_rel_limit_offset.001"),
+                scenario_id=str("incql.substrait.core.fetch_rel_limit_offset.001"),
                 title=str("FetchRel offset and count windowing"),
                 capability_tags=_capability_tags([str("fetch"), str("limit"), str("offset")]),
                 root_rel=ConformanceRel.Fetch,
@@ -295,7 +295,7 @@ pub def core_scenario(key: CoreScenarioKey) -> SubstraitConformanceScenario:
             )
         CoreScenarioKey.SetRelOperations =>
             return _core_scenario(
-                scenario_id=str("inql.substrait.core.set_rel_operations.001"),
+                scenario_id=str("incql.substrait.core.set_rel_operations.001"),
                 title=str("SetRel operation emission boundary"),
                 capability_tags=_capability_tags([str("set"), str("union"), str("intersect"), str("except")]),
                 root_rel=ConformanceRel.Set,
@@ -309,7 +309,7 @@ pub def core_scenario(key: CoreScenarioKey) -> SubstraitConformanceScenario:
             )
         CoreScenarioKey.ReferenceRelSharedSubplan =>
             return _core_scenario(
-                scenario_id=str("inql.substrait.core.reference_rel_shared_subplan.001"),
+                scenario_id=str("incql.substrait.core.reference_rel_shared_subplan.001"),
                 title=str("ReferenceRel ordinal emission boundary"),
                 capability_tags=_capability_tags([str("reference"), str("shared-subplan"), str("plan-dag")]),
                 root_rel=ConformanceRel.Reference,

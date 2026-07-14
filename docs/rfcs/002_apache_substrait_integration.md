@@ -1,51 +1,51 @@
-# InQL RFC 002: Apache Substrait integration
+# IncQL RFC 002: Apache Substrait integration
 
 - **Status:** In Progress
 - **Created:** 2026-03-23
 - **Author(s):** Danny Meijer
 - **Related:**
-  - InQL RFC 000 (language specification — naming, schema shapes, compilation model)
-  - InQL RFC 001 (dataset types — `DataSet[T]` carriers and schema parameter)
-- **Issue:** [InQL #3](https://github.com/encero-systems/InQL/issues/3)
+  - IncQL RFC 000 (language specification — naming, schema shapes, compilation model)
+  - IncQL RFC 001 (dataset types — `DataSet[T]` carriers and schema parameter)
+- **Issue:** [IncQL #3](https://github.com/encero-systems/IncQL/issues/3)
 - **RFC PR:** -
 - **Written against:** Incan v0.2
 - **Shipped in:** —
 
 ## Summary
 
-This RFC defines **Apache Substrait** as the **normative logical interchange** for InQL relational plans: which **`Rel` and expression** shapes implementations produce, how **read roots** remain **backend-agnostic** while **environment binding** (adapters, credentials, runner choice) stays **outside** InQL, and how **extensions** cover capabilities that lack a stable logical `Rel` in core Substrait. The `query {}` surface requires lowering to Substrait; this RFC owns the **cross-surface contract** so method-chain APIs (InQL RFC 001), `query {}` blocks, and optional pipe-forward do not diverge at emission time.
+This RFC defines **Apache Substrait** as the **normative logical interchange** for IncQL relational plans: which **`Rel` and expression** shapes implementations produce, how **read roots** remain **backend-agnostic** while **environment binding** (adapters, credentials, runner choice) stays **outside** IncQL, and how **extensions** cover capabilities that lack a stable logical `Rel` in core Substrait. The `query {}` surface requires lowering to Substrait; this RFC owns the **cross-surface contract** so method-chain APIs (IncQL RFC 001), `query {}` blocks, and optional pipe-forward do not diverge at emission time.
 
 ## Core model
 
-1. A **checked** InQL relational tree **must** be expressible as a Substrait **`Plan`** whose executable root is a **`Rel`** tree, optionally a **DAG** via **`ReferenceRel`** when subplans are shared.
+1. A **checked** IncQL relational tree **must** be expressible as a Substrait **`Plan`** whose executable root is a **`Rel`** tree, optionally a **DAG** via **`ReferenceRel`** when subplans are shared.
 2. **Logical reads** are **`ReadRel`** (or extension leaf relations) carrying **names, virtual rows, or extension payloads** instead of host-specific connection strings or secrets in the normative interchange.
 3. **Scalar and aggregate** computation uses Substrait **expressions** and **aggregate functions**; functions outside the pinned core set **must** use **registered extension URIs** documented with the compiler.
-4. **North-star operator catalog**: InQL capabilities map to logical `Rel` kinds as specified in the [Substrait operator catalog reference][ref-operator-catalog]; implementation subsets are delivery choices but **must not** contradict this RFC for operators they expose.
+4. **North-star operator catalog**: IncQL capabilities map to logical `Rel` kinds as specified in the [Substrait operator catalog reference][ref-operator-catalog]; implementation subsets are delivery choices but **must not** contradict this RFC for operators they expose.
 
 ## Motivation
 
-Without a dedicated specification, Substrait lowering risks drifting between front-ends (`query {}`, APIs on `DataSet[T]`) and emitters, and risks smuggling execution concerns (storage URIs, credentials, engine choice) into the query IR. Substrait is the ecosystem's portable relational algebra serialization; InQL needs a single `Rel`-level contract, version pinning rules, and an explicit boundary between plan semantics and operational binding.
+Without a dedicated specification, Substrait lowering risks drifting between front-ends (`query {}`, APIs on `DataSet[T]`) and emitters, and risks smuggling execution concerns (storage URIs, credentials, engine choice) into the query IR. Substrait is the ecosystem's portable relational algebra serialization; IncQL needs a single `Rel`-level contract, version pinning rules, and an explicit boundary between plan semantics and operational binding.
 
 ## Goals
 
 - Require that conforming implementations **emit Substrait** for relational features they claim to support, using logical `Rel` nodes unless a documented extension applies.
-- Publish a **versioned mapping catalog** from InQL plan concepts to Substrait logical relations and expression patterns, marking **core spec**, **extension**, or **documented expansion / gap**.
-- Specify **read roots**: logical `ReadRel` shapes **in** InQL vs **adapter resolution** in the host execution environment.
+- Publish a **versioned mapping catalog** from IncQL plan concepts to Substrait logical relations and expression patterns, marking **core spec**, **extension**, or **documented expansion / gap**.
+- Specify **read roots**: logical `ReadRel` shapes **in** IncQL vs **adapter resolution** in the host execution environment.
 - Require **documented pinning** of Substrait revision and of any bundled extension function sets shipped with the toolchain.
-- List **known gaps** (unnest, pivot, advanced joins, streaming-specific semantics) without blocking InQL RFC 003.
+- List **known gaps** (unnest, pivot, advanced joins, streaming-specific semantics) without blocking IncQL RFC 003.
 
 ## Non-Goals
 
-- Defining orchestration, workflow, or adapter authoring syntax — out of scope; only binding boundaries relative to InQL plans are stated here.
-- Mandating a default Substrait consumer (specific engine or library) — implementation detail; InQL RFC 004 names the reference backend.
-- Physical Substrait relations as a normative InQL output — consumers **may** use them; InQL **may** emit them when documented as a non-portable or target-specific mode.
+- Defining orchestration, workflow, or adapter authoring syntax — out of scope; only binding boundaries relative to IncQL plans are stated here.
+- Mandating a default Substrait consumer (specific engine or library) — implementation detail; IncQL RFC 004 names the reference backend.
+- Physical Substrait relations as a normative IncQL output — consumers **may** use them; IncQL **may** emit them when documented as a non-portable or target-specific mode.
 - ANSI SQL completeness — mapping is capability-based, not a SQL compliance checklist.
 
-## Current implementation profile (InQL package path)
+## Current implementation profile (IncQL package path)
 
-The current implementation profile for this RFC is explicitly scoped to InQL package code (`.incn`) and is the contract for current delivery tracking.
+The current implementation profile for this RFC is explicitly scoped to IncQL package code (`.incn`) and is the contract for current delivery tracking.
 
-- Core read/query `Rel` coverage is implemented through a thin proto-backed Substrait boundary in InQL package code.
+- Core read/query `Rel` coverage is implemented through a thin proto-backed Substrait boundary in IncQL package code.
 - Optional mutation relations remain modeled but are not required to be executable in the current read/query analytical core.
 - Gap and extension semantics are represented as typed contracts in package code and conformance scenarios, rather than ad hoc string payloads.
 - Richer planning semantics remain outside this profile when they logically belong to future `query {}` lowering or Prism.
@@ -73,9 +73,9 @@ This profile is reflected by:
 
 ## Guide-level explanation
 
-Authors build `DataSet[T]` values (InQL RFC 001) using `query {}` or relational method chains. After typechecking, the relational work becomes a **Substrait plan**: mostly `FilterRel`, `ProjectRel`, `JoinRel`, `AggregateRel`, and so on, rooted in a `ReadRel` when new data enters the plan.
+Authors build `DataSet[T]` values (IncQL RFC 001) using `query {}` or relational method chains. After typechecking, the relational work becomes a **Substrait plan**: mostly `FilterRel`, `ProjectRel`, `JoinRel`, `AggregateRel`, and so on, rooted in a `ReadRel` when new data enters the plan.
 
-When a plan says "read this named relation" or "read this logical asset id," the plan carries the **logical** identity. The **execution context** resolves that identity to concrete storage, applies policy, and supplies credentials. That split keeps InQL portable and keeps governance-sensitive details out of the serialized plan's normative story.
+When a plan says "read this named relation" or "read this logical asset id," the plan carries the **logical** identity. The **execution context** resolves that identity to concrete storage, applies policy, and supplies credentials. That split keeps IncQL portable and keeps governance-sensitive details out of the serialized plan's normative story.
 
 ## Reference-level explanation
 
@@ -83,15 +83,15 @@ When a plan says "read this named relation" or "read this logical asset id," the
 
 - Implementations **must** be able to produce a Substrait `Plan` for every relational operator they expose that is claimed portable in documentation.
 - Lowering semantics **must** be identical whether the surface is `query {}`, trait methods, or desugared pipe-forward, for the same checked tree.
-- Implementations **may** additionally lower to InQL RFC 001 operations for execution; if both paths exist, they **must** match the Substrait semantics for those operators.
+- Implementations **may** additionally lower to IncQL RFC 001 operations for execution; if both paths exist, they **must** match the Substrait semantics for those operators.
 
 For the full capability → `Rel` mapping, profile classifications, and gap encoding requirements, see the [Substrait operator catalog reference][ref-operator-catalog].
 
-Conformance scenarios **should** use stable scenario IDs and typed InQL model contracts as defined by the [Substrait conformance corpus reference][ref-conformance-corpus], so implementation and CI reporting can track portability status consistently across toolchains.
+Conformance scenarios **should** use stable scenario IDs and typed IncQL model contracts as defined by the [Substrait conformance corpus reference][ref-conformance-corpus], so implementation and CI reporting can track portability status consistently across toolchains.
 
 ### Logical `Rel` alphabet
 
-The following are the primary logical relations InQL targets. Exact protobuf message paths follow the pinned Substrait version selected by the toolchain for a given release.
+The following are the primary logical relations IncQL targets. Exact protobuf message paths follow the pinned Substrait version selected by the toolchain for a given release.
 
 | Substrait `Rel`                                                 | Role                                                                                          |
 | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
@@ -112,15 +112,15 @@ The following are the primary logical relations InQL targets. Exact protobuf mes
 
 ### North-star catalog
 
-InQL defines a north-star operator catalog that maps every InQL plan capability to a Substrait `Rel` or expression pattern, and classifies each capability as one of: **core** (maps to a standard logical `Rel` in the pinned revision), **extension** (requires a registered extension URI), **gap** (no stable logical `Rel` in core Substrait; encoding must be documented), or **optional-mutation** (not required for read/query analytical core).
+IncQL defines a north-star operator catalog that maps every IncQL plan capability to a Substrait `Rel` or expression pattern, and classifies each capability as one of: **core** (maps to a standard logical `Rel` in the pinned revision), **extension** (requires a registered extension URI), **gap** (no stable logical `Rel` in core Substrait; encoding must be documented), or **optional-mutation** (not required for read/query analytical core).
 
 The full, versioned catalog — including all profile tags, gap encoding requirements, and mutation-profile operators — lives in the [Substrait operator catalog reference][ref-operator-catalog]. Conforming implementations **must** follow the mappings listed there for any capability they claim portable.
 
 ### Read roots vs binding
 
-- InQL **must** express new data entering a plan as logical reads: names, virtual values, or opaque extension table types that still serialize as Substrait `ReadRel` (or an extension leaf) **without** normative dependence on secret material in the plan text.
+- IncQL **must** express new data entering a plan as logical reads: names, virtual values, or opaque extension table types that still serialize as Substrait `ReadRel` (or an extension leaf) **without** normative dependence on secret material in the plan text.
 - The execution context **must** resolve logical reads to physical resources through its adapter and execution layer; that layer **must not** redefine relational semantics of the plan.
-- Product SDKs **may** present a unified import surface; adapter-specific "open connection" APIs **should not** be specified as core InQL — they remain thin wrappers at most.
+- Product SDKs **may** present a unified import surface; adapter-specific "open connection" APIs **should not** be specified as core IncQL — they remain thin wrappers at most.
 
 For the full `ReadRel` variant reference, the detailed execution context obligations, and the adapter boundary contract, see the [read-root and binding contract reference][ref-read-root].
 
@@ -133,7 +133,7 @@ For revision pin requirements, URI registration policy, bundle naming, compatibi
 
 ### Optional mutation profile progress
 
-- InQL **may** expose `WriteRel`, `DdlRel`, or `UpdateRel` for warehouse-style mutation. Absence of these in a given distribution **does not** make InQL incomplete for read-only analytical use.
+- IncQL **may** expose `WriteRel`, `DdlRel`, or `UpdateRel` for warehouse-style mutation. Absence of these in a given distribution **does not** make IncQL incomplete for read-only analytical use.
 
 The optional mutation profile operators, per-operator portability notes, and support expectations are listed in the [Substrait operator catalog reference][ref-operator-catalog].
 
@@ -143,7 +143,7 @@ The following reference documents expand on the operational detail that is too l
 
 | Document | What it covers |
 | --- | --- |
-| [Substrait operator catalog][ref-operator-catalog] | Full InQL capability → `Rel` mapping; profile tags; gap encoding rules; mutation profile operators |
+| [Substrait operator catalog][ref-operator-catalog] | Full IncQL capability → `Rel` mapping; profile tags; gap encoding rules; mutation profile operators |
 | [Substrait revision and extension policy][ref-revision-policy] | Revision pin requirements; extension URI registration policy; compatibility conventions; release-note checklist |
 | [Substrait read-root and binding contract][ref-read-root] | `ReadRel` variant reference; execution context obligations; adapter boundary |
 | [Substrait conformance corpus][ref-conformance-corpus] | Canonical corpus structure, scenario metadata schema, profile taxonomy, and stable scenario ID conventions |
@@ -152,7 +152,7 @@ The following reference documents expand on the operational detail that is too l
 
 ### Interaction with Incan
 
-- Field references and types **must** align with `model`-backed schemas (InQL RFC 001) and lower to Substrait types and field indices consistent with the emitted `NamedStruct`.
+- Field references and types **must** align with `model`-backed schemas (IncQL RFC 001) and lower to Substrait types and field indices consistent with the emitted `NamedStruct`.
 
 ### Compatibility
 
@@ -167,7 +167,7 @@ The following reference documents expand on the operational detail that is too l
 ## Drawbacks
 
 - Substrait lags some front-end expressiveness; extensions and rewrites add maintenance.
-- Dual lowering (InQL RFC 001 APIs + Substrait) increases test surface unless one path is canonical in practice.
+- Dual lowering (IncQL RFC 001 APIs + Substrait) increases test surface unless one path is canonical in practice.
 - Producer / consumer version skew requires disciplined pinning and clear compatibility statements.
 
 ## Implementation architecture
@@ -185,7 +185,7 @@ Non-normative: toolchains **should** maintain golden Substrait plans or equivale
 ### Phase 1: Spec and operator catalog
 
 - Lock down the versioned Substrait revision pinning policy in compiler documentation and release artifacts.
-- Publish the normative operator catalog mapping InQL capabilities to Substrait `Rel` kinds, including gap annotations for unnest, pivot, and streaming semantics.
+- Publish the normative operator catalog mapping IncQL capabilities to Substrait `Rel` kinds, including gap annotations for unnest, pivot, and streaming semantics.
 - Document extension URI registration conventions in the public toolchain catalog.
 
 ### Phase 2: IR lowering — core boundary
@@ -260,10 +260,10 @@ Non-normative: toolchains **should** maintain golden Substrait plans or equivale
 
 ## Design Decisions
 
-- **Substrait revision pinning:** this RFC defines the pinning policy, not one timeless revision number. Each conforming InQL toolchain release **must** publish the exact Substrait revision it targets and any bundled extension sets in public release artifacts and compiler documentation.
-- **Canonical unnest / explode encoding:** until core Substrait standardizes a portable unnest relation that InQL adopts, `EXPLODE`-style behavior **must** lower through a documented extension relation or another documented non-core encoding listed in the toolchain's public operator catalog. Implementations **must not** present ad hoc or undocumented encodings as portable core behavior.
-- **Mutation relations:** `WriteRel`, `DdlRel`, and `UpdateRel` remain an optional mutation profile. They are not part of the minimum read/query analytical core required for InQL v0.1, and implementations **may** expose them only when the execution context and backend support them.
-- **Correlated subqueries:** InQL v0.1 does not standardize a single correlated-subquery desugaring because correlated subquery surface syntax is not part of the minimum relational grammar. If a future RFC adds correlated subqueries, that RFC **must** define the lowering contract explicitly rather than relying on implicit emitter policy.
+- **Substrait revision pinning:** this RFC defines the pinning policy, not one timeless revision number. Each conforming IncQL toolchain release **must** publish the exact Substrait revision it targets and any bundled extension sets in public release artifacts and compiler documentation.
+- **Canonical unnest / explode encoding:** until core Substrait standardizes a portable unnest relation that IncQL adopts, `EXPLODE`-style behavior **must** lower through a documented extension relation or another documented non-core encoding listed in the toolchain's public operator catalog. Implementations **must not** present ad hoc or undocumented encodings as portable core behavior.
+- **Mutation relations:** `WriteRel`, `DdlRel`, and `UpdateRel` remain an optional mutation profile. They are not part of the minimum read/query analytical core required for IncQL v0.1, and implementations **may** expose them only when the execution context and backend support them.
+- **Correlated subqueries:** IncQL v0.1 does not standardize a single correlated-subquery desugaring because correlated subquery surface syntax is not part of the minimum relational grammar. If a future RFC adds correlated subqueries, that RFC **must** define the lowering contract explicitly rather than relying on implicit emitter policy.
 
 <!-- References -->
 

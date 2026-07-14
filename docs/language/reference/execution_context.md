@@ -1,6 +1,6 @@
 # Execution context (Reference)
 
-This page documents the public execution surface in the InQL package. Normative design intent lives in [RFC 004][rfc-004].
+This page documents the public execution surface in the IncQL package. Normative design intent lives in [RFC 004][rfc-004].
 
 ## Core types
 
@@ -162,7 +162,7 @@ Plan inference is evidence-backed rather than policy-complete. The current imple
 | `AdapterCoverageState`        | `Covered`, `PartiallyCovered`, `Uncovered`, `Unknown` |
 | `AdapterRequirementCapability` | `ExtensionFunction`, `VariantSemantics`, `DecimalSemantics`, `NullSemantics`, `LineagePreservation`, `AuditEmission`, `RowFilter`, `ColumnMask`, `AggregateThreshold`, `RegionBinding`, `OrderedExecution`, `SnapshotCapture`, `CanonicalDigest`, `CrossRelationReconciliation`, `IncrementalWatermark`, `VerificationEventStream`, `WaiverRecording`, `CryptographicQueryProof` |
 
-Coverage states are conservative. `Covered` means the selected adapter is known to cover that requirement family. `PartiallyCovered` means support depends on the concrete function, plan shape, or restriction. `Uncovered` means the selected adapter is known not to provide that guarantee. `Unknown` means InQL has not classified coverage; consumers must not treat it as enforced behavior.
+Coverage states are conservative. `Covered` means the selected adapter is known to cover that requirement family. `PartiallyCovered` means support depends on the concrete function, plan shape, or restriction. `Uncovered` means the selected adapter is known not to provide that guarantee. `Unknown` means IncQL has not classified coverage; consumers must not treat it as enforced behavior.
 
 ### Current DataFusion coverage classification
 
@@ -225,7 +225,7 @@ DataFusion is the implemented execution backend. `Session` stores a backend kind
 - For adapter requirement and coverage design, see [RFC 033][rfc-033]
 - For quality assertion and observation design, see [RFC 034][rfc-034]
 
-[rfc-004]: ../../rfcs/004_inql_execution_context.md
+[rfc-004]: ../../rfcs/004_incql_execution_context.md
 [rfc-032]: ../../rfcs/032_execution_observations.md
 [rfc-033]: ../../rfcs/033_adapter_requirements_coverage.md
 [rfc-034]: ../../rfcs/034_quality_assertions_observations.md

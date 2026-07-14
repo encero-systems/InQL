@@ -27,7 +27,7 @@ version = "0.3.0-rc49"
 dependencies = [
  "incan_derive",
  "incan_stdlib",
- "inql",
+ "incql",
 ]
 
 [[package]]
@@ -1872,7 +1872,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "inql"
+name = "incql"
 version = "0.3.0-rc49"
 dependencies = [
  "blake2",

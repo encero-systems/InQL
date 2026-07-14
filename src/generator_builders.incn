@@ -238,7 +238,7 @@ module tests:
         generator = explode(col("line_items"), "line_item")
         assert generator.kind == GeneratorKind.Explode
         assert generator.canonical_name == "explode"
-        assert generator.function_ref == "inql.functions.explode"
+        assert generator.function_ref == "incql.functions.explode"
         assert column_expr_name(generator.expr) == "line_items"
         assert len(generator.arguments) == 1
         assert generator.output_columns[0] == "line_item"

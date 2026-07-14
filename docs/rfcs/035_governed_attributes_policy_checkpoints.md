@@ -1,35 +1,35 @@
-# InQL RFC 035: Governed attributes and policy checkpoints
+# IncQL RFC 035: Governed attributes and policy checkpoints
 
 - **Status:** Implemented
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 004 (execution context)
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 028 (semantic identity and target model)
-  - InQL RFC 029 (typed metadata attachments)
-  - InQL RFC 030 (Prism lineage graph)
-  - InQL RFC 033 (adapter requirements and coverage)
-- **Issue:** [InQL #69](https://github.com/encero-systems/InQL/issues/69)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #89](https://github.com/encero-systems/InQL/pull/89)
-- **Written against:** Incan v0.3-era InQL
+  - IncQL RFC 004 (execution context)
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 028 (semantic identity and target model)
+  - IncQL RFC 029 (typed metadata attachments)
+  - IncQL RFC 030 (Prism lineage graph)
+  - IncQL RFC 033 (adapter requirements and coverage)
+- **Issue:** [IncQL #69](https://github.com/encero-systems/IncQL/issues/69)
+- **RFC PR:** [IncQL #60](https://github.com/encero-systems/IncQL/pull/60); [IncQL #89](https://github.com/encero-systems/IncQL/pull/89)
+- **Written against:** Incan v0.3-era IncQL
 - **Shipped in:** v0.1
 
 ## Summary
 
-This RFC defines how InQL carries governed attributes and records policy checkpoints as local relational evidence. Governed attributes are typed facts attached to semantic targets with provenance, confidence, authority, and lifetime. Policy checkpoints are decision records attached at authoring, planning, binding, or execution boundaries. InQL carries and propagates evidence; it does not define an organization-wide policy engine.
+This RFC defines how IncQL carries governed attributes and records policy checkpoints as local relational evidence. Governed attributes are typed facts attached to semantic targets with provenance, confidence, authority, and lifetime. Policy checkpoints are decision records attached at authoring, planning, binding, or execution boundaries. IncQL carries and propagates evidence; it does not define an organization-wide policy engine.
 
 ## Motivation
 
-Relational plans often need to carry facts such as classification, origin, purpose, jurisdiction, derivation, masking status, or coverage state. Those facts may be supplied by model metadata, user declarations, imported artifacts, catalogs, policy engines, or prior plans. InQL should preserve and propagate them through relational semantics without pretending that inferred attributes are automatically authoritative policy truth.
+Relational plans often need to carry facts such as classification, origin, purpose, jurisdiction, derivation, masking status, or coverage state. Those facts may be supplied by model metadata, user declarations, imported artifacts, catalogs, policy engines, or prior plans. IncQL should preserve and propagate them through relational semantics without pretending that inferred attributes are automatically authoritative policy truth.
 
 ## Goals
 
 - Define governed attributes as typed evidence attached to semantic targets.
 - Preserve source, confidence, authority, status, observed time, expiration, and evidence references.
 - Define policy checkpoint records at authoring, planning, binding, and execution.
-- Allow InQL to explain how attributes move through relational transformations.
-- Keep policy authoring, approval, and global enforcement outside InQL.
+- Allow IncQL to explain how attributes move through relational transformations.
+- Keep policy authoring, approval, and global enforcement outside IncQL.
 
 ## Non-Goals
 
@@ -65,7 +65,7 @@ Confidence must distinguish exact, high, medium, low, and unknown or equivalent 
 
 Status must distinguish asserted, inferred, accepted, rejected, overridden, stale, and pending_review or equivalent review states.
 
-InQL may propagate attributes through relational transformations when transformation semantics are known. It must preserve provenance and confidence. It must report conservative or unknown propagation when exact propagation is not available.
+IncQL may propagate attributes through relational transformations when transformation semantics are known. It must preserve provenance and confidence. It must report conservative or unknown propagation when exact propagation is not available.
 
 A policy checkpoint record must include decision identity, target, checkpoint, action, policy reference, reason code, evidence references, visibility, and optional diagnostics.
 
@@ -81,9 +81,9 @@ This RFC introduces no policy syntax.
 
 ### Semantics
 
-InQL owns attribute carriage, propagation evidence, and checkpoint records. It does not own organizational policy meaning.
+IncQL owns attribute carriage, propagation evidence, and checkpoint records. It does not own organizational policy meaning.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 Lineage edges explain how attributes may propagate. Adapter requirements may be created when a policy checkpoint requires backend capabilities such as masking or row filtering.
 
@@ -93,7 +93,7 @@ Existing plans without governed attributes remain valid. Consumers must treat ab
 
 ## Alternatives considered
 
-- **Make InQL a policy engine.** Rejected because policy authoring and approval are outside typed relational semantics.
+- **Make IncQL a policy engine.** Rejected because policy authoring and approval are outside typed relational semantics.
 - **Use plain metadata tags only.** Rejected because provenance, confidence, authority, and status are required for trustworthy evidence.
 - **Drop uncertain attributes.** Rejected because uncertainty is meaningful evidence.
 
@@ -105,8 +105,8 @@ Existing plans without governed attributes remain valid. Consumers must treat ab
 
 ## Layers affected
 
-- **InQL specification** — governed attribute and checkpoint record semantics become normative.
-- **InQL library package** — inspection APIs must expose attributes and decisions as typed records.
+- **IncQL specification** — governed attribute and checkpoint record semantics become normative.
+- **IncQL library package** — inspection APIs must expose attributes and decisions as typed records.
 - **Execution / interchange** — Session and adapters may attach binding and execution checkpoint records.
 - **Documentation** — docs must distinguish attribute evidence from policy authority.
 
@@ -114,11 +114,11 @@ Existing plans without governed attributes remain valid. Consumers must treat ab
 
 ### Core attribute keys
 
-The first core governed attribute key is `schema.substrait_primitive_kind`, emitted from local inspection when an output field has a known primitive kind. Additional core keys must use an `inql.` or similarly explicit namespace when they describe InQL-owned evidence. User, catalog, policy, and imported artifact keys may use their own namespaces, but InQL must preserve their source and authority rather than silently treating them as core facts.
+The first core governed attribute key is `schema.substrait_primitive_kind`, emitted from local inspection when an output field has a known primitive kind. Additional core keys must use an `incql.` or similarly explicit namespace when they describe IncQL-owned evidence. User, catalog, policy, and imported artifact keys may use their own namespaces, but IncQL must preserve their source and authority rather than silently treating them as core facts.
 
 ### First propagation rules
 
-The first propagation rule is conservative schema evidence propagation from inspection metadata into field-scoped governed attributes. The emitted attributes use `GovernedAttributeSource.Lineage`, `GovernedAttributeConfidence.Exact`, and `GovernedAttributeStatus.Inferred` because they come from local plan/schema evidence rather than external authority. InQL must not fabricate policy, catalog, masking, jurisdiction, or classification attributes from name heuristics alone.
+The first propagation rule is conservative schema evidence propagation from inspection metadata into field-scoped governed attributes. The emitted attributes use `GovernedAttributeSource.Lineage`, `GovernedAttributeConfidence.Exact`, and `GovernedAttributeStatus.Inferred` because they come from local plan/schema evidence rather than external authority. IncQL must not fabricate policy, catalog, masking, jurisdiction, or classification attributes from name heuristics alone.
 
 ### Serialization boundary
 
@@ -158,7 +158,7 @@ Governed attributes and policy checkpoints are local evidence records in the fir
 - [x] Add governed attribute enums and model.
 - [x] Add policy checkpoint enums and model.
 - [x] Add helper constructors and modifier methods.
-- [x] Export public governance records and helpers through `pub::inql`.
+- [x] Export public governance records and helpers through `pub::incql`.
 
 ### Inspection
 

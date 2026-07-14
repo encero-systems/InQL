@@ -1,34 +1,34 @@
-# InQL RFC 047: Semantic evidence graph and agent query surface
+# IncQL RFC 047: Semantic evidence graph and agent query surface
 
 - **Status:** Draft
 - **Created:** 2026-06-20
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 028 (semantic identity and target model)
-  - InQL RFC 029 (typed metadata attachments)
-  - InQL RFC 030 (Prism lineage graph)
-  - InQL RFC 031 (local inspection APIs and artifacts)
-  - InQL RFC 032 (execution observations)
-  - InQL RFC 033 (adapter requirements and coverage)
-  - InQL RFC 034 (quality assertions and observations)
-  - InQL RFC 035 (governed attributes and policy checkpoints)
-  - InQL RFC 036 (governed plan bundle)
-  - InQL RFC 037 (plan diff and blast-radius inputs)
-  - InQL RFC 038 (evidence exchange bridges)
-  - InQL RFC 040 (interoperability semantic profiles)
-  - InQL RFC 042 (async verification evidence)
-  - InQL RFC 044 (verifier statements and proof artifacts)
-  - InQL RFC 045 (constraint evidence and verification-aware planning)
-  - InQL RFC 046 (data contract ingress and product topology)
-- **Issue:** [InQL #82](https://github.com/encero-systems/InQL/issues/82)
-- **RFC PR:** [InQL #83](https://github.com/encero-systems/InQL/pull/83)
-- **Written against:** Incan v0.3-era InQL
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 028 (semantic identity and target model)
+  - IncQL RFC 029 (typed metadata attachments)
+  - IncQL RFC 030 (Prism lineage graph)
+  - IncQL RFC 031 (local inspection APIs and artifacts)
+  - IncQL RFC 032 (execution observations)
+  - IncQL RFC 033 (adapter requirements and coverage)
+  - IncQL RFC 034 (quality assertions and observations)
+  - IncQL RFC 035 (governed attributes and policy checkpoints)
+  - IncQL RFC 036 (governed plan bundle)
+  - IncQL RFC 037 (plan diff and blast-radius inputs)
+  - IncQL RFC 038 (evidence exchange bridges)
+  - IncQL RFC 040 (interoperability semantic profiles)
+  - IncQL RFC 042 (async verification evidence)
+  - IncQL RFC 044 (verifier statements and proof artifacts)
+  - IncQL RFC 045 (constraint evidence and verification-aware planning)
+  - IncQL RFC 046 (data contract ingress and product topology)
+- **Issue:** [IncQL #82](https://github.com/encero-systems/IncQL/issues/82)
+- **RFC PR:** [IncQL #83](https://github.com/encero-systems/IncQL/pull/83)
+- **Written against:** Incan v0.3-era IncQL
 - **Shipped in:** —
 
 ## Summary
 
-This RFC defines a semantic evidence graph and deterministic agent query surface for InQL. The graph is a projection over InQL evidence records, not a new source of truth: declared contracts, Prism semantic lineage, imported catalog evidence, runtime observations, adapter coverage, verification observations, proof artifacts, waivers, product topology, and governed bundle records can be queried together through stable node and edge families with provenance, assurance, coverage, time, snapshot, and diagnostic context preserved.
+This RFC defines a semantic evidence graph and deterministic agent query surface for IncQL. The graph is a projection over IncQL evidence records, not a new source of truth: declared contracts, Prism semantic lineage, imported catalog evidence, runtime observations, adapter coverage, verification observations, proof artifacts, waivers, product topology, and governed bundle records can be queried together through stable node and edge families with provenance, assurance, coverage, time, snapshot, and diagnostic context preserved.
 
 ## Core model
 
@@ -43,17 +43,17 @@ This RFC defines a semantic evidence graph and deterministic agent query surface
 
 Lineage, contract, observability, quality, and verification questions are naturally graph questions. A user may need to ask where a business term or output field comes from, which products depend on a contract, which runtime jobs wrote a dataset, which outputs depend on waived evidence, which source fields contribute to a metric, or what changes if a model, field, source, contract, or profile changes. The existing RFCs define the evidence families needed to answer those questions, but they do not yet define one graph-shaped query surface that composes them.
 
-Recent open lineage and graph-observability work reinforces the split InQL should preserve. Runtime OpenLineage events describe what jobs actually ran and which datasets they read or wrote. Semantic lineage and contract metadata describe what a field, term, model, or product is supposed to mean. Verification observations describe which claims have actually been checked and with what assurance. A graph query surface is useful precisely because it can traverse all of those layers while preserving their different evidence basis.
+Recent open lineage and graph-observability work reinforces the split IncQL should preserve. Runtime OpenLineage events describe what jobs actually ran and which datasets they read or wrote. Semantic lineage and contract metadata describe what a field, term, model, or product is supposed to mean. Verification observations describe which claims have actually been checked and with what assurance. A graph query surface is useful precisely because it can traverse all of those layers while preserving their different evidence basis.
 
 ## Goals
 
-- Define an InQL semantic evidence graph projection.
+- Define an IncQL semantic evidence graph projection.
 - Define stable node and edge families for evidence-backed graph queries.
 - Preserve provenance, assurance, lifecycle, outcome, coverage, profile context, snapshot context, and diagnostics on graph elements.
 - Support deterministic impact, provenance, dependency, verification, and contract-topology queries.
 - Define an agent query surface that returns bounded evidence-backed answers and refuses to infer absent mappings.
 - Allow projection to property graph tables, openCypher-compatible stores, OpenLineage-shaped views, W3C PROV, local artifacts, and governed bundles.
-- Keep graph storage, graph database choice, hosted query services, and conversational UI outside InQL core.
+- Keep graph storage, graph database choice, hosted query services, and conversational UI outside IncQL core.
 
 ## Non-Goals
 
@@ -182,9 +182,9 @@ Edge kind should include at least:
 
 Relationship layer must distinguish at least declared, semantic, observed, verified, proven, waived, imported, and projected relationships. A declared relationship from a contract, an observed relationship from runtime lineage, a semantic relationship from Prism, and a verified relationship from a verification observation must not collapse into the same edge without preserving their layer and basis.
 
-Graph projection rules must preserve InQL lineage kinds. Value lineage, control lineage, grouping lineage, ordering lineage, join lineage, and other Prism lineage distinctions must not be flattened to a generic dependency edge unless the projection explicitly reports mapping loss.
+Graph projection rules must preserve IncQL lineage kinds. Value lineage, control lineage, grouping lineage, ordering lineage, join lineage, and other Prism lineage distinctions must not be flattened to a generic dependency edge unless the projection explicitly reports mapping loss.
 
-OpenLineage runtime events may project to run, job, dataset, read, write, input, output, and facet-backed nodes or edges. Runtime events must remain observed or attested evidence unless InQL evidence verifies the corresponding claim.
+OpenLineage runtime events may project to run, job, dataset, read, write, input, output, and facet-backed nodes or edges. Runtime events must remain observed or attested evidence unless IncQL evidence verifies the corresponding claim.
 
 Contract and product artifacts may project to contract, clause, product, port, and dependency nodes or edges. Imported contract facts must retain their source artifact and must not become verified graph relationships by default.
 
@@ -206,7 +206,7 @@ Governed plan bundles may include graph projection manifests, graph node and edg
 
 ### Syntax
 
-This RFC introduces no InQL query syntax or graph query language. Graph construction, export, and agent query functions are inspection and artifact surfaces. Future syntax may reference graph queries, but it must lower to the same graph projection and query-result records.
+This RFC introduces no IncQL query syntax or graph query language. Graph construction, export, and agent query functions are inspection and artifact surfaces. Future syntax may reference graph queries, but it must lower to the same graph projection and query-result records.
 
 ### Semantics
 
@@ -214,7 +214,7 @@ The graph is a navigable evidence index. It does not redefine relational semanti
 
 The graph may materialize edges from multiple sources that disagree. Conflict is represented as graph evidence with different basis, outcome, assurance, source, or diagnostics, not by deleting one side silently.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 RFC 028 provides semantic target identities for graph nodes.
 
@@ -240,7 +240,7 @@ OpenLineage is the primary runtime lineage exchange surface for run, job, datase
 
 W3C PROV can represent graph evidence as entities, activities, agents, derivations, generated-by relationships, used relationships, and responsibility links. OpenTelemetry can carry trace and span correlation for graph-linked execution and verification work. W3C Data Quality Vocabulary can project quality metrics and measurements. Open Data Contract Standard and Open Data Product Standard can seed contract and product topology nodes. in-toto, SLSA provenance, W3C Verifiable Credentials, JSON Web Signature, COSE, and canonical signed payload specifications can provide signed attestation envelopes when bridge profiles support them.
 
-Property graph tables, openCypher-compatible stores, RDF-shaped stores, and graph visualization tools may be projection targets. None of those storage or query formats is the internal source of InQL evidence semantics.
+Property graph tables, openCypher-compatible stores, RDF-shaped stores, and graph visualization tools may be projection targets. None of those storage or query formats is the internal source of IncQL evidence semantics.
 
 ### Compatibility / migration
 
@@ -250,9 +250,9 @@ If a graph projection profile changes node identities, edge identities, or mappi
 
 ## Alternatives considered
 
-- **Use OpenLineage as the whole graph model.** Rejected because runtime job and dataset events are necessary but do not carry all InQL semantic targets, declared contracts, verification assurance, proof artifacts, waivers, or Prism lineage kinds.
+- **Use OpenLineage as the whole graph model.** Rejected because runtime job and dataset events are necessary but do not carry all IncQL semantic targets, declared contracts, verification assurance, proof artifacts, waivers, or Prism lineage kinds.
 - **Use Prism lineage as the whole graph model.** Rejected because Prism semantic lineage does not by itself cover runtime observations, product topology, imported contracts, quality observations, or verification state.
-- **Require a specific graph database.** Rejected because InQL should define evidence semantics and projections, not storage infrastructure.
+- **Require a specific graph database.** Rejected because IncQL should define evidence semantics and projections, not storage infrastructure.
 - **Let agents read raw artifacts directly.** Rejected because agents should call deterministic tools over bounded evidence, not infer lineage or assurance from unstructured logs.
 - **Flatten all relationships to `depends_on`.** Rejected because declared, semantic, observed, verified, proven, and waived relationships carry different meaning and risk.
 
@@ -270,8 +270,8 @@ This section is non-normative. A practical implementation can emit graph node an
 
 ## Layers affected
 
-- **InQL specification** — graph node, edge, projection, and agent query-result vocabulary become part of the evidence model.
-- **InQL library package** — inspection APIs should be able to construct graph projections and answer bounded graph queries.
+- **IncQL specification** — graph node, edge, projection, and agent query-result vocabulary become part of the evidence model.
+- **IncQL library package** — inspection APIs should be able to construct graph projections and answer bounded graph queries.
 - **Execution / interchange** — exchange bridges may import OpenLineage events and export property graph, OpenLineage, PROV, or telemetry-shaped projections.
 - **Documentation** — docs must explain declared, semantic, observed, verified, proven, waived, imported, and projected relationship layers.
 

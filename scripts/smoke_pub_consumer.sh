@@ -10,22 +10,22 @@ PROJECT_DIR="$SMOKE_ROOT/project"
 rm -rf "$PROJECT_DIR"
 mkdir -p "$PROJECT_DIR"
 
-"$INCAN_BIN" init "$PROJECT_DIR" --name inql_pub_consumer_smoke >/dev/null
+"$INCAN_BIN" init "$PROJECT_DIR" --name incql_pub_consumer_smoke >/dev/null
 
 cat > "$PROJECT_DIR/incan.toml" <<EOF
 [project]
-name = "inql_pub_consumer_smoke"
+name = "incql_pub_consumer_smoke"
 version = "0.1.0"
 
 [dependencies]
-inql = { path = "$ROOT" }
+incql = { path = "$ROOT" }
 
 [project.scripts]
 main = "src/main.incn"
 EOF
 
 cat > "$PROJECT_DIR/src/main.incn" <<'EOF'
-from pub::inql import Session, SessionError, always_true
+from pub::incql import Session, SessionError, always_true
 
 @derive(Clone)
 model Order:
@@ -41,11 +41,11 @@ def main() -> Result[None, SessionError]:
 EOF
 
 cat > "$PROJECT_DIR/src/query_blocks_smoke.incn" <<EOF
-"""Pub-consumer smoke for the InQL query-block vocabulary surface."""
+"""Pub-consumer smoke for the IncQL query-block vocabulary surface."""
 
-import pub::inql
+import pub::incql
 
-from pub::inql import (
+from pub::incql import (
     DataFrame,
     GovernedAttributeStatus,
     LazyFrame,
