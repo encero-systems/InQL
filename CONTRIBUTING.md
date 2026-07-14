@@ -63,6 +63,22 @@ See [docs/architecture.md][architecture] for a concise map. In short:
 2. **Implement** in the right place: library APIs here when they are ordinary Incan code; compiler or stdlib changes in the Incan repo as needed.
 3. **Keep the [README][readme] and docs accurate** for anything a new user or contributor would notice.
 
+### RFC index
+
+RFC files are the source of truth for the RFC index. After adding or changing an RFC header, regenerate the index:
+
+```bash
+make rfc-index
+```
+
+Use the check target before committing:
+
+```bash
+make rfc-index-check
+```
+
+The generated table in `docs/rfcs/README.md` must not be edited by hand; edit the RFC file header instead.
+
 ### Function docstrings
 
 - Every function or method with a body (`def ...`) in `.incn` files must include a docstring.
