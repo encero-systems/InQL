@@ -1,27 +1,27 @@
-# InQL RFC 045: Constraint evidence and verification-aware planning
+# IncQL RFC 045: Constraint evidence and verification-aware planning
 
 - **Status:** Draft
 - **Created:** 2026-06-20
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 008 (optimizer boundary, statistics, cost-based optimization, and adaptive execution)
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 028 (semantic identity and target model)
-  - InQL RFC 030 (Prism lineage graph)
-  - InQL RFC 033 (adapter requirements and coverage)
-  - InQL RFC 034 (quality assertions and observations)
-  - InQL RFC 040 (interoperability semantic profiles)
-  - InQL RFC 042 (async verification evidence)
-  - InQL RFC 043 (canonical equality and digest profiles)
-  - InQL RFC 044 (verifier statements and proof artifacts)
-- **Issue:** [InQL #80](https://github.com/encero-systems/InQL/issues/80)
-- **RFC PR:** [InQL #83](https://github.com/encero-systems/InQL/pull/83)
-- **Written against:** Incan v0.3-era InQL
+  - IncQL RFC 008 (optimizer boundary, statistics, cost-based optimization, and adaptive execution)
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 028 (semantic identity and target model)
+  - IncQL RFC 030 (Prism lineage graph)
+  - IncQL RFC 033 (adapter requirements and coverage)
+  - IncQL RFC 034 (quality assertions and observations)
+  - IncQL RFC 040 (interoperability semantic profiles)
+  - IncQL RFC 042 (async verification evidence)
+  - IncQL RFC 043 (canonical equality and digest profiles)
+  - IncQL RFC 044 (verifier statements and proof artifacts)
+- **Issue:** [IncQL #80](https://github.com/encero-systems/IncQL/issues/80)
+- **RFC PR:** [IncQL #83](https://github.com/encero-systems/IncQL/pull/83)
+- **Written against:** Incan v0.3-era IncQL
 - **Shipped in:** —
 
 ## Summary
 
-This RFC defines constraint evidence and verification-aware planning for InQL. Constraints such as uniqueness, primary-key shape, foreign-key relationships, non-nullness, sortedness, partition coverage, and row-count bounds must be represented as evidence with assurance, and verification planners may use those constraints only when their preconditions are recorded and strong enough for the requested assurance.
+This RFC defines constraint evidence and verification-aware planning for IncQL. Constraints such as uniqueness, primary-key shape, foreign-key relationships, non-nullness, sortedness, partition coverage, and row-count bounds must be represented as evidence with assurance, and verification planners may use those constraints only when their preconditions are recorded and strong enough for the requested assurance.
 
 ## Core model
 
@@ -35,7 +35,7 @@ This RFC defines constraint evidence and verification-aware planning for InQL. C
 
 Real verification work often depends on facts such as "this key is unique," "this table covers every partition in this range," "this relation is sorted by this field," or "this join key is referentially complete." Those facts may come from model declarations, catalogs, source metadata, target metadata, connector attestations, prior checks, or deterministic verification runs. Treating them as ordinary assumptions would make verification overconfident. Ignoring them entirely would make verification too expensive or too weak.
 
-Query-proof systems demonstrate the value of planning with proof cost in mind. InQL should generalize that idea for operational verification: choose a digest strategy, sample strategy, join check, aggregate check, or proof backend based on available evidence and requested assurance, while keeping every required precondition visible.
+Query-proof systems demonstrate the value of planning with proof cost in mind. IncQL should generalize that idea for operational verification: choose a digest strategy, sample strategy, join check, aggregate check, or proof backend based on available evidence and requested assurance, while keeping every required precondition visible.
 
 ## Goals
 
@@ -138,7 +138,7 @@ Verification-aware planning chooses how to verify; it does not alter the authore
 
 Constraint evidence describes facts about data, schemas, or relationships. It is only as strong as its evidence source and assurance label.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 RFC 008 defines optimizer boundaries for execution planning. Verification-aware planning is separate: it plans evidence work and may use cost information, but it must not become ordinary query optimization.
 
@@ -154,7 +154,7 @@ RFC 044 verifier statements may include constraints as public evidence or precon
 
 Constraint evidence and verification plans should be projectable to public provenance, quality, lineage, and telemetry standards where useful. W3C PROV can represent constraint declarations, checks, imports, and verification planning steps as provenance activities and entities. W3C Data Quality Vocabulary can represent constraint checks as quality measurements or metrics. OpenLineage can expose verification-plan and constraint-evidence summaries as run, job, dataset, or custom facets. OpenTelemetry can expose planning and verification work as traces, spans, events, and metrics.
 
-External catalog, lineage, and quality standards may provide constraint inputs, but imported constraints remain evidence with explicit assurance. A bridge must not upgrade catalog-declared or externally attested constraints to verified constraint evidence unless InQL can represent and validate the underlying check.
+External catalog, lineage, and quality standards may provide constraint inputs, but imported constraints remain evidence with explicit assurance. A bridge must not upgrade catalog-declared or externally attested constraints to verified constraint evidence unless IncQL can represent and validate the underlying check.
 
 ### Compatibility / migration
 
@@ -180,8 +180,8 @@ This section is non-normative. A practical implementation can plan strategies su
 
 ## Layers affected
 
-- **InQL specification** — constraint evidence and verification plan vocabulary become part of the evidence model.
-- **InQL library package** — inspection and verification APIs should be able to emit constraint evidence and verification plans.
+- **IncQL specification** — constraint evidence and verification plan vocabulary become part of the evidence model.
+- **IncQL library package** — inspection and verification APIs should be able to emit constraint evidence and verification plans.
 - **Execution / interchange** — adapters may report coverage for uniqueness checks, referential checks, partition coverage, and staged verification strategies.
 - **Documentation** — docs must explain that constraints are evidence with assurance, not hidden assumptions.
 

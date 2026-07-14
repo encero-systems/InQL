@@ -25,11 +25,11 @@ const _SECONDS_PER_DAY: int = 24 * _SECONDS_PER_HOUR
 
 @derive(Clone)
 enum DataFusionCommonScalarFunction(str):
-    """RFC 018 scalar UDFs that InQL must provide to DataFusion itself."""
+    """RFC 018 scalar UDFs that IncQL must provide to DataFusion itself."""
 
-    # InQL's current encoding helpers are text-to-text until RFC 026 introduces richer logical values.
+    # IncQL's current encoding helpers are text-to-text until RFC 026 introduces richer logical values.
     # DataFusion exposes regexp_like/regexp_replace natively; capture extraction stays adapter-owned.
-    # These date/time helpers are InQL catalog names whose current DataFusion adapter behavior is implemented here.
+    # These date/time helpers are IncQL catalog names whose current DataFusion adapter behavior is implemented here.
     Encode = "encode"
     Decode = "decode"
     RegexpExtract = "regexp_extract"

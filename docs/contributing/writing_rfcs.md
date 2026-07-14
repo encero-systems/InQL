@@ -1,31 +1,31 @@
-# Writing InQL RFCs (how-to)
+# Writing IncQL RFCs (how-to)
 
-This guide is for contributors writing an RFC (design record) in the **InQL** repository.
+This guide is for contributors writing an RFC (design record) in the **IncQL** repository.
 
 RFC means “Request for Comments”: a normative design document under [`docs/rfcs/`](../rfcs/README.md), numbered separately from [Incan language RFCs](https://github.com/encero-systems/incan/tree/main/workspaces/docs-site/docs/RFCs).
 
 !!! warning "Before you start"
 
-    Always check whether there is already an InQL RFC or an **RFC proposal** issue covering what you want to propose. Use the [RFC index](../rfcs/README.md) and repository search.
+    Always check whether there is already an IncQL RFC or an **RFC proposal** issue covering what you want to propose. Use the [RFC index](../rfcs/README.md) and repository search.
 
 Start here:
 
 - [RFC index](../rfcs/README.md)
 - [RFC file template](../rfcs/TEMPLATE.md)
-- [RFC proposal issue](https://github.com/encero-systems/InQL/issues/new?template=rfc_proposal.yml) (optional)
+- [RFC proposal issue](https://github.com/encero-systems/IncQL/issues/new?template=rfc_proposal.yml) (optional)
 
 ## When you should write an RFC
 
-Write an InQL RFC when **behavior or contracts** of the relational layer change in a way authors or tools would rely on, for example:
+Write an IncQL RFC when **behavior or contracts** of the relational layer change in a way authors or tools would rely on, for example:
 
 - Language surface: naming, query schema, resolution rules, or new relational syntax
 - `DataSet[T]` / carrier types, bounded vs unbounded rules, or public library API contracts
 - Substrait (or other) logical plan shape, extension policy, or binding boundaries
 - `query {}` grammar, typing, or lowering expectations
 - Execution context: session, I/O boundaries, or how plans meet runners
-- Any change that must stay consistent across `query {}`, method chains, and future surfaces (see InQL RFC 000)
+- Any change that must stay consistent across `query {}`, method chains, and future surfaces (see IncQL RFC 000)
 
-Purely internal Incan compiler refactors with **no** InQL-visible meaning usually belong in the **Incan** repository, not as an InQL RFC.
+Purely internal Incan compiler refactors with **no** IncQL-visible meaning usually belong in the **Incan** repository, not as an IncQL RFC.
 
 ## Workflow
 
@@ -54,7 +54,7 @@ Purely internal Incan compiler refactors with **no** InQL-visible meaning usuall
 
 ## After acceptance
 
-- **Implemented:** Set **Shipped in** to the first InQL **package** release that contains the change. When you adopt a `closed/implemented/` layout (optional), move the file there and keep the index accurate.
+- **Implemented:** Set **Shipped in** to the first IncQL **package** release that contains the change. When you adopt a `closed/implemented/` layout (optional), move the file there and keep the index accurate.
 - **Deferred:** Update **Status** to `Deferred` and record why.
 
 ## Closed RFCs (optional layout)
@@ -63,10 +63,10 @@ If you introduce subfolders under `docs/rfcs/`, a common pattern is:
 
 - `docs/rfcs/` — active RFCs (Draft, Planned, In Progress, …)
 - `docs/rfcs/closed/implemented/` — shipped
-- `docs/rfcs/closed/superseded/` — replaced by a newer InQL RFC
+- `docs/rfcs/closed/superseded/` — replaced by a newer IncQL RFC
 - `docs/rfcs/closed/rejected/` — withdrawn or rejected
 
-When superseding or rejecting, update the status line (for example `Superseded by InQL RFC NNN`) and move the file if you use `closed/`.
+When superseding or rejecting, update the status line (for example `Superseded by IncQL RFC NNN`) and move the file if you use `closed/`.
 
 ## Tips for a good RFC
 
@@ -78,7 +78,7 @@ When superseding or rejecting, update the status line (for example `Superseded b
 
 ## Compiler and tooling work
 
-InQL RFCs often imply changes in the **Incan** compiler (parse, check, lower). When you implement there, follow that repository’s contributor guide, **AGENTS.md**, and CI gates. The InQL RFC remains the spec; the Incan repo carries the toolchain implementation.
+IncQL RFCs often imply changes in the **Incan** compiler (parse, check, lower). When you implement there, follow that repository’s contributor guide, **AGENTS.md**, and CI gates. The IncQL RFC remains the spec; the Incan repo carries the toolchain implementation.
 
 ## Further reading (Incan documentation norms)
 

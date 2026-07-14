@@ -7,7 +7,7 @@ This how-to shows how to declare quality assertions and evaluate them through a 
 Use assertion helpers to describe the checks you want to observe. The first quality surface covers relation row counts, field null rates, field uniqueness, per-group row counts, and explicit cross-relation row-count equality.
 
 ```incan
-from pub::inql import QualityAssertionSeverity, col, group_row_count, null_rate, row_count, unique
+from pub::incql import QualityAssertionSeverity, col, group_row_count, null_rate, row_count, unique
 
 checks = [
     row_count(min_count=Some(1), max_count=Some(1000000)).require(),
@@ -27,7 +27,7 @@ The helper options are deliberately small:
 
 Use `.require()`, `.quarantine()`, `.with_mode(...)`, or `.with_severity(...)` when a caller needs to record intended handling. Session observation still reports evidence rather than enforcing policy. For example, a failed required check returns a `Failed` observation; it does not throw merely because the assertion mode is `Require`.
 
-You can also declare the same checks with the `quality` vocab surface after importing `pub::inql`. A `quality` block returns a `list[QualityAssertion]`; it does not execute checks by itself.
+You can also declare the same checks with the `quality` vocab surface after importing `pub::incql`. A `quality` block returns a `list[QualityAssertion]`; it does not execute checks by itself.
 
 ```incan
 max_customer_null_rate = 0.0
@@ -47,7 +47,7 @@ Use leading-dot field references inside `quality` blocks when the assertion shou
 Quality syntax composes with query syntax. Use `query { ... }` to shape the relation you want to check, then pass that relation and the `quality { ... }` assertions to `session.observe_quality(...)`.
 
 ```incan
-from pub::inql import LazyFrame, Session
+from pub::incql import LazyFrame, Session
 from models import Order
 
 session = Session.default()
@@ -73,14 +73,14 @@ checks = quality:
 observations = session.observe_quality(paid_orders, checks)
 ```
 
-Inside `query { ... }`, leading-dot field references such as `.status` and `.order_id` use query-block resolution. Inside `quality { ... }` or `quality:`, leading-dot field references use quality assertion resolution and lower to `col("...")`. Outside those vocab blocks, use ordinary InQL expressions such as `col("customer_id")`.
+Inside `query { ... }`, leading-dot field references such as `.status` and `.order_id` use query-block resolution. Inside `quality { ... }` or `quality:`, leading-dot field references use quality assertion resolution and lower to `col("...")`. Outside those vocab blocks, use ordinary IncQL expressions such as `col("customer_id")`.
 
 ## Read the output
 
 `session.observe_quality(...)` returns one `QualityObservation` per assertion. The important fields for most callers are the assertion name, status, metrics, diagnostics, and execution observation IDs.
 
 ```incan
-from pub::inql import QualityObservationStatus
+from pub::incql import QualityObservationStatus
 
 for observation in observations:
     println(f"{observation.assertion.name}: {observation.status.value()}")
@@ -99,7 +99,7 @@ for observation in observations:
         QualityObservationStatus.Unsupported => println(observation.diagnostics[0].message)
 ```
 
-A compact rendering of a mixed result set might look like this. This is an example presentation, not a fixed InQL CLI output format.
+A compact rendering of a mixed result set might look like this. This is an example presentation, not a fixed IncQL CLI output format.
 
 ```text
 row_count: passed
@@ -130,7 +130,7 @@ group_row_count:region: passed
 Use `session.observe_quality_pair(...)` for cross-relation assertions. The first release includes row-count equality.
 
 ```incan
-from pub::inql import cross_relation_row_count_equal
+from pub::incql import cross_relation_row_count_equal
 from models import SourceOrder, TargetOrder
 
 source_orders: LazyFrame[SourceOrder] = session.read_csv("source_orders", "source_orders.csv")?

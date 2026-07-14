@@ -1,30 +1,30 @@
-# InQL RFC 012: Unified scalar expression surface
+# IncQL RFC 012: Unified scalar expression surface
 
 - **Status:** Implemented
 - **Created:** 2026-04-22
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 001 (dataset carriers and method-chain API surface)
-  - InQL RFC 003 (`query {}` blocks and relational authoring)
-  - InQL RFC 004 (execution context and backend execution boundary)
-  - InQL RFC 007 (Prism logical planning and optimization engine)
+  - IncQL RFC 001 (dataset carriers and method-chain API surface)
+  - IncQL RFC 003 (`query {}` blocks and relational authoring)
+  - IncQL RFC 004 (execution context and backend execution boundary)
+  - IncQL RFC 007 (Prism logical planning and optimization engine)
   - Incan RFC 025 (multi-instantiation trait dispatch)
   - Incan RFC 028 (trait-based operator overloading)
   - Incan RFC 029 (union types and type narrowing)
   - Incan RFC 040 (scoped DSL glyph surfaces)
   - Incan RFC 045 (scoped DSL symbol surfaces)
-- **Issue:** [InQL #25](https://github.com/encero-systems/InQL/issues/25)
+- **Issue:** [IncQL #25](https://github.com/encero-systems/IncQL/issues/25)
 - **RFC PR:** —
 - **Written against:** Incan v0.3.0
 - **Shipped in:** v0.1
 
 ## Summary
 
-This RFC defines a single canonical scalar expression model for row-level relational meaning in InQL. Filter predicates, computed projection values, grouping keys, and aggregate arguments must all be expressed through the same scalar expression surface, while aggregate outputs remain a distinct aggregate-measure layer. The goal is to replace split mini-DSLs for predicates, literals, and projection expressions with one coherent authoring and lowering contract that all InQL surfaces share.
+This RFC defines a single canonical scalar expression model for row-level relational meaning in IncQL. Filter predicates, computed projection values, grouping keys, and aggregate arguments must all be expressed through the same scalar expression surface, while aggregate outputs remain a distinct aggregate-measure layer. The goal is to replace split mini-DSLs for predicates, literals, and projection expressions with one coherent authoring and lowering contract that all IncQL surfaces share.
 
 ## Motivation
 
-InQL has reached the point where split builder surfaces are becoming a design liability rather than a harmless implementation detail. Filters, computed projections, grouping keys, and aggregate arguments all describe row-level meaning, but they are currently easy to model as separate families because features landed incrementally. That split creates three problems.
+IncQL has reached the point where split builder surfaces are becoming a design liability rather than a harmless implementation detail. Filters, computed projections, grouping keys, and aggregate arguments all describe row-level meaning, but they are currently easy to model as separate families because features landed incrementally. That split creates three problems.
 
 First, it makes the author contract harder to understand. Authors have to learn which helper family belongs to which surface even when the underlying intent is the same. A numeric literal used in a filter and a numeric literal used in a computed projection should not feel like different concepts.
 
@@ -32,16 +32,16 @@ Second, it encourages duplicated or drifting semantics across package layers. If
 
 Third, split expression families produce the worst kind of failure mode: silent degradation. If a public method accepts a broad expression type but only truly supports direct column references in that position, unsupported shapes can be dropped or rewritten instead of rejected explicitly. A query library must not treat "unsupported" as "quietly mean something else."
 
-This RFC is also needed before InQL can take proper advantage of the scoped DSL work in Incan. RFC 040 and RFC 045 create a path toward concise surfaces such as `.amount > 100` or ambient `sum(.amount)`, but those surfaces need one canonical lowering target. Without that, InQL would accumulate parallel semantic paths instead of one coherent expression system.
+This RFC is also needed before IncQL can take proper advantage of the scoped DSL work in Incan. RFC 040 and RFC 045 create a path toward concise surfaces such as `.amount > 100` or ambient `sum(.amount)`, but those surfaces need one canonical lowering target. Without that, IncQL would accumulate parallel semantic paths instead of one coherent expression system.
 
 ## Goals
 
-- Define one canonical scalar expression model for row-level relational authoring in InQL.
+- Define one canonical scalar expression model for row-level relational authoring in IncQL.
 - Require row-level authoring surfaces such as `filter(...)`, `with_column(...)`, future `select(...)`, and grouping keys to consume that same scalar expression model.
 - Keep aggregate outputs as a distinct aggregate-measure layer while allowing aggregates to consume scalar-expression inputs.
 - Require explicit errors for unsupported expression shapes; silent degradation is not allowed.
 - Provide one lowering target for future concise DSL surfaces in method chains and `query {}` blocks.
-- Give the InQL package, Prism, and Substrait emission layers one shared semantic contract for row-level expressions.
+- Give the IncQL package, Prism, and Substrait emission layers one shared semantic contract for row-level expressions.
 
 ## Non-Goals
 
@@ -49,7 +49,7 @@ This RFC is also needed before InQL can take proper advantage of the scoped DSL 
 - Introducing new parser syntax in this RFC.
 - Defining join output typing, relation schema evolution, or materialization semantics beyond expression authoring.
 - Making aggregate outputs behave as ordinary row-level scalar expressions in all positions.
-- Standardizing every public helper spelling across all possible InQL libraries or future extensions.
+- Standardizing every public helper spelling across all possible IncQL libraries or future extensions.
 
 ## Guide-level explanation (how authors think about it)
 
@@ -60,8 +60,8 @@ The canonical public literal helper is `lit(...)`. Typed literal helpers are ent
 If an author filters rows or computes a new column, those operations should be using the same underlying scalar expression model:
 
 ```incan
-from pub::inql import LazyFrame
-from pub::inql.functions import col, lit, gt, add
+from pub::incql import LazyFrame
+from pub::incql.functions import col, lit, gt, add
 from models import Order
 
 def enrich_orders(orders: LazyFrame[Order]) -> LazyFrame[Order]:
@@ -75,8 +75,8 @@ def enrich_orders(orders: LazyFrame[Order]) -> LazyFrame[Order]:
 If an author groups rows and supplies arguments to aggregates, those aggregate inputs should still be ordinary scalar expressions even though the aggregate outputs are not:
 
 ```incan
-from pub::inql import LazyFrame
-from pub::inql.functions import col, sum, count
+from pub::incql import LazyFrame
+from pub::incql.functions import col, sum, count
 from models import Order, OrderSummary
 
 def summarize_orders(orders: LazyFrame[Order]) -> LazyFrame[OrderSummary]:
@@ -97,7 +97,7 @@ In that example:
 - `sum(...)` consumes a scalar expression and produces an aggregate measure
 - `count()` is a distinct aggregate form because it does not require a scalar input
 
-This RFC does not require concise sugar, but it defines what concise sugar should mean later. If InQL later supports surfaces such as:
+This RFC does not require concise sugar, but it defines what concise sugar should mean later. If IncQL later supports surfaces such as:
 
 ```incan
 orders
@@ -115,7 +115,7 @@ Authors should also get explicit failure for unsupported shapes. If a library or
 
 ### Canonical scalar expression model
 
-InQL must define one canonical scalar expression model for row-level relational meaning. That model may evolve over time, but it must be the semantic target for all row-level expression-bearing surfaces in the package.
+IncQL must define one canonical scalar expression model for row-level relational meaning. That model may evolve over time, but it must be the semantic target for all row-level expression-bearing surfaces in the package.
 
 At minimum, the canonical scalar expression model must be able to represent:
 
@@ -127,7 +127,7 @@ Separate public wrapper types may exist as implementation details, but they must
 
 ### Row-level consumers
 
-The following InQL positions must consume scalar expressions:
+The following IncQL positions must consume scalar expressions:
 
 - row filters
 - computed projection values
@@ -139,7 +139,7 @@ Each position must still enforce its own result-type contract:
 
 - `filter(...)` must require a scalar expression whose result type is `bool`
 - `with_column(...)` and projection positions must require a non-aggregate row-level scalar expression
-- grouping-key positions must require scalar expressions that are valid grouping keys under the current InQL contract
+- grouping-key positions must require scalar expressions that are valid grouping keys under the current IncQL contract
 
 ### Aggregate measures
 
@@ -151,7 +151,7 @@ Aggregate measures must not be treated as ordinary row-level scalar expressions 
 
 ### Explicit failure requirement
 
-InQL package APIs, Prism planning, and Substrait lowering must not silently degrade unsupported expression shapes.
+IncQL package APIs, Prism planning, and Substrait lowering must not silently degrade unsupported expression shapes.
 
 If a public authoring surface accepts an expression shape that cannot be represented or executed faithfully in the target position, the system must produce an explicit diagnostic or planning error.
 
@@ -163,19 +163,19 @@ The following behaviors are forbidden:
 
 ### Canonical literal concept
 
-The semantic concept of a scalar literal must be unified. InQL standardizes `lit(...)` as the canonical public helper for scalar literals. Because Incan RFC 029 gives Incan first-class union types, `lit(...)` may accept a closed union of supported literal input types such as `int | float | str | bool` while still returning one scalar-expression representation.
+The semantic concept of a scalar literal must be unified. IncQL standardizes `lit(...)` as the canonical public helper for scalar literals. Because Incan RFC 029 gives Incan first-class union types, `lit(...)` may accept a closed union of supported literal input types such as `int | float | str | bool` while still returning one scalar-expression representation.
 
 Typed helpers such as `int_expr(...)`, `float_expr(...)`, `str_expr(...)`, `bool_expr(...)`, `int_lit(...)`, `str_lit(...)`, and `bool_lit(...)` must lower into the same scalar-literal representation as `lit(...)`. The system must not preserve separate literal hierarchies for filters, projections, and other row-level positions.
 
 ### Lowering target for future authoring surfaces
 
-If InQL adopts future concise method-chain sugar or richer `query {}` syntax using Incan RFC 025, RFC 028, RFC 029, RFC 040, and RFC 045 facilities, those surfaces must lower into the canonical scalar expression model for row-level meaning and the canonical aggregate-measure model for aggregate meaning.
+If IncQL adopts future concise method-chain sugar or richer `query {}` syntax using Incan RFC 025, RFC 028, RFC 029, RFC 040, and RFC 045 facilities, those surfaces must lower into the canonical scalar expression model for row-level meaning and the canonical aggregate-measure model for aggregate meaning.
 
 ## Design details
 
 ### Syntax
 
-This RFC does not require new InQL syntax. Existing builder-call surfaces are sufficient to define the contract.
+This RFC does not require new IncQL syntax. Existing builder-call surfaces are sufficient to define the contract.
 
 The long-term intention is that concise surfaces may exist, but they are only acceptable if they lower into the same canonical expression model defined here.
 
@@ -188,19 +188,19 @@ The core semantic split is:
 
 Boolean predicates are ordinary scalar expressions whose result type is `bool`; they are not a separate semantic species.
 
-Grouping keys belong on the scalar-expression side. They determine grouping identity by evaluating one scalar expression per input row. The north-star contract allows deterministic, row-level scalar expressions as grouping keys when their result type is valid for grouping. InQL may initially support only a subset of scalar expressions for grouping, but if so, that restriction must be explicit and diagnosable, not a permanent semantic narrowing and not a silent fallback to direct-column grouping.
+Grouping keys belong on the scalar-expression side. They determine grouping identity by evaluating one scalar expression per input row. The north-star contract allows deterministic, row-level scalar expressions as grouping keys when their result type is valid for grouping. IncQL may initially support only a subset of scalar expressions for grouping, but if so, that restriction must be explicit and diagnosable, not a permanent semantic narrowing and not a silent fallback to direct-column grouping.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
-- **Dataset carriers and method chains (InQL RFC 001):** method-chain surfaces such as `filter(...)`, `with_column(...)`, `group_by(...)`, and future projection methods should consume one scalar-expression model rather than independent mini-DSLs.
-- **`query {}` blocks (InQL RFC 003):** query-block expressions should lower into the same scalar-expression and aggregate-measure contracts rather than defining a separate semantic path.
-- **Execution context (InQL RFC 004):** session execution should receive one row-level expression contract and one aggregate-measure contract, not surface-specific variants.
-- **Prism (InQL RFC 007):** Prism should represent row-level expression meaning once and reuse it across logical operators instead of duplicating per-surface expression semantics.
+- **Dataset carriers and method chains (IncQL RFC 001):** method-chain surfaces such as `filter(...)`, `with_column(...)`, `group_by(...)`, and future projection methods should consume one scalar-expression model rather than independent mini-DSLs.
+- **`query {}` blocks (IncQL RFC 003):** query-block expressions should lower into the same scalar-expression and aggregate-measure contracts rather than defining a separate semantic path.
+- **Execution context (IncQL RFC 004):** session execution should receive one row-level expression contract and one aggregate-measure contract, not surface-specific variants.
+- **Prism (IncQL RFC 007):** Prism should represent row-level expression meaning once and reuse it across logical operators instead of duplicating per-surface expression semantics.
 - **Incan `model` types and lexical scope:** model fields remain the source of column naming and typing, and ordinary lexical scope rules still govern explicit helper references until scoped DSL facilities are adopted.
 
 ### Surface cleanup
 
-This RFC consolidates builder families before InQL's first released API.
+This RFC consolidates builder families before IncQL's first released API.
 
 The expected cleanup shape is:
 
@@ -209,7 +209,7 @@ The expected cleanup shape is:
 - docs and diagnostics should steer authors toward one canonical scalar-expression concept
 - split row-level helper families should be collapsed before release
 
-Correctness takes precedence over convenience. If a permissive helper path would silently change semantics, InQL should reject that path instead.
+Correctness takes precedence over convenience. If a permissive helper path would silently change semantics, IncQL should reject that path instead.
 
 ## Alternatives considered
 
@@ -220,16 +220,16 @@ Correctness takes precedence over convenience. If a permissive helper path would
 
 ## Drawbacks
 
-- InQL surfaces that grew independently may need cleanup before release.
+- IncQL surfaces that grew independently may need cleanup before release.
 - Tooling and diagnostics become more demanding because the system must enforce the scalar-versus-aggregate boundary more consistently.
 - Some previously tolerated expression shapes may need to become hard errors if they only "worked" through accidental or degraded behavior.
 - The RFC makes inconsistencies more visible, which can force earlier cleanup across docs, examples, planning, and lowering.
 
 ## Layers affected
 
-- **InQL specification** — RFCs 001, 003, 004, and 007 must stay coherent with one shared scalar-expression and aggregate-measure contract.
-- **InQL library package** — public `.incn` APIs should converge on one canonical row-level expression model and explicit aggregate-measure wrappers.
-- **Incan compiler** — if InQL adopts scoped DSL sugar later, parser, checker, lowering, and diagnostics must preserve the scalar-expression lowering contract rather than inventing a separate semantic path.
+- **IncQL specification** — RFCs 001, 003, 004, and 007 must stay coherent with one shared scalar-expression and aggregate-measure contract.
+- **IncQL library package** — public `.incn` APIs should converge on one canonical row-level expression model and explicit aggregate-measure wrappers.
+- **Incan compiler** — if IncQL adopts scoped DSL sugar later, parser, checker, lowering, and diagnostics must preserve the scalar-expression lowering contract rather than inventing a separate semantic path.
 - **Execution / interchange** — Prism and Substrait lowering must preserve the scalar-versus-aggregate boundary and must not silently rewrite unsupported expression shapes.
 - **Documentation** — user docs and reference pages should describe one row-level expression model instead of multiple parallel mini-DSLs.
 
@@ -261,7 +261,7 @@ Correctness takes precedence over convenience. If a permissive helper path would
 - Add package tests covering `lit(...)` and typed literal helpers across filters, computed projections, grouping keys, and aggregate inputs.
 - Add negative tests for unsupported scalar-expression shapes in grouping and aggregate positions when the implementation cannot lower them faithfully.
 - Update reference and explanation docs so users see one scalar expression model instead of separate filter/projection literal families.
-- Decide whether this user-visible package change requires an InQL package version bump, and if so keep `incan.toml` and `src/metadata.incn` synchronized.
+- Decide whether this user-visible package change requires an IncQL package version bump, and if so keep `incan.toml` and `src/metadata.incn` synchronized.
 
 ## Implementation Log
 

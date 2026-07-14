@@ -1,6 +1,6 @@
 # Dataset carriers (Explanation)
 
-This page explains how to think about and use InQL's dataset carriers. It is intentionally conceptual. Exact method and builder signatures live in the reference pages.
+This page explains how to think about and use IncQL's dataset carriers. It is intentionally conceptual. Exact method and builder signatures live in the reference pages.
 
 ## Why dataset carriers?
 
@@ -32,7 +32,7 @@ This enables **static capability gating**: operations that require unbounded sta
 Use `DataFrame[T]` when you have data in hand and want to inspect or manipulate it directly:
 
 ```incan
-from pub::inql import DataFrame
+from pub::incql import DataFrame
 from models import Order
 
 def inspect_orders(orders: DataFrame[Order]) -> None:
@@ -55,8 +55,8 @@ Collected `DataFrame[T]` values currently expose structured materialization meta
 Use `LazyFrame[T]` when you want to compose operations before execution:
 
 ```incan
-from pub::inql import LazyFrame
-from pub::inql.functions import col, gt, lit
+from pub::incql import LazyFrame
+from pub::incql.functions import col, gt, lit
 from models import Order
 
 def high_value_orders(orders: LazyFrame[Order]) -> LazyFrame[Order]:
@@ -68,8 +68,8 @@ def high_value_orders(orders: LazyFrame[Order]) -> LazyFrame[Order]:
 Use `DataStream[T]` for streaming/unbounded data:
 
 ```incan
-from pub::inql import DataStream
-from pub::inql.functions import col, eq
+from pub::incql import DataStream
+from pub::incql.functions import col, eq
 from models import Event
 
 def important_events(events: DataStream[Event]) -> DataStream[Event]:
@@ -83,7 +83,7 @@ def important_events(events: DataStream[Event]) -> DataStream[Event]:
 The trait hierarchy gives you three levels of specificity:
 
 ```incan
-from pub::inql import DataSet, BoundedDataSet, UnboundedDataSet
+from pub::incql import DataSet, BoundedDataSet, UnboundedDataSet
 from models import Order, Event
 
 # Accepts any carrier — generic utilities
@@ -102,7 +102,7 @@ def write_to_kafka(events: UnboundedDataSet[Event]) -> None:
 And two levels of concrete-type specificity:
 
 ```incan
-from pub::inql import DataFrame, LazyFrame, DataStream
+from pub::incql import DataFrame, LazyFrame, DataStream
 from models import Order, Event
 
 # Materialized data in hand
@@ -128,13 +128,13 @@ Today there are three concrete builder families:
 
 ### Aggregate helpers
 
-`.agg(...)` uses **imported** symbols from `pub::inql.functions` through explicit builders such as `col(...)`, `sum(...)`, and `count()`.
+`.agg(...)` uses **imported** symbols from `pub::incql.functions` through explicit builders such as `col(...)`, `sum(...)`, and `count()`.
 
 Concrete builder example:
 
 ```incan
-from pub::inql.functions import col, count, sum
-from pub::inql import LazyFrame
+from pub::incql.functions import col, count, sum
+from pub::incql import LazyFrame
 from models import Order
 
 def orders_by_customer(orders: LazyFrame[Order]) -> LazyFrame[Order]:
@@ -148,8 +148,8 @@ That is the current semantic target for future sugar such as `.customer_id` or `
 Computed columns now have one real entrypoint: `with_column(name, expr)`.
 
 ```incan
-from pub::inql.functions import add, col, lit, mul
-from pub::inql import LazyFrame
+from pub::incql.functions import add, col, lit, mul
+from pub::incql import LazyFrame
 from models import Order
 
 def enrich_orders(orders: LazyFrame[Order]) -> LazyFrame[Order]:
@@ -174,11 +174,11 @@ The most useful way to read the current surface is to separate:
 
 ### Concrete method-chain example
 
-This is real current InQL, not aspirational pseudocode:
+This is real current IncQL, not aspirational pseudocode:
 
 ```incan
-from pub::inql.functions import add, col, count, lit, sum
-from pub::inql import LazyFrame
+from pub::incql.functions import add, col, count, lit, sum
+from pub::incql import LazyFrame
 from models import Order
 
 def summarize_orders(orders: LazyFrame[Order]) -> LazyFrame[Order]:

@@ -1,26 +1,26 @@
-# InQL RFC 032: Execution observations
+# IncQL RFC 032: Execution observations
 
 - **Status:** Implemented
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 004 (execution context)
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 028 (semantic identity and target model)
-  - InQL RFC 031 (local inspection APIs and artifacts)
-  - InQL RFC 040 (interoperability semantic profiles)
-- **Issue:** [InQL #66](https://github.com/encero-systems/InQL/issues/66)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #85](https://github.com/encero-systems/InQL/pull/85); [InQL #87](https://github.com/encero-systems/InQL/pull/87)
-- **Written against:** Incan v0.3-era InQL
+  - IncQL RFC 004 (execution context)
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 028 (semantic identity and target model)
+  - IncQL RFC 031 (local inspection APIs and artifacts)
+  - IncQL RFC 040 (interoperability semantic profiles)
+- **Issue:** [IncQL #66](https://github.com/encero-systems/IncQL/issues/66)
+- **RFC PR:** [IncQL #60](https://github.com/encero-systems/IncQL/pull/60); [IncQL #85](https://github.com/encero-systems/IncQL/pull/85); [IncQL #87](https://github.com/encero-systems/IncQL/pull/87)
+- **Written against:** Incan v0.3-era IncQL
 - **Shipped in:** v0.1
 
 ## Summary
 
-This RFC defines execution observations for InQL sessions. Execution observations correlate runtime attempts with semantic plan targets and record backend, adapter, semantic profile context, status, timing, diagnostics, row counts, and optional trace identifiers without making runtime logs the source of relational semantics.
+This RFC defines execution observations for IncQL sessions. Execution observations correlate runtime attempts with semantic plan targets and record backend, adapter, semantic profile context, status, timing, diagnostics, row counts, and optional trace identifiers without making runtime logs the source of relational semantics.
 
 ## Motivation
 
-After a plan executes, users and tools need evidence about what was attempted and what happened. A result table alone cannot explain which plan version ran, which adapter executed it, which diagnostics occurred, or how runtime observations attach to semantic targets. InQL needs a lightweight execution observation model that is structural, redacted by default, and independent of any particular telemetry backend.
+After a plan executes, users and tools need evidence about what was attempted and what happened. A result table alone cannot explain which plan version ran, which adapter executed it, which diagnostics occurred, or how runtime observations attach to semantic targets. IncQL needs a lightweight execution observation model that is structural, redacted by default, and independent of any particular telemetry backend.
 
 ## Goals
 
@@ -61,7 +61,7 @@ Diagnostics must be structured records. Sensitive values, row samples, query pay
 
 An execution observation may reference local inspection artifacts or semantic targets produced before execution. It must not mutate authored Prism targets or claim lineage that was not present in the plan evidence model.
 
-Telemetry integrations may emit equivalent spans, events, logs, or metrics, but the InQL observation model must remain usable when no telemetry backend is configured.
+Telemetry integrations may emit equivalent spans, events, logs, or metrics, but the IncQL observation model must remain usable when no telemetry backend is configured.
 
 ## Design details
 
@@ -73,7 +73,7 @@ This RFC introduces no syntax.
 
 Execution observations are runtime evidence. They describe an attempt to execute a semantic plan through a session and adapter.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 Quality observations, adapter coverage records, semantic profile records, and evidence exchange bridges may refer to execution observations. Pipeline layers may consume them, but orchestration behavior remains outside this RFC.
 
@@ -100,7 +100,7 @@ The implemented scope adds typed execution observation records, observed `Sessio
 ## Alternatives considered
 
 - **Use backend logs only.** Rejected because logs are not stable semantic evidence and may be sensitive.
-- **Require OpenTelemetry for all observations.** Rejected because local InQL evidence should work without provider configuration.
+- **Require OpenTelemetry for all observations.** Rejected because local IncQL evidence should work without provider configuration.
 - **Attach execution data directly to plan nodes.** Rejected because runtime attempts are lifecycle events, not authored plan structure.
 
 ## Drawbacks
@@ -111,8 +111,8 @@ The implemented scope adds typed execution observation records, observed `Sessio
 
 ## Layers affected
 
-- **InQL specification** — execution observation fields and status values become normative.
-- **InQL library package** — Session results must expose observations.
+- **IncQL specification** — execution observation fields and status values become normative.
+- **IncQL library package** — Session results must expose observations.
 - **Execution / interchange** — adapters must report execution facts without redefining semantics.
 - **Documentation** — docs must explain observation redaction and telemetry independence.
 
@@ -124,4 +124,4 @@ Every adapter-backed observation must provide the semantic attempt target, plan 
 
 Failed planning, binding, and lowering attempts use the same execution observation model when they occur through a session operation and can be attached to a plan target or the explicit unavailable-plan target. Their diagnostics identify which stage failed. This keeps runtime attempt evidence uniform without claiming that an authored Prism plan exists when planning did not complete.
 
-Trace identifiers are represented as `list[str]`. InQL does not interpret the values or require a telemetry provider. Multiple telemetry systems can add multiple opaque identifiers, and local execution remains valid when the list is empty.
+Trace identifiers are represented as `list[str]`. IncQL does not interpret the values or require a telemetry provider. Multiple telemetry systems can add multiple opaque identifiers, and local execution remains valid when the list is empty.

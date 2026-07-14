@@ -1,6 +1,6 @@
-# InQL language docs
+# IncQL language docs
 
-This section documents the current InQL package surface.
+This section documents the current IncQL package surface.
 
 - Use [reference/][reference] for API shape, signatures, and current behavior contracts.
 - Use [how-to/][how-to] for concrete task workflows.

@@ -514,7 +514,7 @@ def _known_expression_kind(
     bindings: list[ResolvedProjectionBinding],
     expr: ColumnExpr,
 ) -> Result[Option[SubstraitPrimitiveKind], SubstraitLoweringError]:
-    """Return a known primitive expression kind, or `None` when InQL cannot infer it honestly."""
+    """Return a known primitive expression kind, or `None` when IncQL cannot infer it honestly."""
     match expr:
         BoolColumnExpr(_) => return Ok(Some(SubstraitPrimitiveKind.Bool))
         IntColumnExpr(_) => return Ok(Some(SubstraitPrimitiveKind.I64))

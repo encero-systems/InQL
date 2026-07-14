@@ -1,6 +1,6 @@
-# InQL documentation
+# IncQL documentation
 
-This directory holds the public documentation for the InQL project.
+This directory holds the public documentation for the IncQL project.
 
 Use the docs tree like this:
 
@@ -40,7 +40,7 @@ Use the docs tree like this:
 
 ### Understand the system design
 
-1. [InQL architecture][architecture]
+1. [IncQL architecture][architecture]
 2. [RFC index][rfcs-index]
 3. Relevant RFCs for deeper normative context
 

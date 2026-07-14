@@ -34,7 +34,7 @@ from governance import (
     governed_attribute,
     policy_checkpoint,
 )
-from metadata import inql_version
+from metadata import incql_version
 from functions.registry import function_registry_entry_by_name
 from prism import prism_plan_id
 from prism.output_columns import authored_output_schema, rewritten_output_schema
@@ -46,8 +46,8 @@ from scalar_schema import ScalarColumnSpec
 from std.collections import OrderedSet
 from window_builders import WindowProjection
 
-pub const INSPECTION_SCHEMA_VERSION: str = "inql.inspection.v0.1"
-pub const LINEAGE_RULE_VERSION: str = "inql.lineage.prism.v0.1"
+pub const INSPECTION_SCHEMA_VERSION: str = "incql.inspection.v0.1"
+pub const LINEAGE_RULE_VERSION: str = "incql.lineage.prism.v0.1"
 
 
 @derive(Clone)
@@ -82,7 +82,7 @@ pub model PlanInspection:
     """Structured local inspection record for one Prism-backed lazy plan."""
 
     pub schema_version: str
-    pub inql_version: str
+    pub incql_version: str
     pub plan_id: str
     pub plan_target: SemanticTarget
     pub root_target: SemanticTarget
@@ -216,7 +216,7 @@ pub def inspect_plan[T with Clone](data: LazyFrame[T]) -> PlanInspection:
     )
     return PlanInspection(
         schema_version=INSPECTION_SCHEMA_VERSION,
-        inql_version=inql_version(),
+        incql_version=incql_version(),
         plan_id=plan_id,
         plan_target=plan_target,
         root_target=_authored_node_target(plan_id, authored_context.node(tip_id)),
@@ -1192,17 +1192,17 @@ def _metadata_attachments(
     attachments.append(
         _public_attachment(
             plan_target,
-            "inql.inspection",
+            "incql.inspection",
             "schema_version",
             INSPECTION_SCHEMA_VERSION,
             MetadataLifecycle.Analyzed,
-            MetadataSource.InQL,
+            MetadataSource.IncQL,
         ),
     )
     attachments.append(
         _public_attachment(
             plan_target,
-            "inql.lineage",
+            "incql.lineage",
             "rule_version",
             LINEAGE_RULE_VERSION,
             MetadataLifecycle.Analyzed,
@@ -1215,7 +1215,7 @@ def _metadata_attachments(
                 attachments.append(
                     _public_attachment(
                         output_fields[idx],
-                        "inql.schema",
+                        "incql.schema",
                         "substrait_primitive_kind",
                         kind.value(),
                         MetadataLifecycle.Analyzed,
@@ -1229,13 +1229,13 @@ def _governed_attributes_from_metadata(attachments: list[MetadataAttachment]) ->
     """Promote local schema metadata into conservative governed attributes."""
     mut attributes: list[GovernedAttribute] = []
     for attachment in attachments:
-        if attachment.namespace == "inql.schema" and attachment.key == "substrait_primitive_kind":
+        if attachment.namespace == "incql.schema" and attachment.key == "substrait_primitive_kind":
             attributes.append(
                 governed_attribute(
                     attachment.target,
                     "schema.substrait_primitive_kind",
                     attachment.payload.value,
-                    value_schema="inql.governance.schema-primitive-kind.v0.1",
+                    value_schema="incql.governance.schema-primitive-kind.v0.1",
                     scope=GovernedAttributeScope.Field,
                     source=GovernedAttributeSource.Lineage,
                     confidence=GovernedAttributeConfidence.Exact,
@@ -1260,7 +1260,7 @@ def _policy_checkpoints_for_inspection(
         plan_target,
         PolicyCheckpointKind.Planning,
         PolicyCheckpointAction.Observe,
-        "inql.policy.local-inspection",
+        "incql.policy.local-inspection",
         "governed_evidence_observed",
         evidence_refs=evidence_refs,
     )]
@@ -1284,7 +1284,7 @@ def _public_attachment(
         target=target,
         namespace=namespace,
         key=key,
-        payload=MetadataPayload(schema="inql.metadata.string.v0.1", value=value),
+        payload=MetadataPayload(schema="incql.metadata.string.v0.1", value=value),
         lifecycle=lifecycle,
         source=source,
         visibility=MetadataVisibility.Public,

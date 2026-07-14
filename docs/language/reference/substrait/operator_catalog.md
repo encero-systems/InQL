@@ -1,6 +1,6 @@
 # Substrait operator catalog (Reference)
 
-This page is the **operational mapping reference** for InQL's Apache Substrait integration. The normative contract — including the Logical `Rel` alphabet, pinning policy, read-root boundary, and extension URI rules — lives in [InQL RFC 002][rfc-002]. This page provides the full capability → `Rel` catalog, profile tags, gap encoding requirements, and optional mutation profile detail that are too long-lived and versioned to remain inside the RFC text itself.
+This page is the **operational mapping reference** for IncQL's Apache Substrait integration. The normative contract — including the Logical `Rel` alphabet, pinning policy, read-root boundary, and extension URI rules — lives in [IncQL RFC 002][rfc-002]. This page provides the full capability → `Rel` catalog, profile tags, gap encoding requirements, and optional mutation profile detail that are too long-lived and versioned to remain inside the RFC text itself.
 
 ## Profile tags
 
@@ -13,13 +13,13 @@ Each entry in the catalog carries one of the following profile tags:
 | **gap**               | No stable logical `Rel` exists in current core Substrait; **must** use a documented non-core encoding (see [Gap profiles](#gap-profiles)); ad hoc or undocumented encodings are non-conforming |
 | **optional-mutation** | Part of the optional mutation profile; not required for read/query analytical core; may be omitted by distributions that target read-only analytical use                                       |
 
-The same status taxonomy is used in the [Substrait conformance corpus][ref-conformance-corpus]. Scenario contracts in that corpus are represented as typed InQL models with stable scenario IDs so CI and downstream implementations can consume a stable machine contract.
+The same status taxonomy is used in the [Substrait conformance corpus][ref-conformance-corpus]. Scenario contracts in that corpus are represented as typed IncQL models with stable scenario IDs so CI and downstream implementations can consume a stable machine contract.
 
 ## Read/query analytical core profile
 
-The following table maps InQL plan capabilities to Substrait logical relations and expression patterns for the read/query analytical core — the minimum required for InQL v0.1.
+The following table maps IncQL plan capabilities to Substrait logical relations and expression patterns for the read/query analytical core — the minimum required for IncQL v0.1.
 
-| InQL capability (conceptual)                                  | Substrait                                                                                                                                 | Profile |
+| IncQL capability (conceptual)                                  | Substrait                                                                                                                                 | Profile |
 | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | Logical table / registered name                               | `ReadRel` + `NamedTable`                                                                                                                  | core    |
 | File or object scan as plan input                             | `ReadRel` + `LocalFiles` (format options in the pinned spec)                                                                              | core    |
@@ -46,15 +46,15 @@ The following table maps InQL plan capabilities to Substrait logical relations a
 
 ## Optional mutation profile
 
-The following capabilities are part of the optional mutation profile. They are **not** required for InQL read/query analytical core (v0.1). An implementation that exposes any mutation-profile capability **must** document which relations are supported for its target backend and what portability guarantees (if any) apply.
+The following capabilities are part of the optional mutation profile. They are **not** required for IncQL read/query analytical core (v0.1). An implementation that exposes any mutation-profile capability **must** document which relations are supported for its target backend and what portability guarantees (if any) apply.
 
-| InQL capability                               | Substrait   | Profile           |
+| IncQL capability                               | Substrait   | Profile           |
 | --------------------------------------------- | ----------- | ----------------- |
 | Write to a table / CTAS                       | `WriteRel`  | optional-mutation |
 | Table update without a full child `Rel` input | `UpdateRel` | optional-mutation |
 | DDL (create, drop, alter)                     | `DdlRel`    | optional-mutation |
 
-Absence of these in a given distribution does not make InQL incomplete for read-only analytical use.
+Absence of these in a given distribution does not make IncQL incomplete for read-only analytical use.
 
 ## Extension escape hatches
 
@@ -72,7 +72,7 @@ Using an extension escape hatch without a registered URI is non-conforming.
 
 ### Unnest / explode
 
-Core Substrait does not define a portable unnest or explode `Rel` at the logical level. Until a stable logical `Rel` for unnest is adopted in the pinned Substrait revision and recognized by InQL:
+Core Substrait does not define a portable unnest or explode `Rel` at the logical level. Until a stable logical `Rel` for unnest is adopted in the pinned Substrait revision and recognized by IncQL:
 
 - `EXPLODE`-style behavior **must** lower through a registered extension relation (`ExtensionSingleRel` or `ExtensionLeafRel`) with a declared extension URI in the toolchain's public catalog.
 - Alternatively, a documented rewrite (for example, expanding a virtual table) **may** be used if the encoding is unambiguously specified in the public operator catalog for the toolchain version.
@@ -80,10 +80,10 @@ Core Substrait does not define a portable unnest or explode `Rel` at the logical
 
 Current package-level RFC 002 boundary registration:
 
-- `https://inql.io/extensions/v0.1/unnest.yaml#explode`
-- `https://inql.io/extensions/v0.1/unnest.yaml#explode_outer`
-- `https://inql.io/extensions/v0.1/unnest.yaml#posexplode`
-- `https://inql.io/extensions/v0.1/unnest.yaml#posexplode_outer`
+- `https://incql.io/extensions/v0.1/unnest.yaml#explode`
+- `https://incql.io/extensions/v0.1/unnest.yaml#explode_outer`
+- `https://incql.io/extensions/v0.1/unnest.yaml#posexplode`
+- `https://incql.io/extensions/v0.1/unnest.yaml#posexplode_outer`
 
 ### Pivot / unpivot
 

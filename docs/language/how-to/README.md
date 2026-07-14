@@ -1,6 +1,6 @@
-# InQL language how-to guides
+# IncQL language how-to guides
 
-How-to guides show concrete task workflows for the current InQL package surface. They complement the reference docs, which define API shape and behavior contracts.
+How-to guides show concrete task workflows for the current IncQL package surface. They complement the reference docs, which define API shape and behavior contracts.
 
 - [Add window columns][window-columns]
 - [Build typed HyperLogLog sketches][typed-hll-sketches]

@@ -3,7 +3,7 @@ name = "advanced_retail_query_blocks"
 version = "0.1.0"
 
 [dependencies]
-inql = { path = "../.." }
+incql = { path = "../.." }
 
 [project.scripts]
 main = "src/main.incn"

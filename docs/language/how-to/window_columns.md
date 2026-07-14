@@ -9,8 +9,8 @@ Window helpers produce one output value per input row while reading related rows
 Build a window spec, call `.over(spec)` on each window helper, and attach the resulting applications as named columns.
 
 ```incan
-from pub::inql import LazyFrame
-from pub::inql.functions import col, current_row, desc, lag, rank, sum, unbounded_preceding, window
+from pub::incql import LazyFrame
+from pub::incql.functions import col, current_row, desc, lag, rank, sum, unbounded_preceding, window
 from models import Order
 
 def ranked_orders(orders: LazyFrame[Order]) -> LazyFrame[Order]:

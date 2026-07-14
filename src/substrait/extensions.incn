@@ -1,5 +1,5 @@
 """
-Substrait extension and function-anchor bookkeeping for InQL.
+Substrait extension and function-anchor bookkeeping for IncQL.
 
 This module derives extension declarations from registry metadata and collects required extension URNs over relation and
 expression trees.
@@ -328,7 +328,7 @@ def _aggregate_function_uses_if_then(aggregate_function: AggregateFunction) -> b
 
 
 def _generator_payload_arguments(extension: ExtensionSingleRel) -> list[Expression]:
-    """Return lowered generator payload arguments when the extension carries InQL generator metadata."""
+    """Return lowered generator payload arguments when the extension carries IncQL generator metadata."""
     match extension.detail:
         Some(detail) =>
             if not is_generator_extension_uri(detail.type_url):

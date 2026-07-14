@@ -1,5 +1,5 @@
 name: "Bug report"
-description: Report a problem with the InQL package, tests, docs, or CI.
+description: Report a problem with the IncQL package, tests, docs, or CI.
 title: "bug - "
 type: Bug
 labels: ["bug"]
@@ -8,7 +8,7 @@ body:
     attributes:
       value: |
         Thanks for reporting — a **minimal repro** (snippet, commands, or RFC section) helps a lot.
-        Toolchain problems **outside this repo** (generic Incan, not InQL\’s package or specs) belong in the [Incan compiler](https://github.com/encero-systems/incan/issues) tracker.
+        Toolchain problems **outside this repo** (generic Incan, not IncQL\’s package or specs) belong in the [Incan compiler](https://github.com/encero-systems/incan/issues) tracker.
   - type: dropdown
     id: area
     attributes:
@@ -54,10 +54,10 @@ body:
     id: env
     attributes:
       label: Environment
-      description: OS, InQL commit or version, and `incan` version/commit if you hit it while building or testing.
+      description: OS, IncQL commit or version, and `incan` version/commit if you hit it while building or testing.
       placeholder: |
         OS:
-        InQL (commit or version):
+        IncQL (commit or version):
         incan (version or commit):
         Command:
     validations:
