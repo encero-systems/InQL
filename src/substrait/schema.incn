@@ -56,7 +56,7 @@ pub def row_shape_field_names(shape: RowShapeSpec) -> list[str]:
 
 
 def _primitive_kind_from_type_name(type_name: str) -> SubstraitPrimitiveKind:
-    """Map Incan field reflection type names to primitive schema kinds InQL can lower today."""
+    """Map Incan field reflection type names to primitive schema kinds IncQL can lower today."""
     if type_name == "bool":
         return SubstraitPrimitiveKind.Bool
     if type_name == "int":
@@ -73,7 +73,7 @@ def _primitive_kind_from_type_name(type_name: str) -> SubstraitPrimitiveKind:
         return SubstraitPrimitiveKind.F64List
     if type_name == "list[str]" or type_name == "List[str]":
         return SubstraitPrimitiveKind.StringList
-    message = f"unsupported model field type `{type_name}` for InQL row shape"
+    message = f"unsupported model field type `{type_name}` for IncQL row shape"
     return raise_value_error(message)
 
 

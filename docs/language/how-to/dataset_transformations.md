@@ -7,8 +7,8 @@ This how-to shows how to combine common carrier methods while keeping work defer
 Use `with_column(...)` to append a new computed column or replace an existing column by name.
 
 ```incan
-from pub::inql import LazyFrame
-from pub::inql.functions import add, col, mul
+from pub::incql import LazyFrame
+from pub::incql.functions import add, col, mul
 from models import Order
 
 def enrich(orders: LazyFrame[Order]) -> LazyFrame[Order]:
@@ -24,8 +24,8 @@ def enrich(orders: LazyFrame[Order]) -> LazyFrame[Order]:
 Use scalar helpers for row predicates and aggregate helpers for grouped measures.
 
 ```incan
-from pub::inql import LazyFrame
-from pub::inql.functions import avg, col, count, eq, sum
+from pub::incql import LazyFrame
+from pub::incql.functions import avg, col, count, eq, sum
 from models import Order
 
 def paid_spend_by_customer(orders: LazyFrame[Order]) -> LazyFrame[Order]:
@@ -46,7 +46,7 @@ def paid_spend_by_customer(orders: LazyFrame[Order]) -> LazyFrame[Order]:
 Use ordering helpers inside `order_by(...)`, then cap rows with `limit(...)`.
 
 ```incan
-from pub::inql.functions import col, desc
+from pub::incql.functions import col, desc
 
 top_orders = (
     orders

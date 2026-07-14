@@ -1,30 +1,30 @@
-# InQL RFC 034: Quality assertions and observations
+# IncQL RFC 034: Quality assertions and observations
 
 - **Status:** Implemented
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 004 (execution context)
-  - InQL RFC 012 (unified scalar expression surface)
-  - InQL RFC 016 (core aggregate functions)
-  - InQL RFC 017 (aggregate modifiers)
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 028 (semantic identity and target model)
-  - InQL RFC 032 (execution observations)
-  - InQL RFC 033 (adapter requirements and coverage)
-  - InQL RFC 042 (async verification evidence)
-- **Issue:** [InQL #68](https://github.com/encero-systems/InQL/issues/68)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #83](https://github.com/encero-systems/InQL/pull/83); [InQL #88](https://github.com/encero-systems/InQL/pull/88)
-- **Written against:** Incan v0.3-era InQL
+  - IncQL RFC 004 (execution context)
+  - IncQL RFC 012 (unified scalar expression surface)
+  - IncQL RFC 016 (core aggregate functions)
+  - IncQL RFC 017 (aggregate modifiers)
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 028 (semantic identity and target model)
+  - IncQL RFC 032 (execution observations)
+  - IncQL RFC 033 (adapter requirements and coverage)
+  - IncQL RFC 042 (async verification evidence)
+- **Issue:** [IncQL #68](https://github.com/encero-systems/IncQL/issues/68)
+- **RFC PR:** [IncQL #60](https://github.com/encero-systems/IncQL/pull/60); [IncQL #83](https://github.com/encero-systems/IncQL/pull/83); [IncQL #88](https://github.com/encero-systems/IncQL/pull/88)
+- **Written against:** Incan v0.3-era IncQL
 - **Shipped in:** v0.1
 
 ## Summary
 
-This RFC defines InQL quality assertions, quality assertion syntax, and quality observations. Quality assertions are typed relational checks over datasets, fields, groups, or explicit multi-relation inputs. Quality observations are runtime results produced by executing those assertions. A quality assertion is not an ordinary filter unless the author explicitly asks to filter rows.
+This RFC defines IncQL quality assertions, quality assertion syntax, and quality observations. Quality assertions are typed relational checks over datasets, fields, groups, or explicit multi-relation inputs. Quality observations are runtime results produced by executing those assertions. A quality assertion is not an ordinary filter unless the author explicitly asks to filter rows.
 
 ## Motivation
 
-Data quality needs to participate in typed relational planning without collapsing into ad hoc post-run tests or silent filters. InQL can express many quality checks as relational work: row counts, null rates, accepted values, uniqueness, ranges, group thresholds, and aggregate conditions. Those checks should produce observations that sessions, CI, and pipeline layers can consume.
+Data quality needs to participate in typed relational planning without collapsing into ad hoc post-run tests or silent filters. IncQL can express many quality checks as relational work: row counts, null rates, accepted values, uniqueness, ranges, group thresholds, and aggregate conditions. Those checks should produce observations that sessions, CI, and pipeline layers can consume.
 
 ## Goals
 
@@ -82,17 +82,17 @@ A quality observation must include observation identity, assertion identity, exe
 
 Observation status must distinguish passed, failed, errored, skipped, and unsupported.
 
-Quality observation status describes the predicate outcome. When a quality observation is used as verification evidence, the verification observation defined by InQL RFC 042 carries the separate assurance label describing whether the predicate result was proven, verified, attested, sampled, waived, or unknown.
+Quality observation status describes the predicate outcome. When a quality observation is used as verification evidence, the verification observation defined by IncQL RFC 042 carries the separate assurance label describing whether the predicate result was proven, verified, attested, sampled, waived, or unknown.
 
 Quality assertions may be planned as relational work. They must not change the cardinality or contents of the checked relation unless represented as an explicit transformation requested by the author.
 
-Quality expressions must use ordinary InQL scalar, aggregate, and grouping semantics. Invalid expression context must be diagnosed before execution where possible.
+Quality expressions must use ordinary IncQL scalar, aggregate, and grouping semantics. Invalid expression context must be diagnosed before execution where possible.
 
 ## Design details
 
 ### Syntax
 
-This RFC introduces `quality { ... }` and expression-position `quality:` syntax for declaring a `list[QualityAssertion]`. The syntax is activated by importing `pub::inql`, like `query { ... }`.
+This RFC introduces `quality { ... }` and expression-position `quality:` syntax for declaring a `list[QualityAssertion]`. The syntax is activated by importing `pub::incql`, like `query { ... }`.
 
 ```incan
 checks = quality:
@@ -107,7 +107,7 @@ Each body item must be an assertion expression. Brace syntax uses newline-separa
 
 Quality assertions produce observations. They may inform session failure, warnings, CI status, or pipeline gates, but those policies are outside the assertion semantics.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 `quality` syntax lowers to the same assertion model as helper calls. It may be used next to `query {}` blocks by shaping a relation with `query {}` and declaring checks with `quality {}` before passing both to a `Session` observation API. Future pipeline syntax may lower to the same assertion model, but the assertion model must not become method-chain, query-block, or quality-block specific.
 
@@ -119,7 +119,7 @@ The first implementation adds relation, field, group, and explicit cross-relatio
 
 ## Implementation plan
 
-The implemented scope adds typed `QualityAssertion`, `QualityObservation`, `QualityMetric`, and quality enum records; helper APIs for the first assertion families; `quality` vocab syntax for assertion-list declarations; policy-neutral assertion mode/severity metadata; session evaluation APIs; concrete DataFusion-backed execution tests; reference documentation; and a task-oriented how-to guide. The evaluator uses ordinary InQL relation plans and structured materialization row counts, including aggregate/filter plans for field and group checks. It does not scrape preview text and does not push enforcement behavior into `Session`.
+The implemented scope adds typed `QualityAssertion`, `QualityObservation`, `QualityMetric`, and quality enum records; helper APIs for the first assertion families; `quality` vocab syntax for assertion-list declarations; policy-neutral assertion mode/severity metadata; session evaluation APIs; concrete DataFusion-backed execution tests; reference documentation; and a task-oriented how-to guide. The evaluator uses ordinary IncQL relation plans and structured materialization row counts, including aggregate/filter plans for field and group checks. It does not scrape preview text and does not push enforcement behavior into `Session`.
 
 ## Progress checklist
 
@@ -137,7 +137,7 @@ The implemented scope adds typed `QualityAssertion`, `QualityObservation`, `Qual
 ## Alternatives considered
 
 - **Treat every quality check as a filter.** Rejected because observations and transformations are different semantics.
-- **Leave quality entirely to external tools.** Rejected because typed relational checks need InQL schema and expression semantics.
+- **Leave quality entirely to external tools.** Rejected because typed relational checks need IncQL schema and expression semantics.
 - **Make `quality` syntax execute checks directly.** Rejected because declaration and observation are separate semantics. The syntax produces assertion values; session APIs produce runtime observations.
 
 ## Drawbacks
@@ -148,8 +148,8 @@ The implemented scope adds typed `QualityAssertion`, `QualityObservation`, `Qual
 
 ## Layers affected
 
-- **InQL specification** — quality assertion and observation semantics become normative.
-- **InQL library package** — public helper APIs, quality vocab syntax, and session observation APIs are affected.
+- **IncQL specification** — quality assertion and observation semantics become normative.
+- **IncQL library package** — public helper APIs, quality vocab syntax, and session observation APIs are affected.
 - **Execution / interchange** — quality plans may lower to backend-executable relational work.
 - **Documentation** — docs must distinguish checks, filters, and pipeline gates.
 

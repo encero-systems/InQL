@@ -32,7 +32,7 @@ pub def hll_deserialize(
     payload: StrValueOrColumn,
     value_domain: SketchValueDomain = SketchValueDomain.StringIdentifier,
     precision: int = 14,
-    format: SketchSerializationFormat = SketchSerializationFormat.InqlHllV1,
+    format: SketchSerializationFormat = SketchSerializationFormat.IncqlHllV1,
 ) -> SketchExpr:
     """
     Deserialize an explicit HyperLogLog payload into typed sketch state.

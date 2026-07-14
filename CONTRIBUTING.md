@@ -1,21 +1,21 @@
-# Contributing to InQL
+# Contributing to IncQL
 
-Thank you for your interest in InQL — the typed relational layer for [Incan][incan-repo]. This document is the entry point for contributing to **this repository** (the InQL package and its design RFCs).
+Thank you for your interest in IncQL — the typed relational layer for [Incan][incan-repo]. This document is the entry point for contributing to **this repository** (the IncQL package and its design RFCs).
 
 ## Start here
 
 | Resource | Purpose |
 | -------- | ------- |
-| [README.md][readme] | What InQL is and how to build the library |
+| [README.md][readme] | What IncQL is and how to build the library |
 | [AGENTS.md][agents] | AI/agent and maintainer rules; repo vs Incan boundaries |
 | [docs/architecture.md][architecture] | How this repo fits next to the Incan compiler |
 | [docs/rfcs/][rfcs-index] | Normative design proposals (behavior changes start here) |
-| [Writing InQL RFCs][writing-rfcs] | How to draft RFCs, workflow, and tips |
+| [Writing IncQL RFCs][writing-rfcs] | How to draft RFCs, workflow, and tips |
 | [Incan `CONTRIBUTING.md`][incan-contributing] | Compiler, tooling, and Rust workspace workflow |
-| [Incan docs-site contributor loop][incan-docsite-loop] | Divio layout, snippets, checklist for Incan’s MkDocs site — mirror these patterns when shaping InQL `docs/` |
+| [Incan docs-site contributor loop][incan-docsite-loop] | Divio layout, snippets, checklist for Incan’s MkDocs site — mirror these patterns when shaping IncQL `docs/` |
 | [Incan AGENTS — Docs-site workflow][incan-agents-docs-workflow] | Prose **without hard wrapping**, `mkdocs build --strict`, Material-friendly Markdown |
 
-**Compiler and language implementation** (lexer, parser, typechecker, lowering, codegen for `query {}` and related surfaces) lives in the **Incan** repository. Use that project’s docs and gates when you change the toolchain. Use **this** repo for the InQL **library source** (`.incn`) and **InQL RFCs** that specify the relational surface.
+**Compiler and language implementation** (lexer, parser, typechecker, lowering, codegen for `query {}` and related surfaces) lives in the **Incan** repository. Use that project’s docs and gates when you change the toolchain. Use **this** repo for the IncQL **library source** (`.incn`) and **IncQL RFCs** that specify the relational surface.
 
 ## Getting started
 
@@ -25,8 +25,8 @@ Thank you for your interest in InQL — the typed relational layer for [Incan][i
 2. **Clone this repository**
 
    ```bash
-   git clone https://github.com/encero-systems/InQL
-   cd InQL
+   git clone https://github.com/encero-systems/IncQL
+   cd IncQL
    ```
 
 3. **Build and verify**
@@ -59,7 +59,7 @@ See [docs/architecture.md][architecture] for a concise map. In short:
 
 ## Changing behavior
 
-1. **Specify the change in an InQL RFC** under `docs/rfcs/` (or amend an existing RFC). New documents should start from [RFC template][rfc-template]; follow [Writing InQL RFCs][writing-rfcs] for workflow so naming, typing, and lowering rules stay coherent across `query {}`, carriers, and optional pipe-forward.
+1. **Specify the change in an IncQL RFC** under `docs/rfcs/` (or amend an existing RFC). New documents should start from [RFC template][rfc-template]; follow [Writing IncQL RFCs][writing-rfcs] for workflow so naming, typing, and lowering rules stay coherent across `query {}`, carriers, and optional pipe-forward.
 2. **Implement** in the right place: library APIs here when they are ordinary Incan code; compiler or stdlib changes in the Incan repo as needed.
 3. **Keep the [README][readme] and docs accurate** for anything a new user or contributor would notice.
 
@@ -88,7 +88,7 @@ The generated table in `docs/rfcs/README.md` must not be edited by hand; edit th
 ### Comments and readability
 
 - In this repository, comments are part of the contributor-facing readability contract.
-- Do not assume the usual "remove comments that restate the code" heuristic applies cleanly here. Incan/InQL is still a new language surface for most readers, so short explanatory comments often pull real weight even when they partially echo the code.
+- Do not assume the usual "remove comments that restate the code" heuristic applies cleanly here. Incan/IncQL is still a new language surface for most readers, so short explanatory comments often pull real weight even when they partially echo the code.
 - Keep or add concise comments that explain:
   - what phase or boundary a block belongs to
   - what shape of data is being parsed or transformed
@@ -119,10 +119,10 @@ The generated table in `docs/rfcs/README.md` must not be edited by hand; edit th
 
 ## Version bumps
 
-InQL carries its version in two places that **must stay in sync**:
+IncQL carries its version in two places that **must stay in sync**:
 
 1. `incan.toml` — `[project] version = "…"`
-2. `src/metadata.incn` — the string returned by `inql_version()`
+2. `src/metadata.incn` — the string returned by `incql_version()`
 
 Bump both in the same commit.
 
@@ -148,7 +148,7 @@ The auto-label workflow uses a shared **organization-level GitHub App** installa
 | `TRIAGE_APP_INSTALLATION_ID` | Installation ID for the **organization-level** app installation |
 | `TRIAGE_APP_PRIVATE_KEY` | App private key (PEM) |
 
-Install the app on the `encero-systems` organization and grant it access to `InQL` (and any future repositories that should share triage automation). Without these secrets the workflow fails at the token step.
+Install the app on the `encero-systems` organization and grant it access to `IncQL` (and any future repositories that should share triage automation). Without these secrets the workflow fails at the token step.
 
 ## Pull request guidelines
 
@@ -161,7 +161,7 @@ Install the app on the `encero-systems` organization and grant it access to `InQ
 
 When you open an issue, GitHub offers **templates** under [`.github/ISSUE_TEMPLATE/`][issue-templates] (bug report, feature request, chore, documentation, RFC proposal), aligned with the Incan project’s shape.
 
-Open an issue on this repository for InQL-specific design or package questions; use the [Incan repository][incan-repo] for compiler and language issues that are not InQL-scoped.
+Open an issue on this repository for IncQL-specific design or package questions; use the [Incan repository][incan-repo] for compiler and language issues that are not IncQL-scoped.
 
 <!-- References -->
 

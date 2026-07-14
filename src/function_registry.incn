@@ -1,5 +1,5 @@
 """
-Package-owned function registry metadata for the current public InQL function surface.
+Package-owned function registry metadata for the current public IncQL function surface.
 
 Public helpers register themselves with declaration-side registry decorators. The decorator owns non-derivable machine
 metadata and records one runtime entry while returning the helper unchanged. Function signatures and canonical names
@@ -9,12 +9,12 @@ source helper name is constrained by the host language, such as the `modulo(...)
 
 from substrait.function_extensions import FUNCTION_EXTENSION_URI
 
-pub const CORE_FUNCTION_NAMESPACE: str = "inql.functions"
+pub const CORE_FUNCTION_NAMESPACE: str = "incql.functions"
 
 
 @derive(Clone)
 pub enum FunctionPolicyCategory(str):
-    """InQL RFC 024 portability and extension-policy category for one function-like metadata item."""
+    """IncQL RFC 024 portability and extension-policy category for one function-like metadata item."""
 
     PortableCore = "portable_core"
     ExtensionOnly = "extension_only"
@@ -86,7 +86,7 @@ pub enum FunctionInputType(str):
 
 @derive(Clone, Eq)
 pub enum SubstraitMappingKind(str):
-    """Substrait interchange category for one portable InQL function."""
+    """Substrait interchange category for one portable IncQL function."""
 
     CoreFunction = "core_function"
     ExtensionFunction = "extension_function"
@@ -97,7 +97,7 @@ pub enum SubstraitMappingKind(str):
 
 @derive(Clone, Eq)
 pub model FunctionVersion:
-    """One InQL package version used by function lifecycle metadata."""
+    """One IncQL package version used by function lifecycle metadata."""
 
     pub major: int
     pub minor: int
@@ -240,7 +240,7 @@ pub const HLL_SKETCH_CONSTRUCT_POLICY: FunctionSketchPolicy = FunctionSketchPoli
     role="construct",
     default_domain="string_identifier",
     default_precision=14,
-    format="inql_hll_v1",
+    format="incql_hll_v1",
     returns_sketch=true,
     accepts_sketch=false,
     result_interpretation="typed HyperLogLog sketch state",
@@ -251,7 +251,7 @@ pub const HLL_SKETCH_MERGE_POLICY: FunctionSketchPolicy = FunctionSketchPolicy(
     role="merge",
     default_domain="string_identifier",
     default_precision=14,
-    format="inql_hll_v1",
+    format="incql_hll_v1",
     returns_sketch=true,
     accepts_sketch=true,
     result_interpretation="merged typed HyperLogLog sketch state",
@@ -262,7 +262,7 @@ pub const HLL_SKETCH_ESTIMATE_POLICY: FunctionSketchPolicy = FunctionSketchPolic
     role="estimate",
     default_domain="string_identifier",
     default_precision=14,
-    format="inql_hll_v1",
+    format="incql_hll_v1",
     returns_sketch=false,
     accepts_sketch=true,
     result_interpretation="approximate distinct-count estimate from typed HyperLogLog sketch state",
@@ -273,7 +273,7 @@ pub const HLL_SKETCH_SERIALIZE_POLICY: FunctionSketchPolicy = FunctionSketchPoli
     role="serialize",
     default_domain="string_identifier",
     default_precision=14,
-    format="inql_hll_v1",
+    format="incql_hll_v1",
     returns_sketch=false,
     accepts_sketch=true,
     result_interpretation="explicit serialized HyperLogLog sketch payload",
@@ -284,7 +284,7 @@ pub const HLL_SKETCH_DESERIALIZE_POLICY: FunctionSketchPolicy = FunctionSketchPo
     role="deserialize",
     default_domain="string_identifier",
     default_precision=14,
-    format="inql_hll_v1",
+    format="incql_hll_v1",
     returns_sketch=true,
     accepts_sketch=false,
     result_interpretation="typed HyperLogLog sketch state decoded from explicit serialized payload",
@@ -472,7 +472,7 @@ pub model FunctionSpec:
 
 @derive(Clone)
 pub model FunctionRegistryEntry:
-    """Runtime projection for one registered InQL function."""
+    """Runtime projection for one registered IncQL function."""
 
     pub function_ref: str
     pub namespace: str
@@ -674,7 +674,7 @@ def _entry_matches_spec(entry: FunctionRegistryEntry, canonical_name: str, spec:
 
 
 pub def function_ref_for(canonical_name: str) -> str:
-    """Return the durable registry reference for one canonical InQL function name."""
+    """Return the durable registry reference for one canonical IncQL function name."""
     return namespaced_function_ref(CORE_FUNCTION_NAMESPACE, canonical_name)
 
 
@@ -789,7 +789,7 @@ pub variant_scalar_spec = partial FunctionSpec(canonical_name=None, namespace=CO
 
 pub extension_only_spec = partial FunctionSpec(canonical_name=None, policy_category=FunctionPolicyCategory.ExtensionOnly, aliases=[], alias_policy=FunctionAliasPolicy.OptInCompatibility, aggregate_modifiers=NO_AGGREGATE_MODIFIERS, approximation=NO_APPROXIMATION, sketch=NO_SKETCH_POLICY, variant=NO_VARIANT_POLICY)
 
-"""Build one opt-in compatibility alias spec for semantics that remain typeable by InQL."""
+"""Build one opt-in compatibility alias spec for semantics that remain typeable by IncQL."""
 
 pub compatibility_alias_spec = partial FunctionSpec(canonical_name=None, policy_category=FunctionPolicyCategory.CompatibilityAlias, alias_policy=FunctionAliasPolicy.OptInCompatibility, aggregate_modifiers=NO_AGGREGATE_MODIFIERS, approximation=NO_APPROXIMATION, sketch=NO_SKETCH_POLICY, variant=NO_VARIANT_POLICY)
 

@@ -1,20 +1,20 @@
 # Governed attributes and policy checkpoints (Reference)
 
-This page documents the current governed-evidence surface in the InQL package. Normative design intent lives in [RFC 035][rfc-035].
+This page documents the current governed-evidence surface in the IncQL package. Normative design intent lives in [RFC 035][rfc-035].
 
-Governed attributes are typed evidence records attached to semantic targets. They can describe facts such as classification, origin, purpose, jurisdiction, masking state, or schema-derived field facts. A governed attribute records where the fact came from, how confident InQL or a caller is in it, whether it is asserted or inferred, which authority supplied or reviewed it, and which evidence references support it.
+Governed attributes are typed evidence records attached to semantic targets. They can describe facts such as classification, origin, purpose, jurisdiction, masking state, or schema-derived field facts. A governed attribute records where the fact came from, how confident IncQL or a caller is in it, whether it is asserted or inferred, which authority supplied or reviewed it, and which evidence references support it.
 
 Policy checkpoints are decision records attached to semantic targets at authoring, planning, binding, or execution boundaries. They record that a policy result was observed, warned, denied, required approval, requested masking, or required another check. They do not define a policy language and they do not enforce behavior by themselves.
 
 ## Entry points
 
 ```incan
-from pub::inql import governed_attribute, policy_checkpoint
+from pub::incql import governed_attribute, policy_checkpoint
 ```
 
 | Helper | Signature | Purpose |
 | ------ | --------- | ------- |
-| `governed_attribute` | `def governed_attribute(target, key, value, value_schema = "inql.governance.string.v0.1", scope = GovernedAttributeScope.Field, source = GovernedAttributeSource.Inferred, confidence = GovernedAttributeConfidence.Unknown, status = GovernedAttributeStatus.Inferred, authority = None, observed_at_unix_nanoseconds = None, expires_at_unix_nanoseconds = None, evidence_refs = []) -> GovernedAttribute` | Build one governed fact attached to a semantic target. |
+| `governed_attribute` | `def governed_attribute(target, key, value, value_schema = "incql.governance.string.v0.1", scope = GovernedAttributeScope.Field, source = GovernedAttributeSource.Inferred, confidence = GovernedAttributeConfidence.Unknown, status = GovernedAttributeStatus.Inferred, authority = None, observed_at_unix_nanoseconds = None, expires_at_unix_nanoseconds = None, evidence_refs = []) -> GovernedAttribute` | Build one governed fact attached to a semantic target. |
 | `policy_checkpoint` | `def policy_checkpoint(target, checkpoint, action, policy_ref, reason_code, evidence_refs = [], visibility = MetadataVisibility.Public, diagnostics = []) -> PolicyCheckpoint` | Build one policy decision or observation record attached to a semantic target. |
 
 ## Records
@@ -24,7 +24,7 @@ from pub::inql import governed_attribute, policy_checkpoint
 | `GovernedAttribute` | One governed fact attached to a semantic target with provenance, confidence, status, authority, lifetime, and evidence references. |
 | `PolicyCheckpoint` | One policy decision or observation attached to a semantic target with checkpoint phase, action, policy reference, reason code, visibility, diagnostics, and evidence references. |
 
-`GovernedAttribute.value` is a `MetadataPayload` with a schema and compact string value. The default helper shape is intentionally compact: inspection-derived primitive-kind attributes use `inql.governance.schema-primitive-kind.v0.1` to distinguish governed schema evidence from generic metadata strings. Catalog, contract, exchange, or policy-ingress steps can normalize richer external formats before they become governed attributes.
+`GovernedAttribute.value` is a `MetadataPayload` with a schema and compact string value. The default helper shape is intentionally compact: inspection-derived primitive-kind attributes use `incql.governance.schema-primitive-kind.v0.1` to distinguish governed schema evidence from generic metadata strings. Catalog, contract, exchange, or policy-ingress steps can normalize richer external formats before they become governed attributes.
 
 `GovernedAttribute` exposes convenience methods:
 
@@ -63,7 +63,7 @@ Inspection-derived governed attributes use `GovernedAttributeSource.Lineage`, `G
 
 ## Boundary
 
-InQL carries governed evidence. It does not decide legal obligations, own an organization policy language, approve changes, or enforce masking/row-filter behavior by itself. A caller may read `PolicyCheckpoint` and `GovernedAttribute` records and choose how to act, but that enforcement decision is outside the record semantics.
+IncQL carries governed evidence. It does not decide legal obligations, own an organization policy language, approve changes, or enforce masking/row-filter behavior by itself. A caller may read `PolicyCheckpoint` and `GovernedAttribute` records and choose how to act, but that enforcement decision is outside the record semantics.
 
 <!-- References -->
 

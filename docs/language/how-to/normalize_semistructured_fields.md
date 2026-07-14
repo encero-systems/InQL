@@ -9,7 +9,7 @@ Use format helpers when the payload should stay a scalar expression in the curre
 Hash identifiers, extract URL and JSON fields, and validate schema-bearing payloads with model type parameters.
 
 ```incan
-from pub::inql.functions import col, from_csv, from_json, get_json_object, parse_url, sha2, to_json
+from pub::incql.functions import col, from_csv, from_json, get_json_object, parse_url, sha2, to_json
 
 model EventPayload:
     type_ as "type": str

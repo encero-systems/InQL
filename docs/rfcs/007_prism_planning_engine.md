@@ -1,30 +1,30 @@
-# InQL RFC 007: Prism logical planning and optimization engine
+# IncQL RFC 007: Prism logical planning and optimization engine
 
 - **Status:** In Progress
 - **Created:** 2026-04-02
 - **Author(s):** Danny Meijer
 - **Related:**
-  - InQL RFC 001 (dataset types and carriers — Prism-backed carriers must remain consistent with `DataSet[T]` semantics)
-  - InQL RFC 002 (Apache Substrait integration — Substrait remains the normative emitted contract at the boundary)
-  - InQL RFC 003 (`query {}` — lowers through Prism-managed logical work before Substrait emission)
-  - InQL RFC 004 (execution context — session executes Prism-backed plans but does not define Prism)
-  - InQL RFC 005 (optional pipe-forward — must stay Prism-consistent with equivalent surfaces)
-- **Issue:** [InQL #16](https://github.com/encero-systems/InQL/issues/16)
+  - IncQL RFC 001 (dataset types and carriers — Prism-backed carriers must remain consistent with `DataSet[T]` semantics)
+  - IncQL RFC 002 (Apache Substrait integration — Substrait remains the normative emitted contract at the boundary)
+  - IncQL RFC 003 (`query {}` — lowers through Prism-managed logical work before Substrait emission)
+  - IncQL RFC 004 (execution context — session executes Prism-backed plans but does not define Prism)
+  - IncQL RFC 005 (optional pipe-forward — must stay Prism-consistent with equivalent surfaces)
+- **Issue:** [IncQL #16](https://github.com/encero-systems/IncQL/issues/16)
 - **RFC PR:** —
 - **Written against:** Incan v0.2
 - **Shipped in:** —
 
 ## Summary
 
-This RFC defines **Prism** as InQL's immutable internal logical planning and optimization engine. Prism owns persistent plan storage, cheap branching through structural sharing, lineage-preserving rewrites, and logical optimization prior to Substrait emission or session execution. Prism is an **internal planning substrate**, not the normative interchange contract: **Apache Substrait** remains the boundary format per InQL RFC 002. `LazyFrame`, `DataFrame`, and `DataStream` are carrier experiences over Prism-managed plan state; `Session` and `SessionContext` bind and execute those plans per InQL RFC 004.
+This RFC defines **Prism** as IncQL's immutable internal logical planning and optimization engine. Prism owns persistent plan storage, cheap branching through structural sharing, lineage-preserving rewrites, and logical optimization prior to Substrait emission or session execution. Prism is an **internal planning substrate**, not the normative interchange contract: **Apache Substrait** remains the boundary format per IncQL RFC 002. `LazyFrame`, `DataFrame`, and `DataStream` are carrier experiences over Prism-managed plan state; `Session` and `SessionContext` bind and execute those plans per IncQL RFC 004.
 
-RFC 007 is the design and implementation record for the first Prism adoption slice. Optimizer-boundary ownership is further clarified by [InQL RFC 008](008_optimizer_boundary_stats_cbo_aqe.md): Prism owns immutable authored state, lineage-preserving logical work, and internal optimized views, while RFC 008 narrows the split with `Session` around backend-facing statistics, physical planning, and adaptive execution concerns. Follow-on RFC 007 hardening includes an Incan-native typed store-id allocator (`static` + `newtype`) and cross-store adoption dedup for equivalent reachable RHS nodes; this remains internal Prism substrate work and does not expand RFC 008 scope.
+RFC 007 is the design and implementation record for the first Prism adoption slice. Optimizer-boundary ownership is further clarified by [IncQL RFC 008](008_optimizer_boundary_stats_cbo_aqe.md): Prism owns immutable authored state, lineage-preserving logical work, and internal optimized views, while RFC 008 narrows the split with `Session` around backend-facing statistics, physical planning, and adaptive execution concerns. Follow-on RFC 007 hardening includes an Incan-native typed store-id allocator (`static` + `newtype`) and cross-store adoption dedup for equivalent reachable RHS nodes; this remains internal Prism substrate work and does not expand RFC 008 scope.
 
 ## Motivation
 
-InQL already has a strong external story around typed carriers, Substrait emission, and the execution boundary, but it lacks a dedicated specification for the internal planning layer that sits between authored logic and emitted plans. Without that layer being named and scoped, plan construction, optimization, lineage, interactive behavior, and future explain/debug tooling risk becoming an accidental mix of implementation details spread across InQL RFC 001, InQL RFC 002, and InQL RFC 004.
+IncQL already has a strong external story around typed carriers, Substrait emission, and the execution boundary, but it lacks a dedicated specification for the internal planning layer that sits between authored logic and emitted plans. Without that layer being named and scoped, plan construction, optimization, lineage, interactive behavior, and future explain/debug tooling risk becoming an accidental mix of implementation details spread across IncQL RFC 001, IncQL RFC 002, and IncQL RFC 004.
 
-Prism gives that layer a home. It lets InQL say clearly that:
+Prism gives that layer a home. It lets IncQL say clearly that:
 
 - authored transformations build immutable logical plans
 - carriers stay cheap by sharing planning state instead of cloning whole plans
@@ -35,24 +35,24 @@ This matters for more than simple query lowering. Complex multi-hop pipelines, f
 
 ## Goals
 
-- Define **Prism** as the immutable logical planning engine for InQL.
+- Define **Prism** as the immutable logical planning engine for IncQL.
 - Specify Prism's core responsibilities: persistent plan storage, logical optimization, lineage preservation, and preparation for Substrait emission.
-- Clarify the relationship between Prism and InQL carriers (`LazyFrame`, `DataFrame`, `DataStream`, `DataSet`).
+- Clarify the relationship between Prism and IncQL carriers (`LazyFrame`, `DataFrame`, `DataStream`, `DataSet`).
 - Clarify the relationship between Prism and sibling boundaries: Substrait at interchange boundaries and `Session` / `SessionContext` at execution boundaries.
 - Require that Prism-backed plan construction remain cheap through structural sharing rather than deep-cloning carrier state.
 - Define the conceptual distinction between authored plan state and optimized plan state without over-constraining the final implementation.
 
 ## Non-Goals
 
-- Replacing Apache Substrait as InQL's normative emitted logical contract — that remains InQL RFC 002.
-- Defining physical execution behavior, backend binding, or secret management — that remains outside Prism and is scoped by InQL RFC 004 and surrounding operational layers.
+- Replacing Apache Substrait as IncQL's normative emitted logical contract — that remains IncQL RFC 002.
+- Defining physical execution behavior, backend binding, or secret management — that remains outside Prism and is scoped by IncQL RFC 004 and surrounding operational layers.
 - Defining new author-facing query syntax — Prism is an internal planning engine, not a new language surface.
 - Forcing one exact in-memory data structure implementation for authored and optimized plan state.
-- Promising Prism as a general-purpose platform beyond InQL today. This RFC scopes Prism normatively to InQL; future extraction remains a possible consequence of a clean boundary, not a current requirement.
+- Promising Prism as a general-purpose platform beyond IncQL today. This RFC scopes Prism normatively to IncQL; future extraction remains a possible consequence of a clean boundary, not a current requirement.
 
 ## Guide-level explanation
 
-From an author's point of view, Prism is not something they use directly. Authors work with InQL carriers such as `LazyFrame[T]`, `DataFrame[T]`, and (later) `DataStream[T]`. Those carriers build or operate over logical work that Prism stores and optimizes internally.
+From an author's point of view, Prism is not something they use directly. Authors work with IncQL carriers such as `LazyFrame[T]`, `DataFrame[T]`, and (later) `DataStream[T]`. Those carriers build or operate over logical work that Prism stores and optimizes internally.
 
 ```incan
 orders: LazyFrame[Order] = session.table("orders")?
@@ -79,7 +79,7 @@ Prism should be thought of as the internal engine that **thinks** about the plan
 
 ### Prism role
 
-Prism is the internal logical planning and optimization substrate for InQL.
+Prism is the internal logical planning and optimization substrate for IncQL.
 
 Prism **must**:
 
@@ -109,13 +109,13 @@ The relationship is:
 - Prism = internal logical planning, lineage, and optimization
 - Substrait = emitted logical interchange contract
 
-An implementation **may** use Prism-native node kinds or derived optimized views internally, but emitted plans that claim conformance **must** still follow InQL RFC 002.
+An implementation **may** use Prism-native node kinds or derived optimized views internally, but emitted plans that claim conformance **must** still follow IncQL RFC 002.
 
 ### Relationship to session execution
 
 Prism does not execute plans. `Session` / `SessionContext` own execution.
 
-Execution-oriented flows **must** treat Prism as an input to lowering and execution, not as the executor itself. Session-backed operations may request optimized views from Prism before emission or execution, but the existence of Prism **must not** collapse the execution boundary defined in InQL RFC 004.
+Execution-oriented flows **must** treat Prism as an input to lowering and execution, not as the executor itself. Session-backed operations may request optimized views from Prism before emission or execution, but the existence of Prism **must not** collapse the execution boundary defined in IncQL RFC 004.
 
 ### Authored state vs optimized state
 
@@ -162,7 +162,7 @@ This RFC introduces no new author-facing syntax.
 
 ### Semantics
 
-Prism is the internal engine that owns logical planning and optimization for InQL carriers.
+Prism is the internal engine that owns logical planning and optimization for IncQL carriers.
 
 At minimum, a Prism-backed carrier should be representable as:
 
@@ -172,25 +172,25 @@ At minimum, a Prism-backed carrier should be representable as:
 
 The exact representation is intentionally not fixed by this RFC, but the semantics of immutability, structural sharing, and lineage preservation are.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
-- **`DataSet[T]` APIs:** method-chain surfaces defined by InQL RFC 001 **must** build or manipulate Prism-backed logical state without violating carrier immutability.
-- **`query {}`:** checked query blocks defined by InQL RFC 003 **should** lower into Prism-managed logical work before final Substrait emission.
-- **Pipe-forward (`|>`):** if supported per InQL RFC 005, desugared pipe-forward **must** remain Prism-consistent with the equivalent method-chain or query-block form.
+- **`DataSet[T]` APIs:** method-chain surfaces defined by IncQL RFC 001 **must** build or manipulate Prism-backed logical state without violating carrier immutability.
+- **`query {}`:** checked query blocks defined by IncQL RFC 003 **should** lower into Prism-managed logical work before final Substrait emission.
+- **Pipe-forward (`|>`):** if supported per IncQL RFC 005, desugared pipe-forward **must** remain Prism-consistent with the equivalent method-chain or query-block form.
 - **Incan `model` types:** Prism optimization legality **must** remain consistent with model-derived schema semantics and must not fall back to runtime-authored schema truth.
-- **Substrait / execution:** Prism prepares plans for InQL RFC 002 emission and InQL RFC 004 execution, but it does not replace either sibling boundary.
+- **Substrait / execution:** Prism prepares plans for IncQL RFC 002 emission and IncQL RFC 004 execution, but it does not replace either sibling boundary.
 
 ### Compatibility / migration
 
-This RFC is additive and architectural. It clarifies and stabilizes internal InQL planning semantics; it does not by itself introduce a source-level breaking change for authors or a serialized-plan breaking change for Substrait consumers.
+This RFC is additive and architectural. It clarifies and stabilizes internal IncQL planning semantics; it does not by itself introduce a source-level breaking change for authors or a serialized-plan breaking change for Substrait consumers.
 
 It may, however, motivate refactoring of implementation architecture so that planning, optimization, and emission concerns are separated more clearly than they were before this RFC existed.
 
 ## Alternatives considered
 
 - **Keep Prism as a research note only** — rejected for now; the planning and optimization substrate is foundational enough that leaving it undocumented as an implementation note would keep key architectural boundaries implicit.
-- **Fold Prism fully into InQL RFC 002** — rejected; Substrait emission and internal planning are related but distinct concerns. Keeping them in one RFC makes the internal engine look like a boundary-format detail.
-- **Define Prism as a cross-cutting platform beyond InQL immediately** — rejected for now; Prism may eventually be reused elsewhere, but this RFC keeps the normative scope concrete by defining Prism first as an InQL component with a clean standalone module boundary.
+- **Fold Prism fully into IncQL RFC 002** — rejected; Substrait emission and internal planning are related but distinct concerns. Keeping them in one RFC makes the internal engine look like a boundary-format detail.
+- **Define Prism as a cross-cutting platform beyond IncQL immediately** — rejected for now; Prism may eventually be reused elsewhere, but this RFC keeps the normative scope concrete by defining Prism first as an IncQL component with a clean standalone module boundary.
 
 ## Drawbacks
 
@@ -200,9 +200,9 @@ It may, however, motivate refactoring of implementation architecture so that pla
 
 ## Layers affected
 
-- **InQL specification** — sibling RFCs that reference logical planning, carrier behavior, Substrait lowering, or session execution **should** remain consistent with Prism as the internal planning substrate.
-- **InQL library package** — public carriers and internal planning modules **should** preserve immutable carrier semantics over shared Prism-managed state.
-- **Incan compiler** — if InQL surfaces lower through compiler-managed intermediate representations, those integrations **should** respect Prism's lineage and optimization invariants.
+- **IncQL specification** — sibling RFCs that reference logical planning, carrier behavior, Substrait lowering, or session execution **should** remain consistent with Prism as the internal planning substrate.
+- **IncQL library package** — public carriers and internal planning modules **should** preserve immutable carrier semantics over shared Prism-managed state.
+- **Incan compiler** — if IncQL surfaces lower through compiler-managed intermediate representations, those integrations **should** respect Prism's lineage and optimization invariants.
 - **Execution / interchange** — Session-backed lowering and execution flows **must** treat Prism as internal preparation and Substrait as the boundary contract.
 - **Documentation** — RFC indexes, architecture notes, and implementation planning notes **should** distinguish Prism from Substrait and from session execution.
 
@@ -301,7 +301,7 @@ It may, however, motivate refactoring of implementation architecture so that pla
 - The first Prism slice commits only to safe logical rewrites: projection pruning, predicate pushdown, redundant-node elimination, normalization of equivalent logical shapes, and optional simple shared-subplan detection. Heavier work such as join reordering, cost-based optimization, and sink-aware splitting is explicitly deferred.
 - The minimum lineage contract is stable authored node IDs plus optimized-to-authored origin mappings. Richer explain/debug structures may be added later, but they are not required for the RFC to be complete.
 - RFC 007 does not require a new upstream Incan RFC before moving to `Planned`. Implementation may expose compiler or tooling gaps later, but those are implementation dependencies rather than specification blockers.
-- Prism remains an internal InQL planning substrate for now; the first implementation does not expose public `Prism*` package APIs.
+- Prism remains an internal IncQL planning substrate for now; the first implementation does not expose public `Prism*` package APIs.
 - `LazyFrame[T]` is the first real Prism-backed carrier. `DataFrame[T]`, `DataStream[T]`, and `query {}` integration remain follow-on work unless the `LazyFrame[T]` slice proves a hard dependency.
 - `PrismCursor[T]` is the current backend-native handle beneath `LazyFrame[T]`. It is an internal convergence target for future `query {}` and pipe-forward lowering, not a public package API.
 - The research prototype demonstrated the seam, but its clone-heavy storage and same-graph-only join restriction are not the intended production design.

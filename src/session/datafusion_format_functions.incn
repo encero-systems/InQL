@@ -1,4 +1,4 @@
-"""DataFusion execution bridge for InQL-owned scalar format functions."""
+"""DataFusion execution bridge for IncQL-owned scalar format functions."""
 
 from rust::crc32fast import Hasher as Crc32Hasher
 from rust::datafusion::arrow::array import Array, ArrayRef, BooleanArray, Int64Array, MapArray, StringArray
@@ -19,7 +19,7 @@ from std.json import JsonError, JsonKind, JsonValue
 
 @derive(Clone)
 enum DataFusionFormatFunction(str):
-    """Format UDFs that InQL must provide to DataFusion itself."""
+    """Format UDFs that IncQL must provide to DataFusion itself."""
 
     Sha1 = "sha1"
     Crc32 = "crc32"

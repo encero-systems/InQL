@@ -1,4 +1,4 @@
-# InQL — Incan library package
+# IncQL — Incan library package
 # =============================
 #
 # Requires `incan` on your PATH (build/install from the Incan compiler repository).
@@ -13,7 +13,7 @@ export INCAN_NO_BANNER ?= 1
 
 .PHONY: help
 help: ## Show Make targets
-	@echo "\033[1mInQL\033[0m — typed relational layer (Incan library)."
+	@echo "\033[1mIncQL\033[0m — typed relational layer (Incan library)."
 	@echo "Requires \033[36m$(INCAN)\033[0m on PATH, or set \033[36mINCAN=\033[0m/path/to/incan."
 	@echo ""
 	@grep -E '^[a-zA-Z0-9_.-]+:.*?##' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -25,19 +25,19 @@ help: ## Show Make targets
 # Test discovery defaults to `.` and walks the whole tree. CI checks out the
 # Incan compiler under `./incan/`; running `incan test` without a path would
 # pick up compiler integration tests (e.g. `incan/tests/test_*.incn`), which
-# are not InQL package tests. Scope to `tests/` only (see INQL_FMT_DIRS).
+# are not IncQL package tests. Scope to `tests/` only (see INCQL_FMT_DIRS).
 
-INQL_TEST_DIR := tests
+INCQL_TEST_DIR := tests
 
 .PHONY: build
 build: ## Build the library (`incan build --lib`)
-	@echo "\033[1mBuilding InQL library...\033[0m"
+	@echo "\033[1mBuilding IncQL library...\033[0m"
 	@$(INCAN) build --lib
 
 .PHONY: test
 test: ## Run package tests (`incan test tests`)
-	@echo "\033[1mRunning InQL tests...\033[0m"
-	@$(INCAN) test $(INQL_TEST_DIR)
+	@echo "\033[1mRunning IncQL tests...\033[0m"
+	@$(INCAN) test $(INCQL_TEST_DIR)
 
 .PHONY: vocab-companion-test
 vocab-companion-test: ## Run Rust tests for the query-block vocabulary companion
@@ -68,47 +68,47 @@ rfc-index-check: ## Check that docs/rfcs/README.md is in sync with RFC files
 
 .PHONY: build-locked
 build-locked: ## Build with `--locked` (stricter; requires current `incan.lock`)
-	@echo "\033[1mBuilding InQL library (locked)...\033[0m"
+	@echo "\033[1mBuilding IncQL library (locked)...\033[0m"
 	@$(INCAN) build --lib --locked
 
 .PHONY: test-locked
 test-locked: ## Run tests with `--locked`
-	@echo "\033[1mRunning InQL tests (locked)...\033[0m"
-	@$(INCAN) test $(INQL_TEST_DIR) --locked
+	@echo "\033[1mRunning IncQL tests (locked)...\033[0m"
+	@$(INCAN) test $(INCQL_TEST_DIR) --locked
 
 # =============================================================================
 # Formatting (Incan source)
 # =============================================================================
 #
-# Scope to InQL-owned source paths. CI checks out the Incan compiler under
+# Scope to IncQL-owned source paths. CI checks out the Incan compiler under
 # `./incan/`; formatting `.` would walk that tree and fail on stdlib snapshots
 # and test fixtures that are not meant for `incan fmt`. Standalone example
 # packages are listed by source directory so generated `target/` output stays
 # outside the formatting walk.
 
-INQL_FMT_DIRS := src tests examples/advanced_retail_query_blocks/src
-INQL_FMT_FILES := examples/*.incn
+INCQL_FMT_DIRS := src tests examples/advanced_retail_query_blocks/src
+INCQL_FMT_FILES := examples/*.incn
 
 .PHONY: fmt
 fmt: ## Format package `.incn` sources (`incan fmt` per directory)
 	@echo "\033[1mFormatting Incan sources (package dirs)...\033[0m"
-	@for d in $(INQL_FMT_DIRS); do \
+	@for d in $(INCQL_FMT_DIRS); do \
 	  if [ -d "$$d" ]; then $(INCAN) fmt "$$d"; fi; \
 	done
-	@for f in $(INQL_FMT_FILES); do \
+	@for f in $(INCQL_FMT_FILES); do \
 	  if [ -f "$$f" ]; then $(INCAN) fmt "$$f"; fi; \
 	done
 
 .PHONY: fmt-check
 fmt-check: ## Check formatting without writing (`incan fmt --check` per directory)
 	@echo "\033[1mChecking Incan source formatting (package dirs)...\033[0m"
-	@for d in $(INQL_FMT_DIRS); do \
+	@for d in $(INCQL_FMT_DIRS); do \
 	  if [ -d "$$d" ]; then \
 	    echo "\033[1m  -> $$d/\033[0m"; \
 	    $(INCAN) fmt --check "$$d" || exit $$?; \
 	  fi; \
 	done
-	@for f in $(INQL_FMT_FILES); do \
+	@for f in $(INCQL_FMT_FILES); do \
 	  if [ -f "$$f" ]; then \
 	    echo "\033[1m  -> $$f\033[0m"; \
 	    $(INCAN) fmt --check "$$f" || exit $$?; \
@@ -128,14 +128,15 @@ pre-commit: rfc-index-check fmt-check test-style vocab-companion-test registry-m
 	@echo "\033[32m✓ pre-commit gate passed\033[0m"
 
 .PHONY: ci
-ci: rfc-index-check fmt-check test-style vocab-companion-test registry-metadata build test smoke-consumer ## Same steps as GitHub Actions `inql` job
+ci: fmt-check test-style vocab-companion-test registry-metadata build test smoke-consumer ## Same steps as GitHub Actions `incql` job
+ci: rfc-index-check fmt-check test-style vocab-companion-test registry-metadata build test smoke-consumer ## Same steps as GitHub Actions `incql` job
 	@echo "\033[32m✓ ci gate passed\033[0m"
 
 .PHONY: verify
 verify: ci ## Alias for `ci`
 
 .PHONY: smoke-consumer
-smoke-consumer: ## Verify InQL works as a pub dependency from a fresh consumer project
+smoke-consumer: ## Verify IncQL works as a pub dependency from a fresh consumer project
 	@echo "\033[1mRunning pub-consumer smoke check...\033[0m"
 	@bash scripts/smoke_pub_consumer.sh
 

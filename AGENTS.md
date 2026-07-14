@@ -1,4 +1,4 @@
-# Agent Instructions for InQL
+# Agent Instructions for IncQL
 
 <!-- Link references — defined up front so agents see all targets in one scan -->
 
@@ -21,7 +21,7 @@
 [incan-docsite-loop]: https://github.com/encero-systems/incan/blob/main/workspaces/docs-site/docs/contributing/tutorials/book/08_docsite_contributor_loop.md
 [incan-agents-docs-workflow]: https://github.com/encero-systems/incan/blob/main/AGENTS.md#docs-site-workflow-mkdocs-material
 
-**InQL** is the typed **data logic plane** for [Incan][incan-repo]: relational queries, schema-aware table transformations, and streaming-shaped relational work, with a clear split from orchestration and engine-specific runtime in the authoring model. **This repository** holds the InQL **Incan library package** (`.incn` sources) and **normative RFCs** under `docs/rfcs/`. The **Incan compiler** (Rust) that implements parsing, checking, and lowering for InQL surfaces lives in the **Incan** repository.
+**IncQL** is the typed **data logic plane** for [Incan][incan-repo]: relational queries, schema-aware table transformations, and streaming-shaped relational work, with a clear split from orchestration and engine-specific runtime in the authoring model. **This repository** holds the IncQL **Incan library package** (`.incn` sources) and **normative RFCs** under `docs/rfcs/`. The **Incan compiler** (Rust) that implements parsing, checking, and lowering for IncQL surfaces lives in the **Incan** repository.
 
 This document guides AI agents and contributors working **in this repo**. For compiler implementation, Rust conventions, and the full toolchain pipeline, use **[Incan `AGENTS.md`][incan-agents]** and **[Incan `CONTRIBUTING.md`][incan-contributing]**.
 
@@ -36,9 +36,9 @@ This document guides AI agents and contributors working **in this repo**. For co
 | Project overview                                    | [README.md][readme]                                                                                |
 | Contributing (human workflow)                       | [CONTRIBUTING.md][contributing]                                                                    |
 | Repo vs compiler placement                          | [docs/architecture.md][architecture]                                                               |
-| Normative InQL design                               | [docs/rfcs/][rfcs-index]                                                                           |
-| InQL RFC file template                              | [docs/rfcs/TEMPLATE.md][rfc-template]                                                              |
-| Writing InQL RFCs (how-to)                          | [docs/contributing/writing_rfcs.md][writing-rfcs]                                                  |
+| Normative IncQL design                               | [docs/rfcs/][rfcs-index]                                                                           |
+| IncQL RFC file template                              | [docs/rfcs/TEMPLATE.md][rfc-template]                                                              |
+| Writing IncQL RFCs (how-to)                          | [docs/contributing/writing_rfcs.md][writing-rfcs]                                                  |
 | GitHub issue templates                              | [.github/ISSUE_TEMPLATE/][issue-templates]                                                         |
 | Incan agent rules (Rust, compiler pipeline, skills) | [Incan `AGENTS.md`][incan-agents]                                                                  |
 | Incan docs-site conventions                         | [Contributor loop][incan-docsite-loop] · [Markdown / MkDocs in AGENTS][incan-agents-docs-workflow] |
@@ -47,9 +47,9 @@ This document guides AI agents and contributors working **in this repo**. For co
 
 | Change                                                                                        | Primary repo            |
 | --------------------------------------------------------------------------------------------- | ----------------------- |
-| InQL **RFC** text, `README`, `docs/*` (except normative rules in `__research__/`)             | **This repo**           |
-| InQL **library** API and tests in `.incn`                                                     | **This repo**           |
-| Lexer/parser/typechecker/lowering/**Rust** for InQL syntax, `query {}`, `DataSet` integration | [**Incan**][incan-repo] |
+| IncQL **RFC** text, `README`, `docs/*` (except normative rules in `__research__/`)             | **This repo**           |
+| IncQL **library** API and tests in `.incn`                                                     | **This repo**           |
+| Lexer/parser/typechecker/lowering/**Rust** for IncQL syntax, `query {}`, `DataSet` integration | [**Incan**][incan-repo] |
 
 Normative behavior is defined in **`docs/rfcs/`**. If package code and an RFC disagree, treat it as a bug unless the RFC is explicitly superseded.
 
@@ -71,7 +71,7 @@ Normative behavior is defined in **`docs/rfcs/`**. If package code and an RFC di
 1. **Branch from `main`**: Prefer `<type>/<issue>-<slug>` (e.g. `feature/8-rfc-table-automation`, `docs/9-mkdocs-ci`), matching team practice.
 2. **Follow RFCs**: Behavior changes should be reflected in the right `docs/rfcs/*.md` (or a new RFC) before or alongside code in the appropriate repository.
 3. **Run the local gate**: `make ci` (or at least `make fmt-check`, `make build`, `make test`) before considering work done for **this** repo.
-4. **Version sync**: If you bump the package version, update **both** [incan.toml][incan-toml] (`[project] version`) and [src/metadata.incn][metadata-incn] (`inql_version()`) in the same commit (see [CONTRIBUTING.md][contributing]).
+4. **Version sync**: If you bump the package version, update **both** [incan.toml][incan-toml] (`[project] version`) and [src/metadata.incn][metadata-incn] (`incql_version()`) in the same commit (see [CONTRIBUTING.md][contributing]).
 5. **Documentation**: User-facing or spec changes should update `README.md`, relevant `docs/*`, or RFCs as appropriate. Keep prose markdown **without hard wrapping** (natural paragraphs).
    - Use RFCs for normative design and design history.
    - Use `docs/language/reference/` for current API/contracts.
@@ -85,7 +85,7 @@ The function-catalog RFC series is cumulative. For RFC 016 onward, review each P
 
 Function construction is a first-class review axis. Check that new helpers are constructed through the declaration-side pattern: public helper metadata lives in decorators/partials, examples live in docstrings, names/signatures/parameter and return types derive from checked helper metadata where possible, and registry entries are loaded from the helper declaration rather than a central hardcoded list. Keep aggregate measures, scalar applications, window calls, and generator applications as distinct semantic shapes even when they share registry metadata; do not collapse them into ad hoc per-function models or backend-specific shortcuts.
 
-DataFusion is the first adapter, not InQL’s semantic owner. Do not encode DataFusion-only behavior in Substrait IR, do not model core-function “unsupported” as a normal Substrait state, and do not use SQL/string-script generation when DataFusion exposes a typed API. Invalid context belongs in authoring/Prism/lowering validation; backend inability belongs in adapter capability or error handling.
+DataFusion is the first adapter, not IncQL’s semantic owner. Do not encode DataFusion-only behavior in Substrait IR, do not model core-function “unsupported” as a normal Substrait state, and do not use SQL/string-script generation when DataFusion exposes a typed API. Invalid context belongs in authoring/Prism/lowering validation; backend inability belongs in adapter capability or error handling.
 
 Lessons from the RFC 016–023 closeout:
 
@@ -123,7 +123,7 @@ Requires `incan` on `PATH`, or `make build INCAN=/path/to/incan`. CI builds Inca
 ### Comments and explanatory prose in code
 
 - Treat comments in this repo as part of the readability surface, not just implementation debris.
-- This matters more here than in a mature mainstream language codebase because Incan/InQL syntax, planning boundaries, and lowering shapes are still unfamiliar to many readers.
+- This matters more here than in a mature mainstream language codebase because Incan/IncQL syntax, planning boundaries, and lowering shapes are still unfamiliar to many readers.
 - Do **not** apply a simplistic "remove comments that restate the code" rule. Comments that orient the reader, explain data-shape assumptions, or clarify which phase/boundary a block belongs to are valuable even when they partially restate the code.
 - Be especially willing to keep or add short explanatory comments in:
   - public API modules
@@ -160,11 +160,11 @@ Requires `incan` on `PATH`, or `make build INCAN=/path/to/incan`. CI builds Inca
 This repository does **not** host the compiler Rust codebase. If your task includes changes under the Incan workspace:
 
 - Treat **[Incan `AGENTS.md`][incan-agents]** as authoritative for **no `.unwrap()` / `.expect()`**, clippy, rustdoc, and pipeline boundaries.
-- Use `cargo test`, `cargo clippy`, and snapshot workflows **there**, not as substitutes for `make ci` **here** when you only touch InQL.
+- Use `cargo test`, `cargo clippy`, and snapshot workflows **there**, not as substitutes for `make ci` **here** when you only touch IncQL.
 
 ## Cursor skills (optional)
 
-Reusable Incan workflows live in the Incan repo under `.cursor/skills/` (e.g. `/write-rfc`, `/review-rfc`, `/bump-rfc`). Use them when the task spans Incan or when drafting/reviewing InQL RFCs and you want the same structural discipline — adapted to **`docs/rfcs/`** and InQL’s numbering.
+Reusable Incan workflows live in the Incan repo under `.cursor/skills/` (e.g. `/write-rfc`, `/review-rfc`, `/bump-rfc`). Use them when the task spans Incan or when drafting/reviewing IncQL RFCs and you want the same structural discipline — adapted to **`docs/rfcs/`** and IncQL’s numbering.
 
 ## PR checklist (this repo)
 

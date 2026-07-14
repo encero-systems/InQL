@@ -1,10 +1,10 @@
-# InQL RFC template
+# IncQL RFC template
 
-> Use this template for RFCs in [`docs/rfcs/`](README.md). Keep each RFC focused: one coherent proposal, with clear motivation, precise semantics, and where work lands (**this package**, **Incan compiler**, **execution layer**). For workflow and tips, see [Writing InQL RFCs](../contributing/writing_rfcs.md).
+> Use this template for RFCs in [`docs/rfcs/`](README.md). Keep each RFC focused: one coherent proposal, with clear motivation, precise semantics, and where work lands (**this package**, **Incan compiler**, **execution layer**). For workflow and tips, see [Writing IncQL RFCs](../contributing/writing_rfcs.md).
 
 ## Title
 
-InQL RFC NNN: \<short descriptive title\>
+IncQL RFC NNN: \<short descriptive title\>
 
 <!-- Status descriptions:
 
@@ -14,18 +14,18 @@ InQL RFC NNN: \<short descriptive title\>
 - **Blocked:** Blocked by another RFC or issue.
 - **Deferred:** Deferred to a later time.
 - **Implemented:** Complete and shipped (optionally move file under `closed/implemented/` when you adopt that layout).
-- **Superseded by InQL RFC NNN:** Replaced by a newer RFC.
+- **Superseded by IncQL RFC NNN:** Replaced by a newer RFC.
 - **Rejected:** Will not be pursued.
  -->
 
 - **Status:** Draft
 - **Created:** \<YYYY-MM-DD\>
 - **Author(s):** \<name (@handle)\>
-- **Related:** —  <!-- Upstream InQL RFCs this builds on or must stay consistent with; `—` if none -->
+- **Related:** —  <!-- Upstream IncQL RFCs this builds on or must stay consistent with; `—` if none -->
 - **Issue:** \<link to GitHub issue\>
 - **RFC PR:** \<link to PR adding or updating this file\>
 - **Written against:** \<e.g. Incan v0.2\>  <!-- Incan language/toolchain baseline the RFC assumes; not a ship date -->
-- **Shipped in:** —  <!-- First **InQL package** release that includes the change. Leave `—` in Draft/Planned. Do not set speculatively. -->
+- **Shipped in:** —  <!-- First **IncQL package** release that includes the change. Leave `—` in Draft/Planned. Do not set speculatively. -->
 
 ## Summary
 
@@ -49,7 +49,7 @@ Explain the problem and why it matters:
 
 ## Guide-level explanation (how authors think about it)
 
-Explain the feature the way an InQL author would reason about it. Prefer concrete examples.
+Explain the feature the way an IncQL author would reason about it. Prefer concrete examples.
 
 ```incan
 # Example
@@ -74,7 +74,7 @@ New or changed syntax, if any.
 
 Precise behavior.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 How this composes with:
 
@@ -99,9 +99,9 @@ Complexity, performance, mental model, or maintenance cost.
 
 Describe which parts of the system this RFC impacts, in **normative** language (`must`, `must not`, `should`). Do not turn this into a task list or internal file manifest — that belongs in implementation issues and PRs.
 
-- **InQL specification** — coherence with other `docs/rfcs/` documents.
-- **InQL library package** — public `.incn` API, tests, manifests.
-- **Incan compiler** — parsing, checking, lowering, or diagnostics for InQL constructs (work may live in the Incan repository).
+- **IncQL specification** — coherence with other `docs/rfcs/` documents.
+- **IncQL library package** — public `.incn` API, tests, manifests.
+- **Incan compiler** — parsing, checking, lowering, or diagnostics for IncQL constructs (work may live in the Incan repository).
 - **Execution / interchange** — Substrait consumers, session, adapters, runtime (often specified relative to an execution context RFC).
 - **Documentation** — README, architecture notes, contributor docs.
 

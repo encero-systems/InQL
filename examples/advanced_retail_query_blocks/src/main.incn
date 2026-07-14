@@ -1,13 +1,13 @@
 """
-Advanced retail analytics over InQL's dependency-activated query-block surface.
+Advanced retail analytics over IncQL's dependency-activated query-block surface.
 
 Run from this directory with:
 
     incan run src/main.incn
 """
 
-import pub::inql
-from pub::inql import (
+import pub::incql
+from pub::incql import (
     DataFrame,
     LazyFrame,
     Session,

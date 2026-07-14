@@ -1,5 +1,5 @@
 name: "Feature request"
-description: Propose an enhancement to the InQL package, specs, or contributor workflow.
+description: Propose an enhancement to the IncQL package, specs, or contributor workflow.
 title: "feature - "
 type: Feature
 labels: ["feature"]

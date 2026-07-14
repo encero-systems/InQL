@@ -1,28 +1,28 @@
-# InQL RFC 017: Aggregate modifiers
+# IncQL RFC 017: Aggregate modifiers
 
 - **Status:** Implemented
 - **Created:** 2026-04-27
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 003 (`query {}` aggregate rules)
-  - InQL RFC 012 (scalar expressions and aggregate measures)
-  - InQL RFC 013 (function catalog program)
-  - InQL RFC 014 (function registry and catalog governance)
-  - InQL RFC 016 (core aggregate functions)
-- **Issue:** [InQL #34](https://github.com/encero-systems/InQL/issues/34)
-- **RFC PR:** [InQL #45](https://github.com/encero-systems/InQL/pull/45)
-- **Written against:** Incan v0.3-era InQL
+  - IncQL RFC 003 (`query {}` aggregate rules)
+  - IncQL RFC 012 (scalar expressions and aggregate measures)
+  - IncQL RFC 013 (function catalog program)
+  - IncQL RFC 014 (function registry and catalog governance)
+  - IncQL RFC 016 (core aggregate functions)
+- **Issue:** [IncQL #34](https://github.com/encero-systems/IncQL/issues/34)
+- **RFC PR:** [IncQL #45](https://github.com/encero-systems/IncQL/pull/45)
+- **Written against:** Incan v0.3-era IncQL
 - **Shipped in:** v0.1
 
 ## Summary
 
-This RFC defines aggregate modifiers for InQL: `DISTINCT`, aggregate-local `FILTER`, ordered aggregate input, and compatibility helpers such as `count_if`. These are modeled as modifiers on aggregate measures rather than as a separate function for every combination, so InQL can support SQL-style aggregate semantics without multiplying the catalog unnecessarily.
+This RFC defines aggregate modifiers for IncQL: `DISTINCT`, aggregate-local `FILTER`, ordered aggregate input, and compatibility helpers such as `count_if`. These are modeled as modifiers on aggregate measures rather than as a separate function for every combination, so IncQL can support SQL-style aggregate semantics without multiplying the catalog unnecessarily.
 
 ## Motivation
 
-Many useful aggregate forms are not truly new aggregate functions. `count_distinct`, `sum_distinct`, `count_if`, and ordered string/list aggregates are better understood as an aggregate plus a modifier. If InQL implements each spelling as an unrelated function, the catalog becomes larger and less coherent while still failing to represent SQL's compositional aggregate shape.
+Many useful aggregate forms are not truly new aggregate functions. `count_distinct`, `sum_distinct`, `count_if`, and ordered string/list aggregates are better understood as an aggregate plus a modifier. If IncQL implements each spelling as an unrelated function, the catalog becomes larger and less coherent while still failing to represent SQL's compositional aggregate shape.
 
-DataFusion documents aggregate `FILTER (WHERE ...)` and ordered aggregate forms; Spark exposes many convenience names; Snowflake makes `COUNT_IF`, `LISTAGG`, ordered percentile forms, `MIN_BY`, and `MAX_BY` important warehouse-compatibility cases. InQL should support both a clean canonical model and compatibility aliases that map into it.
+DataFusion documents aggregate `FILTER (WHERE ...)` and ordered aggregate forms; Spark exposes many convenience names; Snowflake makes `COUNT_IF`, `LISTAGG`, ordered percentile forms, `MIN_BY`, and `MAX_BY` important warehouse-compatibility cases. IncQL should support both a clean canonical model and compatibility aliases that map into it.
 
 ## Goals
 
@@ -44,7 +44,7 @@ DataFusion documents aggregate `FILTER (WHERE ...)` and ordered aggregate forms;
 Authors should be able to express distinct and filtered aggregates without learning separate function names for every combination:
 
 ```incan
-from pub::inql.functions import col, count, sum
+from pub::incql.functions import col, count, sum
 
 summary = (
     orders
@@ -71,7 +71,7 @@ Ordered aggregate input must define one or more ordering expressions and optiona
 
 Compatibility helpers must lower to modifiers when possible. `count_distinct(expr)` should be equivalent to `count(expr).distinct()`. `count_if(predicate)` should be equivalent to `count().filter(predicate)` unless a later RFC chooses different null behavior. Ordered string aggregation names such as `listagg` should lower to ordered aggregate semantics rather than a separate non-composable function family.
 
-If a backend cannot support a modifier faithfully, InQL must report an explicit diagnostic or use a semantics-preserving fallback. It must not ignore the modifier.
+If a backend cannot support a modifier faithfully, IncQL must report an explicit diagnostic or use a semantics-preserving fallback. It must not ignore the modifier.
 
 ## Design details
 
@@ -83,7 +83,7 @@ This RFC does not require one final public syntax. It permits method-like aggreg
 
 Modifiers are part of the aggregate measure. Modifier order must be semantically defined. Filtering happens before distinctness unless a specific aggregate entry defines otherwise; ordering applies to the input sequence seen by order-sensitive aggregates after filtering and distinct handling.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 `query {}` blocks may expose `COUNT(DISTINCT .id)` and `sum(.amount) FILTER (WHERE .status == "paid")` if the grammar supports those spellings. Dataframe method chains may expose method-like modifier builders. Both must produce the same aggregate-measure semantics.
 
@@ -105,8 +105,8 @@ Existing aggregate helpers remain valid. New compatibility helpers such as `coun
 
 ## Layers affected
 
-- **InQL specification** — aggregate modifiers must compose with aggregate measures without violating the scalar-versus-aggregate boundary.
-- **InQL library package** — aggregate builders should expose modifier construction or compatibility helpers.
+- **IncQL specification** — aggregate modifiers must compose with aggregate measures without violating the scalar-versus-aggregate boundary.
+- **IncQL library package** — aggregate builders should expose modifier construction or compatibility helpers.
 - **Incan compiler** — query-block aggregate syntax must lower modifiers faithfully where supported.
 - **Execution / interchange** — Prism and Substrait lowering must preserve filter, distinct, and ordering semantics or reject unsupported forms.
 - **Documentation** — aggregate docs should prefer the modifier model and list compatibility helper aliases.

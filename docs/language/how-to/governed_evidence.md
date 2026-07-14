@@ -1,13 +1,13 @@
 # Inspect governed evidence
 
-Use governed attributes and policy checkpoints when you need local evidence about sensitive, classified, reviewed, or policy-relevant relational targets without making InQL responsible for your organization’s policy engine.
+Use governed attributes and policy checkpoints when you need local evidence about sensitive, classified, reviewed, or policy-relevant relational targets without making IncQL responsible for your organization’s policy engine.
 
 ## Inspect inferred governed attributes
 
 `inspect_plan(...)` carries governed evidence next to lineage, metadata attachments, adapter requirements, and unsupported-evidence markers.
 
 ```incan
-from pub::inql import inspect_plan
+from pub::incql import inspect_plan
 
 inspection = inspect_plan(summary)
 
@@ -23,7 +23,7 @@ Inspection infers field schema attributes when local plan evidence includes a fi
 Use `governed_attribute(...)` when another local step already knows a governed fact and wants to attach it to a semantic target.
 
 ```incan
-from pub::inql import (
+from pub::incql import (
     GovernedAttributeConfidence,
     GovernedAttributeScope,
     GovernedAttributeSource,
@@ -55,7 +55,7 @@ This only creates evidence. It does not mask the field, filter rows, block execu
 Use `policy_checkpoint(...)` to record a policy result or observation at a known boundary.
 
 ```incan
-from pub::inql import (
+from pub::incql import (
     MetadataVisibility,
     PolicyCheckpointAction,
     PolicyCheckpointKind,
@@ -73,7 +73,7 @@ checkpoint = policy_checkpoint(
 )
 ```
 
-The checkpoint says that a warning decision was recorded. A CI job, notebook, orchestration layer, or governance tool can decide what to do with that warning. InQL keeps the decision evidence explicit and local.
+The checkpoint says that a warning decision was recorded. A CI job, notebook, orchestration layer, or governance tool can decide what to do with that warning. IncQL keeps the decision evidence explicit and local.
 
 ## Read policy observation from inspection
 

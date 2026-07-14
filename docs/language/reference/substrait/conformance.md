@@ -1,12 +1,12 @@
 # Substrait conformance corpus (Reference)
 
-This page documents where InQL's Substrait conformance scenarios live and how they are represented. It is the current reference for the conformance corpus shape used by package code and tests.
+This page documents where IncQL's Substrait conformance scenarios live and how they are represented. It is the current reference for the conformance corpus shape used by package code and tests.
 
-The corpus is the machine-readable validation layer for the current InQL package implementation profile. For operator-level mappings, see the [Substrait operator catalog][ref-operator-catalog].
+The corpus is the machine-readable validation layer for the current IncQL package implementation profile. For operator-level mappings, see the [Substrait operator catalog][ref-operator-catalog].
 
 ## Source of truth
 
-The canonical conformance corpus is implemented in InQL package code:
+The canonical conformance corpus is implemented in IncQL package code:
 
 - `src/substrait/conformance.incn`
 - `src/substrait/conformance_catalog.incn`
@@ -35,7 +35,7 @@ Each scenario is selected by `CoreScenarioKey` and materialized via `core_scenar
 `scenario_id` values must be stable and use this convention:
 
 ```text
-inql.substrait.<taxonomy-group>.<capability-slug>.<nnn>
+incql.substrait.<taxonomy-group>.<capability-slug>.<nnn>
 ```
 
 The numeric suffix is immutable after publication. If requirements change incompatibly, add a new scenario ID instead of mutating semantics under an existing ID.
@@ -46,18 +46,18 @@ Core scenarios currently implemented in `src/substrait/conformance_catalog.incn`
 
 | Scenario ID                                            | Selector                                                   | Primary core `Rel` coverage |
 | ------------------------------------------------------ | ---------------------------------------------------------- | --------------------------- |
-| `inql.substrait.core.read_named_table.001`             | `core_scenario(CoreScenarioKey.ReadNamedTable)`            | `ReadRel` (`NamedTable`)    |
-| `inql.substrait.core.read_local_files.001`             | `core_scenario(CoreScenarioKey.ReadLocalFiles)`            | `ReadRel` (`LocalFiles`)    |
-| `inql.substrait.core.read_virtual_table.001`           | `core_scenario(CoreScenarioKey.ReadVirtualTable)`          | `ReadRel` (`VirtualTable`)  |
-| `inql.substrait.core.filter_rows.001`                  | `core_scenario(CoreScenarioKey.FilterRows)`                | `FilterRel`                 |
-| `inql.substrait.core.project_computed_columns.001`     | `core_scenario(CoreScenarioKey.ProjectComputedColumns)`    | `ProjectRel`                |
-| `inql.substrait.core.join_rel_variants.001`            | `core_scenario(CoreScenarioKey.JoinRelVariants)`           | `JoinRel`                   |
-| `inql.substrait.core.cross_rel_cartesian.001`          | `core_scenario(CoreScenarioKey.CrossRelCartesian)`         | `CrossRel`                  |
-| `inql.substrait.core.aggregate_grouping_sets.001`      | `core_scenario(CoreScenarioKey.AggregateGroupingSets)`     | `AggregateRel`              |
-| `inql.substrait.core.sort_rel_ordering.001`            | `core_scenario(CoreScenarioKey.SortRelOrdering)`           | `SortRel`                   |
-| `inql.substrait.core.fetch_rel_limit_offset.001`       | `core_scenario(CoreScenarioKey.FetchRelLimitOffset)`       | `FetchRel`                  |
-| `inql.substrait.core.set_rel_operations.001`           | `core_scenario(CoreScenarioKey.SetRelOperations)`          | `SetRel`                    |
-| `inql.substrait.core.reference_rel_shared_subplan.001` | `core_scenario(CoreScenarioKey.ReferenceRelSharedSubplan)` | `ReferenceRel`              |
+| `incql.substrait.core.read_named_table.001`             | `core_scenario(CoreScenarioKey.ReadNamedTable)`            | `ReadRel` (`NamedTable`)    |
+| `incql.substrait.core.read_local_files.001`             | `core_scenario(CoreScenarioKey.ReadLocalFiles)`            | `ReadRel` (`LocalFiles`)    |
+| `incql.substrait.core.read_virtual_table.001`           | `core_scenario(CoreScenarioKey.ReadVirtualTable)`          | `ReadRel` (`VirtualTable`)  |
+| `incql.substrait.core.filter_rows.001`                  | `core_scenario(CoreScenarioKey.FilterRows)`                | `FilterRel`                 |
+| `incql.substrait.core.project_computed_columns.001`     | `core_scenario(CoreScenarioKey.ProjectComputedColumns)`    | `ProjectRel`                |
+| `incql.substrait.core.join_rel_variants.001`            | `core_scenario(CoreScenarioKey.JoinRelVariants)`           | `JoinRel`                   |
+| `incql.substrait.core.cross_rel_cartesian.001`          | `core_scenario(CoreScenarioKey.CrossRelCartesian)`         | `CrossRel`                  |
+| `incql.substrait.core.aggregate_grouping_sets.001`      | `core_scenario(CoreScenarioKey.AggregateGroupingSets)`     | `AggregateRel`              |
+| `incql.substrait.core.sort_rel_ordering.001`            | `core_scenario(CoreScenarioKey.SortRelOrdering)`           | `SortRel`                   |
+| `incql.substrait.core.fetch_rel_limit_offset.001`       | `core_scenario(CoreScenarioKey.FetchRelLimitOffset)`       | `FetchRel`                  |
+| `incql.substrait.core.set_rel_operations.001`           | `core_scenario(CoreScenarioKey.SetRelOperations)`          | `SetRel`                    |
+| `incql.substrait.core.reference_rel_shared_subplan.001` | `core_scenario(CoreScenarioKey.ReferenceRelSharedSubplan)` | `ReferenceRel`              |
 
 ## Taxonomy values
 
@@ -75,7 +75,7 @@ Conformance validation for the v1 profile is expected to run against canonical o
 
 `ProjectRel` and `AggregateRel` scenarios validate the Substrait relation boundary. Package tests cover the implemented scalar computed-column and grouped-aggregate method-chain behavior; windows, grouping sets, and distinct semantics have their own capability rows in the operator catalog.
 
-Historical design context is captured in [InQL RFC 002][rfc-002], but this page is the source of truth for the current conformance corpus representation.
+Historical design context is captured in [IncQL RFC 002][rfc-002], but this page is the source of truth for the current conformance corpus representation.
 
 <!-- References -->
 

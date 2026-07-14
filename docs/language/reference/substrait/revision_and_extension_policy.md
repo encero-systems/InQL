@@ -1,14 +1,14 @@
 # Substrait revision and extension policy (Reference)
 
-This page is the **operational policy reference** for InQL's Substrait revision pinning and extension function management. The normative rules — that pinning is required and that functions outside the core bundle must use registered extension URIs — live in [InQL RFC 002][rfc-002]. This page provides the operational detail: what must be declared in a release, how extension URIs are registered, what constitutes a breaking vs additive change, and the checklist contributors follow when bumping the pinned revision.
+This page is the **operational policy reference** for IncQL's Substrait revision pinning and extension function management. The normative rules — that pinning is required and that functions outside the core bundle must use registered extension URIs — live in [IncQL RFC 002][rfc-002]. This page provides the operational detail: what must be declared in a release, how extension URIs are registered, what constitutes a breaking vs additive change, and the checklist contributors follow when bumping the pinned revision.
 
 ## Revision pinning
 
 ### Requirements
 
-Each conforming InQL toolchain release **must** declare:
+Each conforming IncQL toolchain release **must** declare:
 
-- The exact Substrait **revision** it targets (commit hash or tagged release, depending on the Substrait project's versioning model at time of the InQL release).
+- The exact Substrait **revision** it targets (commit hash or tagged release, depending on the Substrait project's versioning model at time of the IncQL release).
 - Any **bundled extension function sets** (YAML or equivalent) shipped alongside the toolchain. Each set must identify its URI prefix, the Substrait revision it was authored against, and the set of functions it covers.
 
 This information **must** appear in:
@@ -48,10 +48,10 @@ Functions not in the pinned core Substrait bundle **must** use extension URIs th
 
 ### URI structure
 
-InQL toolchain extension URIs **should** follow the pattern:
+IncQL toolchain extension URIs **should** follow the pattern:
 
 ```text
-https://inql.io/extensions/<version>/<namespace>.yaml
+https://incql.io/extensions/<version>/<namespace>.yaml
 ```
 
 Where:
@@ -59,7 +59,7 @@ Where:
 - `<version>` is the toolchain version that introduced the extension (e.g. `v0.1`).
 - `<namespace>` groups related functions (e.g. `aggregate`, `string`, `temporal`, `unnest`).
 
-The exact URI scheme is part of the toolchain release process and **must** be documented alongside the release. The current InQL package code uses the `inql.io` base for registered extension examples and treats pre-1.0 entries as provisional until the wider release process is finalized.
+The exact URI scheme is part of the toolchain release process and **must** be documented alongside the release. The current IncQL package code uses the `incql.io` base for registered extension examples and treats pre-1.0 entries as provisional until the wider release process is finalized.
 
 ### `AdvancedExtension` fields
 
@@ -73,7 +73,7 @@ The exact URI scheme is part of the toolchain release process and **must** be do
 
 ### Additive changes (default)
 
-Mapping catalog additions — new InQL capabilities mapped to Substrait, new extension URIs registered, new optional capabilities documented — are **additive changes**. They:
+Mapping catalog additions — new IncQL capabilities mapped to Substrait, new extension URIs registered, new optional capabilities documented — are **additive changes**. They:
 
 - Do not require an RFC amendment.
 - **Must** appear in release notes with the capability name and profile tag.

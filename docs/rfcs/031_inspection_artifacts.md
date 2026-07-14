@@ -1,32 +1,32 @@
-# InQL RFC 031: Local inspection APIs and artifacts
+# IncQL RFC 031: Local inspection APIs and artifacts
 
 - **Status:** In Progress
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 007 (Prism logical planning and optimization engine)
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 028 (semantic identity and target model)
-  - InQL RFC 029 (typed metadata attachments)
-  - InQL RFC 030 (Prism lineage graph)
-  - InQL RFC 040 (interoperability semantic profiles)
-  - InQL RFC 041 (Prism plan ingress and external client frontends)
-- **Issue:** [InQL #65](https://github.com/encero-systems/InQL/issues/65)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
-- **Written against:** Incan v0.3-era InQL
+  - IncQL RFC 007 (Prism logical planning and optimization engine)
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 028 (semantic identity and target model)
+  - IncQL RFC 029 (typed metadata attachments)
+  - IncQL RFC 030 (Prism lineage graph)
+  - IncQL RFC 040 (interoperability semantic profiles)
+  - IncQL RFC 041 (Prism plan ingress and external client frontends)
+- **Issue:** [IncQL #65](https://github.com/encero-systems/IncQL/issues/65)
+- **RFC PR:** [IncQL #60](https://github.com/encero-systems/IncQL/pull/60)
+- **Written against:** Incan v0.3-era IncQL
 - **Shipped in:** —
 
 ## Summary
 
-This RFC defines local inspection APIs and deterministic evidence artifacts for InQL plans. The APIs expose plan structure, schema flow, lineage, metadata attachments, semantic profile evidence, ingress evidence, and diagnostics as typed records, while artifacts provide versioned serialized views suitable for CI, IDEs, agents, documentation, and downstream integrations.
+This RFC defines local inspection APIs and deterministic evidence artifacts for IncQL plans. The APIs expose plan structure, schema flow, lineage, metadata attachments, semantic profile evidence, ingress evidence, and diagnostics as typed records, while artifacts provide versioned serialized views suitable for CI, IDEs, agents, documentation, and downstream integrations.
 
 ## Motivation
 
-Relational evidence is only useful if authors and tools can inspect it without scraping logs or formatted explanations. InQL needs local APIs and artifacts that work without a hosted service, without a catalog product, and without executing the plan. This keeps plan inspection open, reproducible, and testable.
+Relational evidence is only useful if authors and tools can inspect it without scraping logs or formatted explanations. IncQL needs local APIs and artifacts that work without a hosted service, without a catalog product, and without executing the plan. This keeps plan inspection open, reproducible, and testable.
 
 ## Goals
 
-- Define local inspection APIs over InQL plans.
+- Define local inspection APIs over IncQL plans.
 - Define deterministic artifact families for plan graph, lineage graph, schema flow, metadata attachments, semantic profiles, ingress mappings, client session context, and diagnostics.
 - Require artifact versioning and unsupported-evidence markers.
 - Keep human reports as projections from structured artifacts.
@@ -43,7 +43,7 @@ Relational evidence is only useful if authors and tools can inspect it without s
 An author can inspect a lazy plan locally:
 
 ```incan
-from pub::inql.inspect import inspect_plan
+from pub::incql.inspect import inspect_plan
 
 inspection = inspect_plan(summary)
 inspection.output_schema()
@@ -53,18 +53,18 @@ inspection.lineage().field("total_amount")
 The same inspection data can be written as artifacts for CI or downstream tools:
 
 ```incan
-inspection.write_artifacts("target/inql")
+inspection.write_artifacts("target/incql")
 ```
 
 The exact helper names are illustrative; the contract is that structured inspection exists before execution.
 
 ## Reference-level explanation (precise rules)
 
-InQL must expose a local inspection capability for plans that returns typed records, not only formatted strings.
+IncQL must expose a local inspection capability for plans that returns typed records, not only formatted strings.
 
 Inspection records must include semantic targets, output schema information, relation structure, lineage when available, metadata attachments when available, semantic profile records or assessments when available, ingress origin mappings, client session context, and frontend coverage when available, diagnostics, and evidence-version metadata.
 
-InQL must define deterministic serialized artifacts for at least:
+IncQL must define deterministic serialized artifacts for at least:
 
 - plan graph
 - lineage graph
@@ -75,11 +75,11 @@ InQL must define deterministic serialized artifacts for at least:
 - client session context
 - diagnostics
 
-Artifacts must include schema version, InQL version, relevant rule versions, target identifiers, and unsupported-evidence markers. An empty lineage graph must be distinguishable from lineage that was not computed or is not supported.
+Artifacts must include schema version, IncQL version, relevant rule versions, target identifiers, and unsupported-evidence markers. An empty lineage graph must be distinguishable from lineage that was not computed or is not supported.
 
 Human-readable reports may exist, but they must be generated from structured inspection records or artifacts.
 
-Sensitive attachments must be redacted or omitted according to the visibility rules from InQL RFC 029.
+Sensitive attachments must be redacted or omitted according to the visibility rules from IncQL RFC 029.
 
 ## Design details
 
@@ -91,7 +91,7 @@ This RFC introduces no language syntax.
 
 Inspection is read-only. It must not execute a plan, bind physical sources, mutate Prism-authored meaning, or make policy decisions.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 Method-chain, query-block, and future authoring surfaces should be inspectable through the same API once they lower to Prism.
 
@@ -103,7 +103,7 @@ Existing code remains valid. New tooling should prefer structured inspection ove
 
 - **Only expose formatted explanations.** Rejected because tools need structured data.
 - **Only emit files, no API.** Rejected because IDEs and tests need in-memory inspection.
-- **Wait for a higher-level catalog.** Rejected because local InQL users need inspection without external services.
+- **Wait for a higher-level catalog.** Rejected because local IncQL users need inspection without external services.
 
 ## Drawbacks
 
@@ -113,8 +113,8 @@ Existing code remains valid. New tooling should prefer structured inspection ove
 
 ## Layers affected
 
-- **InQL specification** — local inspection becomes part of the relational evidence contract.
-- **InQL library package** — inspection APIs and artifact writers must expose structured records.
+- **IncQL specification** — local inspection becomes part of the relational evidence contract.
+- **IncQL library package** — inspection APIs and artifact writers must expose structured records.
 - **Execution / interchange** — no execution is required, but artifacts may reference Substrait lowering status.
 - **Documentation** — docs must present artifacts as primary evidence and reports as derived views.
 

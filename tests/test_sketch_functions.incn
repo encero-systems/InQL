@@ -35,7 +35,7 @@ def test_sketch_functions__hll_type_preserves_merge_compatibility_metadata() -> 
     assert left.family == SketchFamily.HyperLogLog, "hll_type should identify the portable sketch family"
     assert left.value_domain == SketchValueDomain.IntegerIdentifier, "hll_type should preserve the value domain"
     assert left.precision == 12, "hll_type should preserve the precision"
-    assert left.format == SketchSerializationFormat.InqlHllV1, "hll_type should preserve the serialization format"
+    assert left.format == SketchSerializationFormat.IncqlHllV1, "hll_type should preserve the serialization format"
     assert sketch_types_compatible(left, right), "matching HLL logical types should be merge-compatible"
     assert not sketch_types_compatible(left, different_precision), "precision is part of sketch merge compatibility"
 
@@ -119,7 +119,7 @@ def test_sketch_functions__hll_scalar_helpers_preserve_sketch_options() -> None:
     assert column_expr_option_value(estimate, SKETCH_FAMILY_OPTION) == "hyperloglog", "hll_estimate should carry sketch family"
     assert column_expr_option_value(estimate, SKETCH_VALUE_DOMAIN_OPTION) == "integer_identifier", "hll_estimate should carry value domain"
     assert column_expr_option_value(estimate, SKETCH_PRECISION_OPTION) == "12", "hll_estimate should carry precision"
-    assert column_expr_option_value(estimate, SKETCH_FORMAT_OPTION) == "inql_hll_v1", "hll_estimate should carry format"
+    assert column_expr_option_value(estimate, SKETCH_FORMAT_OPTION) == "incql_hll_v1", "hll_estimate should carry format"
     assert column_expr_function_name(serialized) == "hll_serialize", "hll_serialize should be a registry-backed scalar helper"
     assert column_expr_option_value(serialized, SKETCH_PRECISION_OPTION) == "12", "hll_serialize should carry precision"
 

@@ -1,5 +1,5 @@
 """
-Shared declaration-side registry state for public InQL helpers.
+Shared declaration-side registry state for public IncQL helpers.
 
 Helper modules attach metadata with `@register_function(...)` next to the helper they expose. This module owns the
 runtime projection for helpers that have actually been loaded in the current process. Checked API metadata remains the

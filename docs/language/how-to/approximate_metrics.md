@@ -2,14 +2,14 @@
 
 This how-to shows how to opt in to approximate aggregate helpers when exact results are not required.
 
-Use approximate helpers explicitly. InQL does not silently replace exact aggregates with approximate implementations because a backend can do so.
+Use approximate helpers explicitly. IncQL does not silently replace exact aggregates with approximate implementations because a backend can do so.
 
 ## Estimate distinct counts and percentiles
 
 Group the relation normally, then use approximate aggregate measures inside `agg(...)`.
 
 ```incan
-from pub::inql.functions import approx_count_distinct, approx_percentile, col
+from pub::incql.functions import approx_count_distinct, approx_percentile, col
 
 summary = (
     events

@@ -1,30 +1,30 @@
-# InQL RFC 044: Verifier statements and proof artifacts
+# IncQL RFC 044: Verifier statements and proof artifacts
 
 - **Status:** Draft
 - **Created:** 2026-06-20
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 028 (semantic identity and target model)
-  - InQL RFC 031 (local inspection APIs and artifacts)
-  - InQL RFC 033 (adapter requirements and coverage)
-  - InQL RFC 036 (governed plan bundle)
-  - InQL RFC 040 (interoperability semantic profiles)
-  - InQL RFC 042 (async verification evidence)
-  - InQL RFC 043 (canonical equality and digest profiles)
-- **Issue:** [InQL #79](https://github.com/encero-systems/InQL/issues/79)
-- **RFC PR:** [InQL #83](https://github.com/encero-systems/InQL/pull/83)
-- **Written against:** Incan v0.3-era InQL
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 028 (semantic identity and target model)
+  - IncQL RFC 031 (local inspection APIs and artifacts)
+  - IncQL RFC 033 (adapter requirements and coverage)
+  - IncQL RFC 036 (governed plan bundle)
+  - IncQL RFC 040 (interoperability semantic profiles)
+  - IncQL RFC 042 (async verification evidence)
+  - IncQL RFC 043 (canonical equality and digest profiles)
+- **Issue:** [IncQL #79](https://github.com/encero-systems/IncQL/issues/79)
+- **RFC PR:** [IncQL #83](https://github.com/encero-systems/IncQL/pull/83)
+- **Written against:** Incan v0.3-era IncQL
 - **Shipped in:** —
 
 ## Summary
 
-This RFC defines verifier statements and proof artifact records for InQL evidence. A verifier statement binds a semantic plan target, profile context, source commitments, result references, canonical equality rules, and verifier profile into a stable statement that deterministic checks and cryptographic proof systems can verify without relying on SQL text or backend-specific plan fragments as the source of meaning.
+This RFC defines verifier statements and proof artifact records for IncQL evidence. A verifier statement binds a semantic plan target, profile context, source commitments, result references, canonical equality rules, and verifier profile into a stable statement that deterministic checks and cryptographic proof systems can verify without relying on SQL text or backend-specific plan fragments as the source of meaning.
 
 ## Core model
 
 1. Verification statements are explicit public evidence records.
-2. A statement binds to InQL semantic targets and profile context, not merely to a query string.
+2. A statement binds to IncQL semantic targets and profile context, not merely to a query string.
 3. Source commitments and result commitments are separate from the proof or evidence that verifies a statement.
 4. A proof artifact records what verifier profile accepted, what public inputs were checked, and which scope the result covers.
 5. `proven` assurance requires a successful proof verification observation, but this RFC does not define a proof system.
@@ -33,7 +33,7 @@ This RFC defines verifier statements and proof artifact records for InQL evidenc
 
 Async verification needs a durable way to describe the thing being checked. A result can be checked by deterministic row digests or by a cryptographic proof, but both checks should point at the same kind of statement: the plan identity, semantic assumptions, commitments, result reference, and equality rules. Without a statement record, proof artifacts would be tied to whichever SQL string, backend plan, or connector payload happened to produce them.
 
-Cryptographic query proof systems usually expose a compact verifier interface, but the surrounding application still needs to define which database commitment is trusted, which result is being opened, which query semantics apply, and which unsupported operators are outside the statement. InQL should own that statement layer while leaving concrete proof systems pluggable.
+Cryptographic query proof systems usually expose a compact verifier interface, but the surrounding application still needs to define which database commitment is trusted, which result is being opened, which query semantics apply, and which unsupported operators are outside the statement. IncQL should own that statement layer while leaving concrete proof systems pluggable.
 
 ## Goals
 
@@ -94,7 +94,7 @@ A verifier statement must include statement identity, statement schema version, 
 
 Statement identity must be derived from normalized statement fields or otherwise be reproducible from the statement artifact. If the statement identity is assigned externally, the artifact must also carry a reproducible fingerprint.
 
-The plan target must refer to InQL semantic evidence. SQL text, backend physical plans, serialized Substrait, or external client protocol nodes may be included as supporting artifacts, but they must not be the sole source of statement meaning.
+The plan target must refer to IncQL semantic evidence. SQL text, backend physical plans, serialized Substrait, or external client protocol nodes may be included as supporting artifacts, but they must not be the sole source of statement meaning.
 
 A source commitment reference must include commitment identity, commitment authority when known, commitment time or observed time when known, capture basis, source scope, commitment algorithm or artifact type, evidence references, and diagnostics. Unknown authority or unknown capture basis must remain explicit.
 
@@ -124,7 +124,7 @@ This RFC introduces no authoring syntax. Statement creation should be available 
 
 Verifier statements describe checkable claims. They do not execute the plan, choose a backend, or define proof mathematics. A statement is valid only to the extent that its semantic targets, profiles, commitments, and result references are valid and in scope.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 RFC 028 provides semantic targets for plan and result references.
 
@@ -138,9 +138,9 @@ RFC 033 adapter coverage may report whether a backend or verifier supports a req
 
 ### Standards alignment
 
-Verifier statements and proof artifacts should align with public signed-attestation and provenance specifications when used outside InQL. W3C PROV can describe statement derivation, proof generation, proof verification, source commitments, result commitments, and responsible agents. in-toto and SLSA provenance can represent signed provenance over materials, subjects, builders, and reproducible verification steps. W3C Verifiable Credentials, JSON Web Signature, COSE, and JSON canonicalization specifications may be used by bridge profiles for portable signed claims and canonical signed payloads.
+Verifier statements and proof artifacts should align with public signed-attestation and provenance specifications when used outside IncQL. W3C PROV can describe statement derivation, proof generation, proof verification, source commitments, result commitments, and responsible agents. in-toto and SLSA provenance can represent signed provenance over materials, subjects, builders, and reproducible verification steps. W3C Verifiable Credentials, JSON Web Signature, COSE, and JSON canonicalization specifications may be used by bridge profiles for portable signed claims and canonical signed payloads.
 
-These standards provide envelopes, provenance vocabulary, and signature mechanics. They do not define InQL statement semantics, Prism plan identity, canonical equality profiles, proof coverage, or `proven` assurance by themselves. A bridge must preserve statement identity, verifier profile, commitment authority, commitment basis, public inputs, proof artifact identity, and coverage diagnostics.
+These standards provide envelopes, provenance vocabulary, and signature mechanics. They do not define IncQL statement semantics, Prism plan identity, canonical equality profiles, proof coverage, or `proven` assurance by themselves. A bridge must preserve statement identity, verifier profile, commitment authority, commitment basis, public inputs, proof artifact identity, and coverage diagnostics.
 
 ### Compatibility / migration
 
@@ -148,8 +148,8 @@ This RFC is additive. Existing verification observations can remain statement-fr
 
 ## Alternatives considered
 
-- **Use SQL text as the statement.** Rejected because SQL text does not capture InQL semantic target identity, profile context, canonical equality rules, or source commitments.
-- **Use backend plans as the statement.** Rejected because backend plans are execution artifacts, not the authoritative InQL semantic contract.
+- **Use SQL text as the statement.** Rejected because SQL text does not capture IncQL semantic target identity, profile context, canonical equality rules, or source commitments.
+- **Use backend plans as the statement.** Rejected because backend plans are execution artifacts, not the authoritative IncQL semantic contract.
 - **Define proof artifacts only after choosing a proof system.** Rejected because deterministic verification and proof systems both need the same statement boundary.
 - **Treat a successful proof as source truth.** Rejected because proof verification is relative to commitments and public inputs.
 
@@ -166,8 +166,8 @@ This section is non-normative. A deterministic-digest implementation can generat
 
 ## Layers affected
 
-- **InQL specification** — verifier statements, commitment references, verifier profiles, proof artifacts, and proof verification observations become evidence vocabulary.
-- **InQL library package** — evidence APIs should be able to emit statement artifacts and attach them to verification observations.
+- **IncQL specification** — verifier statements, commitment references, verifier profiles, proof artifacts, and proof verification observations become evidence vocabulary.
+- **IncQL library package** — evidence APIs should be able to emit statement artifacts and attach them to verification observations.
 - **Execution / interchange** — adapters and verifier integrations may report coverage for statement families and proof artifact families.
 - **Documentation** — docs must explain statement identity, commitment trust, and the difference between verified and proven assurance.
 
