@@ -1,19 +1,19 @@
-# InQL RFCs
+# IncQL RFCs
 
-InQL uses its **own** RFC series (starting at 000), independent of the [Incan language RFCs][incan-rfcs].
+IncQL uses its **own** RFC series (starting at 000), independent of the [Incan language RFCs][incan-rfcs].
 
-**New RFC:** copy [TEMPLATE.md], name the file `NNN_short_slug.md`, pick the next number from the table (or from open issues), and open a PR. Section order and header fields follow that template. For workflow and conventions, see [Writing InQL RFCs].
+**New RFC:** copy [TEMPLATE.md], name the file `NNN_short_slug.md`, pick the next number from the table (or from open issues), and open a PR. Section order and header fields follow that template. For workflow and conventions, see [Writing IncQL RFCs].
 
 <!-- BEGIN GENERATED RFC INDEX -->
 
 | RFC | Status | Title |
 | --- | --- | --- |
-| [000](000_inql_syntax.md) | Planned | Language Specification |
-| [001](001_inql_dataset.md) | In Progress | Dataset types and carriers (`DataSet[T]`) |
+| [000](000_incql_syntax.md) | Planned | Language Specification |
+| [001](001_incql_dataset.md) | In Progress | Dataset types and carriers (`DataSet[T]`) |
 | [002](002_apache_substrait_integration.md) | In Progress | Apache Substrait integration |
-| [003](003_inql_query_blocks.md) | Implemented | `query {}` blocks — syntax, typing, Substrait |
-| [004](004_inql_execution_context.md) | In Progress | Execution context and DataFusion |
-| [005](005_inql_pipe_forward.md) | Blocked | Pipe-forward relational syntax (`\|>`) |
+| [003](003_incql_query_blocks.md) | Implemented | `query {}` blocks — syntax, typing, Substrait |
+| [004](004_incql_execution_context.md) | In Progress | Execution context and DataFusion |
+| [005](005_incql_pipe_forward.md) | Blocked | Pipe-forward relational syntax (`\|>`) |
 | [006](006_unnest_core_substrait.md) | Blocked | Promote unnest/explode to core Substrait lowering |
 | [007](007_prism_planning_engine.md) | In Progress | Prism logical planning and optimization engine |
 | [008](008_optimizer_boundary_stats_cbo_aqe.md) | Planned | Optimizer boundary, statistics, cost-based optimization, and adaptive execution |
@@ -57,16 +57,17 @@ InQL uses its **own** RFC series (starting at 000), independent of the [Incan la
 | [046](046_data_contract_ingress.md) | Draft | Data contract ingress and product topology |
 | [047](047_semantic_evidence_graph_agent_surface.md) | Draft | Semantic evidence graph and agent query surface |
 | [048](048_cluster_execution_backend_mode.md) | Draft | Cluster execution backend mode |
+| [050](050_addon_component_registry.md) | Draft | Addon component registry and package contract |
 
 <!-- END GENERATED RFC INDEX -->
 
 
-**v0.1 tracking:** RFCs 000–004 plus RFC 007 remain the foundation that defines when InQL v0.1 is complete: authors can read data, write typed queries, lower through Prism to Substrait, execute through DataFusion, and write results. The table also marks additional v0.1-shipped slices that landed before the whole foundation is closed, including the function catalog and evidence/observation work.
+**v0.1 tracking:** RFCs 000–004 plus RFC 007 remain the foundation that defines when IncQL v0.1 is complete: authors can read data, write typed queries, lower through Prism to Substrait, execute through DataFusion, and write results. The table also marks additional v0.1-shipped slices that landed before the whole foundation is closed, including the function catalog and evidence/observation work.
 
-New RFCs should follow [TEMPLATE.md] (aligned with Incan’s RFC structure, adapted for InQL).
+New RFCs should follow [TEMPLATE.md] (aligned with Incan’s RFC structure, adapted for IncQL).
 
 <!-- References -->
 
 [TEMPLATE.md]: TEMPLATE.md
-[Writing InQL RFCs]: ../contributing/writing_rfcs.md
+[Writing IncQL RFCs]: ../contributing/writing_rfcs.md
 [incan-rfcs]: https://github.com/encero-systems/incan/tree/main/workspaces/docs-site/docs/RFCs

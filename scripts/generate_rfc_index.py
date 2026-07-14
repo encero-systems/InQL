@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the InQL RFC index table from RFC markdown files."""
+"""Generate the IncQL RFC index table from RFC markdown files."""
 
 from __future__ import annotations
 
@@ -31,9 +31,9 @@ def _escape_table_cell(value: str) -> str:
 
 def _read_entry(path: Path) -> RfcEntry:
     text = path.read_text(encoding="utf-8")
-    heading = re.search(r"^# InQL RFC (?P<number>\d{3}): (?P<title>.+)$", text, re.MULTILINE)
+    heading = re.search(r"^# IncQL RFC (?P<number>\d{3}): (?P<title>.+)$", text, re.MULTILINE)
     if heading is None:
-        raise ValueError(f"{path}: missing '# InQL RFC NNN: ...' heading")
+        raise ValueError(f"{path}: missing '# IncQL RFC NNN: ...' heading")
 
     status = re.search(r"^- \*\*Status:\*\* (?P<status>.+)$", text, re.MULTILINE)
     if status is None:
