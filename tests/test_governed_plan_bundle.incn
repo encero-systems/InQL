@@ -1,0 +1,135 @@
+"""Tests for governed plan bundle packaging."""
+
+from std.testing import fail_t
+from aggregate_builders import aggregate_as
+from bundle import (
+    BundleEvidenceSection,
+    BundleSectionAvailability,
+    BundleSectionRequirement,
+    GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION,
+    GovernedPlanBundle,
+    governed_plan_bundle,
+    governed_plan_bundle_from_inspection,
+)
+from dataset import LazyFrame, lazy_frame_named_table
+from evidence import SemanticTargetKind
+from functions import col, eq, str_lit, sum
+from inspect import inspect_plan
+from quality import row_count
+from substrait.schema import RowColumnSpec, SubstraitPrimitiveKind
+from substrait.schema_registry import register_named_table_schema
+
+
+@derive(Clone)
+model BundleOrder:
+    """Fixture row shape used by governed-plan-bundle tests."""
+
+    customer_id: int
+    amount: int
+    status: str
+
+
+def _register_order_schema(table_name: str) -> None:
+    """Register the schema used by governed-plan-bundle tests."""
+    mut schema: list[RowColumnSpec] = []
+    schema.append(RowColumnSpec(name="customer_id", kind=SubstraitPrimitiveKind.I64, nullable=false))
+    schema.append(RowColumnSpec(name="amount", kind=SubstraitPrimitiveKind.I64, nullable=false))
+    schema.append(RowColumnSpec(name="status", kind=SubstraitPrimitiveKind.String, nullable=false))
+    register_named_table_schema(table_name, schema)
+
+
+def _spend_summary() -> LazyFrame[BundleOrder]:
+    """Build one grouped lazy plan with inspection-backed evidence."""
+    orders: LazyFrame[BundleOrder] = lazy_frame_named_table("bundle_orders")
+    return orders
+        .filter(eq(col("status"), str_lit("paid")))
+        .group_by([col("customer_id")])
+        .agg([aggregate_as(sum(col("amount")), "total_amount")])
+
+
+def _require_section(bundle: GovernedPlanBundle, family: str) -> BundleEvidenceSection:
+    """Return a bundle section or fail the test with a useful message."""
+    match bundle.section(family):
+        Some(section) => return section
+        None => return fail_t(f"missing bundle section: {family}")
+
+
+def test_governed_plan_bundle__packages_local_inspection_evidence() -> None:
+    """RFC 036: governed_plan_bundle should package local plan evidence into one typed bundle."""
+    # -- Arrange --
+    _register_order_schema("bundle_orders")
+
+    # -- Act --
+    bundle = governed_plan_bundle(
+        _spend_summary(),
+        quality_assertions=[row_count(Some(1))],
+        evidence_refs=["ci:bundle-orders"],
+    )
+
+    # -- Assert --
+    assert bundle.schema_version == GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION, "bundle should expose the governed bundle schema version"
+    assert bundle.plan_target.kind == SemanticTargetKind.Plan, "bundle should keep the plan target from inspection"
+    assert bundle.root_target.kind == SemanticTargetKind.AuthoredPrismNode, "bundle should keep the inspected root target"
+    assert len(bundle.rule_versions) == 3, "bundle should include bundle, inspection, and lineage rule versions"
+    assert len(bundle.input_schema_references) == 1, "bundle should expose read-root schema references"
+    assert len(bundle.output_schema) == 2, "bundle should keep the inspected output schema"
+    assert len(bundle.lineage.edges) > 0, "bundle should keep lineage evidence"
+    assert len(bundle.governed_attributes) > 0, "bundle should keep governed attributes from inspection"
+    assert len(bundle.policy_checkpoints) == 1, "bundle should keep policy checkpoints from inspection"
+    assert len(bundle.adapter_requirements) > 0, "bundle should keep adapter requirements from inspection"
+    assert len(bundle.evidence_refs) == 1, "bundle should keep caller-supplied evidence references"
+    assert bundle.section_available("plan"), "plan evidence should be available"
+    assert bundle.section_available("governed_attributes"), "governed attributes should be available"
+    assert bundle.section_available("quality_assertions"), "caller-supplied quality assertions should be available"
+    assert not bundle.section_available("quality_observations"), "missing optional quality observations should not look available"
+
+    input_section = _require_section(bundle, "input_schema_references")
+    assert input_section.requirement == BundleSectionRequirement.Required, "input schema references should be required"
+    assert input_section.availability == BundleSectionAvailability.Available, "input schema references should be available when read roots are known"
+
+    quality_section = _require_section(bundle, "quality_assertions")
+    assert quality_section.record_count == 1, "quality assertion section should count caller evidence"
+
+    observation_section = _require_section(bundle, "quality_observations")
+    assert observation_section.availability == BundleSectionAvailability.Unavailable, "absent optional evidence should be unavailable, not empty available"
+    assert observation_section.record_count == 0, "absent optional evidence should have zero records"
+
+    verification_section = _require_section(bundle, "verification_evidence")
+    assert verification_section.availability == BundleSectionAvailability.Unavailable, "supported but absent verification evidence should be unavailable"
+
+    future_section = _require_section(bundle, "canonical_equality_profiles")
+    assert future_section.availability == BundleSectionAvailability.Unsupported, "future evidence families should be explicit unsupported sections"
+
+
+def test_governed_plan_bundle_from_inspection__preserves_existing_inspection() -> None:
+    """RFC 036: callers that already inspected a plan should be able to package that inspection directly."""
+    # -- Arrange --
+    _register_order_schema("bundle_orders")
+    inspection = inspect_plan(_spend_summary())
+
+    # -- Act --
+    bundle = governed_plan_bundle_from_inspection(inspection)
+
+    # -- Assert --
+    assert bundle.plan_target.target_id == inspection.plan_target.target_id, "bundle should not invent a new plan target"
+    assert len(bundle.output_fields) == len(inspection.output_fields), "bundle should keep inspected output fields"
+    assert len(bundle.unsupported_evidence) == len(inspection.unsupported_evidence), "bundle should keep unsupported markers"
+    assert _require_section(bundle, "coverage_records").availability == BundleSectionAvailability.Unavailable, "coverage should be unavailable until supplied"
+    assert _require_section(bundle, "semantic_profiles").availability == BundleSectionAvailability.Unsupported, "inspection unsupported markers should become bundle sections"
+
+
+def test_governed_plan_bundle__serializes_stable_json_summary() -> None:
+    """RFC 036: bundle JSON should expose stable handoff metadata and section states."""
+    # -- Arrange --
+    _register_order_schema("bundle_orders")
+    bundle = governed_plan_bundle(_spend_summary(), quality_assertions=[row_count(Some(1))])
+
+    # -- Act / Assert --
+    match bundle.to_json_text():
+        Ok(text) =>
+            assert text.contains("\"schema_version\""), "JSON summary should include the schema version"
+            assert text.contains("\"sections\""), "JSON summary should include section records"
+            assert text.contains("\"quality_assertions\""), "JSON summary should name caller evidence sections"
+            assert text.contains("\"verification_evidence\""), "JSON summary should name supported verification sections"
+            assert text.contains("\"canonical_equality_profiles\""), "JSON summary should name unsupported future sections"
+        Err(err) => fail_t(err.message())

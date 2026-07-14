@@ -1,0 +1,890 @@
+"""Async verification assertion, observation, and projection evidence."""
+
+from evidence import ExecutionDiagnostic, ExecutionDiagnosticSeverity, SemanticTarget, SemanticTargetKind
+from quality import QualityAssertion
+
+pub const VERIFICATION_SCHEMA_VERSION: str = "incql.verification.v0.1"
+pub const VERIFICATION_PROJECTION_RULE_VERSION: str = "incql.verification.projection.latest-open-scope.v0.1"
+
+
+@derive(Clone)
+pub enum VerificationAssertionKind(str):
+    """Verification assertion families represented by the local evidence model."""
+
+    RelationComparison = "relation_comparison"
+    QualityAssertion = "quality_assertion"
+    RowCountEquality = "row_count_equality"
+    DigestEquality = "digest_equality"
+    ProofStatement = "proof_statement"
+    ExternalAttestation = "external_attestation"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub enum VerificationScopeKind(str):
+    """Scope shape covered by one verification assertion or observation."""
+
+    Relation = "relation"
+    Field = "field"
+    Row = "row"
+    Partition = "partition"
+    Result = "result"
+    Assertion = "assertion"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub enum VerificationLifecycle(str):
+    """Lifecycle state for one async verification observation or projection."""
+
+    Pending = "pending"
+    Running = "running"
+    Blocked = "blocked"
+    Complete = "complete"
+    Superseded = "superseded"
+
+
+@derive(Clone)
+pub enum VerificationOutcome(str):
+    """Outcome state for one verification observation or projection."""
+
+    Passed = "passed"
+    Failed = "failed"
+    Mixed = "mixed"
+    Errored = "errored"
+    Skipped = "skipped"
+    Unsupported = "unsupported"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub enum VerificationAssurance(str):
+    """Assurance label for how strongly a verification outcome was established."""
+
+    Proven = "proven"
+    Verified = "verified"
+    Attested = "attested"
+    Sampled = "sampled"
+    Waived = "waived"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub enum VerificationFinality(str):
+    """Whether one observation is provisional, final, or later revoked."""
+
+    Provisional = "provisional"
+    Final = "final"
+    Revoked = "revoked"
+
+
+@derive(Clone)
+pub enum VerificationCaptureBasis(str):
+    """How a snapshot, commitment, or observed fact was captured."""
+
+    InternallyComputed = "internally_computed"
+    ConnectorAttested = "connector_attested"
+    ExternalArtifact = "external_artifact"
+    TrustedParty = "trusted_party"
+    TrustedExecutionEnvironment = "trusted_execution_environment"
+    UserDeclared = "user_declared"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub model VerificationCoverage:
+    """Coverage counters for one verification observation or projection."""
+
+    pub covered_count: int
+    pub total_count: int
+    pub unit: str
+
+    def is_complete(self) -> bool:
+        """Return whether coverage covers the declared total count."""
+        if self.total_count <= 0:
+            return false
+        return self.covered_count >= self.total_count
+
+
+@derive(Clone)
+pub model VerificationAssuranceCount:
+    """Count of active observation scopes by assurance label."""
+
+    pub assurance: VerificationAssurance
+    pub count: int
+
+
+@derive(Clone)
+pub model VerificationSnapshotReference:
+    """Reference to a source or target snapshot used by verification evidence."""
+
+    pub snapshot_id: str
+    pub target: SemanticTarget
+    pub authority: str
+    pub observed_at_unix_nanoseconds: Option[int]
+    pub capture_basis: VerificationCaptureBasis
+    pub source_location: str
+    pub version_or_fingerprint: str
+    pub diagnostics: list[ExecutionDiagnostic]
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model VerificationCommitmentReference:
+    """Reference to a commitment used by verification or proof-backed evidence."""
+
+    pub commitment_id: str
+    pub target: SemanticTarget
+    pub authority: str
+    pub committed_at_unix_nanoseconds: Option[int]
+    pub capture_basis: VerificationCaptureBasis
+    pub algorithm: str
+    pub value: str
+    pub diagnostics: list[ExecutionDiagnostic]
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model VerificationWaiver:
+    """Accepted exception for a failed, missing, or weaker verification result."""
+
+    pub waiver_id: str
+    pub reason: str
+    pub source: str
+    pub approved_by: Option[str]
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model VerificationAssertion:
+    """
+    Stable declaration of what should be verified.
+
+    The assertion carries intent and semantic targets. It deliberately does not store the current verification result.
+    """
+
+    pub assertion_id: str
+    pub name: str
+    pub kind: VerificationAssertionKind
+    pub target: SemanticTarget
+    pub subject_targets: list[SemanticTarget]
+    pub input_targets: list[SemanticTarget]
+    pub comparison_intent: str
+    pub scope_kind: VerificationScopeKind
+    pub required_semantic_profile_ids: list[str]
+    pub severity: str
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model VerificationRun:
+    """One attempt to evaluate verification assertions under explicit context."""
+
+    pub run_id: str
+    pub assertion_ids: list[str]
+    pub requested_source_profile_id: Option[str]
+    pub requested_target_profile_id: Option[str]
+    pub binding_context: str
+    pub started_at_unix_nanoseconds: Option[int]
+    pub ended_at_unix_nanoseconds: Option[int]
+    pub requested_source_snapshot_id: Option[str]
+    pub requested_target_snapshot_id: Option[str]
+    pub execution_observation_ids: list[str]
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model VerificationObservation:
+    """Append-only event emitted by a verification run."""
+
+    pub observation_id: str
+    pub run_id: str
+    pub assertion_id: str
+    pub scope_id: str
+    pub observed_target: SemanticTarget
+    pub lifecycle: VerificationLifecycle
+    pub outcome: VerificationOutcome
+    pub assurance: VerificationAssurance
+    pub finality: VerificationFinality
+    pub basis: VerificationCaptureBasis
+    pub event_sequence: int
+    pub coverage: VerificationCoverage
+    pub source_snapshot_id: Option[str]
+    pub target_snapshot_id: Option[str]
+    pub source_commitment_id: Option[str]
+    pub target_commitment_id: Option[str]
+    pub watermark: Option[str]
+    pub stream_position: Option[str]
+    pub redacted_sample_refs: list[str]
+    pub supersedes_observation_ids: list[str]
+    pub waiver: Option[VerificationWaiver]
+    pub quality_observation_ids: list[str]
+    pub execution_observation_ids: list[str]
+    pub coverage_record_ids: list[str]
+    pub semantic_profile_ids: list[str]
+    pub diagnostics: list[ExecutionDiagnostic]
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model VerificationProjection:
+    """Current verification state derived from an append-only observation stream."""
+
+    pub projection_id: str
+    pub assertion_id: str
+    pub scope_id: str
+    pub selected_observation_ids: list[str]
+    pub projection_rule_version: str
+    pub lifecycle: VerificationLifecycle
+    pub outcome: VerificationOutcome
+    pub assurance_summary: list[VerificationAssuranceCount]
+    pub coverage: VerificationCoverage
+    pub source_snapshot_id: Option[str]
+    pub target_snapshot_id: Option[str]
+    pub watermark: Option[str]
+    pub stream_position: Option[str]
+    pub diagnostics: list[ExecutionDiagnostic]
+    pub evidence_refs: list[str]
+
+    def assurance_count(self, assurance: VerificationAssurance) -> int:
+        """Return the number of selected observations with one assurance label."""
+        for item in self.assurance_summary:
+            if item.assurance == assurance:
+                return item.count
+        return 0
+
+
+@derive(Clone)
+pub model VerificationEvidence:
+    """Grouped verification evidence for bundle and exchange handoff."""
+
+    pub assertions: list[VerificationAssertion]
+    pub runs: list[VerificationRun]
+    pub observations: list[VerificationObservation]
+    pub projections: list[VerificationProjection]
+    pub snapshots: list[VerificationSnapshotReference]
+    pub commitments: list[VerificationCommitmentReference]
+    pub waivers: list[VerificationWaiver]
+    pub evidence_refs: list[str]
+
+
+model _ProjectionObservationSummary:
+    """One-pass summary over active observations for a current-state projection."""
+
+    selected_observation_ids: list[str]
+    assurance_summary: list[VerificationAssuranceCount]
+    coverage: VerificationCoverage
+    source_snapshot_id: Option[str]
+    target_snapshot_id: Option[str]
+    watermark: Option[str]
+    stream_position: Option[str]
+    diagnostics: list[ExecutionDiagnostic]
+    evidence_refs: list[str]
+
+
+pub def verification_coverage(
+    covered_count: int = 0,
+    total_count: int = 0,
+    unit: str = "scope",
+) -> VerificationCoverage:
+    """Build coverage counters for verification evidence."""
+    return VerificationCoverage(covered_count=covered_count, total_count=total_count, unit=unit)
+
+
+pub def verification_assertion(
+    name: str,
+    kind: VerificationAssertionKind,
+    target: SemanticTarget,
+    subject_targets: list[SemanticTarget] = [],
+    input_targets: list[SemanticTarget] = [],
+    comparison_intent: str = "",
+    scope_kind: VerificationScopeKind = VerificationScopeKind.Relation,
+    required_semantic_profile_ids: list[str] = [],
+    severity: str = "error",
+    evidence_refs: list[str] = [],
+) -> VerificationAssertion:
+    """Declare one verification assertion without attaching current state."""
+    assertion_id = f"verification:{kind.value()}:{name}"
+    return VerificationAssertion(
+        assertion_id=assertion_id,
+        name=name,
+        kind=kind,
+        target=_verification_target(SemanticTargetKind.VerificationAssertion, assertion_id, scope_kind.value(), name),
+        subject_targets=_default_subject_targets(target, subject_targets),
+        input_targets=input_targets,
+        comparison_intent=comparison_intent,
+        scope_kind=scope_kind,
+        required_semantic_profile_ids=required_semantic_profile_ids,
+        severity=severity,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def quality_verification_assertion(
+    assertion: QualityAssertion,
+    evidence_refs: list[str] = [],
+) -> VerificationAssertion:
+    """Wrap a quality assertion as a verification assertion declaration."""
+    return verification_assertion(
+        assertion.name,
+        VerificationAssertionKind.QualityAssertion,
+        assertion.target,
+        subject_targets=[assertion.target],
+        comparison_intent=f"quality:{assertion.kind.value()}",
+        scope_kind=VerificationScopeKind.Assertion,
+        severity=assertion.severity.value(),
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def verification_run(
+    run_id: str,
+    assertions: list[VerificationAssertion],
+    requested_source_profile_id: Option[str] = None,
+    requested_target_profile_id: Option[str] = None,
+    binding_context: str = "",
+    started_at_unix_nanoseconds: Option[int] = None,
+    ended_at_unix_nanoseconds: Option[int] = None,
+    requested_source_snapshot_id: Option[str] = None,
+    requested_target_snapshot_id: Option[str] = None,
+    execution_observation_ids: list[str] = [],
+    evidence_refs: list[str] = [],
+) -> VerificationRun:
+    """Build one verification run record for a set of assertions."""
+    return VerificationRun(
+        run_id=run_id,
+        assertion_ids=[assertion.assertion_id for assertion in assertions],
+        requested_source_profile_id=requested_source_profile_id,
+        requested_target_profile_id=requested_target_profile_id,
+        binding_context=binding_context,
+        started_at_unix_nanoseconds=started_at_unix_nanoseconds,
+        ended_at_unix_nanoseconds=ended_at_unix_nanoseconds,
+        requested_source_snapshot_id=requested_source_snapshot_id,
+        requested_target_snapshot_id=requested_target_snapshot_id,
+        execution_observation_ids=execution_observation_ids,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def verification_observation(
+    observation_id: str,
+    run: VerificationRun,
+    assertion: VerificationAssertion,
+    lifecycle: VerificationLifecycle,
+    outcome: VerificationOutcome,
+    assurance: VerificationAssurance,
+    scope_id: str = "",
+    finality: VerificationFinality = VerificationFinality.Provisional,
+    basis: VerificationCaptureBasis = VerificationCaptureBasis.Unknown,
+    event_sequence: int = 0,
+    coverage: VerificationCoverage = verification_coverage(0, 0),
+    source_snapshot_id: Option[str] = None,
+    target_snapshot_id: Option[str] = None,
+    source_commitment_id: Option[str] = None,
+    target_commitment_id: Option[str] = None,
+    watermark: Option[str] = None,
+    stream_position: Option[str] = None,
+    redacted_sample_refs: list[str] = [],
+    supersedes_observation_ids: list[str] = [],
+    quality_observation_ids: list[str] = [],
+    execution_observation_ids: list[str] = [],
+    coverage_record_ids: list[str] = [],
+    semantic_profile_ids: list[str] = [],
+    diagnostics: list[ExecutionDiagnostic] = [],
+    evidence_refs: list[str] = [],
+) -> VerificationObservation:
+    """Build one append-only verification observation event."""
+    return _verification_observation(
+        observation_id=observation_id,
+        run=run,
+        assertion=assertion,
+        lifecycle=lifecycle,
+        outcome=outcome,
+        assurance=assurance,
+        scope_id=scope_id,
+        observed_target=assertion.target,
+        finality=finality,
+        basis=basis,
+        event_sequence=event_sequence,
+        coverage=coverage,
+        source_snapshot_id=source_snapshot_id,
+        target_snapshot_id=target_snapshot_id,
+        source_commitment_id=source_commitment_id,
+        target_commitment_id=target_commitment_id,
+        watermark=watermark,
+        stream_position=stream_position,
+        redacted_sample_refs=redacted_sample_refs,
+        supersedes_observation_ids=supersedes_observation_ids,
+        waiver=None,
+        quality_observation_ids=quality_observation_ids,
+        execution_observation_ids=execution_observation_ids,
+        coverage_record_ids=coverage_record_ids,
+        semantic_profile_ids=semantic_profile_ids,
+        diagnostics=diagnostics,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def waived_verification_observation(
+    observation_id: str,
+    run: VerificationRun,
+    assertion: VerificationAssertion,
+    outcome: VerificationOutcome,
+    waiver: VerificationWaiver,
+    scope_id: str = "",
+    lifecycle: VerificationLifecycle = VerificationLifecycle.Complete,
+    finality: VerificationFinality = VerificationFinality.Provisional,
+    basis: VerificationCaptureBasis = VerificationCaptureBasis.UserDeclared,
+    event_sequence: int = 0,
+    coverage: VerificationCoverage = verification_coverage(0, 0),
+    supersedes_observation_ids: list[str] = [],
+    diagnostics: list[ExecutionDiagnostic] = [],
+    evidence_refs: list[str] = [],
+) -> VerificationObservation:
+    """Build a waived verification observation without treating the waived outcome as passed."""
+    return _verification_observation(
+        observation_id=observation_id,
+        run=run,
+        assertion=assertion,
+        lifecycle=lifecycle,
+        outcome=outcome,
+        assurance=VerificationAssurance.Waived,
+        scope_id=scope_id,
+        observed_target=assertion.target,
+        finality=finality,
+        basis=basis,
+        event_sequence=event_sequence,
+        coverage=coverage,
+        source_snapshot_id=None,
+        target_snapshot_id=None,
+        source_commitment_id=None,
+        target_commitment_id=None,
+        watermark=None,
+        stream_position=None,
+        redacted_sample_refs=[],
+        supersedes_observation_ids=supersedes_observation_ids,
+        waiver=Some(waiver),
+        quality_observation_ids=[],
+        execution_observation_ids=[],
+        coverage_record_ids=[],
+        semantic_profile_ids=[],
+        diagnostics=diagnostics,
+        evidence_refs=evidence_refs,
+    )
+
+
+def _verification_observation(
+    observation_id: str,
+    run: VerificationRun,
+    assertion: VerificationAssertion,
+    lifecycle: VerificationLifecycle,
+    outcome: VerificationOutcome,
+    assurance: VerificationAssurance,
+    scope_id: str,
+    observed_target: SemanticTarget,
+    finality: VerificationFinality,
+    basis: VerificationCaptureBasis,
+    event_sequence: int,
+    coverage: VerificationCoverage,
+    source_snapshot_id: Option[str],
+    target_snapshot_id: Option[str],
+    source_commitment_id: Option[str],
+    target_commitment_id: Option[str],
+    watermark: Option[str],
+    stream_position: Option[str],
+    redacted_sample_refs: list[str],
+    supersedes_observation_ids: list[str],
+    waiver: Option[VerificationWaiver],
+    quality_observation_ids: list[str],
+    execution_observation_ids: list[str],
+    coverage_record_ids: list[str],
+    semantic_profile_ids: list[str],
+    diagnostics: list[ExecutionDiagnostic],
+    evidence_refs: list[str],
+) -> VerificationObservation:
+    """Build the complete observation record for the public constructors."""
+    return VerificationObservation(
+        observation_id=observation_id,
+        run_id=run.run_id,
+        assertion_id=assertion.assertion_id,
+        scope_id=_scope_id_or_assertion(scope_id, assertion),
+        observed_target=observed_target,
+        lifecycle=lifecycle,
+        outcome=outcome,
+        assurance=assurance,
+        finality=finality,
+        basis=basis,
+        event_sequence=event_sequence,
+        coverage=coverage,
+        source_snapshot_id=source_snapshot_id,
+        target_snapshot_id=target_snapshot_id,
+        source_commitment_id=source_commitment_id,
+        target_commitment_id=target_commitment_id,
+        watermark=watermark,
+        stream_position=stream_position,
+        redacted_sample_refs=redacted_sample_refs,
+        supersedes_observation_ids=supersedes_observation_ids,
+        waiver=waiver,
+        quality_observation_ids=quality_observation_ids,
+        execution_observation_ids=execution_observation_ids,
+        coverage_record_ids=coverage_record_ids,
+        semantic_profile_ids=semantic_profile_ids,
+        diagnostics=diagnostics,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def verification_waiver(
+    waiver_id: str,
+    reason: str,
+    source: str,
+    approved_by: Option[str] = None,
+    evidence_refs: list[str] = [],
+) -> VerificationWaiver:
+    """Record an accepted verification exception without rewriting the failed evidence."""
+    return VerificationWaiver(
+        waiver_id=waiver_id,
+        reason=reason,
+        source=source,
+        approved_by=approved_by,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def verification_snapshot_reference(
+    snapshot_id: str,
+    target: SemanticTarget,
+    authority: str,
+    capture_basis: VerificationCaptureBasis,
+    source_location: str = "",
+    version_or_fingerprint: str = "",
+    observed_at_unix_nanoseconds: Option[int] = None,
+    diagnostics: list[ExecutionDiagnostic] = [],
+    evidence_refs: list[str] = [],
+) -> VerificationSnapshotReference:
+    """Build a source or target snapshot reference used by verification evidence."""
+    return VerificationSnapshotReference(
+        snapshot_id=snapshot_id,
+        target=target,
+        authority=authority,
+        observed_at_unix_nanoseconds=observed_at_unix_nanoseconds,
+        capture_basis=capture_basis,
+        source_location=source_location,
+        version_or_fingerprint=version_or_fingerprint,
+        diagnostics=diagnostics,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def verification_commitment_reference(
+    commitment_id: str,
+    target: SemanticTarget,
+    authority: str,
+    capture_basis: VerificationCaptureBasis,
+    algorithm: str,
+    value: str,
+    committed_at_unix_nanoseconds: Option[int] = None,
+    diagnostics: list[ExecutionDiagnostic] = [],
+    evidence_refs: list[str] = [],
+) -> VerificationCommitmentReference:
+    """Build a commitment reference used by verification or proof-backed evidence."""
+    return VerificationCommitmentReference(
+        commitment_id=commitment_id,
+        target=target,
+        authority=authority,
+        committed_at_unix_nanoseconds=committed_at_unix_nanoseconds,
+        capture_basis=capture_basis,
+        algorithm=algorithm,
+        value=value,
+        diagnostics=diagnostics,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def project_verification_state(
+    assertion: VerificationAssertion,
+    observations: list[VerificationObservation],
+    scope_id: str = "",
+) -> VerificationProjection:
+    """Reduce append-only verification observations to the current state for one assertion and scope."""
+    actual_scope_id = _scope_id_or_assertion(scope_id, assertion)
+    selected = _current_observations(assertion, observations, actual_scope_id)
+    summary = _projection_observation_summary(selected)
+    return VerificationProjection(
+        projection_id=f"verification_projection:{assertion.assertion_id}:{actual_scope_id}",
+        assertion_id=assertion.assertion_id,
+        scope_id=actual_scope_id,
+        selected_observation_ids=summary.selected_observation_ids,
+        projection_rule_version=VERIFICATION_PROJECTION_RULE_VERSION,
+        lifecycle=_projection_lifecycle(selected),
+        outcome=_projection_outcome(selected),
+        assurance_summary=summary.assurance_summary,
+        coverage=summary.coverage,
+        source_snapshot_id=summary.source_snapshot_id,
+        target_snapshot_id=summary.target_snapshot_id,
+        watermark=summary.watermark,
+        stream_position=summary.stream_position,
+        diagnostics=summary.diagnostics,
+        evidence_refs=summary.evidence_refs,
+    )
+
+
+pub def verification_evidence(
+    assertions: list[VerificationAssertion],
+    runs: list[VerificationRun],
+    observations: list[VerificationObservation],
+    projections: list[VerificationProjection] = [],
+    snapshots: list[VerificationSnapshotReference] = [],
+    commitments: list[VerificationCommitmentReference] = [],
+    waivers: list[VerificationWaiver] = [],
+    evidence_refs: list[str] = [],
+) -> VerificationEvidence:
+    """Group verification records for governed bundles and exchange handoff."""
+    return VerificationEvidence(
+        assertions=assertions,
+        runs=runs,
+        observations=observations,
+        projections=projections,
+        snapshots=snapshots,
+        commitments=commitments,
+        waivers=waivers,
+        evidence_refs=evidence_refs,
+    )
+
+
+def _verification_target(kind: SemanticTargetKind, target_id: str, scope_id: str, name: str) -> SemanticTarget:
+    """Build a semantic target for verification records."""
+    return SemanticTarget(
+        kind=kind,
+        target_id=target_id,
+        plan_id="verification:declaration",
+        scope_id=scope_id,
+        path=f"verification/{scope_id}/{name}",
+        name=name,
+        node_id=None,
+        ordinal=None,
+    )
+
+
+def _default_subject_targets(target: SemanticTarget, subject_targets: list[SemanticTarget]) -> list[SemanticTarget]:
+    """Use the primary target as the subject when callers do not supply a richer subject list."""
+    if len(subject_targets) > 0:
+        return subject_targets
+    return [target]
+
+
+def _scope_id_or_assertion(scope_id: str, assertion: VerificationAssertion) -> str:
+    """Return the explicit scope id or the assertion target id as the default scope."""
+    if scope_id != "":
+        return scope_id
+    return assertion.target.target_id
+
+
+def _current_observations(
+    assertion: VerificationAssertion,
+    observations: list[VerificationObservation],
+    scope_id: str,
+) -> list[VerificationObservation]:
+    """Select active observations for one assertion and scope after supersession and revocation."""
+    mut selected: list[VerificationObservation] = []
+    for observation in observations:
+        if _observation_matches(observation, assertion.assertion_id, scope_id):
+            if observation.finality != VerificationFinality.Revoked:
+                if not _observation_is_superseded(observation, observations):
+                    selected.append(observation)
+    return selected
+
+
+def _observation_matches(observation: VerificationObservation, assertion_id: str, scope_id: str) -> bool:
+    """Return whether an observation belongs to the requested assertion and scope."""
+    return observation.assertion_id == assertion_id and observation.scope_id == scope_id
+
+
+def _observation_is_superseded(candidate: VerificationObservation, observations: list[VerificationObservation]) -> bool:
+    """Return whether any later observation supersedes the candidate observation id."""
+    for observation in observations:
+        if observation.event_sequence >= candidate.event_sequence:
+            for superseded_id in observation.supersedes_observation_ids:
+                if superseded_id == candidate.observation_id:
+                    return true
+    return false
+
+
+def _projection_lifecycle(observations: list[VerificationObservation]) -> VerificationLifecycle:
+    """Project lifecycle without flattening blocked or running scopes into complete state."""
+    if len(observations) == 0:
+        return VerificationLifecycle.Pending
+    if _any_lifecycle(observations, VerificationLifecycle.Blocked):
+        return VerificationLifecycle.Blocked
+    if _any_lifecycle(observations, VerificationLifecycle.Running):
+        return VerificationLifecycle.Running
+    if _all_lifecycle(observations, VerificationLifecycle.Pending):
+        return VerificationLifecycle.Pending
+    if _all_lifecycle(observations, VerificationLifecycle.Superseded):
+        return VerificationLifecycle.Superseded
+    return VerificationLifecycle.Complete
+
+
+def _projection_outcome(observations: list[VerificationObservation]) -> VerificationOutcome:
+    """Project outcomes while preserving mixed, errored, unsupported, and unknown states."""
+    if len(observations) == 0:
+        return VerificationOutcome.Unknown
+    if _any_outcome(observations, VerificationOutcome.Errored):
+        return VerificationOutcome.Errored
+    if _all_outcome(observations, VerificationOutcome.Passed):
+        return VerificationOutcome.Passed
+    if _all_outcome(observations, VerificationOutcome.Failed):
+        return VerificationOutcome.Failed
+    if _all_outcome(observations, VerificationOutcome.Skipped):
+        return VerificationOutcome.Skipped
+    if _all_outcome(observations, VerificationOutcome.Unsupported):
+        return VerificationOutcome.Unsupported
+    if _all_outcome(observations, VerificationOutcome.Unknown):
+        return VerificationOutcome.Unknown
+    return VerificationOutcome.Mixed
+
+
+def _projection_observation_summary(observations: list[VerificationObservation]) -> _ProjectionObservationSummary:
+    """Collect projection counts, latest context, diagnostics, and refs in one active-observation pass."""
+    mut selected_observation_ids: list[str] = []
+    mut covered_count = 0
+    mut total_count = 0
+    mut unit = "scope"
+    mut proven_count = 0
+    mut verified_count = 0
+    mut attested_count = 0
+    mut sampled_count = 0
+    mut waived_count = 0
+    mut unknown_count = 0
+    # Each optional context field is selected independently from the latest active observation that provides it.
+    mut source_snapshot_sequence = -1
+    mut target_snapshot_sequence = -1
+    mut watermark_sequence = -1
+    mut stream_position_sequence = -1
+    mut source_snapshot_id: Option[str] = None
+    mut target_snapshot_id: Option[str] = None
+    mut watermark: Option[str] = None
+    mut stream_position: Option[str] = None
+    mut diagnostics: list[ExecutionDiagnostic] = []
+    mut evidence_refs: list[str] = []
+    # Supersession and revocation filtering already happened; this pass only summarizes active evidence.
+    for observation in observations:
+        selected_observation_ids.append(observation.observation_id)
+        evidence_refs.append(observation.observation_id)
+        for evidence_ref in observation.evidence_refs:
+            evidence_refs.append(evidence_ref)
+        for diagnostic in observation.diagnostics:
+            diagnostics.append(diagnostic)
+        covered_count += observation.coverage.covered_count
+        total_count += observation.coverage.total_count
+        unit = f"{observation.coverage.unit}"
+        match observation.assurance:
+            VerificationAssurance.Proven =>
+                proven_count += 1
+            VerificationAssurance.Verified =>
+                verified_count += 1
+            VerificationAssurance.Attested =>
+                attested_count += 1
+            VerificationAssurance.Sampled =>
+                sampled_count += 1
+            VerificationAssurance.Waived =>
+                waived_count += 1
+            VerificationAssurance.Unknown =>
+                unknown_count += 1
+        if observation.event_sequence >= source_snapshot_sequence:
+            if let Some(snapshot_id) = observation.source_snapshot_id:
+                source_snapshot_sequence = observation.event_sequence
+                source_snapshot_id = Some(snapshot_id)
+        if observation.event_sequence >= target_snapshot_sequence:
+            if let Some(snapshot_id) = observation.target_snapshot_id:
+                target_snapshot_sequence = observation.event_sequence
+                target_snapshot_id = Some(snapshot_id)
+        if observation.event_sequence >= watermark_sequence:
+            if let Some(value) = observation.watermark:
+                watermark_sequence = observation.event_sequence
+                watermark = Some(value)
+        if observation.event_sequence >= stream_position_sequence:
+            if let Some(value) = observation.stream_position:
+                stream_position_sequence = observation.event_sequence
+                stream_position = Some(value)
+    if len(observations) == 0:
+        diagnostics.append(_no_observations_diagnostic())
+    return _ProjectionObservationSummary(
+        selected_observation_ids=selected_observation_ids,
+        assurance_summary=_assurance_counts(
+            proven_count,
+            verified_count,
+            attested_count,
+            sampled_count,
+            waived_count,
+            unknown_count,
+        ),
+        coverage=VerificationCoverage(covered_count=covered_count, total_count=total_count, unit=unit),
+        source_snapshot_id=source_snapshot_id,
+        target_snapshot_id=target_snapshot_id,
+        watermark=watermark,
+        stream_position=stream_position,
+        diagnostics=diagnostics,
+        evidence_refs=evidence_refs,
+    )
+
+
+def _assurance_counts(
+    proven_count: int,
+    verified_count: int,
+    attested_count: int,
+    sampled_count: int,
+    waived_count: int,
+    unknown_count: int,
+) -> list[VerificationAssuranceCount]:
+    """Return projection assurance counts in stable label order."""
+    mut counts: list[VerificationAssuranceCount] = []
+    counts.append(VerificationAssuranceCount(assurance=VerificationAssurance.Proven, count=proven_count))
+    counts.append(VerificationAssuranceCount(assurance=VerificationAssurance.Verified, count=verified_count))
+    counts.append(VerificationAssuranceCount(assurance=VerificationAssurance.Attested, count=attested_count))
+    counts.append(VerificationAssuranceCount(assurance=VerificationAssurance.Sampled, count=sampled_count))
+    counts.append(VerificationAssuranceCount(assurance=VerificationAssurance.Waived, count=waived_count))
+    counts.append(VerificationAssuranceCount(assurance=VerificationAssurance.Unknown, count=unknown_count))
+    return counts
+
+
+def _no_observations_diagnostic() -> ExecutionDiagnostic:
+    """Return the standard diagnostic for projection requests with no matching observations."""
+    return ExecutionDiagnostic(
+        severity=ExecutionDiagnosticSeverity.Warning,
+        code="verification.no_observations",
+        message="No verification observations matched the requested assertion and scope.",
+        target=None,
+    )
+
+
+def _any_lifecycle(observations: list[VerificationObservation], lifecycle: VerificationLifecycle) -> bool:
+    """Return whether any observation has one lifecycle."""
+    for observation in observations:
+        if observation.lifecycle == lifecycle:
+            return true
+    return false
+
+
+def _all_lifecycle(observations: list[VerificationObservation], lifecycle: VerificationLifecycle) -> bool:
+    """Return whether all observations have one lifecycle."""
+    for observation in observations:
+        if observation.lifecycle != lifecycle:
+            return false
+    return len(observations) > 0
+
+
+def _any_outcome(observations: list[VerificationObservation], outcome: VerificationOutcome) -> bool:
+    """Return whether any observation has one outcome."""
+    for observation in observations:
+        if observation.outcome == outcome:
+            return true
+    return false
+
+
+def _all_outcome(observations: list[VerificationObservation], outcome: VerificationOutcome) -> bool:
+    """Return whether all observations have one outcome."""
+    for observation in observations:
+        if observation.outcome != outcome:
+            return false
+    return len(observations) > 0

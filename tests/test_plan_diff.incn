@@ -1,0 +1,192 @@
+"""Tests for structured plan diffs and local blast-radius inputs."""
+
+from aggregate_builders import aggregate_as
+from bundle import governed_plan_bundle, governed_plan_bundle_from_inspection
+from dataset import LazyFrame, lazy_frame_named_table
+from evidence import AdapterCoverageRecord, AdapterCoverageState, ExecutionDiagnostic, ExecutionDiagnosticSeverity
+from functions import avg, col, desc, eq, str_lit, sum
+from inspect import PlanInspection, inspect_plan
+from plan_diff import (
+    PLAN_DIFF_SCHEMA_VERSION,
+    PlanDiff,
+    PlanDiffChangeFamily,
+    PlanDiffChangeKind,
+    PlanDiffCompatibility,
+    diff_plan_bundles,
+    diff_plans,
+)
+from quality import row_count, unique
+from substrait.schema import RowColumnSpec, SubstraitPrimitiveKind
+from substrait.schema_registry import register_named_table_schema
+
+
+@derive(Clone)
+model DiffOrder:
+    """Fixture row shape used by plan-diff tests."""
+
+    customer_id: int
+    amount: int
+    status: str
+
+
+def _register_order_schema(table_name: str) -> None:
+    """Register the schema used by plan-diff tests."""
+    mut schema: list[RowColumnSpec] = []
+    schema.append(RowColumnSpec(name="customer_id", kind=SubstraitPrimitiveKind.I64, nullable=false))
+    schema.append(RowColumnSpec(name="amount", kind=SubstraitPrimitiveKind.I64, nullable=false))
+    schema.append(RowColumnSpec(name="status", kind=SubstraitPrimitiveKind.String, nullable=false))
+    register_named_table_schema(table_name, schema)
+
+
+def _spend_summary(table_name: str) -> LazyFrame[DiffOrder]:
+    """Build one grouped lazy plan with stable output fields."""
+    orders: LazyFrame[DiffOrder] = lazy_frame_named_table(table_name)
+    return orders
+        .filter(eq(col("status"), str_lit("paid")))
+        .group_by([col("customer_id")])
+        .agg([aggregate_as(sum(col("amount")), "total_amount")])
+
+
+def _status_summary(table_name: str) -> LazyFrame[DiffOrder]:
+    """Build a related plan that changes grouping and aggregate output."""
+    orders: LazyFrame[DiffOrder] = lazy_frame_named_table(table_name)
+    return orders
+        .filter(eq(col("status"), str_lit("paid")))
+        .group_by([col("status")])
+        .agg([aggregate_as(avg(col("amount")), "avg_amount")])
+        .order_by([desc(col("avg_amount"))])
+
+
+def _has_record(diff: PlanDiff, family: PlanDiffChangeFamily, kind: PlanDiffChangeKind, name: str) -> bool:
+    """Return whether one diff record exists for a family, kind, and display name."""
+    for record in diff.records:
+        if record.family == family and record.kind == kind and record.name == name:
+            return true
+    return false
+
+
+def _record_count(diff: PlanDiff, family: PlanDiffChangeFamily) -> int:
+    """Return how many diff records were emitted for one evidence family."""
+    mut count = 0
+    for record in diff.records:
+        if record.family == family:
+            count += 1
+    return count
+
+
+def test_diff_plans__unchanged_structured_evidence_is_empty() -> None:
+    """RFC 037: equivalent inspection artifacts should not emit false-positive changes."""
+    # -- Arrange --
+    _register_order_schema("diff_orders_same")
+    before = inspect_plan(_spend_summary("diff_orders_same"))
+    after = inspect_plan(_spend_summary("diff_orders_same"))
+
+    # -- Act --
+    diff = diff_plans(before, after)
+
+    # -- Assert --
+    assert diff.schema_version == PLAN_DIFF_SCHEMA_VERSION, "diffs should expose a schema version"
+    assert diff.is_empty(), "equivalent structured plan evidence should have no change records"
+    assert len(diff.blast_radius_inputs) == 0, "unchanged plans should not create blast-radius inputs"
+
+
+def test_diff_plans__classifies_schema_lineage_and_requirement_changes() -> None:
+    """RFC 037: plan diffs should classify schema, lineage, node, and adapter requirement deltas."""
+    # -- Arrange --
+    _register_order_schema("diff_orders_before")
+    _register_order_schema("diff_orders_after")
+    before = inspect_plan(_spend_summary("diff_orders_before"))
+    after = inspect_plan(_status_summary("diff_orders_after"))
+
+    # -- Act --
+    diff = diff_plans(before, after)
+
+    # -- Assert --
+    assert not diff.is_empty(), "changed plans should emit diff records"
+    assert _has_record(diff, PlanDiffChangeFamily.OutputField, PlanDiffChangeKind.Removed, "customer_id"), "removed output fields should be explicit"
+    assert _has_record(diff, PlanDiffChangeFamily.OutputField, PlanDiffChangeKind.Added, "status"), "added output fields should be explicit"
+    assert _has_record(diff, PlanDiffChangeFamily.OutputField, PlanDiffChangeKind.Removed, "total_amount"), "removed aggregate output fields should be explicit"
+    assert _has_record(diff, PlanDiffChangeFamily.OutputField, PlanDiffChangeKind.Added, "avg_amount"), "added aggregate output fields should be explicit"
+    assert _record_count(diff, PlanDiffChangeFamily.Lineage) > 0, "lineage deltas should be classified"
+    assert _record_count(diff, PlanDiffChangeFamily.AdapterRequirement) > 0, "adapter requirement deltas should be classified"
+    assert len(diff.changed_output_fields()) >= 4, "changed_output_fields should return output-field records"
+    assert len(diff.changed_adapter_requirements()) > 0, "changed_adapter_requirements should return adapter requirement records"
+    assert len(diff.blast_radius_inputs) > 0, "changed plans should emit local blast-radius inputs"
+    assert diff.has_breaking_changes(), "output field removals should be treated as breaking local evidence"
+
+
+def test_diff_plan_bundles__captures_quality_coverage_and_evidence_deltas() -> None:
+    """RFC 037: bundle diffs should include caller-supplied evidence beyond inspection facts."""
+    # -- Arrange --
+    _register_order_schema("diff_bundle_orders")
+    inspection = inspect_plan(_spend_summary("diff_bundle_orders"))
+    coverage = AdapterCoverageRecord(
+        coverage_id="coverage:diff:row-filter",
+        requirement=inspection.adapter_requirements[0],
+        adapter_name="datafusion",
+        adapter_version=Some("test"),
+        semantic_profile_id=None,
+        state=AdapterCoverageState.Covered,
+        diagnostics=[],
+        evidence_refs=["coverage:fixture"],
+    )
+    before = governed_plan_bundle_from_inspection(inspection, quality_assertions=[row_count(Some(1))])
+    after = governed_plan_bundle_from_inspection(
+        inspection,
+        quality_assertions=[row_count(Some(1)), unique(col("customer_id"))],
+        coverage_records=[coverage],
+        evidence_refs=["ci:plan-diff"],
+    )
+
+    # -- Act --
+    diff = diff_plan_bundles(before, after)
+
+    # -- Assert --
+    assert _has_record(diff, PlanDiffChangeFamily.QualityAssertion, PlanDiffChangeKind.Added, "unique:customer_id"), "new quality assertions should be diffed"
+    assert _record_count(diff, PlanDiffChangeFamily.CoverageRecord) == 1, "new coverage evidence should be diffed"
+    assert _has_record(diff, PlanDiffChangeFamily.EvidenceReference, PlanDiffChangeKind.Added, "ci:plan-diff"), "new evidence references should be diffed"
+    assert diff.blast_radius_inputs[0].compatibility == PlanDiffCompatibility.Unknown, "evidence-only blast-radius inputs should stay conservative"
+
+
+def test_diff_plans__reports_unknown_for_incompatible_artifact_versions() -> None:
+    """RFC 037: incompatible artifacts should report unknown impact instead of pretending no changes exist."""
+    # -- Arrange --
+    _register_order_schema("diff_incompatible_orders")
+    before = inspect_plan(_spend_summary("diff_incompatible_orders"))
+    after = inspect_plan(_spend_summary("diff_incompatible_orders"))
+    incompatible = PlanInspection(
+        schema_version="foreign.inspection.v9",
+        incql_version=after.incql_version,
+        plan_id=after.plan_id,
+        plan_target=after.plan_target,
+        root_target=after.root_target,
+        authored_node_count=after.authored_node_count,
+        rewritten_node_count=after.rewritten_node_count,
+        rewrite_rule_names=after.rewrite_rule_names,
+        output_schema=after.output_schema,
+        output_fields=after.output_fields,
+        authored_nodes=after.authored_nodes,
+        rewritten_nodes=after.rewritten_nodes,
+        lineage=after.lineage,
+        adapter_requirements=after.adapter_requirements,
+        attachments=after.attachments,
+        governed_attributes=after.governed_attributes,
+        policy_checkpoints=after.policy_checkpoints,
+        artifacts=after.artifacts,
+        unsupported_evidence=after.unsupported_evidence,
+        diagnostics=after.diagnostics,
+    )
+
+    # -- Act --
+    diff = diff_plans(before, incompatible)
+
+    # -- Assert --
+    assert _has_record(
+        diff,
+        PlanDiffChangeFamily.ArtifactCompatibility,
+        PlanDiffChangeKind.Unknown,
+        "inspection_schema_version",
+    ), "incompatible artifact versions should create an unknown record"
+    assert len(diff.unknown_impacts()) == 1, "unknown impacts should be queryable"
+    assert not diff.is_empty(), "unknown compatibility is still evidence"
+    assert diff.blast_radius_inputs[0].compatibility == PlanDiffCompatibility.Unknown, "blast-radius input should stay unknown"

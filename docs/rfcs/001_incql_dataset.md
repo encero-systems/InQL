@@ -6,6 +6,7 @@
 - **Related:**
   - IncQL RFC 000 (language specification — naming, schema shapes, layer boundaries)
   - Incan compiler — static capability gating enforcement: [incan#187](https://github.com/encero-systems/incan/issues/187)
+  - Incan compiler — root trait method lookup blocker: [incan#817](https://github.com/encero-systems/incan/issues/817)
   - IncQL follow-up when enforcement lands: [IncQL #10](https://github.com/encero-systems/IncQL/issues/10)
   - IncQL aggregate helper semantics follow-up: [IncQL #23](https://github.com/encero-systems/IncQL/issues/23)
 - **Issue:** [IncQL #2](https://github.com/encero-systems/IncQL/issues/2)
@@ -15,7 +16,7 @@
 
 ## Summary
 
-This RFC specifies the **dataset type hierarchy** for IncQL: the traits and concrete types that carry schema-parameterized tabular data through relational pipelines. The hierarchy is rooted in the **`DataSet[T]`** trait, split into **`BoundedDataSet[T]`** (finite extent) and **`UnboundedDataSet[T]`** (streaming/unbounded), with three concrete types: **`DataFrame[T]`** (materialized/eager), **`LazyFrame[T]`** (deferred plan), and **`DataStream[T]`** (streaming). The bounded/unbounded split enables **static capability gating**: operations that require unbounded state are rejected at compile time when the target is unbounded, without requiring a separate streaming API. This RFC also defines the **relational operation API** on `DataSet[T]` and the **execution backend boundary** so implementations can delegate without exposing engine internals as the author contract.
+This RFC specifies the **dataset type hierarchy** for IncQL: the traits and concrete types that carry schema-parameterized tabular data through relational pipelines. The hierarchy is rooted in the **`DataSet[T]`** trait, split into **`BoundedDataSet[T]`** (finite extent) and **`UnboundedDataSet[T]`** (streaming/unbounded), with three concrete types: **`DataFrame[T]`** (materialized/eager), **`LazyFrame[T]`** (deferred plan), and **`DataStream[T]`** (streaming). The bounded/unbounded split enables **static capability gating**: operations that require unbounded state are rejected at compile time when the target is unbounded, without requiring a separate streaming API. This RFC also defines the **relational operation API** across the dataset carrier family and the **execution backend boundary** so implementations can delegate without exposing engine internals as the author contract.
 
 ## Core model
 
@@ -36,9 +37,9 @@ Typed pipelines need a first-class carrier for columnar data indexed by `T`. Wit
 - Require `T` to be carried from Incan `model` definitions (or an equivalent fixed field bundle) for strongly typed mode.
 - Define **`LazyFrame[T]`** as the universal deferred plan type for batch relational work.
 - Define **`DataFrame[T]`** as the materialized/eager result — always bounded; the product of collecting or executing a `LazyFrame`.
-- Define **`DataStream[T]`** as the streaming specialization: same operation API through `DataSet[T]`, but unbounded, enabling compile-time constraint enforcement.
+- Define **`DataStream[T]`** as the streaming specialization: same carrier family and shared row-local operation API, but unbounded, enabling compile-time constraint enforcement for finite-input operations.
 - Define **static capability gating** through the trait hierarchy: `BoundedDataSet` → all operations; `UnboundedDataSet` → unbounded-state operations rejected; `DataSet` → most restrictive (because the concrete kind may be unknown).
-- Specify the **relational operation API** on `DataSet[T]` as the programmatic relational surface (implementations **may** share a lowering path with other authoring surfaces; that is outside the scope of this RFC).
+- Specify the **relational operation API** across the dataset carrier family as the programmatic relational surface (implementations **may** share a lowering path with other authoring surfaces; that is outside the scope of this RFC).
 - Specify an **execution backend boundary**: materialize, run plan, or hand off Substrait / IR to a consumer — without mandating a single engine.
 
 ## Non-Goals
@@ -84,7 +85,7 @@ def enrich_orders(orders: LazyFrame[Order]) -> LazyFrame[Order]:
     return orders.with_column("amount_x2", mul(col("amount"), int_expr(2)))
 ```
 
-Because `DataStream[T]` shares the same operation API, streaming code looks identical — only the type signature changes:
+Because `DataStream[T]` shares row-local operations with bounded carriers, streaming code looks identical for ordinary filtering and projection — only the type signature changes:
 
 ```incan
 from pub::incql import DataStream
@@ -152,14 +153,14 @@ DataSet[T]                       (root trait — any tabular data)
     └── DataStream[T]            (concrete — streaming)
 ```
 
-- **`DataSet[T]`** is the root trait. All relational operations are defined here. The compiler **must** apply the **most restrictive** constraint set when the concrete kind is unknown at a call site (because the argument might be unbounded).
+- **`DataSet[T]`** is the root trait. It exposes the intersection of bounded and unbounded carrier capabilities. The compiler **must** apply the **most restrictive** constraint set when the concrete kind is unknown at a call site (because the argument might be unbounded).
 - **`BoundedDataSet[T]`** extends `DataSet[T]`. All relational operations are allowed without streaming constraints.
 - **`UnboundedDataSet[T]`** extends `DataSet[T]`. Operations requiring unbounded state **must** be rejected at compile time.
 - **`DataFrame[T]`** implements `BoundedDataSet[T]`. Always bounded. Conceptually the product of collecting or executing a `LazyFrame`. Concrete runtime representation is implementation-defined but **must** preserve `T` in the type system.
 - **`LazyFrame[T]`** implements `BoundedDataSet[T]`. Holds a logical plan (or equivalent) until an explicit execute, collect, or write boundary. Always bounded.
-- **`DataStream[T]`** implements `UnboundedDataSet[T]`. Shares the `DataSet[T]` operation API but signals that its source is unbounded. The compiler **must** apply static streaming constraints.
+- **`DataStream[T]`** implements `UnboundedDataSet[T]`. It shares the root `DataSet[T]` operation API and signals that its source is unbounded. The compiler **must** apply static streaming constraints.
 
-The three concrete types **must not** imply three unrelated relational languages. All operations are defined on `DataSet[T]`; the bounded/unbounded distinction is a type-level property that enables or restricts specific operations statically.
+The three concrete types **must not** imply three unrelated relational languages. Shared operations live on `DataSet[T]`; bounded-only operations live on `BoundedDataSet[T]`. The bounded/unbounded distinction is a type-level property that enables or restricts specific operations statically.
 
 ### Static capability gating
 
@@ -175,19 +176,19 @@ For `UnboundedDataSet[T]`, the governing rule is semantic rather than ad hoc: op
 
 ### Operation API (for lowering and direct use)
 
-The IncQL library **must** expose the following instance methods on `DataSet[T]` (exact signatures may live in companion library docs; semantics **must** match this table and stay consistent with any normative lowering rules for the same logical operators elsewhere in IncQL). Method names are illustrative; implementations **may** use equivalent spellings if the compiler maps them consistently.
+The IncQL library **must** expose the following instance methods on `DataSet[T]` or `BoundedDataSet[T]` as indicated below. Exact signatures may live in companion library docs; semantics **must** match this table and stay consistent with any normative lowering rules for the same logical operators elsewhere in IncQL. Method names are illustrative; implementations **may** use equivalent spellings if the compiler maps them consistently.
 
-| Method            | Role                                                                                                                                                                                    |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`filter`**      | Restrict rows by an explicit predicate builder in the current package slice (for example `eq(col("status"), str_lit("open"))`), with future sugar lowering to the same semantic target. |
-| **`join`**        | Combine with another `DataSet[U]` on a join condition; named relations for `relation.column`                                                                                            |
-| **`select`**      | Project columns and expressions; output row type becomes a new schema `U` the typechecker can track.                                                                                    |
-| **`with_column`** | Add or replace one projected column by name using an explicit projection builder expression.                                                                                            |
-| **`group_by`**    | Define grouping keys for aggregation; keys are relational expressions.                                                                                                                  |
-| **`agg`**         | Apply aggregate functions over groups (often chained after `group_by`); produces grouped/aggregated schema.                                                                             |
-| **`order_by`**    | Define sort keys and directions.                                                                                                                                                        |
-| **`limit`**       | Cap the number of rows (after sort when both apply).                                                                                                                                    |
-| **`explode`**     | Expand a nested list column into rows (or equivalent).                                                                                                                                  |
+| Method            | Required surface | Role                                                                                                                                                                                    |
+| ----------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`filter`**      | `DataSet[T]`     | Restrict rows by an explicit predicate builder in the current package slice (for example `eq(col("status"), str_lit("open"))`), with future sugar lowering to the same semantic target. |
+| **`join`**        | `DataSet[T]`     | Combine with another same-carrier dataset on a join condition; named relations for `relation.column`.                                                                                   |
+| **`select`**      | Concrete carriers initially; `DataSet[T]` once Incan has native trait type-family support | Project columns and expressions; output row type becomes a new schema `U` the typechecker can track. |
+| **`with_column`** | `DataSet[T]`     | Add or replace one projected column by name using an explicit projection builder expression.                                                                                            |
+| **`explode`**     | `DataSet[T]`     | Expand a nested list column into rows (or equivalent) where the generator semantics are valid for the carrier.                                                                          |
+| **`group_by`**    | `BoundedDataSet[T]` | Define grouping keys for aggregation; keys are relational expressions.                                                                                                               |
+| **`agg`**         | `BoundedDataSet[T]` | Apply aggregate functions over groups (often chained after `group_by`); produces grouped/aggregated schema.                                                                          |
+| **`order_by`**    | `BoundedDataSet[T]` | Define sort keys and directions.                                                                                                                                                     |
+| **`limit`**       | `BoundedDataSet[T]` | Cap the number of rows (after sort when both apply).                                                                                                                                 |
 
 Additional requirements:
 
@@ -215,7 +216,7 @@ Additional requirements:
 
 ### Unified API model
 
-The design draws on Spark Structured Streaming's core insight: a stream is an unbounded table. Rather than defining separate operation APIs for batch and streaming, `DataSet[T]` provides one relational operation surface. The bounded/unbounded property is expressed through the type system (`BoundedDataSet` vs `UnboundedDataSet`), allowing the compiler to enforce streaming constraints statically — an improvement over Spark's runtime `AnalysisException` approach.
+The design draws on Spark Structured Streaming's core insight: a stream is an unbounded table. Rather than defining unrelated operation APIs for batch and streaming, IncQL provides one relational carrier family with shared root operations and bounded-only extensions. The bounded/unbounded property is expressed through the type system (`BoundedDataSet` vs `UnboundedDataSet`), allowing the compiler to enforce streaming constraints statically — an improvement over Spark's runtime `AnalysisException` approach.
 
 ### Trait naming
 
@@ -232,6 +233,10 @@ Future RFCs **may** add methods on `BoundedDataSet[T]` or `UnboundedDataSet[T]`,
 ### Compatibility
 
 - New dataset methods or kinds **should** remain backward compatible or go through a deprecation path.
+
+### Implementation status
+
+The current IncQL implementation exposes shared row-local methods on `DataSet[T]`, bounded-only methods on `BoundedDataSet[T]`, and direct concrete aliases that follow the same split. Direct `DataStream[T]` calls to global grouping, aggregation, global ordering, and finite limiting are rejected because those methods are absent from the stream surface. Full enforcement for values typed only as the root `DataSet[T]` is still blocked by Incan issue [#817](https://github.com/encero-systems/incan/issues/817), where the compiler currently accepts calls to methods that exist only on narrower subtraits.
 
 ## Alternatives considered
 

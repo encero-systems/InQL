@@ -1,6 +1,6 @@
 # IncQL RFC 039: Pandas-familiar exploration API
 
-- **Status:** Draft
+- **Status:** In Progress
 - **Created:** 2026-05-30
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -12,6 +12,7 @@
 - **Issue:** [IncQL #73](https://github.com/encero-systems/IncQL/issues/73)
 - **RFC PR:** [IncQL #60](https://github.com/encero-systems/IncQL/pull/60)
 - **Written against:** Incan v0.3-era IncQL
+- **Implementation PR:** [IncQL #95](https://github.com/encero-systems/IncQL/pull/95)
 - **Shipped in:** —
 
 ## Summary
@@ -72,7 +73,7 @@ order_amounts = orders[["order_id", "customer_id", "amount"]]
 
 This is a projection over the same relation. The output preserves column order from the list and follows the same schema rules as the corresponding IncQL projection operation.
 
-Authors can use familiar method aliases for common exploration flows:
+Authors can use familiar method aliases for common bounded exploration flows:
 
 ```incan
 enriched = (
@@ -156,11 +157,11 @@ The initial pandas-familiar method alias set is:
 | ----- | ------------------------ | ------------------ |
 | `where(predicate)` | `filter(predicate)` | Filter rows using a boolean scalar expression. |
 | `assign(name, expr)` | `with_column(name, expr)` | Add or replace one derived column. |
-| `groupby(columns)` | `group_by(columns)` | Group using column names or scalar grouping expressions accepted by the canonical operation. |
-| `sort_values(by, ascending=true)` | `order_by(...)` | Sort by one or more named columns or ordering expressions. |
-| `head(n)` | `limit(n)` | Apply a relational row limit with the same carrier and boundedness rules as `limit`. |
+| `groupby(columns)` | `group_by(columns)` | Group using column names or scalar grouping expressions accepted by the canonical operation; bounded-only for the same reason as `group_by`. |
+| `sort_values(by, ascending=true)` | `order_by(...)` | Sort by one or more named columns or ordering expressions; bounded-only for the same reason as `order_by`. |
+| `head(n)` | `limit(n)` | Apply a relational row limit with the same carrier and boundedness rules as `limit`; bounded-only for the same reason as `limit`. |
 
-These aliases must not alter the plan produced by the canonical operation except for source-location metadata used in diagnostics. If a canonical operation is unavailable for a carrier because of boundedness rules, the alias must be unavailable for the same reason.
+These aliases must not alter the plan produced by the canonical operation except for source-location metadata used in diagnostics. If a canonical operation is unavailable for a carrier because of boundedness rules, the alias must be unavailable for the same reason. In the current library implementation, `where`, `assign`, and `withColumn` are available on `DataStream[T]`; `groupby`, `groupBy`, `sort_values`, `orderBy`, and `head` are bounded-only.
 
 ### Method alias arguments
 
@@ -224,9 +225,18 @@ The main compatibility risk is expectation compatibility, not source compatibili
 
 ## Unresolved questions
 
-- Should `assign(...)` require exactly one `(name, expr)` pair initially, or should it also support a list of assignments once projection assignment syntax is settled?
-- Should `groupby(...)` accept only strings in the familiar surface, or should it accept every scalar grouping expression accepted by `group_by(...)` from day one?
-- Should dynamic runtime `list[str]` projection be permitted for dynamic carriers, and if so what output schema should the typechecker assign?
-- Should `merge(...)` be included in the initial alias set, or deferred until join output typing and pandas-style join argument spelling are specified more completely?
+### Resolved for the first implementation
 
-<!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->
+`assign(...)` supports one `(name, expr)` pair and lowers directly to `with_column(...)`. Multi-assignment sugar should wait until projection assignment syntax has a settled carrier contract.
+
+`groupby(...)` accepts a list of `ColumnSelector` values, where a `str` is interpreted as a column name and a `ColumnExpr` is passed through unchanged. The canonical `group_by(...)` remains available when callers already have explicit `ColumnExpr` values.
+
+Dynamic runtime `list[str]` projection is not part of this implementation. Projection shape remains a typed planning concern; accepting arbitrary runtime projection lists would require a clear output-schema contract for closed and open row models.
+
+`merge(...)` is deferred until heterogeneous join output typing and pandas-style join argument spelling are specified more completely. The existing `join(...)` and `left_join(...)` methods remain the canonical join surface.
+
+### Implementation blocker
+
+Bracket syntax for generic dataset carriers is blocked on Incan issue [#815][incan-815]. Incan supports ordinary `__getitem__` and concrete `Index[K, V]` uses, but generic classes that adopt `Index[...]` currently emit Rust that cannot use indexing. Until that compiler issue is fixed, this RFC's method-alias surface can ship independently, but the RFC must remain In Progress rather than Implemented.
+
+[incan-815]: https://github.com/encero-systems/incan/issues/815

@@ -27,11 +27,16 @@ Use the docs tree like this:
 8. [Add window columns (How-to)][window-columns-how-to]
 9. [Capture execution observations and adapter coverage (How-to)][execution-observations-how-to]
 10. [Observe data quality checks (How-to)][quality-observations-how-to]
-11. [Dataset carriers (Reference)][dataset-reference]
-12. [Dataset methods (Reference)][dataset-methods-reference]
-13. [Execution context (Reference)][execution-reference]
-14. [Inspect a plan and lineage graph (How-to)][inspect-plan-lineage-how-to]
-15. [Local inspection (Reference)][inspection-reference]
+11. [Package a governed plan bundle (How-to)][governed-plan-bundles-how-to]
+12. [Compare two plans (How-to)][plan-diffs-how-to]
+13. [Exchange evidence locally (How-to)][evidence-exchange-how-to]
+14. [Use semantic profiles in evidence (How-to)][semantic-profiles-how-to]
+15. [Analyze external frontend intent (How-to)][ingress-how-to]
+16. [Dataset carriers (Reference)][dataset-reference]
+17. [Dataset methods (Reference)][dataset-methods-reference]
+18. [Execution context (Reference)][execution-reference]
+19. [Inspect a plan and lineage graph (How-to)][inspect-plan-lineage-how-to]
+20. [Local inspection (Reference)][inspection-reference]
 
 ### Understand the system design
 
@@ -68,6 +73,11 @@ Use the docs tree like this:
 [execution-reference]: language/reference/execution_context.md
 [execution-observations-how-to]: language/how-to/execution_observations.md
 [quality-observations-how-to]: language/how-to/quality_observations.md
+[governed-plan-bundles-how-to]: language/how-to/governed_plan_bundles.md
+[plan-diffs-how-to]: language/how-to/plan_diffs.md
+[evidence-exchange-how-to]: language/how-to/evidence_exchange.md
+[semantic-profiles-how-to]: language/how-to/semantic_profiles.md
+[ingress-how-to]: language/how-to/ingress.md
 [inspect-plan-lineage-how-to]: language/how-to/inspect_plan_lineage.md
 [inspection-reference]: language/reference/inspection.md
 [rfcs-index]: rfcs/README.md

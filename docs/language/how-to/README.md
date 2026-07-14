@@ -5,6 +5,9 @@ How-to guides show concrete task workflows for the current IncQL package surface
 - [Add window columns][window-columns]
 - [Build typed HyperLogLog sketches][typed-hll-sketches]
 - [Capture execution observations and adapter coverage][execution-observations]
+- [Compare two plans][plan-diffs]
+- [Exchange evidence locally][evidence-exchange]
+- [Analyze external frontend intent][ingress]
 - [Build deferred dataset transformations][dataset-transformations]
 - [Estimate approximate metrics][approximate-metrics]
 - [Expand rows with generators][generator-rows]
@@ -12,6 +15,9 @@ How-to guides show concrete task workflows for the current IncQL package surface
 - [Inspect a plan and lineage graph][inspect-plan-lineage]
 - [Normalize semi-structured fields][normalize-semistructured-fields]
 - [Observe data quality checks][quality-observations]
+- [Package a governed plan bundle][governed-plan-bundles]
+- [Track async verification state][verification-evidence]
+- [Use semantic profiles in evidence][semantic-profiles]
 - [Inspect typed variant payloads][variant-payloads]
 - [Work with nested row values][nested-row-values]
 
@@ -19,12 +25,18 @@ How-to guides show concrete task workflows for the current IncQL package surface
 [approximate-metrics]: approximate_metrics.md
 [dataset-transformations]: dataset_transformations.md
 [execution-observations]: execution_observations.md
+[evidence-exchange]: evidence_exchange.md
 [generator-rows]: generator_rows.md
 [governed-evidence]: governed_evidence.md
+[governed-plan-bundles]: governed_plan_bundles.md
+[ingress]: ingress.md
 [inspect-plan-lineage]: inspect_plan_lineage.md
 [nested-row-values]: nested_row_values.md
 [normalize-semistructured-fields]: normalize_semistructured_fields.md
+[plan-diffs]: plan_diffs.md
 [quality-observations]: quality_observations.md
+[semantic-profiles]: semantic_profiles.md
 [typed-hll-sketches]: typed_hll_sketches.md
 [variant-payloads]: variant_payloads.md
+[verification-evidence]: verification_evidence.md
 [window-columns]: window_columns.md

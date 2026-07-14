@@ -24,6 +24,12 @@ This section documents the current IncQL package surface.
 - [Capture execution observations and adapter coverage (How-to)][execution-observations-how-to]
 - [Inspect governed evidence (How-to)][governed-evidence-how-to]
 - [Observe data quality checks (How-to)][quality-observations-how-to]
+- [Package a governed plan bundle (How-to)][governed-plan-bundles-how-to]
+- [Compare two plans (How-to)][plan-diffs-how-to]
+- [Exchange evidence locally (How-to)][evidence-exchange-how-to]
+- [Use semantic profiles in evidence (How-to)][semantic-profiles-how-to]
+- [Analyze external frontend intent (How-to)][ingress-how-to]
+- [Track async verification state (How-to)][verification-evidence-how-to]
 - [Execution context (Reference)][execution-reference]
 - [Execution context (Explanation)][execution-explanation]
 
@@ -46,6 +52,12 @@ This section documents the current IncQL package surface.
 - [Inspect a plan and lineage graph (How-to)][inspect-plan-lineage-how-to]
 - [Local inspection][inspection-reference]
 - [Governed attributes and policy checkpoints][governance-reference]
+- [Governed plan bundles][governed-plan-bundles-reference]
+- [Plan diffs and blast-radius inputs][plan-diffs-reference]
+- [Evidence exchange bridges][evidence-exchange-reference]
+- [Interoperability semantic profiles][semantic-profiles-reference]
+- [Prism plan ingress][ingress-reference]
+- [Async verification evidence][verification-reference]
 - [Quality assertions and observations][quality-reference]
 
 <!-- References -->
@@ -69,7 +81,19 @@ This section documents the current IncQL package surface.
 [execution-explanation]: explanation/execution_context.md
 [execution-observations-how-to]: how-to/execution_observations.md
 [governed-evidence-how-to]: how-to/governed_evidence.md
+[governed-plan-bundles-how-to]: how-to/governed_plan_bundles.md
+[plan-diffs-how-to]: how-to/plan_diffs.md
+[evidence-exchange-how-to]: how-to/evidence_exchange.md
+[semantic-profiles-how-to]: how-to/semantic_profiles.md
+[ingress-how-to]: how-to/ingress.md
+[verification-evidence-how-to]: how-to/verification_evidence.md
 [governance-reference]: reference/governance.md
+[governed-plan-bundles-reference]: reference/governed_plan_bundles.md
+[plan-diffs-reference]: reference/plan_diffs.md
+[evidence-exchange-reference]: reference/evidence_exchange.md
+[semantic-profiles-reference]: reference/semantic_profiles.md
+[ingress-reference]: reference/ingress.md
+[verification-reference]: reference/verification.md
 [quality-observations-how-to]: how-to/quality_observations.md
 [inspect-plan-lineage-how-to]: how-to/inspect_plan_lineage.md
 [quality-reference]: reference/quality.md

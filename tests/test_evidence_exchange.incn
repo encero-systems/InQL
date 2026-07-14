@@ -1,0 +1,169 @@
+"""Tests for local evidence exchange bridges."""
+
+from aggregate_builders import aggregate_as
+from bundle import governed_plan_bundle, governed_plan_bundle_from_inspection
+from dataset import LazyFrame, lazy_frame_named_table
+from evidence import AdapterCoverageRecord, AdapterCoverageState, ExecutionDiagnostic, ExecutionDiagnosticSeverity
+from evidence_exchange import (
+    EVIDENCE_EXCHANGE_SCHEMA_VERSION,
+    EvidenceExchangeDirection,
+    EvidenceExchangeMappingCoverage,
+    EvidenceExchangeRecord,
+    EvidenceExchangeRecordKind,
+    EvidenceExchangeTargetFormat,
+    ExternalEvidenceConfidence,
+    bundle_summary_exchange,
+    external_evidence_artifact,
+    external_evidence_exchange,
+    openlineage_exchange,
+    telemetry_exchange,
+    transformation_project_exchange,
+)
+from functions import col, eq, str_lit, sum
+from inspect import inspect_plan
+from quality import row_count, unique
+from substrait.schema import RowColumnSpec, SubstraitPrimitiveKind
+from substrait.schema_registry import register_named_table_schema
+
+
+@derive(Clone)
+model ExchangeOrder:
+    """Fixture row shape used by evidence-exchange tests."""
+
+    customer_id: int
+    amount: int
+    status: str
+
+
+def _register_order_schema(table_name: str) -> None:
+    """Register the schema used by evidence-exchange tests."""
+    schema = [RowColumnSpec(name="customer_id", kind=SubstraitPrimitiveKind.I64, nullable=false), RowColumnSpec(
+        name="amount",
+        kind=SubstraitPrimitiveKind.I64,
+        nullable=false,
+    ), RowColumnSpec(name="status", kind=SubstraitPrimitiveKind.String, nullable=false)]
+    register_named_table_schema(table_name, schema)
+
+
+def _spend_summary(table_name: str) -> LazyFrame[ExchangeOrder]:
+    """Build one grouped lazy plan with lineage, output schema, and adapter requirements."""
+    orders: LazyFrame[ExchangeOrder] = lazy_frame_named_table(table_name)
+    return orders
+        .filter(eq(col("status"), str_lit("paid")))
+        .group_by([col("customer_id")])
+        .agg([aggregate_as(sum(col("amount")), "total_amount")])
+
+
+def _has_record_kind(records: list[EvidenceExchangeRecord], kind: EvidenceExchangeRecordKind) -> bool:
+    """Return whether an exchange artifact contains a record kind."""
+    for record in records:
+        if record.kind == kind:
+            return true
+    return false
+
+
+def test_bundle_summary_exchange__packages_sections_and_schema_versions() -> None:
+    """RFC 038: bundle-summary exchange should preserve local bundle evidence metadata."""
+    # -- Arrange --
+    _register_order_schema("exchange_bundle_orders")
+    bundle = governed_plan_bundle(_spend_summary("exchange_bundle_orders"), quality_assertions=[row_count(Some(1))])
+
+    # -- Act --
+    exchange = bundle_summary_exchange(bundle)
+
+    # -- Assert --
+    assert exchange.schema_version == EVIDENCE_EXCHANGE_SCHEMA_VERSION, "exchange artifacts should expose a schema version"
+    assert exchange.direction == EvidenceExchangeDirection.Outbound, "bundle summary exchange should be outbound"
+    assert exchange.target_format == EvidenceExchangeTargetFormat.IncqlBundleSummary, "bundle summary exchange should name its target format"
+    assert exchange.profile.mapping_coverage == EvidenceExchangeMappingCoverage.Complete, "IncQL summary exchange should be complete"
+    assert exchange.source_bundle_id == Some(bundle.bundle_id), "exchange should preserve the source bundle id"
+    assert len(exchange.records) >= len(bundle.sections), "bundle sections should become exchange records"
+    assert _has_record_kind(exchange.records, EvidenceExchangeRecordKind.BundleSection), "section records should be present"
+    assert len(exchange.losses) == 0, "native bundle summary exchange should not be lossy"
+    assert exchange.to_json_text().unwrap().contains("\"target_format\""), "exchange JSON should expose target format"
+
+
+def test_openlineage_exchange__projects_lineage_with_explicit_loss_notes() -> None:
+    """RFC 038: OpenLineage-shaped exchange should preserve target refs and report lossy dimensions."""
+    # -- Arrange --
+    _register_order_schema("exchange_openlineage_orders")
+    bundle = governed_plan_bundle(_spend_summary("exchange_openlineage_orders"))
+
+    # -- Act --
+    exchange = openlineage_exchange(bundle)
+
+    # -- Assert --
+    assert exchange.target_format == EvidenceExchangeTargetFormat.OpenLineage, "OpenLineage exchange should name the target format"
+    assert exchange.profile.mapping_coverage == EvidenceExchangeMappingCoverage.Lossy, "OpenLineage projection should be marked lossy"
+    assert _has_record_kind(exchange.records, EvidenceExchangeRecordKind.OpenLineageJob), "job record should be present"
+    assert _has_record_kind(exchange.records, EvidenceExchangeRecordKind.OpenLineageDataset), "dataset records should be present"
+    assert _has_record_kind(exchange.records, EvidenceExchangeRecordKind.OpenLineageLineageFacet), "lineage facet records should be present"
+    assert len(exchange.losses) > 0, "loss records should name semantic dimensions OpenLineage cannot carry directly"
+
+
+def test_telemetry_and_transformation_exchange__derive_reviewable_outputs() -> None:
+    """RFC 038: telemetry and transformation exchanges should emit local review artifacts."""
+    # -- Arrange --
+    _register_order_schema("exchange_review_orders")
+    inspection = inspect_plan(_spend_summary("exchange_review_orders"))
+    diagnostic = ExecutionDiagnostic(
+        severity=ExecutionDiagnosticSeverity.Info,
+        code="coverage.fixture",
+        message="fixture coverage",
+        target=Some(inspection.plan_target),
+    )
+    coverage = AdapterCoverageRecord(
+        coverage_id="coverage:exchange:row-filter",
+        requirement=inspection.adapter_requirements[0],
+        adapter_name="datafusion",
+        adapter_version=Some("test"),
+        semantic_profile_id=None,
+        state=AdapterCoverageState.Covered,
+        diagnostics=[diagnostic],
+        evidence_refs=["coverage:exchange"],
+    )
+    bundle = governed_plan_bundle_from_inspection(
+        inspection,
+        quality_assertions=[row_count(Some(1)), unique(col("customer_id"))],
+        coverage_records=[coverage],
+        evidence_refs=["ci:exchange"],
+    )
+
+    # -- Act --
+    telemetry = telemetry_exchange(bundle)
+    transformation = transformation_project_exchange(bundle)
+
+    # -- Assert --
+    assert telemetry.target_format == EvidenceExchangeTargetFormat.OpenTelemetry, "telemetry exchange should name OpenTelemetry"
+    assert _has_record_kind(telemetry.records, EvidenceExchangeRecordKind.TelemetryEvent), "telemetry events should be present"
+    assert _has_record_kind(telemetry.records, EvidenceExchangeRecordKind.TelemetryMetric), "coverage metrics should be present"
+    assert transformation.target_format == EvidenceExchangeTargetFormat.TransformationProject, "transformation exchange should name project artifacts"
+    assert _has_record_kind(transformation.records, EvidenceExchangeRecordKind.TransformationSourceSuggestion), "source suggestions should be present"
+    assert _has_record_kind(transformation.records, EvidenceExchangeRecordKind.TransformationModelSuggestion), "model suggestions should be present"
+    assert _has_record_kind(transformation.records, EvidenceExchangeRecordKind.TransformationTestSuggestion), "quality assertions should become test suggestions"
+    assert transformation.profile.mapping_coverage == EvidenceExchangeMappingCoverage.Partial, "transformation suggestions should be partial, not authoritative"
+
+
+def test_external_evidence_exchange__preserves_imported_artifact_identity() -> None:
+    """RFC 038: inbound artifacts should remain imported evidence, not internal semantics."""
+    # -- Arrange --
+    artifact = external_evidence_artifact(
+        "artifact:dbt-manifest:orders",
+        EvidenceExchangeTargetFormat.TransformationProject,
+        "target/dbt/manifest.json",
+        target_format_version=Some("dbt-manifest-v12"),
+        source_fingerprint=Some("sha256:test"),
+        confidence=ExternalEvidenceConfidence.Attested,
+        evidence_refs=["artifact:dbt-manifest:orders"],
+    )
+
+    # -- Act --
+    exchange = external_evidence_exchange(artifact)
+
+    # -- Assert --
+    assert exchange.direction == EvidenceExchangeDirection.Inbound, "external artifact exchange should be inbound"
+    assert exchange.source_bundle_id == None, "external artifact exchange should not pretend to come from a bundle"
+    assert len(exchange.external_artifacts) == 1, "external artifact identity should be preserved"
+    assert exchange.external_artifacts[0].source_uri == "target/dbt/manifest.json", "source URI should be carried"
+    assert exchange.external_artifacts[0].confidence == ExternalEvidenceConfidence.Attested, "artifact confidence should be explicit"
+    assert _has_record_kind(exchange.records, EvidenceExchangeRecordKind.ExternalArtifact), "artifact record should be present"

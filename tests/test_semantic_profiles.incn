@@ -1,0 +1,175 @@
+"""Tests for interoperability semantic profiles."""
+
+from aggregate_builders import aggregate_as
+from bundle import governed_plan_bundle_from_inspection
+from dataset import LazyFrame, lazy_frame_named_table
+from evidence import AdapterCoverageRecord, AdapterCoverageState, ExecutionDiagnostic, ExecutionDiagnosticSeverity
+from functions import col, eq, str_lit, sum
+from inspect import inspect_plan
+from semantic_profiles import (
+    SEMANTIC_PROFILE_SCHEMA_VERSION,
+    SemanticProfileAssessmentState,
+    SemanticProfileDimensionKind,
+    SemanticProfileDimensionState,
+    SemanticProfileTargetClass,
+    adapter_binding_profile,
+    assess_profile_for_target,
+    coverage_record_for_profile,
+    incql_baseline_profile,
+    semantic_dimension,
+    semantic_profile,
+    sql_dialect_profile,
+    transformation_project_profile,
+)
+from substrait.schema import RowColumnSpec, SubstraitPrimitiveKind
+from substrait.schema_registry import register_named_table_schema
+
+
+@derive(Clone)
+model ProfileOrder:
+    """Fixture row shape used by semantic-profile tests."""
+
+    customer_id: int
+    amount: int
+    status: str
+
+
+def _register_order_schema(table_name: str) -> None:
+    """Register the schema used by semantic-profile tests."""
+    register_named_table_schema(
+        table_name,
+        [RowColumnSpec(name="customer_id", kind=SubstraitPrimitiveKind.I64, nullable=false), RowColumnSpec(
+            name="amount",
+            kind=SubstraitPrimitiveKind.I64,
+            nullable=false,
+        ), RowColumnSpec(name="status", kind=SubstraitPrimitiveKind.String, nullable=false)],
+    )
+
+
+def _spend_summary(table_name: str) -> LazyFrame[ProfileOrder]:
+    """Build one grouped lazy plan with adapter requirements."""
+    orders: LazyFrame[ProfileOrder] = lazy_frame_named_table(table_name)
+    return orders
+        .filter(eq(col("status"), str_lit("paid")))
+        .group_by([col("customer_id")])
+        .agg([aggregate_as(sum(col("amount")), "total_amount")])
+
+
+def test_semantic_profiles__baseline_profile_is_versioned_and_serializable() -> None:
+    """RFC 040: baseline profiles should be typed, versioned, and serializable."""
+    # -- Arrange --
+    evidence_refs = ["profile:incql"]
+
+    # -- Act --
+    profile = incql_baseline_profile("v0.1", evidence_refs=evidence_refs)
+
+    # -- Assert --
+    assert profile.schema_version == SEMANTIC_PROFILE_SCHEMA_VERSION, "profile schema version should be stable"
+    assert profile.target_class == SemanticProfileTargetClass.IncqlBaseline, "baseline should name the IncQL target class"
+    assert len(profile.dimensions) > 0, "baseline profile should declare core dimensions"
+    assert profile.to_json_text().unwrap().contains("\"target_class\""), "profile JSON should expose target class"
+
+
+def test_semantic_profiles__unknown_dimensions_are_not_treated_as_matched() -> None:
+    """RFC 040: unknown dimensions should remain unknown in profile assessments."""
+    # -- Arrange --
+    _register_order_schema("semantic_profile_unknown_orders")
+    inspection = inspect_plan(_spend_summary("semantic_profile_unknown_orders"))
+    profile = sql_dialect_profile(
+        "oracle",
+        dimensions=[semantic_dimension(
+            SemanticProfileDimensionKind.TemporalCalendar,
+            "timestamp and timezone behavior not evaluated for this plan",
+            state=SemanticProfileDimensionState.Unknown,
+        )],
+    )
+
+    # -- Act --
+    assessment = assess_profile_for_target(inspection.plan_target, profile)
+
+    # -- Assert --
+    assert assessment.state == SemanticProfileAssessmentState.Unknown, "unknown dimensions must not become matched"
+    assert assessment.profile_id == profile.profile_id, "assessment should cite the evaluated profile"
+
+
+def test_semantic_profiles__coverage_records_can_cite_profiles() -> None:
+    """RFC 040: adapter coverage should carry the profile used for evaluation."""
+    # -- Arrange --
+    _register_order_schema("semantic_profile_coverage_orders")
+    inspection = inspect_plan(_spend_summary("semantic_profile_coverage_orders"))
+    diagnostic = ExecutionDiagnostic(
+        severity=ExecutionDiagnosticSeverity.Info,
+        code="profile.coverage.fixture",
+        message="profile-aware coverage fixture",
+        target=Some(inspection.plan_target),
+    )
+    coverage = AdapterCoverageRecord(
+        coverage_id="coverage:profile:row-filter",
+        requirement=inspection.adapter_requirements[0],
+        adapter_name="datafusion",
+        adapter_version=Some("test"),
+        semantic_profile_id=None,
+        state=AdapterCoverageState.Covered,
+        diagnostics=[diagnostic],
+        evidence_refs=["coverage:profile"],
+    )
+    profile = adapter_binding_profile("datafusion", adapter_version=Some("test"))
+
+    # -- Act --
+    profiled = coverage_record_for_profile(coverage, profile)
+
+    # -- Assert --
+    assert profiled.semantic_profile_id == Some(profile.profile_id), "coverage record should cite the profile id"
+    assert profiled.state == AdapterCoverageState.Covered, "profile binding should not change coverage state"
+
+
+def test_semantic_profiles__bundle_packages_profiles_and_assessments() -> None:
+    """RFC 040: governed bundles should package profiles and assessments as evidence sections."""
+    # -- Arrange --
+    _register_order_schema("semantic_profile_bundle_orders")
+    inspection = inspect_plan(_spend_summary("semantic_profile_bundle_orders"))
+    profile = transformation_project_profile(
+        "dbt",
+        project_version=Some("manifest-v12"),
+        dimensions=[semantic_dimension(
+            SemanticProfileDimensionKind.TransformationProject,
+            "project metadata is imported evidence, not IncQL semantics",
+            state=SemanticProfileDimensionState.Constrained,
+        )],
+        evidence_refs=["profile:dbt"],
+    )
+    assessment = assess_profile_for_target(inspection.plan_target, profile, evidence_refs=["profile:dbt"])
+
+    # -- Act --
+    bundle = governed_plan_bundle_from_inspection(
+        inspection,
+        semantic_profiles=[profile],
+        profile_assessments=[assessment],
+        evidence_refs=["bundle:profiles"],
+    )
+
+    # -- Assert --
+    assert len(bundle.semantic_profiles) == 1, "bundle should carry profile records"
+    assert len(bundle.profile_assessments) == 1, "bundle should carry profile assessments"
+    assert bundle.section_available("semantic_profiles"), "profile section should be available"
+    assert bundle.section_available("profile_assessments"), "assessment section should be available"
+    assert bundle.to_json_text().unwrap().contains("\"semantic_profiles\""), "bundle JSON should expose profile counts"
+
+
+def test_semantic_profiles__custom_profile_preserves_target_context() -> None:
+    """RFC 040: custom profile records should preserve target class, version, and fingerprint."""
+    # -- Arrange --
+    target_class = SemanticProfileTargetClass.CatalogSchemaSystem
+
+    # -- Act --
+    profile = semantic_profile(
+        target_class,
+        "glue-data-catalog",
+        target_version=Some("2026-07"),
+        target_configuration_fingerprint=Some("sha256:catalog-fixture"),
+    )
+
+    # -- Assert --
+    assert profile.target_class == SemanticProfileTargetClass.CatalogSchemaSystem, "profile should preserve target class"
+    assert profile.target_version == Some("2026-07"), "profile should preserve target version"
+    assert profile.target_configuration_fingerprint == Some("sha256:catalog-fixture"), "profile should preserve fingerprint"

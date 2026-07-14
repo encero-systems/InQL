@@ -1306,7 +1306,7 @@ def _unsupported_evidence_markers() -> list[UnsupportedEvidence]:
     """Return explicit evidence families intentionally absent from this local Prism-only slice."""
     mut markers: list[UnsupportedEvidence] = []
     markers.append(
-        UnsupportedEvidence(family="semantic_profiles", reason="semantic profile assessment is not implemented yet"),
+        UnsupportedEvidence(family="semantic_profiles", reason="local inspection does not infer semantic profiles"),
     )
     markers.append(
         UnsupportedEvidence(family="ingress_mappings", reason="this plan did not enter through an ingress frontend"),

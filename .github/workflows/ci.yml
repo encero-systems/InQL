@@ -19,8 +19,8 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
-  INCAN_REF: release/v0.3
-  EXPECTED_INCAN_VERSION: 0.3.0
+  INCAN_REF: release/v0.4
+  EXPECTED_INCAN_VERSION: 0.4.0
   RUST_BACKTRACE: 1
   INCAN_NO_BANNER: 1
   INCAN_GENERATED_CARGO_TARGET_DIR: ${{ github.workspace }}/.incan-generated-cargo-target

@@ -1,6 +1,6 @@
 # IncQL RFC 036: Governed plan bundle
 
-- **Status:** Draft
+- **Status:** Implemented
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -21,9 +21,9 @@
   - IncQL RFC 046 (data contract ingress and product topology)
   - IncQL RFC 047 (semantic evidence graph and agent query surface)
 - **Issue:** [IncQL #70](https://github.com/encero-systems/IncQL/issues/70)
-- **RFC PR:** [IncQL #60](https://github.com/encero-systems/IncQL/pull/60); [IncQL #83](https://github.com/encero-systems/IncQL/pull/83)
-- **Written against:** Incan v0.3-era IncQL
-- **Shipped in:** —
+- **RFC PR:** [IncQL #60](https://github.com/encero-systems/IncQL/pull/60); [IncQL #83](https://github.com/encero-systems/IncQL/pull/83); [IncQL #95](https://github.com/encero-systems/IncQL/pull/95)
+- **Written against:** Incan v0.4-era IncQL
+- **Shipped in:** IncQL v0.1
 
 ## Summary
 
@@ -132,10 +132,10 @@ Bundles must be versioned from the start. Early bundles may contain fewer eviden
 - **Execution / interchange** — Substrait may be included or referenced, but not treated as the sole evidence store.
 - **Documentation** — docs must define local bundle use without implying hosted-service requirements.
 
-## Unresolved questions
+## Design Decisions
 
-- Should bundles embed artifacts or reference sibling artifact files by default?
-- What stable bundle serialization format should bundles use?
-- Which evidence families are required for a bundle to be considered complete?
+### Resolved
 
-<!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->
+- Bundles embed the current local IncQL-owned typed evidence records in memory. The stable JSON handoff surface is a summary artifact with bundle metadata, plan/root target summaries, counts, evidence section states, input schema references, and evidence references. It intentionally does not flatten every rich nested record before IncQL has a broader exchange-artifact profile.
+- The stable serialization surface for this RFC is the JSON summary produced by `to_json_text()` / `write(path)`. The typed `GovernedPlanBundle` value remains the richer local API for in-process tools.
+- A complete local bundle requires the core evidence families IncQL can compute today: plan target, input schema references, output schema, output fields, lineage graph, metadata attachments, governed attributes, policy checkpoints, adapter requirements, and unsupported-evidence markers. Quality assertions, quality observations, execution observations, coverage records, Substrait artifact references, verification evidence, canonical equality profiles, verifier statements, proof artifacts, constraint evidence, data contract evidence, product topology, semantic graph projections, semantic profiles, ingress mappings, client session context, and exchange bridge evidence are optional and must be marked unavailable or unsupported when missing.

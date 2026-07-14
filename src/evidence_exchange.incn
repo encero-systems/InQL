@@ -1,0 +1,673 @@
+"""
+Local evidence exchange bridge records.
+
+Exchange artifacts project IncQL evidence into adjacent formats or preserve inbound external artifacts as evidence
+inputs. They are handoff values, not alternate sources of IncQL relational semantics.
+"""
+
+from std.fs import IoError, Path
+from std.json import JsonError, JsonValue, dumps_pretty
+from bundle import GovernedPlanBundle
+from evidence import AdapterCoverageRecord, ExecutionDiagnostic, ExecutionObservation, LineageEdge, SemanticTarget
+from quality import QualityAssertion, QualityObservation
+from scalar_schema import ScalarColumnSpec
+
+pub const EVIDENCE_EXCHANGE_SCHEMA_VERSION: str = "incql.evidence-exchange.v0.1"
+
+
+@derive(Clone)
+pub enum EvidenceExchangeDirection(str):
+    """Whether an exchange artifact is an inbound evidence input or outbound projection."""
+
+    Inbound = "inbound"
+    Outbound = "outbound"
+
+
+@derive(Clone)
+pub enum EvidenceExchangeTargetFormat(str):
+    """External or adjacent artifact format targeted by one exchange bridge."""
+
+    IncqlBundleSummary = "incql_bundle_summary"
+    OpenLineage = "openlineage"
+    OpenTelemetry = "opentelemetry"
+    TransformationProject = "transformation_project"
+    CatalogMetadata = "catalog_metadata"
+    DataContract = "data_contract"
+    DataProduct = "data_product"
+    EvidenceGraph = "evidence_graph"
+    Sidecar = "sidecar"
+    ExternalArtifact = "external_artifact"
+
+
+@derive(Clone)
+pub enum EvidenceExchangeMappingCoverage(str):
+    """How completely one bridge profile maps IncQL evidence into the target format."""
+
+    Complete = "complete"
+    Partial = "partial"
+    Lossy = "lossy"
+    Unsupported = "unsupported"
+
+
+@derive(Clone)
+pub enum EvidenceExchangeRedactionMode(str):
+    """How visibility-sensitive payloads are handled by one exchange profile."""
+
+    PreserveVisibility = "preserve_visibility"
+    PublicOnly = "public_only"
+    RedactSensitive = "redact_sensitive"
+    SidecarOnly = "sidecar_only"
+
+
+@derive(Clone)
+pub enum EvidenceExchangeRecordKind(str):
+    """Record kinds emitted by first-party local exchange bridges."""
+
+    BundleSummary = "bundle_summary"
+    BundleSection = "bundle_section"
+    OpenLineageJob = "openlineage_job"
+    OpenLineageRun = "openlineage_run"
+    OpenLineageDataset = "openlineage_dataset"
+    OpenLineageLineageFacet = "openlineage_lineage_facet"
+    TelemetryEvent = "telemetry_event"
+    TelemetryMetric = "telemetry_metric"
+    TransformationSourceSuggestion = "transformation_source_suggestion"
+    TransformationModelSuggestion = "transformation_model_suggestion"
+    TransformationTestSuggestion = "transformation_test_suggestion"
+    ExternalArtifact = "external_artifact"
+
+
+@derive(Clone)
+pub enum ExternalEvidenceConfidence(str):
+    """Confidence attached to an imported external artifact."""
+
+    Declared = "declared"
+    Attested = "attested"
+    Observed = "observed"
+    Inferred = "inferred"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub model EvidenceExchangeLoss:
+    """Explicit lossy mapping note for one target format field or evidence dimension."""
+
+    pub loss_id: str
+    pub target: Option[SemanticTarget]
+    pub field_path: str
+    pub reason: str
+    pub sidecar_recommended: bool
+    pub evidence_refs: list[str]
+
+    def to_json_value(self) -> JsonValue:
+        """Return the stable JSON shape for this loss report."""
+        mut entries: Dict[str, JsonValue] = {}
+        entries["loss_id"] = JsonValue.str(self.loss_id)
+        entries["target_id"] = JsonValue.str(_target_id_text(self.target))
+        entries["field_path"] = JsonValue.str(self.field_path)
+        entries["reason"] = JsonValue.str(self.reason)
+        entries["sidecar_recommended"] = JsonValue.bool(self.sidecar_recommended)
+        entries["evidence_refs"] = JsonValue.array(_strings_to_json_values(self.evidence_refs))
+        return JsonValue.object(entries)
+
+
+@derive(Clone)
+pub model EvidenceExchangeProfile:
+    """Versioned mapping profile used by one evidence exchange artifact."""
+
+    pub profile_id: str
+    pub direction: EvidenceExchangeDirection
+    pub target_format: EvidenceExchangeTargetFormat
+    pub profile_name: str
+    pub target_format_version: Option[str]
+    pub source_schema_versions: list[str]
+    pub mapping_coverage: EvidenceExchangeMappingCoverage
+    pub redaction_mode: EvidenceExchangeRedactionMode
+    pub unsupported_fields: list[str]
+    pub diagnostics: list[ExecutionDiagnostic]
+    pub evidence_refs: list[str]
+
+    def to_json_value(self) -> JsonValue:
+        """Return the stable JSON shape for this exchange profile."""
+        mut entries: Dict[str, JsonValue] = {}
+        entries["profile_id"] = JsonValue.str(self.profile_id)
+        entries["direction"] = JsonValue.str(self.direction.value())
+        entries["target_format"] = JsonValue.str(self.target_format.value())
+        entries["profile_name"] = JsonValue.str(self.profile_name)
+        entries["target_format_version"] = JsonValue.str(_option_str_text(self.target_format_version))
+        entries["source_schema_versions"] = JsonValue.array(_strings_to_json_values(self.source_schema_versions))
+        entries["mapping_coverage"] = JsonValue.str(self.mapping_coverage.value())
+        entries["redaction_mode"] = JsonValue.str(self.redaction_mode.value())
+        entries["unsupported_fields"] = JsonValue.array(_strings_to_json_values(self.unsupported_fields))
+        entries["diagnostic_count"] = JsonValue.int(len(self.diagnostics))
+        entries["evidence_refs"] = JsonValue.array(_strings_to_json_values(self.evidence_refs))
+        return JsonValue.object(entries)
+
+
+@derive(Clone)
+pub model EvidenceExchangeRecord:
+    """One projected or imported evidence exchange record."""
+
+    pub record_id: str
+    pub kind: EvidenceExchangeRecordKind
+    pub target: Option[SemanticTarget]
+    pub external_name: str
+    pub payload_schema: str
+    pub payload_summary: str
+    pub payload_refs: list[str]
+    pub lossy: bool
+    pub evidence_refs: list[str]
+
+    def to_json_value(self) -> JsonValue:
+        """Return the stable JSON shape for this exchange record."""
+        mut entries: Dict[str, JsonValue] = {}
+        entries["record_id"] = JsonValue.str(self.record_id)
+        entries["kind"] = JsonValue.str(self.kind.value())
+        entries["target_id"] = JsonValue.str(_target_id_text(self.target))
+        entries["external_name"] = JsonValue.str(self.external_name)
+        entries["payload_schema"] = JsonValue.str(self.payload_schema)
+        entries["payload_summary"] = JsonValue.str(self.payload_summary)
+        entries["payload_refs"] = JsonValue.array(_strings_to_json_values(self.payload_refs))
+        entries["lossy"] = JsonValue.bool(self.lossy)
+        entries["evidence_refs"] = JsonValue.array(_strings_to_json_values(self.evidence_refs))
+        return JsonValue.object(entries)
+
+
+@derive(Clone)
+pub model ExternalEvidenceArtifact:
+    """Identity and provenance for an imported external evidence artifact."""
+
+    pub artifact_id: str
+    pub target_format: EvidenceExchangeTargetFormat
+    pub target_format_version: Option[str]
+    pub source_uri: str
+    pub source_fingerprint: Option[str]
+    pub confidence: ExternalEvidenceConfidence
+    pub diagnostics: list[ExecutionDiagnostic]
+    pub evidence_refs: list[str]
+
+    def to_json_value(self) -> JsonValue:
+        """Return the stable JSON shape for this external artifact reference."""
+        mut entries: Dict[str, JsonValue] = {}
+        entries["artifact_id"] = JsonValue.str(self.artifact_id)
+        entries["target_format"] = JsonValue.str(self.target_format.value())
+        entries["target_format_version"] = JsonValue.str(_option_str_text(self.target_format_version))
+        entries["source_uri"] = JsonValue.str(self.source_uri)
+        entries["source_fingerprint"] = JsonValue.str(_option_str_text(self.source_fingerprint))
+        entries["confidence"] = JsonValue.str(self.confidence.value())
+        entries["diagnostic_count"] = JsonValue.int(len(self.diagnostics))
+        entries["evidence_refs"] = JsonValue.array(_strings_to_json_values(self.evidence_refs))
+        return JsonValue.object(entries)
+
+
+@derive(Clone)
+pub model EvidenceExchangeArtifact:
+    """Local evidence exchange handoff artifact."""
+
+    pub schema_version: str
+    pub exchange_id: str
+    pub direction: EvidenceExchangeDirection
+    pub target_format: EvidenceExchangeTargetFormat
+    pub profile: EvidenceExchangeProfile
+    pub source_bundle_id: Option[str]
+    pub records: list[EvidenceExchangeRecord]
+    pub losses: list[EvidenceExchangeLoss]
+    pub external_artifacts: list[ExternalEvidenceArtifact]
+    pub diagnostics: list[ExecutionDiagnostic]
+    pub evidence_refs: list[str]
+
+    def to_json_value(self) -> JsonValue:
+        """Return the stable JSON summary for this exchange artifact."""
+        mut entries: Dict[str, JsonValue] = {}
+        entries["schema_version"] = JsonValue.str(self.schema_version)
+        entries["exchange_id"] = JsonValue.str(self.exchange_id)
+        entries["direction"] = JsonValue.str(self.direction.value())
+        entries["target_format"] = JsonValue.str(self.target_format.value())
+        entries["source_bundle_id"] = JsonValue.str(_option_str_text(self.source_bundle_id))
+        entries["profile"] = self.profile.to_json_value()
+        entries["records"] = JsonValue.array(_record_json_values(self.records))
+        entries["losses"] = JsonValue.array(_loss_json_values(self.losses))
+        entries["external_artifacts"] = JsonValue.array(_external_artifact_json_values(self.external_artifacts))
+        entries["diagnostic_count"] = JsonValue.int(len(self.diagnostics))
+        entries["evidence_refs"] = JsonValue.array(_strings_to_json_values(self.evidence_refs))
+        return JsonValue.object(entries)
+
+    def to_json_text(self) -> Result[str, IoError]:
+        """Serialize the exchange artifact summary as pretty JSON text."""
+        return dumps_pretty(self.to_json_value()).map_err(_json_error_to_io_error)
+
+    def write(self, path: str) -> Result[None, IoError]:
+        """Write the exchange artifact summary JSON to a filesystem path."""
+        return Path(path).write_text(self.to_json_text()?, "utf-8", "strict", None)
+
+
+pub def evidence_exchange_profile(
+    direction: EvidenceExchangeDirection,
+    target_format: EvidenceExchangeTargetFormat,
+    profile_name: str,
+    target_format_version: Option[str] = None,
+    source_schema_versions: list[str] = [],
+    mapping_coverage: EvidenceExchangeMappingCoverage = EvidenceExchangeMappingCoverage.Partial,
+    redaction_mode: EvidenceExchangeRedactionMode = EvidenceExchangeRedactionMode.PreserveVisibility,
+    unsupported_fields: list[str] = [],
+    evidence_refs: list[str] = [],
+) -> EvidenceExchangeProfile:
+    """Create a local exchange mapping profile."""
+    return EvidenceExchangeProfile(
+        profile_id=f"exchange-profile:{direction.value()}:{target_format.value()}:{profile_name}",
+        direction=direction,
+        target_format=target_format,
+        profile_name=profile_name,
+        target_format_version=target_format_version,
+        source_schema_versions=source_schema_versions,
+        mapping_coverage=mapping_coverage,
+        redaction_mode=redaction_mode,
+        unsupported_fields=unsupported_fields,
+        diagnostics=[],
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def bundle_summary_exchange(bundle: GovernedPlanBundle) -> EvidenceExchangeArtifact:
+    """Project a governed plan bundle into IncQL's native bundle-summary exchange format."""
+    profile = evidence_exchange_profile(
+        EvidenceExchangeDirection.Outbound,
+        EvidenceExchangeTargetFormat.IncqlBundleSummary,
+        "incql.governed-plan-bundle-summary",
+        target_format_version=Some("v0.1"),
+        source_schema_versions=bundle.rule_versions,
+        mapping_coverage=EvidenceExchangeMappingCoverage.Complete,
+        evidence_refs=bundle.evidence_refs,
+    )
+    mut records = [_record(
+        EvidenceExchangeRecordKind.BundleSummary,
+        Some(bundle.plan_target),
+        bundle.bundle_id,
+        "incql.bundle.summary.v0.1",
+        f"sections={len(bundle.sections)} outputs={len(bundle.output_schema)} lineage_edges={len(bundle.lineage.edges)}",
+        [],
+        false,
+        bundle.evidence_refs,
+    )]
+    for section in bundle.sections:
+        records.append(
+            _record(
+                EvidenceExchangeRecordKind.BundleSection,
+                Some(bundle.plan_target),
+                section.family,
+                "incql.bundle.section.v0.1",
+                f"{section.availability.value()} records={section.record_count} requirement={section.requirement.value()}",
+                section.evidence_refs,
+                false,
+                section.evidence_refs,
+            ),
+        )
+    return _artifact(profile, Some(bundle.bundle_id), records, [], [], [], bundle.evidence_refs)
+
+
+pub def openlineage_exchange(bundle: GovernedPlanBundle) -> EvidenceExchangeArtifact:
+    """Project bundle lineage into an OpenLineage-shaped local handoff artifact."""
+    losses = [_loss(
+        Some(bundle.plan_target),
+        "lineage.relationship",
+        "OpenLineage facets do not natively distinguish every IncQL lineage relationship and transformation kind.",
+        true,
+        bundle.evidence_refs,
+    )]
+    profile = evidence_exchange_profile(
+        EvidenceExchangeDirection.Outbound,
+        EvidenceExchangeTargetFormat.OpenLineage,
+        "openlineage.local-plan-lineage",
+        target_format_version=Some("openlineage-1.x-shaped"),
+        source_schema_versions=bundle.rule_versions,
+        mapping_coverage=EvidenceExchangeMappingCoverage.Lossy,
+        redaction_mode=EvidenceExchangeRedactionMode.RedactSensitive,
+        unsupported_fields=["policy_decisions", "quality_threshold_semantics", "adapter_coverage_state"],
+        evidence_refs=bundle.evidence_refs,
+    )
+    mut records = [_record(
+        EvidenceExchangeRecordKind.OpenLineageJob,
+        Some(bundle.plan_target),
+        bundle.plan_target.name,
+        "openlineage.job.v1",
+        f"plan={bundle.plan_target.target_id}",
+        bundle.evidence_refs,
+        false,
+        bundle.evidence_refs,
+    ), _record(
+        EvidenceExchangeRecordKind.OpenLineageRun,
+        Some(bundle.root_target),
+        bundle.bundle_id,
+        "openlineage.run.v1",
+        f"bundle={bundle.bundle_id}",
+        bundle.evidence_refs,
+        false,
+        bundle.evidence_refs,
+    )]
+    for field in bundle.output_fields:
+        records.append(_openlineage_dataset_record(bundle, field))
+    for edge in bundle.lineage.edges:
+        records.append(_openlineage_lineage_record(edge))
+    return _artifact(profile, Some(bundle.bundle_id), records, losses, [], [], bundle.evidence_refs)
+
+
+pub def telemetry_exchange(bundle: GovernedPlanBundle) -> EvidenceExchangeArtifact:
+    """Project execution, quality, and coverage evidence into telemetry-shaped local records."""
+    profile = evidence_exchange_profile(
+        EvidenceExchangeDirection.Outbound,
+        EvidenceExchangeTargetFormat.OpenTelemetry,
+        "opentelemetry.local-evidence-events",
+        target_format_version=Some("otel-shaped-v1"),
+        source_schema_versions=bundle.rule_versions,
+        mapping_coverage=EvidenceExchangeMappingCoverage.Partial,
+        redaction_mode=EvidenceExchangeRedactionMode.RedactSensitive,
+        unsupported_fields=["full_payload_samples", "hosted_exporter_config"],
+        evidence_refs=bundle.evidence_refs,
+    )
+    mut records = [_record(
+        EvidenceExchangeRecordKind.TelemetryEvent,
+        Some(bundle.plan_target),
+        bundle.bundle_id,
+        "otel.event.v1",
+        f"bundle={bundle.bundle_id} sections={len(bundle.sections)}",
+        bundle.evidence_refs,
+        false,
+        bundle.evidence_refs,
+    )]
+    for observation in bundle.execution_observations:
+        records.append(_execution_telemetry_record(observation))
+    for observation in bundle.quality_observations:
+        records.append(_quality_telemetry_record(observation))
+    for coverage in bundle.coverage_records:
+        records.append(_coverage_metric_record(coverage))
+    return _artifact(profile, Some(bundle.bundle_id), records, [], [], [], bundle.evidence_refs)
+
+
+pub def transformation_project_exchange(bundle: GovernedPlanBundle) -> EvidenceExchangeArtifact:
+    """Project bundle evidence into reviewable transformation-project suggestions."""
+    profile = evidence_exchange_profile(
+        EvidenceExchangeDirection.Outbound,
+        EvidenceExchangeTargetFormat.TransformationProject,
+        "transformation-project.local-suggestions",
+        target_format_version=Some("generic-model-source-test-suggestions"),
+        source_schema_versions=bundle.rule_versions,
+        mapping_coverage=EvidenceExchangeMappingCoverage.Partial,
+        redaction_mode=EvidenceExchangeRedactionMode.PublicOnly,
+        unsupported_fields=["materialization_runtime", "orchestration_schedule", "environment_credentials"],
+        evidence_refs=bundle.evidence_refs,
+    )
+    mut records: list[EvidenceExchangeRecord] = []
+    for source_ref in bundle.input_schema_references:
+        records.append(
+            _record(
+                EvidenceExchangeRecordKind.TransformationSourceSuggestion,
+                Some(bundle.plan_target),
+                source_ref,
+                "transformation.source.suggestion.v0.1",
+                "source declaration candidate from inspected read root",
+                [source_ref],
+                false,
+                bundle.evidence_refs,
+            ),
+        )
+    records.append(
+        _record(
+            EvidenceExchangeRecordKind.TransformationModelSuggestion,
+            Some(bundle.plan_target),
+            bundle.root_target.name,
+            "transformation.model.suggestion.v0.1",
+            f"outputs={_schema_names(bundle.output_schema)}",
+            bundle.evidence_refs,
+            false,
+            bundle.evidence_refs,
+        ),
+    )
+    for assertion in bundle.quality_assertions:
+        records.append(_quality_test_suggestion_record(assertion))
+    return _artifact(profile, Some(bundle.bundle_id), records, [], [], [], bundle.evidence_refs)
+
+
+pub def external_evidence_artifact(
+    artifact_id: str,
+    target_format: EvidenceExchangeTargetFormat,
+    source_uri: str,
+    target_format_version: Option[str] = None,
+    source_fingerprint: Option[str] = None,
+    confidence: ExternalEvidenceConfidence = ExternalEvidenceConfidence.Unknown,
+    diagnostics: list[ExecutionDiagnostic] = [],
+    evidence_refs: list[str] = [],
+) -> ExternalEvidenceArtifact:
+    """Declare one imported external artifact as evidence input."""
+    return ExternalEvidenceArtifact(
+        artifact_id=artifact_id,
+        target_format=target_format,
+        target_format_version=target_format_version,
+        source_uri=source_uri,
+        source_fingerprint=source_fingerprint,
+        confidence=confidence,
+        diagnostics=diagnostics,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def external_evidence_exchange(artifact: ExternalEvidenceArtifact) -> EvidenceExchangeArtifact:
+    """Wrap an imported external artifact in an inbound exchange handoff."""
+    profile = evidence_exchange_profile(
+        EvidenceExchangeDirection.Inbound,
+        artifact.target_format,
+        "external-artifact.identity-preserving-import",
+        target_format_version=artifact.target_format_version,
+        source_schema_versions=[],
+        mapping_coverage=EvidenceExchangeMappingCoverage.Partial,
+        redaction_mode=EvidenceExchangeRedactionMode.PreserveVisibility,
+        unsupported_fields=["authoritative_incql_semantics"],
+        evidence_refs=artifact.evidence_refs,
+    )
+    records = [_record(
+        EvidenceExchangeRecordKind.ExternalArtifact,
+        None,
+        artifact.artifact_id,
+        "external.artifact.reference.v0.1",
+        f"{artifact.target_format.value()} from {artifact.source_uri}",
+        artifact.evidence_refs,
+        false,
+        artifact.evidence_refs,
+    )]
+    return _artifact(profile, None, records, [], [artifact], artifact.diagnostics, artifact.evidence_refs)
+
+
+def _artifact(
+    profile: EvidenceExchangeProfile,
+    source_bundle_id: Option[str],
+    records: list[EvidenceExchangeRecord],
+    losses: list[EvidenceExchangeLoss],
+    external_artifacts: list[ExternalEvidenceArtifact],
+    diagnostics: list[ExecutionDiagnostic],
+    evidence_refs: list[str],
+) -> EvidenceExchangeArtifact:
+    """Build one exchange artifact from a profile and records."""
+    return EvidenceExchangeArtifact(
+        schema_version=EVIDENCE_EXCHANGE_SCHEMA_VERSION,
+        exchange_id=f"exchange:{profile.profile_id}:{_option_str_text(source_bundle_id)}",
+        direction=profile.direction,
+        target_format=profile.target_format,
+        profile=profile,
+        source_bundle_id=source_bundle_id,
+        records=records,
+        losses=losses,
+        external_artifacts=external_artifacts,
+        diagnostics=diagnostics,
+        evidence_refs=evidence_refs,
+    )
+
+
+def _record(
+    kind: EvidenceExchangeRecordKind,
+    target: Option[SemanticTarget],
+    external_name: str,
+    payload_schema: str,
+    payload_summary: str,
+    payload_refs: list[str],
+    lossy: bool,
+    evidence_refs: list[str],
+) -> EvidenceExchangeRecord:
+    """Build one deterministic exchange record."""
+    return EvidenceExchangeRecord(
+        record_id=f"exchange-record:{kind.value()}:{external_name}",
+        kind=kind,
+        target=target,
+        external_name=external_name,
+        payload_schema=payload_schema,
+        payload_summary=payload_summary,
+        payload_refs=payload_refs,
+        lossy=lossy,
+        evidence_refs=evidence_refs,
+    )
+
+
+def _loss(
+    target: Option[SemanticTarget],
+    field_path: str,
+    reason: str,
+    sidecar_recommended: bool,
+    evidence_refs: list[str],
+) -> EvidenceExchangeLoss:
+    """Build one deterministic loss report."""
+    return EvidenceExchangeLoss(
+        loss_id=f"exchange-loss:{field_path}",
+        target=target,
+        field_path=field_path,
+        reason=reason,
+        sidecar_recommended=sidecar_recommended,
+        evidence_refs=evidence_refs,
+    )
+
+
+def _openlineage_dataset_record(bundle: GovernedPlanBundle, field: SemanticTarget) -> EvidenceExchangeRecord:
+    """Build an OpenLineage-shaped dataset record for one output field."""
+    return _record(
+        EvidenceExchangeRecordKind.OpenLineageDataset,
+        Some(field),
+        field.name,
+        "openlineage.dataset.v1",
+        f"plan={bundle.plan_target.target_id} field={field.target_id}",
+        bundle.evidence_refs,
+        false,
+        bundle.evidence_refs,
+    )
+
+
+def _openlineage_lineage_record(edge: LineageEdge) -> EvidenceExchangeRecord:
+    """Build an OpenLineage-shaped lineage facet record from one IncQL lineage edge."""
+    return _record(
+        EvidenceExchangeRecordKind.OpenLineageLineageFacet,
+        Some(edge.destination),
+        f"{edge.source.name}->{edge.destination.name}",
+        "openlineage.lineage-facet.v1",
+        f"{edge.relationship.value()}:{edge.transformation.value()} confidence={edge.confidence.value()}",
+        edge.evidence_refs,
+        true,
+        edge.evidence_refs,
+    )
+
+
+def _execution_telemetry_record(observation: ExecutionObservation) -> EvidenceExchangeRecord:
+    """Build a telemetry event for one execution observation."""
+    return _record(
+        EvidenceExchangeRecordKind.TelemetryEvent,
+        Some(observation.plan_target),
+        observation.observation_id,
+        "otel.event.v1",
+        f"{observation.operation.value()} status={observation.status.value()} backend={observation.backend_name}",
+        observation.trace_ids,
+        false,
+        observation.evidence_refs,
+    )
+
+
+def _quality_telemetry_record(observation: QualityObservation) -> EvidenceExchangeRecord:
+    """Build a telemetry event for one quality observation."""
+    return _record(
+        EvidenceExchangeRecordKind.TelemetryEvent,
+        Some(observation.target),
+        observation.observation_id,
+        "otel.event.v1",
+        f"quality={observation.assertion.kind.value()} status={observation.status.value()} metrics={len(
+            observation.metrics,
+        )}",
+        observation.execution_observation_ids,
+        false,
+        observation.evidence_refs,
+    )
+
+
+def _coverage_metric_record(coverage: AdapterCoverageRecord) -> EvidenceExchangeRecord:
+    """Build a telemetry metric record for one adapter coverage answer."""
+    return _record(
+        EvidenceExchangeRecordKind.TelemetryMetric,
+        Some(coverage.requirement.target),
+        coverage.coverage_id,
+        "otel.metric.v1",
+        f"coverage={coverage.state.value()} adapter={coverage.adapter_name}",
+        coverage.evidence_refs,
+        false,
+        coverage.evidence_refs,
+    )
+
+
+def _quality_test_suggestion_record(assertion: QualityAssertion) -> EvidenceExchangeRecord:
+    """Build a transformation-project test suggestion for one quality assertion."""
+    return _record(
+        EvidenceExchangeRecordKind.TransformationTestSuggestion,
+        Some(assertion.target),
+        assertion.name,
+        "transformation.test.suggestion.v0.1",
+        f"{assertion.kind.value()} severity={assertion.severity.value()} mode={assertion.mode.value()}",
+        assertion.evidence_refs,
+        false,
+        assertion.evidence_refs,
+    )
+
+
+def _schema_names(columns: list[ScalarColumnSpec]) -> str:
+    """Return a compact comma-separated output-schema name list."""
+    return ",".join([column.name for column in columns])
+
+
+def _target_id_text(target: Option[SemanticTarget]) -> str:
+    """Return an optional target id as stable text."""
+    if let Some(value) = target:
+        return value.target_id
+    return ""
+
+
+def _option_str_text(value: Option[str]) -> str:
+    """Return stable text for optional strings."""
+    if let Some(inner) = value:
+        return inner
+    return ""
+
+
+def _record_json_values(records: list[EvidenceExchangeRecord]) -> list[JsonValue]:
+    """Convert exchange records to JSON values."""
+    return [record.to_json_value() for record in records]
+
+
+def _loss_json_values(losses: list[EvidenceExchangeLoss]) -> list[JsonValue]:
+    """Convert loss records to JSON values."""
+    return [loss.to_json_value() for loss in losses]
+
+
+def _external_artifact_json_values(artifacts: list[ExternalEvidenceArtifact]) -> list[JsonValue]:
+    """Convert external artifact records to JSON values."""
+    return [artifact.to_json_value() for artifact in artifacts]
+
+
+def _strings_to_json_values(values: list[str]) -> list[JsonValue]:
+    """Convert string values to JSON string values."""
+    return [JsonValue.str(value) for value in values]
+
+
+def _json_error_to_io_error(error: JsonError) -> IoError:
+    """Convert JSON serialization errors to the filesystem error shape used by write helpers."""
+    return IoError(kind="invalid_data", detail=error.message(), operation="json", position=-1, path=None)

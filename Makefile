@@ -49,6 +49,11 @@ test-style: ## Validate test style markers (Arrange / Act / Assert) across `test
 	@echo "\033[1mChecking test style markers...\033[0m"
 	@bash scripts/check_test_style.sh
 
+.PHONY: static-capability-gating
+static-capability-gating: ## Validate RFC 001 bounded/unbounded method availability with compile-fail probes
+	@echo "\033[1mChecking static capability gating...\033[0m"
+	@bash scripts/check_static_capability_gating.sh
+
 .PHONY: registry-metadata
 registry-metadata: ## Validate RFC 014 function registry checked API metadata
 	@echo "\033[1mChecking function registry API metadata...\033[0m"
@@ -110,15 +115,15 @@ fmt-check: ## Check formatting without writing (`incan fmt --check` per director
 # =============================================================================
 
 .PHONY: check
-check: fmt-check test-style vocab-companion-test registry-metadata build test ## Format check, style gate, metadata check, build, and test
+check: fmt-check test-style static-capability-gating vocab-companion-test registry-metadata build test ## Format check, style gate, capability gate, metadata check, build, and test
 	@echo "\033[32m✓ check passed\033[0m"
 
 .PHONY: pre-commit
-pre-commit: fmt-check test-style vocab-companion-test registry-metadata build test ## Fast gate before commit (same as `check`)
+pre-commit: fmt-check test-style static-capability-gating vocab-companion-test registry-metadata build test ## Fast gate before commit (same as `check`)
 	@echo "\033[32m✓ pre-commit gate passed\033[0m"
 
 .PHONY: ci
-ci: fmt-check test-style vocab-companion-test registry-metadata build test smoke-consumer ## Same steps as GitHub Actions `incql` job
+ci: fmt-check test-style static-capability-gating vocab-companion-test registry-metadata build test smoke-consumer ## Same steps as GitHub Actions `incql` job
 	@echo "\033[32m✓ ci gate passed\033[0m"
 
 .PHONY: verify

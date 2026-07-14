@@ -1,6 +1,6 @@
 # IncQL RFC 040: Interoperability semantic profiles
 
-- **Status:** Draft
+- **Status:** Implemented
 - **Created:** 2026-05-30
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -23,9 +23,9 @@
   - IncQL RFC 038 (evidence exchange bridges)
   - IncQL RFC 041 (Prism plan ingress and external client frontends)
 - **Issue:** [IncQL #74](https://github.com/encero-systems/IncQL/issues/74)
-- **RFC PR:** [IncQL #60](https://github.com/encero-systems/IncQL/pull/60)
-- **Written against:** Incan v0.3-era IncQL
-- **Shipped in:** —
+- **RFC PR:** [IncQL #60](https://github.com/encero-systems/IncQL/pull/60), [IncQL #95](https://github.com/encero-systems/IncQL/pull/95)
+- **Written against:** Incan v0.4-era IncQL
+- **Shipped in:** IncQL v0.1
 
 ## Summary
 
@@ -214,12 +214,12 @@ Profile schemas must be versioned from the start. Profile names that appear in s
 - **Execution / interchange** — sessions and adapters may report requested and observed profile evidence without owning IncQL semantics.
 - **Documentation** — docs must explain profiles as evidence contexts, not as alternative semantic authorities.
 
-## Unresolved questions
+## Design Decisions
 
-- Which semantic dimensions are mandatory in the first implementation?
-- Should built-in IncQL profiles live in core or in optional integration packages?
-- How should profile records compare target configurations without leaking sensitive deployment details?
-- Should conformance test results become profile evidence in this RFC or a later RFC?
-- Which transformation-project profile dimensions are needed before exchange bridges can safely emit test and metadata suggestions?
+### Resolved
 
-<!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->
+- The first implementation defines the mandatory dimension vocabulary as structured enum values for type system, numeric/decimal, temporal/calendar, boolean/null/NaN, string comparison, identifier resolution, schema/catalog, transformation project, client session state, relation ordering, aggregate/grouping, window, nested/semi-structured, function/operator identity, extension/fallback, and plan-stage observability semantics. Individual profiles can carry only the dimensions they have evidence for; missing and unknown dimensions are not treated as matched.
+- Built-in generic profile constructors live in the core package because coverage, observations, bundles, and exchange artifacts need one shared local record shape. Provider-specific registries, hosted profile discovery, and service-specific parsers remain outside core.
+- Configuration comparison uses an optional non-sensitive `target_configuration_fingerprint` string. The profile model records the fingerprint and does not attempt to inspect or store credentials, connection strings, or deployment secrets.
+- Conformance baselines are profile target classes in this RFC. Concrete conformance test result ingestion remains evidence that can feed profile dimensions or assessments; this RFC does not define a full conformance suite.
+- Transformation-project profiles need at least transformation-project, schema/catalog, function/operator identity, relation ordering, and quality/test metadata dimensions before downstream tooling can treat suggestions as more than review artifacts. RFC 038 exchange suggestions therefore remain partial unless profile assessments supply stronger evidence.

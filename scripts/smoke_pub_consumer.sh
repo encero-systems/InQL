@@ -47,19 +47,66 @@ import pub::incql
 
 from pub::incql import (
     DataFrame,
+    EvidenceExchangeRecord,
+    EvidenceExchangeRecordKind,
+    EvidenceExchangeTargetFormat,
+    ExternalEvidenceConfidence,
     GovernedAttributeStatus,
+    IngressAnalysis,
+    IngressAnalysisStatus,
+    IngressCoverageState,
+    IngressFrontendKind,
+    IngressOriginKind,
+    IngressOriginReference,
     LazyFrame,
     PolicyCheckpointAction,
     PolicyCheckpointKind,
+    PlanDiff,
+    PlanDiffChangeFamily,
     QualityObservationStatus,
+    SemanticProfileAssessmentState,
+    SemanticProfileDimensionKind,
+    SemanticProfileDimensionState,
     Session,
+    VerificationAssertionKind,
+    VerificationAssurance,
+    VerificationCaptureBasis,
+    VerificationLifecycle,
+    VerificationOutcome,
+    assess_profile_for_target,
     array,
+    bundle_summary_exchange,
+    diff_plan_bundles,
     col,
     eq,
+    external_evidence_artifact,
+    external_evidence_exchange,
     governed_attribute,
+    governed_plan_bundle,
+    governed_plan_bundle_from_inspection,
+    incql_baseline_profile,
+    analyze_ingress_plan,
+    client_session_context,
     inspect_plan,
+    ingress_filter,
+    ingress_limit,
+    ingress_named_table,
+    ingress_origin_reference,
+    ingress_plan,
+    ingress_request,
     lit,
+    openlineage_exchange,
     policy_checkpoint,
+    semantic_dimension,
+    sql_dialect_profile,
+    telemetry_exchange,
+    transformation_project_exchange,
+    project_verification_state,
+    verification_assertion,
+    verification_coverage,
+    verification_evidence,
+    verification_observation,
+    verification_run,
 )
 from std.testing import assert_is_ok, fail_t
 
@@ -379,6 +426,185 @@ def _governed_evidence_exports_compile_for_pub_consumers() -> None:
     assert checkpoint.action == PolicyCheckpointAction.Observe, "pub consumers should construct policy checkpoints"
 
 
+def _governed_plan_bundle_exports_compile_for_pub_consumers() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    orders = _orders(session, "governed_bundle_orders")
+
+    # -- Act --
+    bundle = governed_plan_bundle(orders)
+
+    # -- Assert --
+    assert bundle.section_available("plan"), "pub consumers should inspect bundle section availability"
+    assert len(bundle.sections) > 0, "pub consumers should receive bundle section records"
+    assert len(bundle.governed_attributes) > 0, "pub consumers should receive governed evidence in bundles"
+    assert len(bundle.policy_checkpoints) == 1, "pub consumers should receive policy checkpoints in bundles"
+
+
+def _diff_has_family(diff: PlanDiff, family: PlanDiffChangeFamily) -> bool:
+    """Return whether a pub-consumer diff contains one family."""
+    for record in diff.records:
+        if record.family == family:
+            return true
+    return false
+
+
+def _plan_diff_exports_compile_for_pub_consumers() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    before = governed_plan_bundle(_orders(session, "plan_diff_before"))
+    after = governed_plan_bundle(_orders(session, "plan_diff_after"), evidence_refs=["smoke:plan-diff"])
+
+    # -- Act --
+    diff = diff_plan_bundles(before, after)
+
+    # -- Assert --
+    assert diff.schema_version == "incql.plan-diff.v0.1", "pub consumers should receive typed plan diffs"
+    assert len(diff.records) > 0, "pub consumers should see evidence-reference changes"
+    assert _diff_has_family(diff, PlanDiffChangeFamily.EvidenceReference), "pub consumers should inspect diff families"
+    assert len(diff.blast_radius_inputs) > 0, "pub consumers should receive local blast-radius inputs"
+
+
+def _exchange_has_kind(records: list[EvidenceExchangeRecord], kind: EvidenceExchangeRecordKind) -> bool:
+    """Return whether a pub-consumer exchange contains one record kind."""
+    for record in records:
+        if record.kind == kind:
+            return true
+    return false
+
+
+def _evidence_exchange_exports_compile_for_pub_consumers() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    bundle = governed_plan_bundle(_orders(session, "evidence_exchange_orders"), evidence_refs=["smoke:exchange"])
+    external = external_evidence_artifact(
+        "artifact:smoke:manifest",
+        EvidenceExchangeTargetFormat.TransformationProject,
+        "target/smoke/manifest.json",
+        confidence=ExternalEvidenceConfidence.Declared,
+    )
+
+    # -- Act --
+    summary = bundle_summary_exchange(bundle)
+    lineage = openlineage_exchange(bundle)
+    telemetry = telemetry_exchange(bundle)
+    transformation = transformation_project_exchange(bundle)
+    inbound = external_evidence_exchange(external)
+
+    # -- Assert --
+    assert summary.target_format == EvidenceExchangeTargetFormat.IncqlBundleSummary, "bundle summary exchange should export"
+    assert _exchange_has_kind(lineage.records, EvidenceExchangeRecordKind.OpenLineageJob), "OpenLineage exchange should export job records"
+    assert _exchange_has_kind(telemetry.records, EvidenceExchangeRecordKind.TelemetryEvent), "telemetry exchange should export events"
+    assert _exchange_has_kind(
+        transformation.records,
+        EvidenceExchangeRecordKind.TransformationModelSuggestion,
+    ), "transformation exchange should export model suggestions"
+    assert len(inbound.external_artifacts) == 1, "inbound external artifact exchange should preserve artifact identity"
+
+
+def _semantic_profile_exports_compile_for_pub_consumers() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    inspection = inspect_plan(_orders(session, "semantic_profile_orders"))
+    baseline = incql_baseline_profile("smoke", evidence_refs=["smoke:profile"])
+    dialect = sql_dialect_profile(
+        "athena",
+        dimensions=[
+            semantic_dimension(
+                SemanticProfileDimensionKind.TemporalCalendar,
+                "timezone behavior not evaluated in smoke",
+                state=SemanticProfileDimensionState.Unknown,
+            ),
+        ],
+    )
+
+    # -- Act --
+    baseline_assessment = assess_profile_for_target(inspection.plan_target, baseline)
+    dialect_assessment = assess_profile_for_target(inspection.plan_target, dialect)
+    bundle = governed_plan_bundle_from_inspection(
+        inspection,
+        semantic_profiles=[baseline, dialect],
+        profile_assessments=[baseline_assessment, dialect_assessment],
+    )
+
+    # -- Assert --
+    assert baseline_assessment.state == SemanticProfileAssessmentState.Matched, "baseline profile should match exact dimensions"
+    assert dialect_assessment.state == SemanticProfileAssessmentState.Unknown, "unknown profile dimensions must remain unknown"
+    assert len(bundle.semantic_profiles) == 2, "bundle should export semantic profile records"
+    assert bundle.section_available("semantic_profiles"), "bundle should expose semantic profile section availability"
+
+
+def _ingress_exports_compile_for_pub_consumers() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    _orders(session, "ingress_smoke_orders")
+    request = ingress_request(
+        "spark-connect-smoke",
+        "spark-connect",
+        frontend_kind=IngressFrontendKind.SparkConnect,
+        request_id="ingress-request:smoke",
+    )
+    origin = ingress_origin_reference(request, IngressOriginKind.Relation, "rel-0", "relations/0", "orders")
+    plan = ingress_plan(
+        request,
+        client_session_context(request, "session-smoke", current_namespace=Some("sales")),
+        [
+            ingress_named_table("ingress_smoke_orders", origin=Some(origin)),
+            ingress_filter(eq(col("customer_id"), "A")),
+            ingress_limit(1),
+        ],
+        requested_profile=Some(incql_baseline_profile("smoke")),
+    )
+
+    # -- Act --
+    analysis: IngressAnalysis[AggregateOrder] = analyze_ingress_plan[AggregateOrder](plan)
+
+    # -- Assert --
+    assert analysis.status == IngressAnalysisStatus.Analyzed, "ingress analysis should produce a plan for supported steps"
+    assert analysis.evidence.coverage_records[0].state == IngressCoverageState.Supported, "ingress coverage should be explicit"
+    match analysis.plan:
+        Some(data) =>
+            bundle = governed_plan_bundle_from_inspection(inspect_plan(data), ingress_evidence=[analysis.evidence])
+            assert bundle.section_available("ingress_mappings"), "bundle should expose ingress origin mappings"
+            assert bundle.section_available("frontend_coverage"), "bundle should expose frontend coverage"
+            assert bundle.section_available("client_session_context"), "bundle should expose client session context"
+        None => return fail_t("supported ingress analysis should produce a lazy plan")
+
+
+def _verification_exports_compile_for_pub_consumers() -> None:
+    # -- Arrange --
+    mut session = Session.default()
+    inspection = inspect_plan(_orders(session, "verification_smoke_orders"))
+    assertion = verification_assertion(
+        "verification_smoke",
+        VerificationAssertionKind.RelationComparison,
+        inspection.plan_target,
+        comparison_intent="source and target row counts match",
+    )
+    run = verification_run("verification-run:smoke", [assertion])
+    observation = verification_observation(
+        "verification-observation:smoke",
+        run,
+        assertion,
+        VerificationLifecycle.Complete,
+        VerificationOutcome.Passed,
+        VerificationAssurance.Attested,
+        coverage=verification_coverage(1, 1, "relation"),
+        basis=VerificationCaptureBasis.ConnectorAttested,
+    )
+
+    # -- Act --
+    projection = project_verification_state(assertion, [observation])
+    evidence = verification_evidence([assertion], [run], [observation], projections=[projection])
+    bundle = governed_plan_bundle_from_inspection(inspection, verification_evidence=[evidence])
+
+    # -- Assert --
+    assert projection.outcome == VerificationOutcome.Passed, "verification projection should expose current outcome"
+    assert projection.assurance_count(VerificationAssurance.Attested) == 1, "assurance summary should retain attested evidence"
+    assert bundle.section_available("verification_evidence"), "bundle should expose verification evidence section availability"
+    assert bundle.section_available("verification_projections"), "bundle should expose verification projection evidence"
+
+
 def main() -> None:
     println("query smoke: select")
     _brace_select_aliases_and_lateral_aliases_materialize()
@@ -398,6 +624,18 @@ def main() -> None:
     _quality_vocab_assertions_execute()
     println("query smoke: governed evidence")
     _governed_evidence_exports_compile_for_pub_consumers()
+    println("query smoke: governed plan bundle")
+    _governed_plan_bundle_exports_compile_for_pub_consumers()
+    println("query smoke: plan diff")
+    _plan_diff_exports_compile_for_pub_consumers()
+    println("query smoke: evidence exchange")
+    _evidence_exchange_exports_compile_for_pub_consumers()
+    println("query smoke: semantic profiles")
+    _semantic_profile_exports_compile_for_pub_consumers()
+    println("query smoke: ingress")
+    _ingress_exports_compile_for_pub_consumers()
+    println("query smoke: verification")
+    _verification_exports_compile_for_pub_consumers()
 EOF
 
 (cd "$PROJECT_DIR" && "$INCAN_BIN" lock >/dev/null)

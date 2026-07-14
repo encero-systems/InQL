@@ -1,0 +1,290 @@
+"""Tests for RFC 042 async verification evidence."""
+
+from std.testing import fail_t
+from bundle import BundleEvidenceSection, BundleSectionAvailability, GovernedPlanBundle, governed_plan_bundle
+from dataset import LazyFrame, lazy_frame_named_table
+from evidence import SemanticTarget, SemanticTargetKind
+from functions import col
+from quality import row_count
+from substrait.schema import RowColumnSpec, SubstraitPrimitiveKind
+from substrait.schema_registry import register_named_table_schema
+from verification import (
+    VERIFICATION_SCHEMA_VERSION,
+    VerificationAssertionKind,
+    VerificationAssurance,
+    VerificationCaptureBasis,
+    VerificationFinality,
+    VerificationLifecycle,
+    VerificationOutcome,
+    VerificationScopeKind,
+    project_verification_state,
+    quality_verification_assertion,
+    verification_assertion,
+    verification_coverage,
+    verification_evidence,
+    verification_observation,
+    verification_run,
+    verification_snapshot_reference,
+    verification_waiver,
+    waived_verification_observation,
+)
+
+
+@derive(Clone)
+model VerificationOrder:
+    """Fixture row shape used by verification evidence tests."""
+
+    id: int
+    amount: int
+    status: str
+
+
+def _target(name: str) -> SemanticTarget:
+    """Build a stable relation target for verification tests."""
+    return SemanticTarget(
+        kind=SemanticTargetKind.RelationOutput,
+        target_id=f"relation:{name}",
+        plan_id="plan:test",
+        scope_id="relation",
+        path=f"relation/{name}",
+        name=name,
+        node_id=None,
+        ordinal=None,
+    )
+
+
+def _register_order_schema(table_name: str) -> None:
+    """Register the schema used by verification bundle tests."""
+    mut schema: list[RowColumnSpec] = []
+    schema.append(RowColumnSpec(name="id", kind=SubstraitPrimitiveKind.I64, nullable=false))
+    schema.append(RowColumnSpec(name="amount", kind=SubstraitPrimitiveKind.I64, nullable=false))
+    schema.append(RowColumnSpec(name="status", kind=SubstraitPrimitiveKind.String, nullable=false))
+    register_named_table_schema(table_name, schema)
+
+
+def _orders(table_name: str) -> LazyFrame[VerificationOrder]:
+    """Return a named-table lazy frame for bundle tests."""
+    return lazy_frame_named_table(table_name)
+
+
+def _require_section(bundle: GovernedPlanBundle, family: str) -> BundleEvidenceSection:
+    """Return a bundle section or fail with a useful message."""
+    match bundle.section(family):
+        Some(section) => return section
+        None => return fail_t(f"missing bundle section: {family}")
+
+
+def _contains(values: list[str], expected: str) -> bool:
+    """Return whether a list contains one string value."""
+    for value in values:
+        if value == expected:
+            return true
+    return false
+
+
+def test_verification_helpers__separate_assertion_run_and_observation_state() -> None:
+    """Verification declarations should not store the current outcome."""
+    # -- Arrange --
+    orders = _target("orders")
+    assertion = verification_assertion(
+        "orders_match",
+        VerificationAssertionKind.RelationComparison,
+        orders,
+        input_targets=[orders],
+        comparison_intent="source and target relation row counts match",
+        scope_kind=VerificationScopeKind.Relation,
+        required_semantic_profile_ids=["profile:incql:v0.1"],
+    )
+
+    # -- Act --
+    run = verification_run(
+        "verification-run:1",
+        [assertion],
+        requested_source_profile_id=Some("profile:source"),
+        requested_target_profile_id=Some("profile:target"),
+        requested_source_snapshot_id=Some("snapshot:source"),
+        requested_target_snapshot_id=Some("snapshot:target"),
+    )
+    observation = verification_observation(
+        "verification-observation:1",
+        run,
+        assertion,
+        VerificationLifecycle.Complete,
+        VerificationOutcome.Passed,
+        VerificationAssurance.Verified,
+        coverage=verification_coverage(1, 1, "relation"),
+        source_snapshot_id=Some("snapshot:source"),
+        target_snapshot_id=Some("snapshot:target"),
+        basis=VerificationCaptureBasis.InternallyComputed,
+        event_sequence=1,
+    )
+
+    # -- Assert --
+    assert assertion.kind == VerificationAssertionKind.RelationComparison, "assertion should retain verification intent"
+    assert assertion.target.kind == SemanticTargetKind.VerificationAssertion, "assertions should be semantic targets"
+    assert run.assertion_ids == [assertion.assertion_id], "run should reference assertions without copying outcomes"
+    assert observation.outcome == VerificationOutcome.Passed, "observation should carry the result state"
+    assert observation.assurance == VerificationAssurance.Verified, "observation should carry assurance separately"
+    assert observation.coverage.is_complete(), "coverage helper should report complete coverage"
+
+
+def test_project_verification_state__keeps_waiver_separate_from_passed_result() -> None:
+    """A waiver should supersede failed evidence without turning it into a pass."""
+    # -- Arrange --
+    assertion = verification_assertion(
+        "partition_digest",
+        VerificationAssertionKind.DigestEquality,
+        _target("orders"),
+        comparison_intent="partition digest equality",
+        scope_kind=VerificationScopeKind.Partition,
+    )
+    run = verification_run("verification-run:partition", [assertion])
+    waiver = verification_waiver(
+        "waiver:orders:2026-06-19",
+        "known source correction after cutover",
+        "migration-review",
+        approved_by=Some("data-owner"),
+    )
+    failed = verification_observation(
+        "observation:failed",
+        run,
+        assertion,
+        VerificationLifecycle.Complete,
+        VerificationOutcome.Failed,
+        VerificationAssurance.Verified,
+        scope_id="orders/date=2026-06-19",
+        coverage=verification_coverage(1, 1, "partition"),
+        event_sequence=1,
+    )
+    waived = waived_verification_observation(
+        "observation:waived",
+        run,
+        assertion,
+        VerificationOutcome.Failed,
+        waiver,
+        scope_id="orders/date=2026-06-19",
+        coverage=verification_coverage(1, 1, "partition"),
+        event_sequence=2,
+        supersedes_observation_ids=["observation:failed"],
+    )
+
+    # -- Act --
+    projection = project_verification_state(assertion, [failed, waived], "orders/date=2026-06-19")
+
+    # -- Assert --
+    assert projection.outcome == VerificationOutcome.Failed, "waived failed evidence must not become passed evidence"
+    assert projection.assurance_count(VerificationAssurance.Waived) == 1, "projection should count waived active evidence"
+    assert projection.assurance_count(VerificationAssurance.Verified) == 0, "superseded failed evidence should not stay active"
+    assert projection.selected_observation_ids == ["observation:waived"], "projection should select the non-superseded observation"
+
+
+def test_project_verification_state__reports_mixed_and_unknown_evidence() -> None:
+    """Projection should preserve mixed and missing evidence rather than flattening to covered."""
+    # -- Arrange --
+    assertion = verification_assertion(
+        "relation_partitions",
+        VerificationAssertionKind.RelationComparison,
+        _target("orders"),
+        comparison_intent="all partitions reconcile",
+    )
+    run = verification_run("verification-run:mixed", [assertion])
+    passed = verification_observation(
+        "observation:passed",
+        run,
+        assertion,
+        VerificationLifecycle.Complete,
+        VerificationOutcome.Passed,
+        VerificationAssurance.Verified,
+        coverage=verification_coverage(1, 2, "partition"),
+        event_sequence=1,
+    )
+    sampled = verification_observation(
+        "observation:sampled",
+        run,
+        assertion,
+        VerificationLifecycle.Complete,
+        VerificationOutcome.Failed,
+        VerificationAssurance.Sampled,
+        coverage=verification_coverage(1, 2, "partition"),
+        event_sequence=2,
+    )
+
+    # -- Act --
+    mixed_projection = project_verification_state(assertion, [passed, sampled])
+    missing_projection = project_verification_state(assertion, [], "orders")
+
+    # -- Assert --
+    assert mixed_projection.outcome == VerificationOutcome.Mixed, "different active outcomes should project to mixed"
+    assert mixed_projection.coverage.covered_count == 2, "projection should sum selected coverage"
+    assert mixed_projection.assurance_count(VerificationAssurance.Verified) == 1, "verified evidence should remain visible"
+    assert mixed_projection.assurance_count(VerificationAssurance.Sampled) == 1, "sampled evidence should remain visible"
+    assert missing_projection.outcome == VerificationOutcome.Unknown, "missing observations should project to unknown evidence"
+    assert len(missing_projection.diagnostics) == 1, "missing evidence projection should carry a diagnostic"
+
+
+def test_quality_assertion__can_be_wrapped_as_verification_assertion() -> None:
+    """Quality status and verification assurance should stay separate record families."""
+    # -- Arrange --
+    quality = row_count(min_count=Some(1)).require()
+
+    # -- Act --
+    assertion = quality_verification_assertion(quality, evidence_refs=["quality:declared"])
+
+    # -- Assert --
+    assert assertion.kind == VerificationAssertionKind.QualityAssertion, "quality wrappers should be explicit"
+    assert assertion.comparison_intent == "quality:row_count", "quality verification should preserve quality intent"
+    assert assertion.scope_kind == VerificationScopeKind.Assertion, "quality verification wraps an assertion scope"
+    assert assertion.evidence_refs == ["quality:declared"], "quality wrapper should preserve caller evidence refs"
+
+
+def test_governed_plan_bundle__packages_verification_evidence_sections() -> None:
+    """Bundles should package verification evidence as concrete RFC 042 sections."""
+    # -- Arrange --
+    _register_order_schema("verification_orders")
+    assertion = verification_assertion(
+        "orders_verified",
+        VerificationAssertionKind.RelationComparison,
+        _target("verification_orders"),
+        comparison_intent="source and target row counts match",
+    )
+    run = verification_run("verification-run:bundle", [assertion])
+    observation = verification_observation(
+        "verification-observation:bundle",
+        run,
+        assertion,
+        VerificationLifecycle.Complete,
+        VerificationOutcome.Passed,
+        VerificationAssurance.Attested,
+        coverage=verification_coverage(1, 1, "relation"),
+        event_sequence=1,
+    )
+    projection = project_verification_state(assertion, [observation])
+    snapshot = verification_snapshot_reference(
+        "snapshot:verification-orders",
+        _target("verification_orders"),
+        "catalog",
+        VerificationCaptureBasis.ConnectorAttested,
+        version_or_fingerprint="sha256:abc",
+    )
+    evidence = verification_evidence(
+        [assertion],
+        [run],
+        [observation],
+        projections=[projection],
+        snapshots=[snapshot],
+        evidence_refs=["verification:bundle"],
+    )
+
+    # -- Act --
+    bundle = governed_plan_bundle(_orders("verification_orders"), verification_evidence=[evidence])
+
+    # -- Assert --
+    assert bundle.section_available("verification_evidence"), "verification evidence should be an available bundle section"
+    assert len(bundle.verification_evidence) == 1, "bundle should retain typed verification evidence"
+    assert _require_section(bundle, "verification_assertions").record_count == 1, "bundle should count assertions"
+    assert _require_section(bundle, "verification_runs").record_count == 1, "bundle should count runs"
+    assert _require_section(bundle, "verification_observations").record_count == 1, "bundle should count observations"
+    assert _require_section(bundle, "verification_projections").record_count == 1, "bundle should count projections"
+    assert _require_section(bundle, "verification_snapshots").record_count == 1, "bundle should count snapshots"
+    assert _require_section(bundle, "verification_evidence").availability == BundleSectionAvailability.Available, "supplied verification evidence should be available"
+    assert _contains(bundle.rule_versions, VERIFICATION_SCHEMA_VERSION), "bundle should include verification schema version"

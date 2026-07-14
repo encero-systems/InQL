@@ -1,0 +1,690 @@
+"""
+Prism ingress records for external client frontends.
+
+Ingress is the boundary before Prism analysis. External protocols can describe relational intent here, but Prism remains
+the semantic owner once a supported ingress plan is analyzed into an ordinary `LazyFrame`.
+"""
+
+from aggregate_builders import AggregateMeasure
+from dataset import LazyFrame, lazy_frame_named_table
+from evidence import ExecutionDiagnosticSeverity, SemanticTarget, SemanticTargetKind
+from projection_builders import ColumnExpr, ProjectionAssignment
+from semantic_profiles import SemanticProfile, SemanticProfileAssessment, assess_profile_for_target
+
+pub const INGRESS_SCHEMA_VERSION: str = "incql.ingress.v0.1"
+
+
+@derive(Clone)
+pub enum IngressFrontendKind(str):
+    """Frontend families that can submit unresolved plan intent to Prism."""
+
+    Generic = "generic"
+    SparkConnect = "spark_connect"
+    Sql = "sql"
+    Notebook = "notebook"
+    ApiClient = "api_client"
+
+
+@derive(Clone)
+pub enum IngressOriginKind(str):
+    """External origin-reference categories preserved as evidence."""
+
+    Relation = "relation"
+    Expression = "expression"
+    Command = "command"
+
+
+@derive(Clone)
+pub enum IngressCommandKind(str):
+    """Command families that may arrive at an ingress frontend."""
+
+    SessionConfig = "session_config"
+    CatalogInspection = "catalog_inspection"
+    TemporaryView = "temporary_view"
+    CacheControl = "cache_control"
+    ClientLifecycle = "client_lifecycle"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub enum IngressFeatureKind(str):
+    """Protocol feature families covered by ingress analysis records."""
+
+    ReadNamedTable = "read_named_table"
+    Filter = "filter"
+    Select = "select"
+    GroupBy = "group_by"
+    Aggregate = "aggregate"
+    OrderBy = "order_by"
+    Limit = "limit"
+    Command = "command"
+    Join = "join"
+    Generator = "generator"
+    Window = "window"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub enum IngressCoverageState(str):
+    """Ingress frontend coverage state for one external protocol feature."""
+
+    Supported = "supported"
+    PartiallySupported = "partially_supported"
+    Unsupported = "unsupported"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub enum IngressAnalysisStatus(str):
+    """Terminal state for one ingress analysis attempt."""
+
+    Analyzed = "analyzed"
+    Rejected = "rejected"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub model IngressRequest:
+    """One external request entering IncQL through a frontend boundary."""
+
+    pub request_id: str
+    pub frontend_id: str
+    pub frontend_kind: IngressFrontendKind
+    pub protocol: str
+    pub protocol_version: Option[str]
+    pub requested_semantic_profile_id: Option[str]
+    pub evidence_refs: list[str]
+
+    def target(self) -> SemanticTarget:
+        """Return the semantic target for this ingress request."""
+        return _target(
+            SemanticTargetKind.IngressRequest,
+            self.request_id,
+            self.request_id,
+            self.frontend_id,
+            "ingress/request",
+            self.protocol,
+        )
+
+
+@derive(Clone)
+pub model ClientSessionContext:
+    """Client session facts that can affect frontend analysis."""
+
+    pub session_id: str
+    pub request_id: str
+    pub frontend_id: str
+    pub current_catalog: Option[str]
+    pub current_namespace: Option[str]
+    pub timezone: Option[str]
+    pub case_sensitive: Option[bool]
+    pub ansi_mode: Option[bool]
+    pub configuration_fingerprint: Option[str]
+    pub evidence_refs: list[str]
+
+    def target(self) -> SemanticTarget:
+        """Return the semantic target for this client session context."""
+        return _target(
+            SemanticTargetKind.ClientSession,
+            f"client-session:{self.frontend_id}:{self.session_id}",
+            self.request_id,
+            self.frontend_id,
+            "ingress/client-session",
+            self.session_id,
+        )
+
+
+@derive(Clone)
+pub model IngressOriginReference:
+    """Mapping from an external protocol node or expression to an IncQL evidence target."""
+
+    pub origin_id: str
+    pub kind: IngressOriginKind
+    pub external_id: str
+    pub external_path: str
+    pub target: SemanticTarget
+
+
+@derive(Clone)
+pub model IngressDiagnostic:
+    """Structured diagnostic emitted while analyzing an ingress plan."""
+
+    pub severity: ExecutionDiagnosticSeverity
+    pub code: str
+    pub message: str
+    pub target: Option[SemanticTarget]
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model IngressCoverageRecord:
+    """Frontend coverage answer for one external protocol feature."""
+
+    pub coverage_id: str
+    pub request_id: str
+    pub frontend_id: str
+    pub feature: IngressFeatureKind
+    pub state: IngressCoverageState
+    pub semantic_profile_id: Option[str]
+    pub diagnostics: list[IngressDiagnostic]
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model IngressReadNamedTable:
+    """Unresolved named-table read request from an external frontend."""
+
+    pub table_name: str
+    pub origin: Option[IngressOriginReference]
+
+
+@derive(Clone)
+pub model IngressFilter:
+    """Unresolved filter request already decoded into an IncQL scalar predicate expression."""
+
+    pub predicate: ColumnExpr
+    pub origin: Option[IngressOriginReference]
+
+
+@derive(Clone)
+pub model IngressSelect:
+    """Unresolved projection request decoded into IncQL projection assignments."""
+
+    pub assignments: list[ProjectionAssignment]
+    pub origin: Option[IngressOriginReference]
+
+
+@derive(Clone)
+pub model IngressGroupBy:
+    """Unresolved grouping-key request decoded into IncQL scalar expressions."""
+
+    pub columns: list[ColumnExpr]
+    pub origin: Option[IngressOriginReference]
+
+
+@derive(Clone)
+pub model IngressAggregate:
+    """Unresolved aggregate-measure request decoded into IncQL aggregate measures."""
+
+    pub measures: list[AggregateMeasure]
+    pub origin: Option[IngressOriginReference]
+
+
+@derive(Clone)
+pub model IngressOrderBy:
+    """Unresolved ordering request decoded into IncQL ordering expressions."""
+
+    pub columns: list[ColumnExpr]
+    pub origin: Option[IngressOriginReference]
+
+
+@derive(Clone)
+pub model IngressLimit:
+    """Unresolved row-limit request."""
+
+    pub count: int
+    pub origin: Option[IngressOriginReference]
+
+
+pub type IngressRelationStep = Union[IngressReadNamedTable, IngressFilter, IngressSelect, IngressGroupBy, IngressAggregate, IngressOrderBy, IngressLimit]
+
+
+@derive(Clone)
+pub model IngressCommand:
+    """Non-relational command received at the frontend boundary."""
+
+    pub kind: IngressCommandKind
+    pub name: str
+    pub origin: Option[IngressOriginReference]
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model IngressPlan:
+    """Unresolved ingress request that Prism can analyze or reject before execution."""
+
+    pub request: IngressRequest
+    pub session_context: ClientSessionContext
+    pub requested_profile: Option[SemanticProfile]
+    pub relation_steps: list[IngressRelationStep]
+    pub commands: list[IngressCommand]
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model IngressEvidence:
+    """Evidence emitted by one ingress analysis attempt."""
+
+    pub schema_version: str
+    pub request: IngressRequest
+    pub session_context: ClientSessionContext
+    pub origins: list[IngressOriginReference]
+    pub diagnostics: list[IngressDiagnostic]
+    pub coverage_records: list[IngressCoverageRecord]
+    pub profile_assessments: list[SemanticProfileAssessment]
+    pub evidence_refs: list[str]
+
+
+@derive(Clone)
+pub model IngressAnalysis[T with Clone]:
+    """Result of analyzing one ingress plan into ordinary IncQL relational semantics."""
+
+    pub status: IngressAnalysisStatus
+    pub plan: Option[LazyFrame[T]]
+    pub evidence: IngressEvidence
+
+    def is_accepted(self) -> bool:
+        """Return whether analysis produced an executable IncQL plan."""
+        return self.status == IngressAnalysisStatus.Analyzed
+
+
+model _IngressOriginEvidence:
+    """Origin evidence extracted from one optional ingress origin reference."""
+
+    target: Option[SemanticTarget]
+    origins: list[IngressOriginReference]
+
+
+pub def ingress_request(
+    frontend_id: str,
+    protocol: str,
+    frontend_kind: IngressFrontendKind = IngressFrontendKind.Generic,
+    request_id: str = "",
+    protocol_version: Option[str] = None,
+    requested_semantic_profile_id: Option[str] = None,
+    evidence_refs: list[str] = [],
+) -> IngressRequest:
+    """Create one ingress request record."""
+    mut actual_request_id = request_id
+    if len(actual_request_id) == 0:
+        actual_request_id = f"ingress-request:{frontend_id}:{protocol}"
+    return IngressRequest(
+        request_id=actual_request_id,
+        frontend_id=frontend_id,
+        frontend_kind=frontend_kind,
+        protocol=protocol,
+        protocol_version=protocol_version,
+        requested_semantic_profile_id=requested_semantic_profile_id,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def client_session_context(
+    request: IngressRequest,
+    session_id: str,
+    current_catalog: Option[str] = None,
+    current_namespace: Option[str] = None,
+    timezone: Option[str] = None,
+    case_sensitive: Option[bool] = None,
+    ansi_mode: Option[bool] = None,
+    configuration_fingerprint: Option[str] = None,
+    evidence_refs: list[str] = [],
+) -> ClientSessionContext:
+    """Create one client session context record for an ingress request."""
+    return ClientSessionContext(
+        session_id=session_id,
+        request_id=request.request_id,
+        frontend_id=request.frontend_id,
+        current_catalog=current_catalog,
+        current_namespace=current_namespace,
+        timezone=timezone,
+        case_sensitive=case_sensitive,
+        ansi_mode=ansi_mode,
+        configuration_fingerprint=configuration_fingerprint,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def ingress_origin_reference(
+    request: IngressRequest,
+    kind: IngressOriginKind,
+    external_id: str,
+    external_path: str,
+    name: str,
+) -> IngressOriginReference:
+    """Create one origin reference that maps external protocol identity to an IncQL evidence target."""
+    mut target_kind = SemanticTargetKind.IngressNode
+    if kind == IngressOriginKind.Expression:
+        target_kind = SemanticTargetKind.IngressExpression
+    origin_id = f"ingress-origin:{request.request_id}:{external_id}"
+    return IngressOriginReference(
+        origin_id=origin_id,
+        kind=kind,
+        external_id=external_id,
+        external_path=external_path,
+        target=_target(target_kind, origin_id, request.request_id, request.frontend_id, external_path, name),
+    )
+
+
+pub def ingress_named_table(table_name: str, origin: Option[IngressOriginReference] = None) -> IngressReadNamedTable:
+    """Create one named-table read step."""
+    return IngressReadNamedTable(table_name=table_name, origin=origin)
+
+
+pub def ingress_filter(predicate: ColumnExpr, origin: Option[IngressOriginReference] = None) -> IngressFilter:
+    """Create one filter step."""
+    return IngressFilter(predicate=predicate, origin=origin)
+
+
+pub def ingress_select(
+    assignments: list[ProjectionAssignment],
+    origin: Option[IngressOriginReference] = None,
+) -> IngressSelect:
+    """Create one projection step."""
+    return IngressSelect(assignments=assignments, origin=origin)
+
+
+pub def ingress_group_by(columns: list[ColumnExpr], origin: Option[IngressOriginReference] = None) -> IngressGroupBy:
+    """Create one grouping step."""
+    return IngressGroupBy(columns=columns, origin=origin)
+
+
+pub def ingress_aggregate(
+    measures: list[AggregateMeasure],
+    origin: Option[IngressOriginReference] = None,
+) -> IngressAggregate:
+    """Create one aggregate step."""
+    return IngressAggregate(measures=measures, origin=origin)
+
+
+pub def ingress_order_by(columns: list[ColumnExpr], origin: Option[IngressOriginReference] = None) -> IngressOrderBy:
+    """Create one ordering step."""
+    return IngressOrderBy(columns=columns, origin=origin)
+
+
+pub def ingress_limit(count: int, origin: Option[IngressOriginReference] = None) -> IngressLimit:
+    """Create one row-limit step."""
+    return IngressLimit(count=count, origin=origin)
+
+
+pub def ingress_command(
+    kind: IngressCommandKind,
+    name: str,
+    origin: Option[IngressOriginReference] = None,
+    evidence_refs: list[str] = [],
+) -> IngressCommand:
+    """Create one non-relational ingress command record."""
+    return IngressCommand(kind=kind, name=name, origin=origin, evidence_refs=evidence_refs)
+
+
+pub def ingress_plan(
+    request: IngressRequest,
+    session_context: ClientSessionContext,
+    relation_steps: list[IngressRelationStep],
+    requested_profile: Option[SemanticProfile] = None,
+    commands: list[IngressCommand] = [],
+    evidence_refs: list[str] = [],
+) -> IngressPlan:
+    """Create one unresolved ingress plan."""
+    return IngressPlan(
+        request=request,
+        session_context=session_context,
+        requested_profile=requested_profile,
+        relation_steps=relation_steps,
+        commands=commands,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def analyze_ingress_plan[T with Clone](plan: IngressPlan) -> IngressAnalysis[T]:
+    """Analyze supported ingress relation steps into an ordinary Prism-backed lazy plan."""
+    mut diagnostics: list[IngressDiagnostic] = []
+    mut coverage_records: list[IngressCoverageRecord] = []
+    mut origins: list[IngressOriginReference] = []
+    mut relation: Option[LazyFrame[T]] = None
+
+    # Core ingress owns the common linear relation contract. Protocol-specific tree or command expansion should happen
+    # before this boundary, or surface here as explicit diagnostics and coverage records.
+    for step in plan.relation_steps:
+        coverage_records.append(_supported_coverage(plan.request, _step_feature(step.clone()), plan.requested_profile))
+        match step:
+            IngressReadNamedTable(read) =>
+                origin_evidence = _origin_evidence(read.origin)
+                origin_target = origin_evidence.target
+                origins.extend(origin_evidence.origins)
+                match relation:
+                    Some(_) =>
+                        diagnostics.append(
+                            _diagnostic(
+                                ExecutionDiagnosticSeverity.Error,
+                                "ingress.read.non_root",
+                                "named-table reads must appear before relation transforms",
+                                origin_target,
+                                [],
+                            ),
+                        )
+                    None =>
+                        relation = Some(lazy_frame_named_table[T](read.table_name))
+            IngressFilter(filter) =>
+                origin_evidence = _origin_evidence(filter.origin)
+                origin_target = origin_evidence.target
+                origins.extend(origin_evidence.origins)
+                match relation:
+                    Some(data) =>
+                        relation = Some(data.filter(filter.predicate))
+                    None => diagnostics.append(_missing_root_diagnostic(origin_target))
+            IngressSelect(select) =>
+                origin_evidence = _origin_evidence(select.origin)
+                origin_target = origin_evidence.target
+                origins.extend(origin_evidence.origins)
+                match relation:
+                    Some(data) =>
+                        relation = Some(data.select[T](select.assignments))
+                    None => diagnostics.append(_missing_root_diagnostic(origin_target))
+            IngressGroupBy(group_by) =>
+                origin_evidence = _origin_evidence(group_by.origin)
+                origin_target = origin_evidence.target
+                origins.extend(origin_evidence.origins)
+                match relation:
+                    Some(data) =>
+                        relation = Some(data.group_by(group_by.columns))
+                    None => diagnostics.append(_missing_root_diagnostic(origin_target))
+            IngressAggregate(aggregate) =>
+                origin_evidence = _origin_evidence(aggregate.origin)
+                origin_target = origin_evidence.target
+                origins.extend(origin_evidence.origins)
+                match relation:
+                    Some(data) =>
+                        relation = Some(data.agg(aggregate.measures))
+                    None => diagnostics.append(_missing_root_diagnostic(origin_target))
+            IngressOrderBy(order_by) =>
+                origin_evidence = _origin_evidence(order_by.origin)
+                origin_target = origin_evidence.target
+                origins.extend(origin_evidence.origins)
+                match relation:
+                    Some(data) =>
+                        relation = Some(data.order_by(order_by.columns))
+                    None => diagnostics.append(_missing_root_diagnostic(origin_target))
+            IngressLimit(limit) =>
+                origin_evidence = _origin_evidence(limit.origin)
+                origin_target = origin_evidence.target
+                origins.extend(origin_evidence.origins)
+                match relation:
+                    Some(data) =>
+                        relation = Some(data.limit(limit.count))
+                    None => diagnostics.append(_missing_root_diagnostic(origin_target))
+
+    for command in plan.commands:
+        origin_evidence = _origin_evidence(command.origin)
+        command_target = origin_evidence.target
+        origins.extend(origin_evidence.origins)
+        diagnostic = _diagnostic(
+            ExecutionDiagnosticSeverity.Error,
+            "ingress.command.unsupported",
+            f"ingress command '{command.name}' is represented as evidence but is not analyzed as relational work",
+            command_target,
+            command.evidence_refs,
+        )
+        diagnostics.append(diagnostic)
+        coverage_records.append(
+            _unsupported_coverage(plan.request, IngressFeatureKind.Command, plan.requested_profile, diagnostic),
+        )
+
+    if len(plan.relation_steps) == 0:
+        diagnostic = _diagnostic(
+            ExecutionDiagnosticSeverity.Error,
+            "ingress.plan.empty",
+            "ingress analysis requires at least one relation step",
+            Some(plan.request.target()),
+            plan.evidence_refs,
+        )
+        diagnostics.append(diagnostic)
+
+    profile_assessments = _profile_assessments(plan)
+    status = _analysis_status(relation, diagnostics)
+    evidence = IngressEvidence(
+        schema_version=INGRESS_SCHEMA_VERSION,
+        request=plan.request,
+        session_context=plan.session_context,
+        origins=origins,
+        diagnostics=diagnostics,
+        coverage_records=coverage_records,
+        profile_assessments=profile_assessments,
+        evidence_refs=plan.evidence_refs,
+    )
+    return IngressAnalysis(status=status, plan=relation, evidence=evidence)
+
+
+def _step_feature(step: IngressRelationStep) -> IngressFeatureKind:
+    """Return the coverage feature represented by one supported relation step."""
+    match step:
+        IngressReadNamedTable(_) => return IngressFeatureKind.ReadNamedTable
+        IngressFilter(_) => return IngressFeatureKind.Filter
+        IngressSelect(_) => return IngressFeatureKind.Select
+        IngressGroupBy(_) => return IngressFeatureKind.GroupBy
+        IngressAggregate(_) => return IngressFeatureKind.Aggregate
+        IngressOrderBy(_) => return IngressFeatureKind.OrderBy
+        IngressLimit(_) => return IngressFeatureKind.Limit
+
+
+def _supported_coverage(
+    request: IngressRequest,
+    feature: IngressFeatureKind,
+    requested_profile: Option[SemanticProfile],
+) -> IngressCoverageRecord:
+    """Build one supported frontend coverage record."""
+    return _coverage(
+        request,
+        feature,
+        IngressCoverageState.Supported,
+        _semantic_profile_id(requested_profile),
+        [],
+        request.evidence_refs,
+    )
+
+
+def _unsupported_coverage(
+    request: IngressRequest,
+    feature: IngressFeatureKind,
+    requested_profile: Option[SemanticProfile],
+    diagnostic: IngressDiagnostic,
+) -> IngressCoverageRecord:
+    """Build one unsupported frontend coverage record with an explanatory diagnostic."""
+    return _coverage(
+        request,
+        feature,
+        IngressCoverageState.Unsupported,
+        _semantic_profile_id(requested_profile),
+        [diagnostic],
+        diagnostic.evidence_refs,
+    )
+
+
+def _coverage(
+    request: IngressRequest,
+    feature: IngressFeatureKind,
+    state: IngressCoverageState,
+    semantic_profile_id: Option[str],
+    diagnostics: list[IngressDiagnostic],
+    evidence_refs: list[str],
+) -> IngressCoverageRecord:
+    """Build one frontend coverage record."""
+    return IngressCoverageRecord(
+        coverage_id=f"ingress-coverage:{request.request_id}:{feature.value()}:{state.value()}",
+        request_id=request.request_id,
+        frontend_id=request.frontend_id,
+        feature=feature,
+        state=state,
+        semantic_profile_id=semantic_profile_id,
+        diagnostics=diagnostics,
+        evidence_refs=evidence_refs,
+    )
+
+
+def _origin_evidence(origin: Option[IngressOriginReference]) -> _IngressOriginEvidence:
+    """Return the optional semantic target and preserved origin reference for one decoded ingress node."""
+    match origin:
+        Some(value) =>
+            # The target is needed for diagnostics, while the full origin reference remains part of the evidence set.
+            return _IngressOriginEvidence(target=Some(value.target.clone()), origins=[value])
+        None => return _IngressOriginEvidence(target=None, origins=[])
+
+
+def _missing_root_diagnostic(target: Option[SemanticTarget]) -> IngressDiagnostic:
+    """Return the diagnostic for a relational step that appears before an ingress root."""
+    return _diagnostic(
+        ExecutionDiagnosticSeverity.Error,
+        "ingress.relation.missing_root",
+        "ingress relation analysis requires a named-table read before relational transforms",
+        target,
+        [],
+    )
+
+
+def _diagnostic(
+    severity: ExecutionDiagnosticSeverity,
+    code: str,
+    message: str,
+    target: Option[SemanticTarget],
+    evidence_refs: list[str],
+) -> IngressDiagnostic:
+    """Build one ingress diagnostic."""
+    return IngressDiagnostic(severity=severity, code=code, message=message, target=target, evidence_refs=evidence_refs)
+
+
+def _analysis_status[T with Clone](
+    relation: Option[LazyFrame[T]],
+    diagnostics: list[IngressDiagnostic],
+) -> IngressAnalysisStatus:
+    """Return a conservative status: error diagnostics reject otherwise analyzable plans."""
+    for diagnostic in diagnostics:
+        if diagnostic.severity == ExecutionDiagnosticSeverity.Error:
+            return IngressAnalysisStatus.Rejected
+    if let Some(_) = relation:
+        return IngressAnalysisStatus.Analyzed
+    return IngressAnalysisStatus.Unknown
+
+
+def _profile_assessments(plan: IngressPlan) -> list[SemanticProfileAssessment]:
+    """Assess the requested profile against the ingress request target when one is supplied."""
+    if let Some(profile) = plan.requested_profile:
+        return [assess_profile_for_target(plan.request.target(), profile, evidence_refs=plan.evidence_refs)]
+    return []
+
+
+def _semantic_profile_id(profile: Option[SemanticProfile]) -> Option[str]:
+    """Return the profile identifier carried by an optional semantic profile."""
+    if let Some(value) = profile:
+        return Some(value.profile_id)
+    return None
+
+
+def _target(
+    kind: SemanticTargetKind,
+    target_id: str,
+    plan_id: str,
+    scope_id: str,
+    path: str,
+    name: str,
+) -> SemanticTarget:
+    """Build a semantic target for ingress evidence."""
+    return SemanticTarget(
+        kind=kind,
+        target_id=target_id,
+        plan_id=plan_id,
+        scope_id=scope_id,
+        path=path,
+        name=name,
+        node_id=None,
+        ordinal=None,
+    )

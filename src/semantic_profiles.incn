@@ -1,0 +1,530 @@
+"""
+Interoperability semantic profile records.
+
+Semantic profiles describe the environment a plan is authored for, compared with, executed under, or exchanged with.
+They are evidence context, not alternative owners of IncQL relational semantics.
+"""
+
+from std.fs import IoError, Path
+from std.json import JsonError, JsonValue, dumps_pretty
+from evidence import AdapterCoverageRecord, ExecutionDiagnostic, MetadataLifecycle, MetadataSource, SemanticTarget
+
+pub const SEMANTIC_PROFILE_SCHEMA_VERSION: str = "incql.semantic-profile.v0.1"
+
+
+@derive(Clone)
+pub enum SemanticProfileTargetClass(str):
+    """Environment class described by a semantic profile."""
+
+    IncqlBaseline = "incql_baseline"
+    ClientProtocol = "client_protocol"
+    PlanIngressFrontend = "plan_ingress_frontend"
+    ExecutionEngine = "execution_engine"
+    AdapterBinding = "adapter_binding"
+    SqlDialect = "sql_dialect"
+    CatalogSchemaSystem = "catalog_schema_system"
+    TransformationProject = "transformation_project"
+    InterchangeConsumer = "interchange_consumer"
+    ConformanceBaseline = "conformance_baseline"
+
+
+@derive(Clone)
+pub enum SemanticProfileDimensionKind(str):
+    """Semantic dimensions that can affect interoperability evidence."""
+
+    TypeSystem = "type_system"
+    NumericDecimal = "numeric_decimal"
+    TemporalCalendar = "temporal_calendar"
+    BooleanNullNan = "boolean_null_nan"
+    StringComparison = "string_comparison"
+    IdentifierResolution = "identifier_resolution"
+    SchemaCatalog = "schema_catalog"
+    TransformationProject = "transformation_project"
+    ClientSessionState = "client_session_state"
+    RelationOrdering = "relation_ordering"
+    AggregateGrouping = "aggregate_grouping"
+    WindowSemantics = "window_semantics"
+    NestedSemiStructured = "nested_semi_structured"
+    FunctionOperatorIdentity = "function_operator_identity"
+    ExtensionFallback = "extension_fallback"
+    PlanStageObservability = "plan_stage_observability"
+
+
+@derive(Clone)
+pub enum SemanticProfileDimensionState(str):
+    """How precisely one profile declares a semantic dimension."""
+
+    Exact = "exact"
+    Constrained = "constrained"
+    Unknown = "unknown"
+    NotApplicable = "not_applicable"
+
+
+@derive(Clone)
+pub enum SemanticProfileConfidence(str):
+    """Confidence attached to a semantic profile or assessment."""
+
+    Declared = "declared"
+    Attested = "attested"
+    Observed = "observed"
+    Inferred = "inferred"
+    Unknown = "unknown"
+
+
+@derive(Clone)
+pub enum SemanticProfileAssessmentState(str):
+    """Assessment state for a plan or target checked against a semantic profile."""
+
+    Matched = "matched"
+    Constrained = "constrained"
+    Mismatched = "mismatched"
+    Unknown = "unknown"
+    NotApplicable = "not_applicable"
+
+
+@derive(Clone)
+pub model SemanticProfileDimension:
+    """One structured semantic dimension inside an interoperability profile."""
+
+    pub dimension_id: str
+    pub kind: SemanticProfileDimensionKind
+    pub lifecycle: MetadataLifecycle
+    pub state: SemanticProfileDimensionState
+    pub declared_behavior: str
+    pub source: MetadataSource
+    pub confidence: SemanticProfileConfidence
+    pub diagnostics: list[ExecutionDiagnostic]
+    pub evidence_refs: list[str]
+
+    def to_json_value(self) -> JsonValue:
+        """Return the stable JSON shape for this profile dimension."""
+        mut entries: Dict[str, JsonValue] = {}
+        entries["dimension_id"] = JsonValue.str(self.dimension_id)
+        entries["kind"] = JsonValue.str(self.kind.value())
+        entries["lifecycle"] = JsonValue.str(self.lifecycle.value())
+        entries["state"] = JsonValue.str(self.state.value())
+        entries["declared_behavior"] = JsonValue.str(self.declared_behavior)
+        entries["source"] = JsonValue.str(self.source.value())
+        entries["confidence"] = JsonValue.str(self.confidence.value())
+        entries["diagnostic_count"] = JsonValue.int(len(self.diagnostics))
+        entries["evidence_refs"] = JsonValue.array(_strings_to_json_values(self.evidence_refs))
+        return JsonValue.object(entries)
+
+
+@derive(Clone)
+pub model SemanticProfile:
+    """Versioned semantic environment profile used by coverage, execution, bundle, and exchange evidence."""
+
+    pub schema_version: str
+    pub profile_id: str
+    pub target_class: SemanticProfileTargetClass
+    pub profile_name: str
+    pub source: MetadataSource
+    pub target_version: Option[str]
+    pub target_configuration_fingerprint: Option[str]
+    pub dimensions: list[SemanticProfileDimension]
+    pub confidence: SemanticProfileConfidence
+    pub diagnostics: list[ExecutionDiagnostic]
+    pub evidence_refs: list[str]
+
+    def to_json_value(self) -> JsonValue:
+        """Return the stable JSON shape for this semantic profile."""
+        mut entries: Dict[str, JsonValue] = {}
+        entries["schema_version"] = JsonValue.str(self.schema_version)
+        entries["profile_id"] = JsonValue.str(self.profile_id)
+        entries["target_class"] = JsonValue.str(self.target_class.value())
+        entries["profile_name"] = JsonValue.str(self.profile_name)
+        entries["source"] = JsonValue.str(self.source.value())
+        entries["target_version"] = JsonValue.str(_option_str_text(self.target_version))
+        entries["target_configuration_fingerprint"] = JsonValue.str(
+            _option_str_text(self.target_configuration_fingerprint),
+        )
+        entries["dimensions"] = JsonValue.array(_dimension_json_values(self.dimensions))
+        entries["confidence"] = JsonValue.str(self.confidence.value())
+        entries["diagnostic_count"] = JsonValue.int(len(self.diagnostics))
+        entries["evidence_refs"] = JsonValue.array(_strings_to_json_values(self.evidence_refs))
+        return JsonValue.object(entries)
+
+    def to_json_text(self) -> Result[str, IoError]:
+        """Serialize this semantic profile as pretty JSON text."""
+        return dumps_pretty(self.to_json_value()).map_err(_json_error_to_io_error)
+
+    def write(self, path: str) -> Result[None, IoError]:
+        """Write this semantic profile JSON to a local filesystem path."""
+        return Path(path).write_text(self.to_json_text()?, "utf-8", "strict", None)
+
+
+@derive(Clone)
+pub model SemanticProfileAssessment:
+    """Assessment of one plan or target under a semantic profile."""
+
+    pub assessment_id: str
+    pub plan_target: SemanticTarget
+    pub profile_id: str
+    pub affected_targets: list[SemanticTarget]
+    pub dimensions: list[SemanticProfileDimension]
+    pub state: SemanticProfileAssessmentState
+    pub confidence: SemanticProfileConfidence
+    pub diagnostics: list[ExecutionDiagnostic]
+    pub evidence_refs: list[str]
+
+    def to_json_value(self) -> JsonValue:
+        """Return the stable JSON shape for this profile assessment."""
+        mut entries: Dict[str, JsonValue] = {}
+        entries["assessment_id"] = JsonValue.str(self.assessment_id)
+        entries["plan_target_id"] = JsonValue.str(self.plan_target.target_id)
+        entries["profile_id"] = JsonValue.str(self.profile_id)
+        entries["affected_target_ids"] = JsonValue.array(_target_id_json_values(self.affected_targets))
+        entries["dimensions"] = JsonValue.array(_dimension_json_values(self.dimensions))
+        entries["state"] = JsonValue.str(self.state.value())
+        entries["confidence"] = JsonValue.str(self.confidence.value())
+        entries["diagnostic_count"] = JsonValue.int(len(self.diagnostics))
+        entries["evidence_refs"] = JsonValue.array(_strings_to_json_values(self.evidence_refs))
+        return JsonValue.object(entries)
+
+
+pub def semantic_dimension(
+    kind: SemanticProfileDimensionKind,
+    declared_behavior: str,
+    state: SemanticProfileDimensionState = SemanticProfileDimensionState.Unknown,
+    lifecycle: MetadataLifecycle = MetadataLifecycle.Analyzed,
+    source: MetadataSource = MetadataSource.IncQL,
+    confidence: SemanticProfileConfidence = SemanticProfileConfidence.Declared,
+    diagnostics: list[ExecutionDiagnostic] = [],
+    evidence_refs: list[str] = [],
+) -> SemanticProfileDimension:
+    """Create one semantic profile dimension."""
+    return SemanticProfileDimension(
+        dimension_id=f"semantic-dimension:{kind.value()}:{state.value()}:{source.value()}",
+        kind=kind,
+        lifecycle=lifecycle,
+        state=state,
+        declared_behavior=declared_behavior,
+        source=source,
+        confidence=confidence,
+        diagnostics=diagnostics,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def semantic_profile(
+    target_class: SemanticProfileTargetClass,
+    profile_name: str,
+    source: MetadataSource = MetadataSource.User,
+    target_version: Option[str] = None,
+    target_configuration_fingerprint: Option[str] = None,
+    dimensions: list[SemanticProfileDimension] = [],
+    confidence: SemanticProfileConfidence = SemanticProfileConfidence.Declared,
+    diagnostics: list[ExecutionDiagnostic] = [],
+    evidence_refs: list[str] = [],
+) -> SemanticProfile:
+    """Create one versioned semantic profile record."""
+    return SemanticProfile(
+        schema_version=SEMANTIC_PROFILE_SCHEMA_VERSION,
+        profile_id=_profile_id(target_class, profile_name, target_version, target_configuration_fingerprint),
+        target_class=target_class,
+        profile_name=profile_name,
+        source=source,
+        target_version=target_version,
+        target_configuration_fingerprint=target_configuration_fingerprint,
+        dimensions=dimensions,
+        confidence=confidence,
+        diagnostics=diagnostics,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def incql_baseline_profile(version: str = "current", evidence_refs: list[str] = []) -> SemanticProfile:
+    """Return the local IncQL baseline profile used when no external target owns semantics."""
+    return semantic_profile(
+        SemanticProfileTargetClass.IncqlBaseline,
+        "incql",
+        source=MetadataSource.IncQL,
+        target_version=Some(version),
+        dimensions=[_exact_dimension(
+            SemanticProfileDimensionKind.TypeSystem,
+            "IncQL typed scalar and relation model",
+            evidence_refs,
+        ), _exact_dimension(
+            SemanticProfileDimensionKind.FunctionOperatorIdentity,
+            "IncQL function registry identity",
+            evidence_refs,
+        ), _exact_dimension(
+            SemanticProfileDimensionKind.RelationOrdering,
+            "Relations are unordered unless explicitly ordered",
+            evidence_refs,
+        ), _exact_dimension(
+            SemanticProfileDimensionKind.PlanStageObservability,
+            "Prism inspection emits local plan evidence",
+            evidence_refs,
+        )],
+        confidence=SemanticProfileConfidence.Declared,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def adapter_binding_profile(
+    adapter_name: str,
+    adapter_version: Option[str] = None,
+    target_configuration_fingerprint: Option[str] = None,
+    dimensions: list[SemanticProfileDimension] = [],
+    evidence_refs: list[str] = [],
+) -> SemanticProfile:
+    """Return a semantic profile for one adapter binding."""
+    return semantic_profile(
+        SemanticProfileTargetClass.AdapterBinding,
+        adapter_name,
+        source=MetadataSource.Adapter,
+        target_version=adapter_version,
+        target_configuration_fingerprint=target_configuration_fingerprint,
+        dimensions=dimensions,
+        confidence=SemanticProfileConfidence.Declared,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def execution_engine_profile(
+    engine_name: str,
+    engine_version: Option[str] = None,
+    target_configuration_fingerprint: Option[str] = None,
+    dimensions: list[SemanticProfileDimension] = [],
+    evidence_refs: list[str] = [],
+) -> SemanticProfile:
+    """Return a semantic profile for an execution engine or engine family."""
+    return semantic_profile(
+        SemanticProfileTargetClass.ExecutionEngine,
+        engine_name,
+        source=MetadataSource.Adapter,
+        target_version=engine_version,
+        target_configuration_fingerprint=target_configuration_fingerprint,
+        dimensions=dimensions,
+        confidence=SemanticProfileConfidence.Declared,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def sql_dialect_profile(
+    dialect_name: str,
+    dialect_version: Option[str] = None,
+    dimensions: list[SemanticProfileDimension] = [],
+    evidence_refs: list[str] = [],
+) -> SemanticProfile:
+    """Return a semantic profile for a SQL dialect family."""
+    return semantic_profile(
+        SemanticProfileTargetClass.SqlDialect,
+        dialect_name,
+        source=MetadataSource.User,
+        target_version=dialect_version,
+        dimensions=dimensions,
+        confidence=SemanticProfileConfidence.Declared,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def catalog_schema_profile(
+    catalog_name: str,
+    catalog_version: Option[str] = None,
+    dimensions: list[SemanticProfileDimension] = [],
+    evidence_refs: list[str] = [],
+) -> SemanticProfile:
+    """Return a semantic profile for a catalog or schema system."""
+    return semantic_profile(
+        SemanticProfileTargetClass.CatalogSchemaSystem,
+        catalog_name,
+        source=MetadataSource.ExternalCatalog,
+        target_version=catalog_version,
+        dimensions=dimensions,
+        confidence=SemanticProfileConfidence.Declared,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def transformation_project_profile(
+    project_name: str,
+    project_version: Option[str] = None,
+    dimensions: list[SemanticProfileDimension] = [],
+    evidence_refs: list[str] = [],
+) -> SemanticProfile:
+    """Return a semantic profile for a transformation-project environment."""
+    return semantic_profile(
+        SemanticProfileTargetClass.TransformationProject,
+        project_name,
+        source=MetadataSource.ImportedArtifact,
+        target_version=project_version,
+        dimensions=dimensions,
+        confidence=SemanticProfileConfidence.Attested,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def interchange_consumer_profile(
+    consumer_name: str,
+    consumer_version: Option[str] = None,
+    dimensions: list[SemanticProfileDimension] = [],
+    evidence_refs: list[str] = [],
+) -> SemanticProfile:
+    """Return a semantic profile for an interchange consumer or downstream evidence reader."""
+    return semantic_profile(
+        SemanticProfileTargetClass.InterchangeConsumer,
+        consumer_name,
+        source=MetadataSource.ImportedArtifact,
+        target_version=consumer_version,
+        dimensions=dimensions,
+        confidence=SemanticProfileConfidence.Declared,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def conformance_baseline_profile(
+    baseline_name: str,
+    baseline_version: Option[str] = None,
+    dimensions: list[SemanticProfileDimension] = [],
+    evidence_refs: list[str] = [],
+) -> SemanticProfile:
+    """Return a semantic profile for a conformance baseline."""
+    return semantic_profile(
+        SemanticProfileTargetClass.ConformanceBaseline,
+        baseline_name,
+        source=MetadataSource.IncQL,
+        target_version=baseline_version,
+        dimensions=dimensions,
+        confidence=SemanticProfileConfidence.Declared,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def assess_profile_for_target(
+    plan_target: SemanticTarget,
+    profile: SemanticProfile,
+    affected_targets: list[SemanticTarget] = [],
+    evidence_refs: list[str] = [],
+) -> SemanticProfileAssessment:
+    """Assess one plan target against a profile using the profile's declared dimension states."""
+    return profile_assessment(
+        plan_target,
+        profile.profile_id,
+        profile.dimensions,
+        _combined_assessment_state(profile.dimensions),
+        affected_targets=affected_targets,
+        confidence=profile.confidence,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def profile_assessment(
+    plan_target: SemanticTarget,
+    profile_id: str,
+    dimensions: list[SemanticProfileDimension],
+    state: SemanticProfileAssessmentState = SemanticProfileAssessmentState.Unknown,
+    affected_targets: list[SemanticTarget] = [],
+    confidence: SemanticProfileConfidence = SemanticProfileConfidence.Unknown,
+    diagnostics: list[ExecutionDiagnostic] = [],
+    evidence_refs: list[str] = [],
+) -> SemanticProfileAssessment:
+    """Create one explicit profile assessment record."""
+    return SemanticProfileAssessment(
+        assessment_id=f"profile-assessment:{plan_target.target_id}:{profile_id}:{state.value()}",
+        plan_target=plan_target,
+        profile_id=profile_id,
+        affected_targets=affected_targets,
+        dimensions=dimensions,
+        state=state,
+        confidence=confidence,
+        diagnostics=diagnostics,
+        evidence_refs=evidence_refs,
+    )
+
+
+pub def coverage_record_for_profile(record: AdapterCoverageRecord, profile: SemanticProfile) -> AdapterCoverageRecord:
+    """Return a coverage record that explicitly cites the semantic profile used for evaluation."""
+    return AdapterCoverageRecord(
+        coverage_id=record.coverage_id,
+        requirement=record.requirement,
+        adapter_name=record.adapter_name,
+        adapter_version=record.adapter_version,
+        semantic_profile_id=Some(profile.profile_id),
+        state=record.state,
+        diagnostics=record.diagnostics,
+        evidence_refs=record.evidence_refs,
+    )
+
+
+def _exact_dimension(
+    kind: SemanticProfileDimensionKind,
+    declared_behavior: str,
+    evidence_refs: list[str],
+) -> SemanticProfileDimension:
+    """Return an exact IncQL-authored dimension for built-in baseline profiles."""
+    return semantic_dimension(
+        kind,
+        declared_behavior,
+        state=SemanticProfileDimensionState.Exact,
+        source=MetadataSource.IncQL,
+        confidence=SemanticProfileConfidence.Declared,
+        evidence_refs=evidence_refs,
+    )
+
+
+def _combined_assessment_state(dimensions: list[SemanticProfileDimension]) -> SemanticProfileAssessmentState:
+    """Return a conservative assessment state for a set of profile dimensions."""
+    if len(dimensions) == 0:
+        return SemanticProfileAssessmentState.Unknown
+    # Unknown outranks every other state: profile absence must never look like compatibility.
+    mut constrained = false
+    mut matched = false
+    mut not_applicable = false
+    for dimension in dimensions:
+        if dimension.state == SemanticProfileDimensionState.Unknown:
+            return SemanticProfileAssessmentState.Unknown
+        if dimension.state == SemanticProfileDimensionState.Constrained:
+            constrained = true
+        if dimension.state == SemanticProfileDimensionState.Exact:
+            matched = true
+        if dimension.state == SemanticProfileDimensionState.NotApplicable:
+            not_applicable = true
+    if constrained:
+        return SemanticProfileAssessmentState.Constrained
+    if matched:
+        return SemanticProfileAssessmentState.Matched
+    if not_applicable:
+        return SemanticProfileAssessmentState.NotApplicable
+    return SemanticProfileAssessmentState.Unknown
+
+
+def _profile_id(
+    target_class: SemanticProfileTargetClass,
+    profile_name: str,
+    target_version: Option[str],
+    target_configuration_fingerprint: Option[str],
+) -> str:
+    """Return a deterministic local profile id."""
+    version = _option_str_text(target_version)
+    fingerprint = _option_str_text(target_configuration_fingerprint)
+    return f"semantic-profile:{target_class.value()}:{profile_name}:{version}:{fingerprint}"
+
+
+def _option_str_text(value: Option[str]) -> str:
+    """Return stable text for optional string fields."""
+    if let Some(inner) = value:
+        return inner
+    return ""
+
+
+def _dimension_json_values(dimensions: list[SemanticProfileDimension]) -> list[JsonValue]:
+    """Return JSON values for semantic profile dimensions."""
+    return [dimension.to_json_value() for dimension in dimensions]
+
+
+def _target_id_json_values(targets: list[SemanticTarget]) -> list[JsonValue]:
+    """Return JSON string values for semantic target identifiers."""
+    return [JsonValue.str(target.target_id) for target in targets]
+
+
+def _strings_to_json_values(values: list[str]) -> list[JsonValue]:
+    """Return JSON string values."""
+    return [JsonValue.str(value) for value in values]
+
+
+def _json_error_to_io_error(error: JsonError) -> IoError:
+    """Convert JSON serialization errors into the filesystem error shape used by write helpers."""
+    return IoError(kind="invalid_data", detail=error.message(), operation="json", position=-1, path=None)

@@ -1,6 +1,6 @@
 # IncQL RFC 042: Async verification evidence
 
-- **Status:** Draft
+- **Status:** Implemented
 - **Created:** 2026-06-20
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
@@ -19,8 +19,9 @@
   - IncQL RFC 045 (constraint evidence and verification-aware planning)
 - **Issue:** [IncQL #77](https://github.com/encero-systems/IncQL/issues/77)
 - **RFC PR:** [IncQL #83](https://github.com/encero-systems/IncQL/pull/83)
+- **Implementation PR:** [IncQL #95](https://github.com/encero-systems/IncQL/pull/95)
 - **Written against:** Incan v0.3-era IncQL
-- **Shipped in:** —
+- **Shipped in:** IncQL v0.1
 
 ## Summary
 
@@ -208,6 +209,8 @@ Governed plan bundles may include verification assertions, runs, observations, c
 
 This RFC introduces no authoring syntax. Helper APIs, inspection APIs, session APIs, and artifact contracts are the normative surface. Any authoring syntax introduced by a separate RFC must lower to the same assertion and observation model.
 
+The implemented helper API includes `verification_assertion(...)`, `quality_verification_assertion(...)`, `verification_run(...)`, `verification_observation(...)`, `waived_verification_observation(...)`, `project_verification_state(...)`, `verification_coverage(...)`, `verification_snapshot_reference(...)`, `verification_commitment_reference(...)`, `verification_waiver(...)`, and `verification_evidence(...)`.
+
 ### Semantics
 
 Verification is evidence-producing relational work. It may compare source and target relations, evaluate quality assertions, check digests, validate row counts, compare aggregates, track streaming watermarks, or verify externally supplied proof artifacts. The semantics of the checked relation remain owned by Prism, profiles, quality assertions, and execution/session contracts; verification observations report what was checked and how strong the evidence is.
@@ -270,13 +273,13 @@ This section is non-normative. A practical implementation can store verification
 - **Execution / interchange** — adapters may need capability records for snapshot capture, canonical digests, event streams, reconciliation checks, and proof verification.
 - **Documentation** — docs must explain the difference between lifecycle, outcome, assurance, coverage, and waived evidence.
 
-## Unresolved questions
+## Design Decisions
 
-- Which verification helper APIs are normative rather than illustrative?
-- Which canonical row, partition, and relation digest profiles are required before deterministic verification can claim `verified` assurance?
-- What minimum waiver fields are required to keep `waived` useful without defining organization-wide approval policy?
-- Which IncQL RFC 044 proof artifact fields are required before an implementation may emit `proven` assurance?
-- Which projection rule versions should this RFC standardize for relation-level rollups over partition, sample, and watermark observations?
-- Should a separate RFC define authoring syntax for verification blocks, or should verification remain an API and artifact surface?
+### Resolved
 
-<!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->
+- `verification_assertion(...)`, `quality_verification_assertion(...)`, `verification_run(...)`, `verification_observation(...)`, `waived_verification_observation(...)`, `project_verification_state(...)`, `verification_coverage(...)`, `verification_snapshot_reference(...)`, `verification_commitment_reference(...)`, `verification_waiver(...)`, and `verification_evidence(...)` are the normative first helper surface for this RFC.
+- Digest-based deterministic verification may carry `verified` assurance only when the observation references explicit canonicalization and digest profile evidence. The concrete equality and digest profile vocabulary belongs to IncQL RFC 043, so this RFC does not invent hidden digest semantics.
+- A waiver record must carry waiver id, reason, source, optional approver, and evidence references. Organization-wide approval workflow, expiry, and authorization policy remain out of scope, but the evidence model carries enough information to keep waived evidence auditable and distinct from passed evidence.
+- `proven` assurance is representable as an assurance label, but proof-backed observations need statement, commitment, verifier, and artifact references owned by IncQL RFC 044 before a proof-producing implementation should emit it. This RFC supplies the observation lane, not the proof-system mechanics.
+- The first projection rule is `incql.verification.projection.latest-open-scope.v0.1`: match assertion and scope, ignore revoked observations, ignore observations superseded by later observations, preserve mixed outcomes, keep assurance counts by label, and emit unknown evidence when no observations match.
+- Verification remains an API and artifact surface in this RFC. Any future `verify { ... }` or similar authoring syntax requires its own RFC and must lower to the same assertion, run, observation, and projection records.
