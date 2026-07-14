@@ -204,7 +204,7 @@ pub class Session:
         source = csv_source(source_uri.0)
         columns = planned_schema_columns_for_source(source)?
         self._register_parsed(name, source)?
-        # TODO(InQL RFC 004): Formalize logical-name schema binding as an explicit catalog/snapshot model and surface overwrite diagnostics.
+        # TODO(IncQL RFC 004): Formalize logical-name schema binding as an explicit catalog/snapshot model and surface overwrite diagnostics.
         register_named_table_schema(name.0, columns)
         return self.table(name.0)
 

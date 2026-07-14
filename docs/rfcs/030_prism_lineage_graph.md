@@ -1,27 +1,27 @@
-# InQL RFC 030: Prism lineage graph
+# IncQL RFC 030: Prism lineage graph
 
 - **Status:** In Progress
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 002 (Apache Substrait integration)
-  - InQL RFC 007 (Prism logical planning and optimization engine)
-  - InQL RFC 012 (unified scalar expression surface)
-  - InQL RFC 019 (window functions)
-  - InQL RFC 020 (nested data functions)
-  - InQL RFC 021 (generator and table-valued functions)
-  - InQL RFC 022 (semi-structured and format functions)
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 028 (semantic identity and target model)
-  - InQL RFC 041 (Prism plan ingress and external client frontends)
-- **Issue:** [InQL #64](https://github.com/encero-systems/InQL/issues/64)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
-- **Written against:** Incan v0.3-era InQL
+  - IncQL RFC 002 (Apache Substrait integration)
+  - IncQL RFC 007 (Prism logical planning and optimization engine)
+  - IncQL RFC 012 (unified scalar expression surface)
+  - IncQL RFC 019 (window functions)
+  - IncQL RFC 020 (nested data functions)
+  - IncQL RFC 021 (generator and table-valued functions)
+  - IncQL RFC 022 (semi-structured and format functions)
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 028 (semantic identity and target model)
+  - IncQL RFC 041 (Prism plan ingress and external client frontends)
+- **Issue:** [IncQL #64](https://github.com/encero-systems/IncQL/issues/64)
+- **RFC PR:** [IncQL #60](https://github.com/encero-systems/IncQL/pull/60)
+- **Written against:** Incan v0.3-era IncQL
 - **Shipped in:** —
 
 ## Summary
 
-This RFC defines the Prism lineage graph for InQL. The graph records relation-level, field-level, and expression-level dependencies over authored and rewritten Prism plans, including reads, projections, filters, joins, aggregates, windows, generators, ordering, limits, nested data access, and semi-structured or format parsing.
+This RFC defines the Prism lineage graph for IncQL. The graph records relation-level, field-level, and expression-level dependencies over authored and rewritten Prism plans, including reads, projections, filters, joins, aggregates, windows, generators, ordering, limits, nested data access, and semi-structured or format parsing.
 
 ## Motivation
 
@@ -29,7 +29,7 @@ Lineage reconstructed from backend SQL, backend plans, or Substrait alone is too
 
 ## Goals
 
-- Define native InQL lineage edges over semantic targets.
+- Define native IncQL lineage edges over semantic targets.
 - Distinguish value, control, grouping, join, sort, policy, and quality dependencies.
 - Preserve authored-origin and ingress-origin relationships through rewrites.
 - Represent exact, conservative, and unknown lineage confidence.
@@ -40,7 +40,7 @@ Lineage reconstructed from backend SQL, backend plans, or Substrait alone is too
 - Defining global cross-workspace lineage storage.
 - Defining business meaning, certification, or ownership.
 - Replacing Substrait relation lowering.
-- Guaranteeing that every external lineage tool can represent every native InQL edge kind.
+- Guaranteeing that every external lineage tool can represent every native IncQL edge kind.
 
 ## Guide-level explanation (how authors think about it)
 
@@ -55,7 +55,7 @@ summary = (
 )
 ```
 
-InQL should be able to explain that `total_amount` has value lineage from `orders.amount`, grouping lineage from `orders.customer_id`, and control lineage from `orders.status`.
+IncQL should be able to explain that `total_amount` has value lineage from `orders.amount`, grouping lineage from `orders.customer_id`, and control lineage from `orders.status`.
 
 ## Reference-level explanation (precise rules)
 
@@ -73,7 +73,7 @@ Relationship kind must distinguish at least value, control, grouping, join, sort
 
 Transformation kind must distinguish at least identity, expression, aggregate, window, generator, filter, join, mask, format_parse, nested_access, semi_structured_access, opaque, and unknown transformations.
 
-Confidence must distinguish exact, conservative, and unknown lineage. Exact lineage means InQL can identify the relevant source target set. Conservative lineage means InQL can identify a safe over-approximation. Unknown lineage means InQL cannot determine the dependency and must report that uncertainty explicitly.
+Confidence must distinguish exact, conservative, and unknown lineage. Exact lineage means IncQL can identify the relevant source target set. Conservative lineage means IncQL can identify a safe over-approximation. Unknown lineage means IncQL cannot determine the dependency and must report that uncertainty explicitly.
 
 Projection of an input field without transformation must produce value lineage from the input field to the output field. Projection of an expression must produce value lineage from every scalar input expression dependency to the output field.
 
@@ -103,7 +103,7 @@ This RFC introduces no syntax.
 
 Lineage is a semantic graph over Prism targets. It is not an execution log and not a formatted explanation string.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 Function registry metadata must provide lineage-relevant facts for functions whose behavior is not derivable from argument structure alone. Opaque user-defined or extension functions must produce conservative or unknown lineage unless they provide explicit metadata.
 
@@ -113,7 +113,7 @@ Plans without lineage remain executable. Inspection APIs must distinguish unsupp
 
 ## Alternatives considered
 
-- **Use OpenLineage column lineage as the internal model.** Rejected because InQL needs richer relationship kinds than common post-hoc run events.
+- **Use OpenLineage column lineage as the internal model.** Rejected because IncQL needs richer relationship kinds than common post-hoc run events.
 - **Infer lineage from Substrait only.** Rejected because Prism has authored-origin and type information that may be lost during interchange lowering.
 - **Only expose field-level direct lineage.** Rejected because governance, quality, and blast-radius analysis need control, grouping, join, and sort relationships.
 
@@ -125,8 +125,8 @@ Plans without lineage remain executable. Inspection APIs must distinguish unsupp
 
 ## Layers affected
 
-- **InQL specification** — lineage relationship and transformation kinds become normative vocabulary.
-- **InQL library package** — inspection APIs must expose typed lineage edges.
+- **IncQL specification** — lineage relationship and transformation kinds become normative vocabulary.
+- **IncQL library package** — inspection APIs must expose typed lineage edges.
 - **Execution / interchange** — Substrait and adapters may carry references to lineage targets but must not redefine them.
 - **Documentation** — docs must explain the difference between value, control, grouping, join, and sort lineage.
 
@@ -134,6 +134,6 @@ Plans without lineage remain executable. Inspection APIs must distinguish unsupp
 
 - Should sort lineage attach to relation outputs, fields, or a separate ordering target?
 - Which nested and semi-structured operations can claim exact lineage in the first release?
-- How should lineage represent set operations once InQL adds them?
+- How should lineage represent set operations once IncQL adds them?
 
 <!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->

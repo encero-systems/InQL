@@ -1,5 +1,5 @@
 """
-Top-level Substrait plan assembly helpers for InQL.
+Top-level Substrait plan assembly helpers for IncQL.
 
 This module owns `Plan` envelopes, package-level producer/version metadata, and the entrypoints that wrap root
 relations into complete proto-backed plans.
@@ -17,7 +17,7 @@ from substrait.relations import (
 )
 
 const DEFAULT_SUBSTRAIT_RELEASE_TAG: str = "v0.63.0"
-const DEFAULT_SUBSTRAIT_PRODUCER_NAME: str = "inql-rfc002"
+const DEFAULT_SUBSTRAIT_PRODUCER_NAME: str = "incql-rfc002"
 
 
 def _default_version() -> Version:

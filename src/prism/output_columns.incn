@@ -166,7 +166,7 @@ def _expression_output_schema(
     expr: ColumnExpr,
     output_name: str,
 ) -> ScalarColumnSpec:
-    """Infer the output schema fact for one scalar expression when InQL can do so honestly."""
+    """Infer the output schema fact for one scalar expression when IncQL can do so honestly."""
     match expr:
         BoolColumnExpr(_) =>
             return ScalarColumnSpec(name=output_name, kind=Some(SubstraitPrimitiveKind.Bool), nullable=true)

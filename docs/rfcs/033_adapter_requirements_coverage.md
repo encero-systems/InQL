@@ -1,47 +1,47 @@
-# InQL RFC 033: Adapter requirements and coverage
+# IncQL RFC 033: Adapter requirements and coverage
 
 - **Status:** Implemented
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 002 (Apache Substrait integration)
-  - InQL RFC 004 (execution context)
-  - InQL RFC 024 (function extension policy)
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 028 (semantic identity and target model)
-  - InQL RFC 032 (execution observations)
-  - InQL RFC 040 (interoperability semantic profiles)
-  - InQL RFC 041 (Prism plan ingress and external client frontends)
-  - InQL RFC 042 (async verification evidence)
-  - InQL RFC 043 (canonical equality and digest profiles)
-  - InQL RFC 044 (verifier statements and proof artifacts)
-  - InQL RFC 045 (constraint evidence and verification-aware planning)
-- **Issue:** [InQL #67](https://github.com/encero-systems/InQL/issues/67)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #83](https://github.com/encero-systems/InQL/pull/83); [InQL #86](https://github.com/encero-systems/InQL/pull/86); [InQL #87](https://github.com/encero-systems/InQL/pull/87)
-- **Written against:** Incan v0.3-era InQL
+  - IncQL RFC 002 (Apache Substrait integration)
+  - IncQL RFC 004 (execution context)
+  - IncQL RFC 024 (function extension policy)
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 028 (semantic identity and target model)
+  - IncQL RFC 032 (execution observations)
+  - IncQL RFC 040 (interoperability semantic profiles)
+  - IncQL RFC 041 (Prism plan ingress and external client frontends)
+  - IncQL RFC 042 (async verification evidence)
+  - IncQL RFC 043 (canonical equality and digest profiles)
+  - IncQL RFC 044 (verifier statements and proof artifacts)
+  - IncQL RFC 045 (constraint evidence and verification-aware planning)
+- **Issue:** [IncQL #67](https://github.com/encero-systems/IncQL/issues/67)
+- **RFC PR:** [IncQL #60](https://github.com/encero-systems/IncQL/pull/60); [IncQL #83](https://github.com/encero-systems/IncQL/pull/83); [IncQL #86](https://github.com/encero-systems/IncQL/pull/86); [IncQL #87](https://github.com/encero-systems/IncQL/pull/87)
+- **Written against:** Incan v0.3-era IncQL
 - **Shipped in:** v0.1
 
 ## Summary
 
-This RFC defines adapter requirements and coverage states for InQL. Requirements describe backend capabilities needed by a plan or evidence contract, while coverage states report whether a specific adapter can satisfy those requirements under the relevant binding and semantic profile. Unknown coverage is not enforcement.
+This RFC defines adapter requirements and coverage states for IncQL. Requirements describe backend capabilities needed by a plan or evidence contract, while coverage states report whether a specific adapter can satisfy those requirements under the relevant binding and semantic profile. Unknown coverage is not enforcement.
 
 ## Motivation
 
-Backend neutrality only works when backend limits are visible. A plan may require extension functions, precise decimal behavior, variant semantics, lineage preservation, audit emission, masking, aggregation thresholding, or other capabilities. If InQL hides adapter uncertainty, downstream systems may assume a guarantee that the selected backend cannot provide.
+Backend neutrality only works when backend limits are visible. A plan may require extension functions, precise decimal behavior, variant semantics, lineage preservation, audit emission, masking, aggregation thresholding, or other capabilities. If IncQL hides adapter uncertainty, downstream systems may assume a guarantee that the selected backend cannot provide.
 
 ## Goals
 
 - Define adapter requirements as semantic evidence targets.
 - Define coverage states: covered, partially_covered, uncovered, and unknown.
 - Require coverage records to name the adapter, semantic profile when relevant, and evidence.
-- Keep backend inability distinct from unsupported InQL semantics.
+- Keep backend inability distinct from unsupported IncQL semantics.
 - Make capability uncertainty explicit before execution when possible.
 
 ## Non-Goals
 
 - Defining every possible backend capability.
 - Defining physical execution strategies.
-- Making any one adapter the semantic owner of InQL behavior.
+- Making any one adapter the semantic owner of IncQL behavior.
 - Defining organization-wide enforcement policy.
 
 ## Guide-level explanation (how authors think about it)
@@ -78,11 +78,11 @@ Coverage state must distinguish:
 - covered: the adapter can satisfy the requirement under the current binding
 - partially_covered: the adapter can satisfy part of the requirement or only under restrictions
 - uncovered: the adapter cannot satisfy the requirement
-- unknown: InQL cannot determine whether the adapter can satisfy the requirement
+- unknown: IncQL cannot determine whether the adapter can satisfy the requirement
 
 Unknown coverage must not be treated as covered. If a requirement whose guarantee level is required is unknown or uncovered, execution must reject, route, rewrite, require approval, or report non-enforcing behavior according to the higher-level policy using the coverage record.
 
-Backend inability must be reported as adapter coverage or execution failure. It must not be encoded as a normal Substrait-level state for core InQL semantics.
+Backend inability must be reported as adapter coverage or execution failure. It must not be encoded as a normal Substrait-level state for core IncQL semantics.
 
 Ingress coverage belongs to plan ingress frontends. It must not be reported as backend adapter coverage unless the same feature also creates an execution requirement for the selected adapter.
 
@@ -96,7 +96,7 @@ This RFC introduces no syntax.
 
 Adapter requirements are evidence about what a plan needs. Coverage records are evidence about what a selected adapter can provide.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 Function registry entries, semi-structured functions, extensions, quality assertions, governed attribute constraints, and semantic profile assessments may all create adapter requirements. Execution observations may reference coverage records.
 
@@ -104,7 +104,7 @@ Function registry entries, semi-structured functions, extensions, quality assert
 
 Existing adapters may initially report unknown coverage for capabilities they do not declare. Consumers must distinguish unknown from covered.
 
-The first implementation provides the adapter requirement and coverage record vocabulary plus `Session.check_coverage(requirements)` for caller-provided requirements. The RFC 033 completion slice adds inspection-inferred requirements for plan evidence that InQL can observe directly, including baseline null semantics, row filters, ordered execution, extension functions, variant semantics, and lineage-preservation evidence. `Session.check_inspection_coverage(inspection)` and `Session.check_plan_coverage(data)` evaluate those inferred requirements through the same adapter coverage model. Policy requirements that are not visible in plan evidence, such as masking, audit emission, region binding, waiver recording, and cryptographic proofs, still need explicit requirement records or their owning future surfaces.
+The first implementation provides the adapter requirement and coverage record vocabulary plus `Session.check_coverage(requirements)` for caller-provided requirements. The RFC 033 completion slice adds inspection-inferred requirements for plan evidence that IncQL can observe directly, including baseline null semantics, row filters, ordered execution, extension functions, variant semantics, and lineage-preservation evidence. `Session.check_inspection_coverage(inspection)` and `Session.check_plan_coverage(data)` evaluate those inferred requirements through the same adapter coverage model. Policy requirements that are not visible in plan evidence, such as masking, audit emission, region binding, waiver recording, and cryptographic proofs, still need explicit requirement records or their owning future surfaces.
 
 ## Implementation plan
 
@@ -115,7 +115,7 @@ The implemented scope adds the adapter requirement and coverage vocabulary, expl
 - [x] Define adapter requirement identity, target, capability, guarantee, reason references, and diagnostic fields.
 - [x] Define adapter coverage state, adapter identity, semantic profile, evidence references, and diagnostic fields.
 - [x] Add explicit `Session.check_coverage(requirements)` evaluation for caller-provided requirements.
-- [x] Infer requirements from local plan inspection evidence where InQL owns the semantics.
+- [x] Infer requirements from local plan inspection evidence where IncQL owns the semantics.
 - [x] Add `Session.check_inspection_coverage(inspection)` and `Session.check_plan_coverage(data)`.
 - [x] Keep unknown and uncovered coverage distinct from covered behavior.
 - [x] Keep backend inability in coverage or execution evidence, not as a normal Substrait-level state.
@@ -125,7 +125,7 @@ The implemented scope adds the adapter requirement and coverage vocabulary, expl
 ## Alternatives considered
 
 - **Fail only at backend runtime.** Rejected because users need pre-execution visibility when possible.
-- **Treat unsupported backend features as unsupported InQL semantics.** Rejected because backend inability is not the same as invalid InQL.
+- **Treat unsupported backend features as unsupported IncQL semantics.** Rejected because backend inability is not the same as invalid IncQL.
 - **Use boolean supports flags.** Rejected because partial and unknown coverage are important operational states.
 
 ## Drawbacks
@@ -136,8 +136,8 @@ The implemented scope adds the adapter requirement and coverage vocabulary, expl
 
 ## Layers affected
 
-- **InQL specification** — adapter requirement and coverage vocabulary becomes normative.
-- **InQL library package** — inspection and session APIs must expose requirements and coverage.
+- **IncQL specification** — adapter requirement and coverage vocabulary becomes normative.
+- **IncQL library package** — inspection and session APIs must expose requirements and coverage.
 - **Execution / interchange** — adapters must report capability evidence honestly.
 - **Documentation** — docs must explain that unknown coverage is not enforcement.
 
@@ -145,7 +145,7 @@ The implemented scope adds the adapter requirement and coverage vocabulary, expl
 
 ### Resolved
 
-The first implementation must cover the capability families that are directly visible from current InQL evidence: null semantics, row filters, ordered execution, extension functions, variant semantics, and lineage preservation. The broader public vocabulary remains available for explicit requirements and future owning surfaces, but InQL must not infer masking, audit emission, regional binding, waiver recording, cryptographic proof, or similar governance requirements until those surfaces produce evidence.
+The first implementation must cover the capability families that are directly visible from current IncQL evidence: null semantics, row filters, ordered execution, extension functions, variant semantics, and lineage preservation. The broader public vocabulary remains available for explicit requirements and future owning surfaces, but IncQL must not infer masking, audit emission, regional binding, waiver recording, cryptographic proof, or similar governance requirements until those surfaces produce evidence.
 
 Coverage checks are available without binding physical sources when the requirement evidence is already present in a `PlanInspection` or caller-provided requirement list. Execution still validates bindings separately. This keeps pre-execution coverage useful without pretending that plan inspection can prove physical source availability.
 

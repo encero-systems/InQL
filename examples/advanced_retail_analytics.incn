@@ -1,7 +1,7 @@
 """
 Example: advanced retail analytics over a 100-row CSV fixture.
 
-This is a compact spike of the larger InQL surface:
+This is a compact spike of the larger IncQL surface:
 
 - typed Session CSV ingestion
 - scalar cleanup and derivation

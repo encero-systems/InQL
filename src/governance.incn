@@ -186,7 +186,7 @@ pub def governed_attribute(
     target: SemanticTarget,
     key: str,
     value: str,
-    value_schema: str = "inql.governance.string.v0.1",
+    value_schema: str = "incql.governance.string.v0.1",
     scope: GovernedAttributeScope = GovernedAttributeScope.Field,
     source: GovernedAttributeSource = GovernedAttributeSource.Inferred,
     confidence: GovernedAttributeConfidence = GovernedAttributeConfidence.Unknown,

@@ -1,21 +1,21 @@
-# InQL RFC 000: Language Specification
+# IncQL RFC 000: Language Specification
 
 - **Status:** Planned
 - **Created:** 2026-03-18
 - **Author(s):** Danny Meijer
 - **Related:** -
-- **Issue:** [InQL #1](https://github.com/encero-systems/InQL/issues/1)
+- **Issue:** [IncQL #1](https://github.com/encero-systems/IncQL/issues/1)
 - **RFC PR:** -
 - **Written against:** Incan v0.2
 - **Shipped in:** -
 
 ## Summary
 
-InQL is the typed data logic plane for the Incan ecosystem: relational queries, schema-parameterized DataFrame transformations, and backend-neutral logical planning. This RFC is the foundational specification for InQL v0.1. It defines what InQL is and what it owns, the core semantic model, naming forms and resolution rules, schema shapes, the compilation model, and layer boundaries. Companion RFCs address dataset types, plan interchange, query grammar, execution context, and pipe-forward syntax.
+IncQL is the typed data logic plane for the Incan ecosystem: relational queries, schema-parameterized DataFrame transformations, and backend-neutral logical planning. This RFC is the foundational specification for IncQL v0.1. It defines what IncQL is and what it owns, the core semantic model, naming forms and resolution rules, schema shapes, the compilation model, and layer boundaries. Companion RFCs address dataset types, plan interchange, query grammar, execution context, and pipe-forward syntax.
 
 ## Core model
 
-InQL treats all data logic as one relational semantic model exposed through multiple authoring surfaces:
+IncQL treats all data logic as one relational semantic model exposed through multiple authoring surfaces:
 
 1. **`query {}` blocks** — SQL-familiar clause surface
 2. **`DataSet[T]` method chains** — programmatic API
@@ -33,42 +33,42 @@ The key rule: **in relational clause positions, bare identifiers resolve against
 
 ## Motivation
 
-Relational code in Incan must resolve field access and column names deterministically and statically where the language promises checking. Without a single foundational specification, `query {}` and method-chain surfaces would drift, schema-shape rules would be inconsistent across carriers, and the boundary between data logic and execution would blur. This RFC consolidates that model so every companion RFC can cite it rather than redefine it, and so that completion of RFCs 000–004 constitutes a usable InQL v0.1.
+Relational code in Incan must resolve field access and column names deterministically and statically where the language promises checking. Without a single foundational specification, `query {}` and method-chain surfaces would drift, schema-shape rules would be inconsistent across carriers, and the boundary between data logic and execution would blur. This RFC consolidates that model so every companion RFC can cite it rather than redefine it, and so that completion of RFCs 000–004 constitutes a usable IncQL v0.1.
 
 ## Goals
 
-- Define what InQL is, what it owns, and what it does not own.
+- Define what IncQL is, what it owns, and what it does not own.
 - Establish the core semantic model: one relational model, multiple authoring surfaces.
 - Define the four naming forms and resolution rules for identifier binding inside relational contexts.
 - Define schema shapes: fully typed, open-ended, and dynamic.
-- Define the compilation model: how InQL source flows through the Incan compiler pipeline to portable plans and execution.
-- Define layer boundaries: InQL owns typed data logic and logical planning; execution, orchestration, and operational semantics belong to adjacent layers.
+- Define the compilation model: how IncQL source flows through the Incan compiler pipeline to portable plans and execution.
+- Define layer boundaries: IncQL owns typed data logic and logical planning; execution, orchestration, and operational semantics belong to adjacent layers.
 - Establish the relationship to Incan models as the schema surface for query authoring and validation.
 - State that `query {}` and method-chain surfaces, when both are present, **must not** change resolution rules relative to each other.
 - State that `.column` is only valid inside relational expression positions — `query {}` blocks, relational operation arguments (e.g. `.filter(...)`, `.join(...)`), and future pipe-forward stages — and is not a general Incan expression form.
 
 ## Non-Goals
 
-- Dataset types, carriers, and the trait hierarchy (`DataSet[T]`, `BoundedDataSet[T]`, `UnboundedDataSet[T]`) — InQL RFC 001.
-- Apache Substrait plan interchange and `Rel`-level mapping — InQL RFC 002.
-- `query {}` grammar, clause inventory, and typechecking — InQL RFC 003.
-- Execution context, session, DataFusion, read/write — InQL RFC 004.
-- Pipe-forward (`|>`) syntax — InQL RFC 005 (not in v0.1 scope).
+- Dataset types, carriers, and the trait hierarchy (`DataSet[T]`, `BoundedDataSet[T]`, `UnboundedDataSet[T]`) — IncQL RFC 001.
+- Apache Substrait plan interchange and `Rel`-level mapping — IncQL RFC 002.
+- `query {}` grammar, clause inventory, and typechecking — IncQL RFC 003.
+- Execution context, session, DataFusion, read/write — IncQL RFC 004.
+- Pipe-forward (`|>`) syntax — IncQL RFC 005 (not in v0.1 scope).
 - Orchestration, workflows, quality gates, contract enforcement — execution and operational layers.
 - Governed business meaning and semantic serving — semantic layer.
 - Cluster-scale scheduling, distributed fault tolerance — orchestration layer.
 
 ## Guide-level explanation
 
-### What InQL does
+### What IncQL does
 
-InQL lets authors express typed data logic — queries, transformations, aggregations, joins — against schema-parameterized datasets, with compile-time validation and backend-neutral logical plans. Authors write relational intent; the compiler checks it against `model` schemas; the toolchain lowers it to a portable plan (Apache Substrait) that an execution context can optimize and run.
+IncQL lets authors express typed data logic — queries, transformations, aggregations, joins — against schema-parameterized datasets, with compile-time validation and backend-neutral logical plans. Authors write relational intent; the compiler checks it against `model` schemas; the toolchain lowers it to a portable plan (Apache Substrait) that an execution context can optimize and run.
 
 ### The four naming forms
 
-When you write `.amount`, `amount`, `orders.amount`, or `total_spend` inside an InQL query, what exactly are you referring to?
+When you write `.amount`, `amount`, `orders.amount`, or `total_spend` inside an IncQL query, what exactly are you referring to?
 
-InQL has four distinct naming forms, and the answer depends on which one you're using:
+IncQL has four distinct naming forms, and the answer depends on which one you're using:
 
 - `.column` — the field from the current input relation
 - `relation.column` — the field from a named joined relation
@@ -93,7 +93,7 @@ query {
 
 `.amount` and `.customer_id` are form 1 (primary relation). `customers.name` is form 2 (named join). `threshold` is form 4 (ordinary Incan binding — no column by that name exists in the query schema).
 
-If you remember only five things about InQL naming:
+If you remember only five things about IncQL naming:
 
 1. `.column` is explicit access to the current input relation.
 2. `relation.column` is explicit access to a named joined relation.
@@ -103,7 +103,7 @@ If you remember only five things about InQL naming:
 
 ### Schema shapes
 
-InQL supports several schema modes without losing its semantic model:
+IncQL supports several schema modes without losing its semantic model:
 
 - **Fully typed** (`DataFrame[Order]`) — the compiler knows every field name, type, and nullability. This is the strongest and most ergonomic mode.
 - **Open-ended** (`DataFrame[Event]` where `Event` is declared `with OpenEnded`) — declared fields are fully typed; undeclared fields become soft-runtime references with a warning.
@@ -111,10 +111,10 @@ InQL supports several schema modes without losing its semantic model:
 
 ### Two authoring surfaces (v0.1)
 
-The examples in this section assume aggregate helpers such as `sum` are imported from `pub::inql.functions` (they are not ambient builtins).
+The examples in this section assume aggregate helpers such as `sum` are imported from `pub::incql.functions` (they are not ambient builtins).
 
 ```incan
-from pub::inql.functions import sum
+from pub::incql.functions import sum
 
 # query {} blocks
 query {
@@ -135,9 +135,9 @@ These lower to the same relational plan. Identifier resolution rules do not chan
 
 ## Reference-level explanation
 
-### 1. What InQL owns
+### 1. What IncQL owns
 
-InQL owns the data-logic concerns of the platform:
+IncQL owns the data-logic concerns of the platform:
 
 - query authoring
 - relational plan construction
@@ -157,7 +157,7 @@ Its job is to preserve one deterministic, type-aware model of data intent across
 
 ### 2. Naming forms
 
-Inside InQL relational contexts there are four distinct naming forms:
+Inside IncQL relational contexts there are four distinct naming forms:
 
 1. **`.column`** (primary relation)
     Explicit field access against the current input relation. In `query {}`, that is the relation established by `FROM` for `.column` positions — including after `JOIN`. `.column` does not refer to joined relations.
@@ -281,7 +281,7 @@ query {
 }
 ```
 
-`threshold` is not a column; it resolves as the surrounding binding. This is how InQL stays composable with the rest of Incan instead of becoming an isolated mini-language.
+`threshold` is not a column; it resolves as the surrounding binding. This is how IncQL stays composable with the rest of Incan instead of becoming an isolated mini-language.
 
 ### 5. Ambiguity examples
 
@@ -365,13 +365,13 @@ Using `.field` outside these contexts **must** be a compile-time error. This kee
 
 ### 8. Schema shapes
 
-InQL needs to support several schema modes without losing its semantic model.
+IncQL needs to support several schema modes without losing its semantic model.
 
 #### 8.1 Fully typed: `DataFrame[T]`
 
 `DataFrame[T]` carries the full field-level schema through compilation. `.filter(.amount > 100)` can validate `amount` exists and has a compatible type; projection can produce a new typed output shape; grouping and aggregation can be validated against the schema.
 
-When `T` is an Incan model that participates in contract semantics upstream, InQL **should** treat it first as a schema surface: query checking uses the model's fields and types; projection and output typing flow from that model shape.
+When `T` is an Incan model that participates in contract semantics upstream, IncQL **should** treat it first as a schema surface: query checking uses the model's fields and types; projection and output typing flow from that model shape.
 
 #### 8.2 Open-ended: `model X with OpenEnded`
 
@@ -415,7 +415,7 @@ Operationally:
 
 #### 8.4 Four schema shapes
 
-Once both openness and subscription are allowed, InQL recognizes four common schema shapes:
+Once both openness and subscription are allowed, IncQL recognizes four common schema shapes:
 
 1. **Closed local** — a plain local model. Declared fields are the complete schema surface.
 2. **Open local** — a local model `with OpenEnded`. Declared fields are the minimum guaranteed schema surface.
@@ -427,7 +427,7 @@ This 2x2 framing separates two concerns cleanly:
 - **completeness**: closed vs open-ended
 - **provenance**: local vs subscribed or projected
 
-InQL **should** be able to reason about all four shapes using the same core machinery: known guaranteed fields, openness of the schema surface, and provenance of fields where available.
+IncQL **should** be able to reason about all four shapes using the same core machinery: known guaranteed fields, openness of the schema surface, and provenance of fields where available.
 
 #### 8.5 Schema boundary validation
 
@@ -437,26 +437,26 @@ Where lower-bound structural surfaces are available, the compiler **should** use
 
 ### 9. Relationship to Incan models
 
-InQL does not invent its own schema-definition system. It relies on Incan models as the typed schema surface for query authoring and validation.
+IncQL does not invent its own schema-definition system. It relies on Incan models as the typed schema surface for query authoring and validation.
 
-An Incan model gives InQL:
+An Incan model gives IncQL:
 
 - field names
 - field types
 - nullability
 - structural shape for joins, projections, and outputs
 
-InQL **must not** redefine schema language or model declarations; it consumes models as-is. Subscription and compatibility semantics (narrowing, widening, blast radius) belong in the operational and contract layers above InQL, not in InQL itself. InQL **may** surface subscription-derived schema information during typechecking and planning, but the declaration and enforcement model belongs to the contract layer.
+IncQL **must not** redefine schema language or model declarations; it consumes models as-is. Subscription and compatibility semantics (narrowing, widening, blast radius) belong in the operational and contract layers above IncQL, not in IncQL itself. IncQL **may** surface subscription-derived schema information during typechecking and planning, but the declaration and enforcement model belongs to the contract layer.
 
 ### 10. Compilation model
 
-InQL queries follow the same broad compiler pipeline as ordinary Incan code, with query-specific stages for relational planning:
+IncQL queries follow the same broad compiler pipeline as ordinary Incan code, with query-specific stages for relational planning:
 
 ```text
-InQL source
+IncQL source
   → parser and AST
   → typechecker (name resolution, schema flow, type inference)
-  → InQL IR (relational operators, typed expressions)
+  → IncQL IR (relational operators, typed expressions)
   → Substrait emission
   → execution context optimization and execution
 ```
@@ -468,17 +468,17 @@ The user-facing query model stays stable while the lower layers evolve: AST shap
 The boundaries matter:
 
 - **Incan** owns the shared language, type system, modules, traits, compile-time safety, and the core `model` type definitions that queries use as schemas.
-- **InQL** owns typed data logic, relational semantics, schema flow, and logical planning.
+- **IncQL** owns typed data logic, relational semantics, schema flow, and logical planning.
 - **Execution layer** owns runners, workflows, adapters, quality enforcement, contract enforcement, and operational workload semantics.
 - **Semantic layer** owns governed business meaning and semantic-serving abstractions.
 
-InQL sits above the language core and below execution, semantics, and product layers.
+IncQL sits above the language core and below execution, semantics, and product layers.
 
 ## Design details
 
 ### Cross-RFC consistency
 
-- All companion InQL RFCs **must** stay consistent with this document for naming forms, current query schema behavior, resolution order, schema shapes, and the relational-position restriction on `.column` described in §§2–7.
+- All companion IncQL RFCs **must** stay consistent with this document for naming forms, current query schema behavior, resolution order, schema shapes, and the relational-position restriction on `.column` described in §§2–7.
 - Extensions in companion RFCs **must not** contradict these rules without an explicit amendment to this RFC.
 - Any future authoring surface (including pipe-forward), when introduced, **must** desugar to the same semantic model and **must not** change identifier resolution rules.
 
@@ -506,16 +506,16 @@ InQL sits above the language core and below execution, semantics, and product la
 - **Typechecker**: resolution order, current query schema flow, `SELECT` alias publication, join alias handling, and schema-shape behavior (typed, open-ended, dynamic) must remain consistent across surfaces.
 - **IR / lowering**: both authoring surfaces must lower to one relational semantic model without changing identifier meaning or schema-flow behavior.
 - **LSP**: relational positions need resolution-aware highlighting, diagnostics, and completions that reflect the same naming rules as the compiler.
-- **Documentation**: companion InQL RFCs and contributor docs must describe the same foundational naming, schema, and boundary rules.
+- **Documentation**: companion IncQL RFCs and contributor docs must describe the same foundational naming, schema, and boundary rules.
 
 ## Design Decisions
 
 - **`.column` scope restriction:** `.field` is only valid in relational expression positions (`query {}` clauses, method-chain relational arguments, and future pipe-forward stages). It is a compile-time error outside those positions. This keeps the dot notation unambiguous and ensures a primary relation is always in scope when `.field` is used.
 - **Lateral column aliases in `SELECT`:** an alias defined in a `SELECT` list is visible to subsequent expressions in the same list, in order (lateral column alias semantics). This follows the convention of DuckDB, Snowflake, and MySQL. An alias is not visible to expressions that precede it in the list. Implementations **must** rewrite dependent expressions (e.g. inline substitution) before Substrait lowering, since Substrait projection nodes do not natively support lateral alias references.
-- **Pipe-forward deferred to v0.2+:** InQL RFC 005 specifies pipe-forward as an optional surface with the same resolution rules. It is not part of v0.1 scope. This RFC (§6) states the invariant that pipe-forward **must** share §§2–4 resolution rules.
-- **Method-chain API scope:** deferred to InQL RFC 001, which defines the `DataSet[T]` operation surface. This RFC does not mandate a particular chain API shape.
-- **`HAVING` keyword:** not InQL syntax. Post-`SELECT` filtering uses a second `WHERE` clause (clause ordering details — InQL RFC 003).
+- **Pipe-forward deferred to v0.2+:** IncQL RFC 005 specifies pipe-forward as an optional surface with the same resolution rules. It is not part of v0.1 scope. This RFC (§6) states the invariant that pipe-forward **must** share §§2–4 resolution rules.
+- **Method-chain API scope:** deferred to IncQL RFC 001, which defines the `DataSet[T]` operation surface. This RFC does not mandate a particular chain API shape.
+- **`HAVING` keyword:** not IncQL syntax. Post-`SELECT` filtering uses a second `WHERE` clause (clause ordering details — IncQL RFC 003).
 - **Schema shape priority for v0.1:** fully typed (`DataFrame[T]`) is the primary mode. Open-ended (`with OpenEnded`) and dynamic (`DataFrame[Dynamic]`) remain part of the normative model in this RFC, but any implementation that does not yet support a permitted behavior **must** reject it explicitly rather than silently reinterpreting or weakening these semantics.
-- **Open-ended model marker syntax:** `model X with OpenEnded` is the normative spelling in this RFC for v0.1. If Incan changes how openness is declared, this RFC **must** be amended in lockstep; implementations follow the Incan language as shipped and update InQL specification text accordingly.
-- **External / catalog-bound models:** resolution of `model X = external("catalog://...")` (or equivalent) and how such models surface in query schemas is **out of scope for InQL RFC 000** and for v0.1 closure. It depends on Incan contract and catalog semantics and **may** be specified in a later InQL RFC once those foundations exist.
+- **Open-ended model marker syntax:** `model X with OpenEnded` is the normative spelling in this RFC for v0.1. If Incan changes how openness is declared, this RFC **must** be amended in lockstep; implementations follow the Incan language as shipped and update IncQL specification text accordingly.
+- **External / catalog-bound models:** resolution of `model X = external("catalog://...")` (or equivalent) and how such models surface in query schemas is **out of scope for IncQL RFC 000** and for v0.1 closure. It depends on Incan contract and catalog semantics and **may** be specified in a later IncQL RFC once those foundations exist.
 - **Shadowing warning and LSP:** when a bare name matches both a query column and an outer Incan binding, query semantics and the diagnostic (warn; suggest `.column`) are normative above. Whether the LSP offers quick-fixes (e.g. rewrite to `.column`, rename outer binding) is **tooling policy** in the Incan LSP and is not prescribed here; any such fixes **must** preserve the resolution rules in §§2–4.

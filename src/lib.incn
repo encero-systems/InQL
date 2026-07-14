@@ -1,8 +1,8 @@
 """
-InQL — typed query surface (Incan library).
+IncQL — typed query surface (Incan library).
 
 Add modules (e.g. `dataset`, `functions`, `query`) and re-export them here with `pub from ... import ...`.
-Consumers depend on this package via `[dependencies]` and import with `from pub::inql import ...`.
+Consumers depend on this package via `[dependencies]` and import with `from pub::incql import ...`.
 """
 
 pub from dataset import BoundedDataSet, DataFrame, DataSet, DataStream, LazyFrame, UnboundedDataSet
@@ -408,7 +408,7 @@ pub from backends import (
     plan_validation_backend_from_selection,
     plan_validation_backend_selection,
 )
-pub from metadata import inql_version
+pub from metadata import incql_version
 pub from session.domain import SinkKind, SinkTarget, csv_sink, parquet_sink, sink_kind_name
 pub from evidence import (
     AdapterCoverageRecord,

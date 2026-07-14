@@ -68,7 +68,7 @@ pub model QualityAssertion:
     """
     One typed relational quality assertion declaration.
 
-    `expression` and `group_by` carry ordinary InQL scalar expressions so assertions can be planned as relational work.
+    `expression` and `group_by` carry ordinary IncQL scalar expressions so assertions can be planned as relational work.
     Count thresholds use integer fields, and rate thresholds use the `max_rate` field where applicable.
     """
 

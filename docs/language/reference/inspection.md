@@ -5,7 +5,7 @@ Local inspection exposes structured evidence records for Prism-backed lazy plans
 ## Entry points
 
 ```incan
-from pub::inql import inspect_plan, inspect_lineage
+from pub::incql import inspect_plan, inspect_lineage
 
 inspection = inspect_plan(summary)
 lineage = inspect_lineage(summary)
@@ -20,7 +20,7 @@ The inspection surface consumes shared evidence record families and adds the loc
 | Record | Purpose |
 | ------ | ------- |
 | `SemanticTarget` | Stable local anchor for a plan, Prism node, relation output, field, read root, or future evidence family. |
-| `PlanInspection` | Top-level inspection result with schema version, InQL version, plan target, output schema, output fields, Prism nodes, lineage, artifacts, diagnostics, and unsupported-evidence markers. |
+| `PlanInspection` | Top-level inspection result with schema version, IncQL version, plan target, output schema, output fields, Prism nodes, lineage, artifacts, diagnostics, and unsupported-evidence markers. |
 | `InspectionNodeKind` | Typed public node-kind vocabulary for authored and rewritten Prism node inspection records. |
 | `LineageGraph` | Plan-local lineage graph with a rule version and typed lineage edges. |
 | `LineageEdge` | Source-to-destination edge with relationship kind, transformation kind, confidence, expression reference, and evidence references. |

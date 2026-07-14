@@ -1206,7 +1206,7 @@ def test_function_registry__extension_policy_is_separate_from_scalar_class() -> 
     """Assert extension-only functions can be scalar while remaining explicitly namespaced."""
     # -- Arrange --
     mut registry = FunctionRegistry.new()
-    extension_namespace = "inql_ext.geo"
+    extension_namespace = "incql_ext.geo"
 
     # -- Act --
     registry._add_entry(
@@ -1225,7 +1225,7 @@ def test_function_registry__extension_policy_is_separate_from_scalar_class() -> 
 
     # -- Assert --
     assert extension_entry.namespace == extension_namespace, "extension-only entries should preserve explicit namespace"
-    assert extension_entry.function_ref == "inql_ext.geo.st_srid", "extension-only entries should derive namespaced function refs"
+    assert extension_entry.function_ref == "incql_ext.geo.st_srid", "extension-only entries should derive namespaced function refs"
     assert extension_entry.policy_category == FunctionPolicyCategory.ExtensionOnly, "extension-only entries should expose policy category"
     assert extension_entry.function_class == FunctionClass.Scalar, "extension-only policy should not replace semantic function class"
     assert extension_entry.substrait.kind == SubstraitMappingKind.ExtensionFunction, "extension-only entries may declare Substrait extension mappings"
@@ -1257,7 +1257,7 @@ def test_function_registry__canonical_name_lookup_stays_core_scoped() -> None:
     """Assert explicit namespaces keep extension names from shadowing portable core names."""
     # -- Arrange --
     mut registry = FunctionRegistry.new()
-    extension_namespace = "inql_ext.crypto"
+    extension_namespace = "incql_ext.crypto"
 
     # -- Act --
     registry._add_entry(

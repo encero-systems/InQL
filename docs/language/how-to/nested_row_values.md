@@ -9,7 +9,7 @@ Use nested scalar helpers when each input row should remain one output row. Use 
 Build arrays with `array(...)`, then inspect them with row-level helpers such as `cardinality(...)`, `array_contains(...)`, and `element_at(...)`.
 
 ```incan
-from pub::inql.functions import array, array_contains, cardinality, col, element_at, lit
+from pub::incql.functions import array, array_contains, cardinality, col, element_at, lit
 
 projected = (
     events

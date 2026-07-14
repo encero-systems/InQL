@@ -7,7 +7,7 @@ from substrait.schema import RowColumnSpec, SubstraitPrimitiveKind
 
 pub def infer_csv_schema_columns(uri: str) -> Result[list[RowColumnSpec], SessionError]:
     """Read one CSV file and infer schema columns (name, nullability, primitive kind) from header + rows."""
-    # TODO(InQL RFC 010): This is still an intentionally high-level CSV inference pass.
+    # TODO(IncQL RFC 010): This is still an intentionally high-level CSV inference pass.
     # It only looks at header presence, empty cells, and coarse primitive-kind merging.
     # Revisit this once the fuller CSV ingestion contract lands so dialect rules, quoting/escaping,
     # richer typing, and stricter schema/header policies stop living behind this lightweight helper.

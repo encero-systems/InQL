@@ -1,26 +1,26 @@
-# InQL RFC 019: Window functions
+# IncQL RFC 019: Window functions
 
 - **Status:** Implemented
 - **Created:** 2026-04-27
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 003 (`query {}` blocks and relational authoring)
-  - InQL RFC 012 (scalar expressions and aggregate measures)
-  - InQL RFC 013 (function catalog program)
-  - InQL RFC 014 (function registry and catalog governance)
-  - InQL RFC 016 (core aggregate functions)
-- **Issue:** [InQL #36](https://github.com/encero-systems/InQL/issues/36)
-- **RFC PR:** [InQL #48](https://github.com/encero-systems/InQL/pull/48)
-- **Written against:** Incan v0.3-era InQL
+  - IncQL RFC 003 (`query {}` blocks and relational authoring)
+  - IncQL RFC 012 (scalar expressions and aggregate measures)
+  - IncQL RFC 013 (function catalog program)
+  - IncQL RFC 014 (function registry and catalog governance)
+  - IncQL RFC 016 (core aggregate functions)
+- **Issue:** [IncQL #36](https://github.com/encero-systems/IncQL/issues/36)
+- **RFC PR:** [IncQL #48](https://github.com/encero-systems/IncQL/pull/48)
+- **Written against:** Incan v0.3-era IncQL
 - **Shipped in:** v0.1
 
 ## Summary
 
-This RFC defines InQL window functions and window specifications: partitioning, ordering, frames, ranking functions, offset functions, and value functions. Window functions are explicitly not ordinary aggregates; they produce one value per input row while seeing a related set of rows defined by the window specification.
+This RFC defines IncQL window functions and window specifications: partitioning, ordering, frames, ranking functions, offset functions, and value functions. Window functions are explicitly not ordinary aggregates; they produce one value per input row while seeing a related set of rows defined by the window specification.
 
 ## Motivation
 
-Analytic dataframe work needs ranking, lag/lead comparisons, running totals, and first/last value access. Spark and SQL systems expose these through window functions, and DataFusion distinguishes ordered-set and aggregate behavior from window behavior. InQL should preserve that distinction instead of modeling window functions as ordinary aggregates or scalar helpers.
+Analytic dataframe work needs ranking, lag/lead comparisons, running totals, and first/last value access. Spark and SQL systems expose these through window functions, and DataFusion distinguishes ordered-set and aggregate behavior from window behavior. IncQL should preserve that distinction instead of modeling window functions as ordinary aggregates or scalar helpers.
 
 Window functions also force a clearer relation between row-level expressions and group-level aggregates. A windowed `sum` may produce one value per row, but it still has aggregate-like input semantics within a window frame.
 
@@ -43,7 +43,7 @@ Window functions also force a clearer relation between row-level expressions and
 Authors can rank rows within a partition using the builder surface:
 
 ```incan
-from pub::inql.functions import col, current_row, desc, lag, rank, sum, unbounded_preceding, window
+from pub::incql.functions import col, current_row, desc, lag, rank, sum, unbounded_preceding, window
 
 ranked = (
     orders
@@ -65,13 +65,13 @@ The exact query-block syntax may evolve, but authors should understand that a wi
 
 ## Reference-level explanation (precise rules)
 
-InQL must define a window specification containing partition expressions, ordering expressions, and an optional frame. Partition expressions and ordering expressions must be scalar expressions.
+IncQL must define a window specification containing partition expressions, ordering expressions, and an optional frame. Partition expressions and ordering expressions must be scalar expressions.
 
-InQL must define ranking functions `row_number`, `rank`, `dense_rank`, `percent_rank`, `cume_dist`, and `ntile`. Ranking functions must require an ordering unless a function's registry entry explicitly permits unordered use.
+IncQL must define ranking functions `row_number`, `rank`, `dense_rank`, `percent_rank`, `cume_dist`, and `ntile`. Ranking functions must require an ordering unless a function's registry entry explicitly permits unordered use.
 
-InQL must define offset functions `lag` and `lead`. Offset functions must accept a scalar input expression, an optional positive integer offset, and an optional default value whose type is compatible with the input expression.
+IncQL must define offset functions `lag` and `lead`. Offset functions must accept a scalar input expression, an optional positive integer offset, and an optional default value whose type is compatible with the input expression.
 
-InQL must define value functions `first_value`, `last_value`, and `nth_value`. Value and offset calls support explicit `RESPECT NULLS` and `IGNORE NULLS` metadata through method modifiers on the unplaced window call.
+IncQL must define value functions `first_value`, `last_value`, and `nth_value`. Value and offset calls support explicit `RESPECT NULLS` and `IGNORE NULLS` metadata through method modifiers on the unplaced window call.
 
 Windowed aggregate calls may reuse aggregate functions over a window specification. They must still obey aggregate input type rules, but their result is a row-level value in the surrounding projection.
 
@@ -89,13 +89,13 @@ Window frames may be row-based or range-based. Frame start and end must be expli
 
 Ordering null placement must follow the ordering expression rules defined by the scalar function catalog.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 Query blocks may expose SQL-style window syntax. Dataframe methods may expose builder-style window specs. Both must use the same function registry entries and window specification semantics.
 
 ### Compatibility / migration
 
-No current InQL function should be reclassified silently as a window function. Aggregate names reused in window contexts must be position-sensitive and diagnosable.
+No current IncQL function should be reclassified silently as a window function. Aggregate names reused in window contexts must be position-sensitive and diagnosable.
 
 ## Alternatives considered
 
@@ -111,9 +111,9 @@ No current InQL function should be reclassified silently as a window function. A
 
 ## Layers affected
 
-- **InQL specification** — window functions must be distinguished from scalar and aggregate functions.
-- **InQL library package** — public helpers should expose window function and window specification builders.
-- **Incan compiler / InQL authoring surfaces** — checked call signatures and future query syntax must enforce window function placement, partition expressions, ordering expressions, and frame bounds.
+- **IncQL specification** — window functions must be distinguished from scalar and aggregate functions.
+- **IncQL library package** — public helpers should expose window function and window specification builders.
+- **Incan compiler / IncQL authoring surfaces** — checked call signatures and future query syntax must enforce window function placement, partition expressions, ordering expressions, and frame bounds.
 - **Execution / interchange** — Prism and Substrait lowering must preserve window partitioning, ordering, frames, and function identity.
 - **Documentation** — docs should clearly separate aggregate functions from window functions.
 
@@ -122,7 +122,7 @@ No current InQL function should be reclassified silently as a window function. A
 ### Resolved
 
 - The implemented package surface exposes explicit `with_window_column(...)` projection-like placement rather than accepting window functions in arbitrary scalar-expression positions.
-- Ranking helpers require explicit `order_by(...)` in the window spec. InQL does not invent a silent default ordering.
+- Ranking helpers require explicit `order_by(...)` in the window spec. IncQL does not invent a silent default ordering.
 - Distribution, offset, and value helpers use the same relation-aware placement model as ranking helpers.
 - Aggregate helpers may be placed over windows through `AggregateMeasure.over(...)`; invalid aggregate modifier combinations are rejected before backend execution.
 - Window specs use a documented whole-partition default row frame, and explicit `rows_between(...)` / `range_between(...)` calls preserve frame bounds through Substrait lowering.

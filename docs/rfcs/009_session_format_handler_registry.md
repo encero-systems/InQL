@@ -1,4 +1,4 @@
-# InQL RFC 009: Session Format Handler Registry
+# IncQL RFC 009: Session Format Handler Registry
 
 - **Status:** Draft
 - **Created:** 2026-04-18
@@ -11,7 +11,7 @@
 
 ## Summary
 
-This RFC introduces a Session-owned format handler registry so InQL can support built-in and third-party source formats through one stable contract, instead of hardcoding format-specific branches in Session and backend integration code.
+This RFC introduces a Session-owned format handler registry so IncQL can support built-in and third-party source formats through one stable contract, instead of hardcoding format-specific branches in Session and backend integration code.
 
 ## Motivation
 
@@ -26,7 +26,7 @@ A handler registry makes format support extensible without destabilizing Session
 
 ## Goals
 
-- Define a stable InQL-level contract for source format handlers.
+- Define a stable IncQL-level contract for source format handlers.
 - Route built-in formats through the same handler contract as custom formats.
 - Let Session resolve format behavior by format key, not hardcoded branching.
 - Preserve typed Session errors and stable diagnostics when handlers fail.
@@ -44,7 +44,7 @@ A handler registry makes format support extensible without destabilizing Session
 Authors should be able to register a handler and then read data through that format key.
 
 ```incan
-from pub::inql import LazyFrame, Session
+from pub::incql import LazyFrame, Session
 from session.formats import SessionFormatHandler
 
 class FooFormatHandler with SessionFormatHandler:
@@ -92,7 +92,7 @@ Errors and diagnostics:
 
 ### Syntax
 
-No new core language syntax is required. This RFC adds InQL library API surface.
+No new core language syntax is required. This RFC adds IncQL library API surface.
 
 ### Semantics
 
@@ -104,7 +104,7 @@ A format handler owns format-specific adaptation only:
 
 A format handler does not own logical planning or optimization semantics.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 - RFC 004: Session execution boundaries remain unchanged; format handlers only provide source adaptation.
 - RFC 007: Prism remains backend-agnostic at logical planning level; handlers influence source setup before execution, not logical rewrite strategy.
@@ -130,8 +130,8 @@ A format handler does not own logical planning or optimization semantics.
 
 ## Layers affected
 
-- **InQL specification**: RFC 004 alignment must remain explicit; Session format behavior becomes contract-based.
-- **InQL library package**: Session API must add handler registration and format-key read path; built-ins must be re-expressed as handlers.
+- **IncQL specification**: RFC 004 alignment must remain explicit; Session format behavior becomes contract-based.
+- **IncQL library package**: Session API must add handler registration and format-key read path; built-ins must be re-expressed as handlers.
 - **Incan compiler**: no mandatory syntax/parser work in first slice; typechecking/emission must continue to support method calls and generic read APIs used by handler-based Session flows.
 - **Execution / interchange**: source registration path must be handler-driven before backend planning/execution.
 - **Documentation**: Session and execution-context docs must describe handler registration and format-key behavior.

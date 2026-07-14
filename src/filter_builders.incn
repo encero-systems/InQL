@@ -1,5 +1,5 @@
 """
-Filter-oriented builder surface for the current InQL scalar-expression slice.
+Filter-oriented builder surface for the current IncQL scalar-expression slice.
 
 These names provide predicate-friendly helper spellings over the same scalar-expression model used by filters,
 projections, grouping keys, and aggregate inputs.

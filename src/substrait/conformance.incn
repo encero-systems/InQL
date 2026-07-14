@@ -1,5 +1,5 @@
 """
-Public facade for InQL's Substrait conformance surface.
+Public facade for IncQL's Substrait conformance surface.
 
 This module re-exports the two production-owned conformance layers:
 
@@ -8,7 +8,7 @@ This module re-exports the two production-owned conformance layers:
 
 The split keeps ownership clean:
 
-- catalog modules describe what InQL claims
+- catalog modules describe what IncQL claims
 - validator modules check whether plans satisfy those claims
 - tests own fixture-plan construction
 

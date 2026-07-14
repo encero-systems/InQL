@@ -232,7 +232,7 @@ pub async def datafusion_write_parquet_async(
 
 
 async def _dataframe_from_plan(ctx: SessionContext, plan: Plan) -> Result[RustDataFrame, BackendError]:
-    """Build a DataFusion DataFrame, including InQL-owned relation bridges."""
+    """Build a DataFusion DataFrame, including IncQL-owned relation bridges."""
     root = root_rel(plan.clone())
     match _window_rel(root.clone()):
         Some(_) => return await _dataframe_from_window_root_plan(ctx, plan)
@@ -264,7 +264,7 @@ async def _dataframe_from_window_root_plan(ctx: SessionContext, plan: Plan) -> R
 async def _dataframe_from_non_window_plan(ctx: SessionContext, plan: Plan) -> Result[RustDataFrame, BackendError]:
     """Build a DataFusion DataFrame for plans that do not have a window root."""
     root = root_rel(plan.clone())
-    # DataFusion's stock Substrait consumer cannot plan InQL generator ExtensionSingleRel nodes. Root generators can
+    # DataFusion's stock Substrait consumer cannot plan IncQL generator ExtensionSingleRel nodes. Root generators can
     # execute directly; nested generators are first materialized and then replaced by execution-only temp reads.
     match _generator_extension(root):
         Some(extension) => return await _dataframe_from_generator_extension(ctx, extension)
@@ -328,13 +328,13 @@ async def _dataframe_from_standard_plan(ctx: SessionContext, plan: Plan) -> Resu
     """Build a DataFusion DataFrame through the stock Substrait consumer."""
     match _typed_sketch_extension_function_name(plan.clone()):
         Some(function_name) =>
-            message = f"DataFusion backend does not support typed sketch execution for `{function_name}`; InQL preserved the typed sketch plan, but this adapter has no sketch runtime implementation"
+            message = f"DataFusion backend does not support typed sketch execution for `{function_name}`; IncQL preserved the typed sketch plan, but this adapter has no sketch runtime implementation"
             return Err(backend_error(BackendErrorKind.BackendPlanningError, message))
         None => pass
 
     match _typed_variant_extension_function_name(plan.clone()):
         Some(function_name) =>
-            message = f"DataFusion backend does not support variant execution for `{function_name}`; InQL preserved the typed variant plan, but this adapter has no variant runtime implementation"
+            message = f"DataFusion backend does not support variant execution for `{function_name}`; IncQL preserved the typed variant plan, but this adapter has no variant runtime implementation"
             return Err(backend_error(BackendErrorKind.BackendPlanningError, message))
         None => pass
 
@@ -353,7 +353,7 @@ async def _dataframe_from_consumer_plan(
 
 
 async def _execute_logical_plan(ctx: SessionContext, logical_plan: LogicalPlan) -> Result[RustDataFrame, BackendError]:
-    """Execute one DataFusion logical plan while preserving InQL's backend error envelope."""
+    """Execute one DataFusion logical plan while preserving IncQL's backend error envelope."""
     match await ctx.execute_logical_plan(logical_plan):
         Ok(df) => return Ok(df)
         Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
@@ -409,7 +409,7 @@ def _dataframe_from_window_api(
     window_rel: ConsistentPartitionWindowRel,
     output_columns: list[str],
 ) -> Result[RustDataFrame, BackendError]:
-    """Apply one InQL window relation through DataFusion's typed expression API."""
+    """Apply one IncQL window relation through DataFusion's typed expression API."""
     select_exprs = _window_select_exprs(ctx, child_columns, window_rel, output_columns)?
     match child_df.select(select_exprs):
         Ok(df) => return Ok(df)
@@ -420,11 +420,11 @@ async def _dataframe_from_generator_extension(
     ctx: SessionContext,
     extension: ExtensionSingleRel,
 ) -> Result[RustDataFrame, BackendError]:
-    """Build a DataFusion DataFrame for one InQL generator relation-extension root."""
+    """Build a DataFusion DataFrame for one IncQL generator relation-extension root."""
     payload = _decode_generator_payload(extension.clone())?
     child = _generator_input_rel(extension.clone())?
     child_columns = relation_output_columns(child.clone())
-    # Generator arguments are ordinary InQL scalar expressions. Project them into stable temp columns first so the
+    # Generator arguments are ordinary IncQL scalar expressions. Project them into stable temp columns first so the
     # DataFusion unnest API can operate on columns rather than on arbitrary Substrait expressions.
     temp_columns = _generator_temp_columns(len(payload.arguments))
     projected_names = _generator_projected_root_names(
@@ -533,7 +533,7 @@ def _extend_materializations(
 
 def _replace_materialized_generator_relations(rel: Rel, path: str) -> Rel:
     """Replace previously materialized generator relation nodes with temp-view reads."""
-    # This is an adapter-only rewrite. The InQL semantic plan remains a generator extension relation; only DataFusion's
+    # This is an adapter-only rewrite. The IncQL semantic plan remains a generator extension relation; only DataFusion's
     # execution plan sees the temporary table scan.
     match _generator_extension(rel.clone()):
         Some(_) => return read_named_table_rel(_materialized_generator_table_name(path))
@@ -782,7 +782,7 @@ def _replace_extension_generator_child(original: Rel, extension: ExtensionSingle
 
 def _materialized_generator_table_name(path: str) -> str:
     """Return the internal DataFusion temp-view name for one materialized generator relation path."""
-    return f"__inql_generator_materialized_{path}"
+    return f"__incql_generator_materialized_{path}"
 
 
 def _collect_materialized_window_relations(rel: Rel, path: str) -> list[MaterializedWindowRelation]:
@@ -1048,7 +1048,7 @@ def _replace_extension_window_child(original: Rel, extension: ExtensionSingleRel
 
 def _materialized_window_table_name(path: str) -> str:
     """Return the internal DataFusion temp-view name for one materialized window relation path."""
-    return f"__inql_window_materialized_{path}"
+    return f"__incql_window_materialized_{path}"
 
 
 async def _register_materialized_dataframe(
@@ -1064,7 +1064,7 @@ async def _register_materialized_dataframe(
     _register_materialized_schema_from_batch(f"{table_name}", batches[0])
     schema = batches[0].schema()
     # Non-empty outputs are frozen into a MemTable so the stock consumer reads a concrete table instead of an
-    # InQL-specific generator extension relation.
+    # IncQL-specific generator extension relation.
     match MemTable.try_new(schema, [batches]):
         Ok(table) => return _register_materialized_memtable(ctx, table_name, table)
         Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
@@ -1107,7 +1107,7 @@ def _register_materialized_schema_from_batch(table_name: str, batch: RecordBatch
 
 
 def _substrait_kind_for_arrow_type_name(type_name: str) -> SubstraitPrimitiveKind:
-    """Map the current DataFusion primitive output type names into InQL's minimal Substrait schema kinds."""
+    """Map the current DataFusion primitive output type names into IncQL's minimal Substrait schema kinds."""
     if type_name.starts_with("List(") or type_name.starts_with("LargeList("):
         if type_name.contains("Int64") or type_name.contains("Int32") or type_name.contains("UInt64") or type_name.contains(
             "UInt32",
@@ -1150,7 +1150,7 @@ def _generator_projected_root_names(
 
 
 def _generator_extension(rel: Rel) -> Option[ExtensionSingleRel]:
-    """Return the root generator extension relation when the plan root is an InQL generator."""
+    """Return the root generator extension relation when the plan root is an IncQL generator."""
     match rel.rel_type:
         Some(RelType.ExtensionSingle(extension)) =>
             if let Some(detail) = extension.detail.clone():
@@ -1161,7 +1161,7 @@ def _generator_extension(rel: Rel) -> Option[ExtensionSingleRel]:
 
 
 def _window_rel(rel: Rel) -> Option[ConsistentPartitionWindowRel]:
-    """Return the root window relation when the plan root is an InQL analytic window."""
+    """Return the root window relation when the plan root is an IncQL analytic window."""
     match rel.rel_type:
         Some(RelType.Window(window_rel)) => return Some(window_rel.as_ref().clone())
         _ => return None
@@ -1180,7 +1180,7 @@ def _window_select_exprs(
     window_rel: ConsistentPartitionWindowRel,
     output_columns: list[str],
 ) -> Result[list[DataFusionExpr], BackendError]:
-    """Build the typed DataFusion projection for one lowered InQL window relation."""
+    """Build the typed DataFusion projection for one lowered IncQL window relation."""
     final_columns = _window_final_columns(input_columns.clone(), window_rel.clone(), output_columns)
     return Ok(
         [_window_select_expr(ctx.clone(), input_columns.clone(), window_rel.clone(), output_column)? for output_column in final_columns],
@@ -1427,7 +1427,7 @@ def _datafusion_window_function_definition(
     ctx: SessionContext,
     function_name: str,
 ) -> Result[DataFusionWindowFunctionDefinition, BackendError]:
-    """Resolve one InQL window function against DataFusion's function registry."""
+    """Resolve one IncQL window function against DataFusion's function registry."""
     state = ctx.state()
     if let Ok(udwf) = state.udwf(function_name):
         return Ok(DataFusionWindowFunctionDefinition.WindowUDF(udwf))
@@ -1536,14 +1536,14 @@ def _datafusion_window_distinct(invocation: RustI32) -> bool:
 
 
 def _window_output_expr(function_name: str, expr: DataFusionExpr) -> DataFusionExpr:
-    """Cast DataFusion unsigned analytic outputs to InQL's signed integer surface."""
+    """Cast DataFusion unsigned analytic outputs to IncQL's signed integer surface."""
     if _window_output_needs_i64_cast(function_name):
         return DataFusionExpr.Cast(DataFusionCast.new(Box.new(expr), ArrowDataType.Int64))
     return expr
 
 
 def _datafusion_alias(expr: DataFusionExpr, output_name: str) -> DataFusionExpr:
-    """Attach one InQL output name to a DataFusion expression."""
+    """Attach one IncQL output name to a DataFusion expression."""
     return DataFusionExpr.Alias(DataFusionAlias(expr=Box.new(expr), relation=None, name=f"{output_name}", metadata=None))
 
 
@@ -1553,7 +1553,7 @@ def _datafusion_column(column_name: str) -> DataFusionExpr:
 
 
 def _datafusion_null_treatment(options: list[FunctionOption]) -> Option[DataFusionNullTreatment]:
-    """Translate optional InQL null treatment metadata into DataFusion's window model."""
+    """Translate optional IncQL null treatment metadata into DataFusion's window model."""
     for option in options:
         if option.name == WINDOW_NULL_TREATMENT_OPTION and len(option.preference) > 0:
             if option.preference[0] == "ignore_nulls":
@@ -1569,7 +1569,7 @@ def _unsupported_window_expr(message: str) -> BackendError:
 
 
 def _window_output_needs_i64_cast(function_name: str) -> bool:
-    """Return whether DataFusion's unsigned analytic result should be cast into InQL's i64 surface type."""
+    """Return whether DataFusion's unsigned analytic result should be cast into IncQL's i64 surface type."""
     return (
         function_name == "count"
         or function_name == "row_number"
@@ -1603,7 +1603,7 @@ def _generator_input_rel(extension: ExtensionSingleRel) -> Result[Rel, BackendEr
 
 
 def _decode_generator_payload(extension: ExtensionSingleRel) -> Result[GeneratorExtensionPayload, BackendError]:
-    """Decode one InQL generator extension payload."""
+    """Decode one IncQL generator extension payload."""
     match extension.detail:
         Some(detail) =>
             match decode_generator_extension_payload(detail.value):
@@ -1634,7 +1634,7 @@ def _apply_generator_dataframe_shape(
 
 
 def _unnest_columns(df: RustDataFrame, columns: list[str], preserve_nulls: bool) -> Result[RustDataFrame, BackendError]:
-    """Call DataFusion unnest with the InQL inner/outer null-preservation policy."""
+    """Call DataFusion unnest with the IncQL inner/outer null-preservation policy."""
     options = UnnestOptions.new().with_preserve_nulls(preserve_nulls)
     mut datafusion_columns: list[Column] = []
     for column in columns:
@@ -1651,28 +1651,28 @@ def _unnest_columns(df: RustDataFrame, columns: list[str], preserve_nulls: bool)
 
 
 async def _collect_dataframe_batches(df: RustDataFrame) -> Result[list[RecordBatch], BackendError]:
-    """Collect one DataFusion frame and preserve InQL's backend execution error envelope."""
+    """Collect one DataFusion frame and preserve IncQL's backend execution error envelope."""
     match await df.collect():
         Ok(batches) => return Ok(batches)
         Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
 
 
 async def _render_dataframe_preview(df: RustDataFrame) -> Result[str, BackendError]:
-    """Render one DataFusion preview table while preserving InQL's backend error envelope."""
+    """Render one DataFusion preview table while preserving IncQL's backend error envelope."""
     match await df.to_string():
         Ok(rendered) => return Ok(rendered)
         Err(err) => return Err(backend_error(BackendErrorKind.BackendExecutionError, err.to_string()))
 
 
 async def _write_dataframe_csv(df: RustDataFrame, uri: str) -> Result[None, BackendError]:
-    """Write one DataFusion frame to CSV while preserving InQL's sink error envelope."""
+    """Write one DataFusion frame to CSV while preserving IncQL's sink error envelope."""
     match await df.write_csv(uri, DataFrameWriteOptions.new(), None):
         Ok(_) => return Ok(None)
         Err(err) => return Err(backend_error(BackendErrorKind.BackendSinkError, err.to_string()))
 
 
 async def _write_dataframe_parquet(df: RustDataFrame, uri: str) -> Result[None, BackendError]:
-    """Write one DataFusion frame to Parquet while preserving InQL's sink error envelope."""
+    """Write one DataFusion frame to Parquet while preserving IncQL's sink error envelope."""
     match await df.write_parquet(uri, DataFrameWriteOptions.new(), None):
         Ok(_) => return Ok(None)
         Err(err) => return Err(backend_error(BackendErrorKind.BackendSinkError, err.to_string()))
@@ -1683,14 +1683,14 @@ def _unnest_plan_builder(
     datafusion_columns: list[Column],
     options: UnnestOptions,
 ) -> Result[LogicalPlanBuilder, BackendError]:
-    """Create a DataFusion unnest builder while preserving InQL's planning error envelope."""
+    """Create a DataFusion unnest builder while preserving IncQL's planning error envelope."""
     match LogicalPlanBuilder.from(logical_plan).unnest_columns_with_options(datafusion_columns, options):
         Ok(builder) => return Ok(builder)
         Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
 
 
 def _build_logical_plan(builder: LogicalPlanBuilder) -> Result[LogicalPlan, BackendError]:
-    """Build a DataFusion logical plan while preserving InQL's planning error envelope."""
+    """Build a DataFusion logical plan while preserving IncQL's planning error envelope."""
     match builder.build():
         Ok(plan) => return Ok(plan)
         Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
@@ -1701,7 +1701,7 @@ def _rename_generator_output_column(
     source_name: str,
     output_name: str,
 ) -> Result[RustDataFrame, BackendError]:
-    """Rename one generated DataFusion output column while preserving InQL's planning error envelope."""
+    """Rename one generated DataFusion output column while preserving IncQL's planning error envelope."""
     match df.with_column_renamed(source_name, output_name):
         Ok(next_df) => return Ok(next_df)
         Err(err) => return Err(backend_error(BackendErrorKind.BackendPlanningError, err.to_string()))
@@ -1712,7 +1712,7 @@ def _rename_flat_generator_outputs(
     temp_columns: list[str],
     output_columns: list[str],
 ) -> Result[RustDataFrame, BackendError]:
-    """Rename generated scalar/list outputs from temporary names to InQL aliases."""
+    """Rename generated scalar/list outputs from temporary names to IncQL aliases."""
     if len(temp_columns) != len(output_columns):
         return Err(backend_error(BackendErrorKind.BackendPlanningError, "generator payload/output arity mismatch"))
     mut current = df
@@ -1726,9 +1726,9 @@ def _rename_struct_generator_outputs(
     temp_column: str,
     output_columns: list[str],
 ) -> Result[RustDataFrame, BackendError]:
-    """Rename generated struct fields from temporary qualified names to InQL aliases."""
+    """Rename generated struct fields from temporary qualified names to IncQL aliases."""
     mut current = df
-    # DataFusion names unnested struct fields as `temp.field`; the public InQL result should expose only the declared
+    # DataFusion names unnested struct fields as `temp.field`; the public IncQL result should expose only the declared
     # generator output aliases.
     for output_column in output_columns:
         field_name = f"{temp_column}.{output_column}"
@@ -1746,7 +1746,7 @@ def _extended_columns(input_columns: list[str], appended_columns: list[str]) -> 
 
 def _generator_temp_columns(argument_count: int) -> list[str]:
     """Return stable temporary column aliases for lowered generator argument expressions."""
-    return [f"__inql_generator_arg_{idx}" for idx in range(argument_count)]
+    return [f"__incql_generator_arg_{idx}" for idx in range(argument_count)]
 
 
 def _preserve_generator_nulls(extension_uri: str) -> bool:
@@ -1807,7 +1807,7 @@ def _consumer_plan_from_current_plan(plan: Plan) -> Result[ConsumerPlan, Backend
 
 def _datafusion_producer_plan(plan: Plan) -> Plan:
     """Return a producer plan with extension names adapted for the DataFusion consumer only."""
-    # Keep InQL/Substrait plans semantically owned by InQL. This rewrite exists only because DataFusion's Substrait
+    # Keep IncQL/Substrait plans semantically owned by IncQL. This rewrite exists only because DataFusion's Substrait
     # consumer recognizes different implementation names for these aggregate functions.
     return Plan(
         version=plan.version,

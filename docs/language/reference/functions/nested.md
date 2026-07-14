@@ -40,7 +40,7 @@ Generator or table-valued operations such as row-expanding `explode(...)` are se
 ## Semantics
 
 - Array indexing is one-based for `element_at(...)`, `array_position(...)`, and `array_slice(...)`.
-- `element_at(...)` currently maps to the portable array-element adapter path. Out-of-range behavior follows the current backend adapter's recoverable result until InQL has a richer static/runtime error-policy split for strict versus try-style element access.
+- `element_at(...)` currently maps to the portable array-element adapter path. Out-of-range behavior follows the current backend adapter's recoverable result until IncQL has a richer static/runtime error-policy split for strict versus try-style element access.
 - `array_flatten(...)` is intentionally named to stay distinct from the relation-shaping generator `flatten(...)`.
 - Grouping or ordering by nested values is not documented as portable until equality and ordering semantics for arrays, maps, and structs are specified.
 - For task-oriented usage, see [Work with nested row values](../../how-to/nested_row_values.md).
