@@ -9,7 +9,7 @@ Use sketch helpers when approximate state itself needs to flow through a plan. U
 Aggregate source values into typed sketch state with `hll_sketch(...)`.
 
 ```incan
-from pub::inql.functions import col, hll_sketch
+from pub::incql.functions import col, hll_sketch
 
 daily = events.group_by([col("event_date")]).agg([
     hll_sketch(col("user_id"), precision=14),
@@ -25,7 +25,7 @@ literal_seed = events.group_by([col("event_date")]).agg([
 Reference sketch columns with matching logical type metadata, then merge and estimate them.
 
 ```incan
-from pub::inql.sketches import hll_estimate, hll_merge, hll_type, sketch_col
+from pub::incql.sketches import hll_estimate, hll_merge, hll_type, sketch_col
 
 monthly = daily.group_by([col("month")]).agg([
     hll_merge(sketch_col("hll_sketch_user_id", hll_type(precision=14))),

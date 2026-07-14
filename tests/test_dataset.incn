@@ -1,7 +1,7 @@
 """Test: dataset types and RFC 001 contract (types, hierarchy, functions import)."""
 
 from std.testing import fail_t, parametrize
-from metadata import inql_version
+from metadata import incql_version
 from aggregate_builders import AggregateKind
 from dataset import DataSet, BoundedDataSet, UnboundedDataSet, DataFrame, LazyFrame, DataStream, lazy_frame_named_table
 from dataset.materialization import DataFrameMaterialization
@@ -324,16 +324,16 @@ def test_type_contracts__concrete_and_trait_types_match_generic_arguments() -> N
     _touch(ub)
 
 
-def test_version__inql_version_is_published() -> None:
-    """InQL version should be available from metadata."""
+def test_version__incql_version_is_published() -> None:
+    """IncQL version should be available from metadata."""
     # -- Arrange --
     expected_version = "0.1.0"
 
     # -- Act --
-    version = inql_version()
+    version = incql_version()
 
     # -- Assert --
-    assert version == expected_version, "InQL version should be 0.1.0"
+    assert version == expected_version, "IncQL version should be 0.1.0"
 
 
 def test_dataset_ops__method_wrapper_matches_canonical_function() -> None:

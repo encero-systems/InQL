@@ -1,4 +1,4 @@
-"""Binary payload for InQL generator relation-extension nodes."""
+"""Binary payload for IncQL generator relation-extension nodes."""
 
 from rust::incan_stdlib::errors import raise_value_error
 from rust::prost import Message
@@ -6,7 +6,7 @@ from rust::std::string import String as RustString
 from rust::substrait::proto import Expression
 from std.io import BytesIO, Endian, IoError, _BytesIO
 
-# ASCII "INQLGEN1"; this lets decoders reject unrelated relation-extension payloads before reading length fields.
+# ASCII "INCQLGEN1"; this lets decoders reject unrelated relation-extension payloads before reading length fields.
 const _MAGIC: list[int] = [73, 78, 81, 76, 71, 69, 78, 49]
 
 
@@ -117,7 +117,7 @@ def _write_payload_bytes(out: _BytesIO, data: bytes) -> None:
 
 def _write_magic(out: _BytesIO) -> None:
     """Write the generator payload magic through std.io."""
-    _write_payload_bytes(out, b"INQLGEN1")
+    _write_payload_bytes(out, b"INCQLGEN1")
     return
 
 

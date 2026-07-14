@@ -1,5 +1,5 @@
 [package]
-name = "inql_vocab_companion"
+name = "incql_vocab_companion"
 version = "0.1.0"
 edition = "2021"
 

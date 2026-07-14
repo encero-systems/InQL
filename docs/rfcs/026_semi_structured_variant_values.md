@@ -1,22 +1,22 @@
-# InQL RFC 026: Semi-structured variant logical values
+# IncQL RFC 026: Semi-structured variant logical values
 
 - **Status:** Implemented
 - **Created:** 2026-05-28
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 002 (Apache Substrait integration)
-  - InQL RFC 014 (function registry and catalog governance)
-  - InQL RFC 020 (nested data functions)
-  - InQL RFC 022 (semi-structured and format functions)
-  - InQL RFC 024 (function extension policy)
-- **Issue:** [InQL #52](https://github.com/encero-systems/InQL/issues/52)
-- **RFC PR:** [InQL #56](https://github.com/encero-systems/InQL/pull/56)
-- **Written against:** Incan v0.3-era InQL
+  - IncQL RFC 002 (Apache Substrait integration)
+  - IncQL RFC 014 (function registry and catalog governance)
+  - IncQL RFC 020 (nested data functions)
+  - IncQL RFC 022 (semi-structured and format functions)
+  - IncQL RFC 024 (function extension policy)
+- **Issue:** [IncQL #52](https://github.com/encero-systems/IncQL/issues/52)
+- **RFC PR:** [IncQL #56](https://github.com/encero-systems/IncQL/pull/56)
+- **Written against:** Incan v0.3-era IncQL
 - **Shipped in:** v0.1
 
 ## Summary
 
-This RFC defines semi-structured variant logical values for InQL. A variant value is distinct from ordinary `str` and `bytes` payloads: it carries a logical kind such as null, boolean, integer, floating point, string, timestamp, array, or object, and InQL predicates inspect that logical value rather than reparsing arbitrary JSON text.
+This RFC defines semi-structured variant logical values for IncQL. A variant value is distinct from ordinary `str` and `bytes` payloads: it carries a logical kind such as null, boolean, integer, floating point, string, timestamp, array, or object, and IncQL predicates inspect that logical value rather than reparsing arbitrary JSON text.
 
 ## Core model
 
@@ -24,13 +24,13 @@ This RFC defines semi-structured variant logical values for InQL. A variant valu
 2. Variant null and relation-level SQL null are distinct. Variant predicates must not erase that distinction.
 3. Type predicates such as `typeof`, `is_array`, `is_object`, `is_integer`, `is_timestamp`, and `is_null_value` operate on variant expressions, not raw strings.
 4. RFC 022 string-backed JSON and CSV payload helpers remain stable; this RFC may add variant-returning parse helpers, but it must not silently change existing helper return types.
-5. Backend adapters may implement, emulate, or reject variant operations, but backend-native variant semantics do not define the portable InQL contract.
+5. Backend adapters may implement, emulate, or reject variant operations, but backend-native variant semantics do not define the portable IncQL contract.
 
 ## Motivation
 
-JSON and semi-structured payloads are common in data pipelines, but predicates such as `is_array(...)` and `typeof(...)` are ambiguous if InQL only has string payloads. `is_array(col("payload"))` could mean "parse this string as JSON and inspect the root value", or it could mean "inspect a typed semi-structured value that was already parsed by the logical plan." Those are different contracts with different null behavior, error behavior, and backend portability.
+JSON and semi-structured payloads are common in data pipelines, but predicates such as `is_array(...)` and `typeof(...)` are ambiguous if IncQL only has string payloads. `is_array(col("payload"))` could mean "parse this string as JSON and inspect the root value", or it could mean "inspect a typed semi-structured value that was already parsed by the logical plan." Those are different contracts with different null behavior, error behavior, and backend portability.
 
-If InQL accepts variant predicate names before defining variant values, it either squats on better names with string-parser semantics or leaves backend adapters to decide meaning at execution time. This RFC records the missing logical value model so those predicates have a precise home.
+If IncQL accepts variant predicate names before defining variant values, it either squats on better names with string-parser semantics or leaves backend adapters to decide meaning at execution time. This RFC records the missing logical value model so those predicates have a precise home.
 
 ## Goals
 
@@ -53,8 +53,8 @@ If InQL accepts variant predicate names before defining variant values, it eithe
 Authors should parse payload text into a variant value before using variant predicates:
 
 ```incan
-from pub::inql.functions import col, is_array, is_null_value, parse_variant_json, typeof, variant_get
-from pub::inql.variants import variant_col
+from pub::incql.functions import col, is_array, is_null_value, parse_variant_json, typeof, variant_get
+from pub::incql.variants import variant_col
 
 events_with_payload = events.with_column("payload_value", parse_variant_json(col("payload")))
 
@@ -70,7 +70,7 @@ Authors who only need text validation or normalized JSON strings should keep usi
 
 ## Reference-level explanation (precise rules)
 
-InQL defines `VariantLogicalType` and `VariantExpr`. A variant logical type records a `VariantKind` and `VariantEncoding`. The implemented portable kind set is `any`, `null`, `boolean`, `integer`, `float`, `string`, `timestamp`, `array`, and `object`. The first implemented encoding is JSON.
+IncQL defines `VariantLogicalType` and `VariantExpr`. A variant logical type records a `VariantKind` and `VariantEncoding`. The implemented portable kind set is `any`, `null`, `boolean`, `integer`, `float`, `string`, `timestamp`, `array`, and `object`. The first implemented encoding is JSON.
 
 Variant predicates must accept variant expressions. They must not accept ordinary `str` expressions as an implicit parse-and-inspect shortcut. Authors must use an explicit variant parse or cast helper when starting from JSON text.
 
@@ -78,13 +78,13 @@ Variant predicates must accept variant expressions. They must not accept ordinar
 
 `is_null_value(expr)`, `is_boolean(expr)`, `is_integer(expr)`, `is_float(expr)`, `is_string(expr)`, `is_timestamp(expr)`, `is_array(expr)`, and `is_object(expr)` must inspect the variant kind. `is_integer(...)` must be true only for integer variant values, not floating point values whose runtime value happens to have no fractional component. `is_null_value(...)` must be true only for semi-structured null values.
 
-SQL null must remain distinct from variant null. If a predicate input is SQL null rather than a present variant value, the predicate result must follow InQL's scalar null behavior for missing inputs rather than returning true for `is_null_value(...)`.
+SQL null must remain distinct from variant null. If a predicate input is SQL null rather than a present variant value, the predicate result must follow IncQL's scalar null behavior for missing inputs rather than returning true for `is_null_value(...)`.
 
 `parse_variant_json(payload)` is the strict JSON-to-variant helper. `try_parse_variant_json(payload)` is the recoverable form. Their payload parameter accepts `StrValueOrColumn`, so authors may pass a string literal, a string column reference, or a string-producing expression without wrapping primitive values in `lit(...)`. Strict parse helpers must fail malformed payloads according to registry error metadata. Recoverable parse helpers must return SQL null or another explicitly documented recoverable result for malformed payloads. A JSON `null` payload must produce a present variant null, not SQL null.
 
 `variant_get(expr, path)` accesses a variant path. Literal path strings are validated as beginning with `$`. String columns or string-producing expressions are accepted as dynamic paths and are validated at execution time by the implementation that evaluates the expression. The current path spelling matches the RFC 022 JSON path helper spelling so authors do not learn two root-marker conventions, but it remains a variant operation rather than a JSON-text extraction shortcut. Variant field/path access must preserve whether a missing path produced SQL null, variant null, or a present value. If a backend cannot preserve that distinction, the adapter must reject the operation or require an explicit compatibility mode.
 
-Substrait lowering preserves variant logical type identity in registry metadata and scalar function options. A backend adapter may map variant values and predicates to native functions only when it preserves the InQL variant contract. The DataFusion adapter currently reports a backend planning diagnostic for typed variant execution because it has no variant runtime implementation.
+Substrait lowering preserves variant logical type identity in registry metadata and scalar function options. A backend adapter may map variant values and predicates to native functions only when it preserves the IncQL variant contract. The DataFusion adapter currently reports a backend planning diagnostic for typed variant execution because it has no variant runtime implementation.
 
 ## Design details
 
@@ -94,11 +94,11 @@ This RFC does not require new language syntax. Variant values and predicates may
 
 ### Semantics
 
-Variant arrays and objects are semi-structured values, not InQL relation shapes. They may be projected, inspected, and passed to variant-aware helpers. They must not change relation cardinality unless used with a generator or table-valued function that explicitly defines such a change.
+Variant arrays and objects are semi-structured values, not IncQL relation shapes. They may be projected, inspected, and passed to variant-aware helpers. They must not change relation cardinality unless used with a generator or table-valued function that explicitly defines such a change.
 
-Variant ordering, equality, grouping, and serialization are not implicit. If InQL supports those operations for variants, the operation must define kind ordering, null behavior, and backend compatibility rather than inheriting an arbitrary backend default.
+Variant ordering, equality, grouping, and serialization are not implicit. If IncQL supports those operations for variants, the operation must define kind ordering, null behavior, and backend compatibility rather than inheriting an arbitrary backend default.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 RFC 020 nested data functions operate on typed array, map, and struct expressions. Variant arrays and objects may interoperate with those functions only through explicit conversion rules.
 
@@ -106,7 +106,7 @@ RFC 022 format helpers that return normalized JSON or CSV text remain string-bac
 
 Prism may use variant kind metadata for validation, projection pruning, and rewrite safety. Prism must not rewrite variant operations in ways that collapse SQL null and variant null, drop schema-directed typed scalar information, or turn variant predicates into text parser calls.
 
-The Substrait boundary remains between InQL semantics and backend execution. DataFusion or any other backend may be an implementation target, but backend-native variant names, path syntaxes, and null rules do not define the portable InQL semantics.
+The Substrait boundary remains between IncQL semantics and backend execution. DataFusion or any other backend may be an implementation target, but backend-native variant names, path syntaxes, and null rules do not define the portable IncQL semantics.
 
 ### Compatibility / migration
 
@@ -121,7 +121,7 @@ The implemented public model is:
 - Parse/access helpers: `parse_variant_json(...)`, `try_parse_variant_json(...)`, and `variant_get(...)`.
 - Inspection helpers: `typeof(...)` returns `StringColumnExpr`; predicates such as `is_null_value(...)`, `is_boolean(...)`, `is_integer(...)`, `is_float(...)`, `is_string(...)`, `is_timestamp(...)`, `is_array(...)`, and `is_object(...)` return `BoolColumnExpr`.
 
-Each public helper is registry-backed with explicit variant policy metadata. Variant helpers lower through InQL-owned Substrait extension mappings and carry variant kind, encoding, and parse mode as scalar function options where needed.
+Each public helper is registry-backed with explicit variant policy metadata. Variant helpers lower through IncQL-owned Substrait extension mappings and carry variant kind, encoding, and parse mode as scalar function options where needed.
 
 ## Alternatives considered
 
@@ -139,8 +139,8 @@ Each public helper is registry-backed with explicit variant policy metadata. Var
 
 ## Layers affected
 
-- **InQL specification** — variant values must be distinct from strings, bytes, typed nested values, and sketch values.
-- **InQL library package** — public helpers must expose variant parse, path access, and predicate functions only with explicit registry metadata.
+- **IncQL specification** — variant values must be distinct from strings, bytes, typed nested values, and sketch values.
+- **IncQL library package** — public helpers must expose variant parse, path access, and predicate functions only with explicit registry metadata.
 - **Incan compiler** — typechecking may need enough helper metadata to reject string expressions where variant expressions are required.
 - **Execution / interchange** — Prism, Substrait lowering, and backend adapters must preserve variant type identity and SQL-null versus variant-null behavior or reject unsupported operations.
 - **Documentation** — function references must present variant predicates as variant operations, not as JSON-text parser shortcuts.

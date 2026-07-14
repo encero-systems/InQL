@@ -1,5 +1,5 @@
 """
-Explicit builder helpers for the current InQL relational surface.
+Explicit builder helpers for the current IncQL relational surface.
 
 Each helper lives in a logical family submodule with declaration-side registry metadata and local inline tests. This
 facade keeps the public import surface stable without owning a second machine-readable registry list.

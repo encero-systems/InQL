@@ -1,6 +1,6 @@
-# InQL examples
+# IncQL examples
 
-Examples demonstrating InQL model-shaped dataset types, scalar-expression builders, and Session execution patterns.
+Examples demonstrating IncQL model-shaped dataset types, scalar-expression builders, and Session execution patterns.
 
 ## Overview
 
@@ -45,7 +45,7 @@ incan run examples/advanced_retail_analytics.incn
 - a grouped paid-order rollup using `sum`, `avg`, `min`, `max`, `count`, and `count_distinct`
 - a generated tag view that composes window ranking with `explode(...)`
 
-`advanced_retail_query_blocks/` is the same fixture exercised from a standalone dependency consumer. It imports `pub::inql` and runs query blocks for the high-value projection, grouped rollup, and generated-tag window view:
+`advanced_retail_query_blocks/` is the same fixture exercised from a standalone dependency consumer. It imports `pub::incql` and runs query blocks for the high-value projection, grouped rollup, and generated-tag window view:
 
 ```incan
 high_value = query {
@@ -78,14 +78,14 @@ rollup = query {
 
 ## What these examples show
 
-These examples document the API patterns for the InQL dataset and Session surface:
+These examples document the API patterns for the IncQL dataset and Session surface:
 
 1. Model contracts are visible at source boundaries as `LazyFrame[OrderId]`, `LazyFrame[OrderLine]`, and `LazyFrame[AggregateOrder]`
 2. Carrier transformations remain typed Incan functions rather than stringly runtime scripts
 3. Builder-based aggregation runs through `col(...)`, `sum(...)`, and `count()`
 4. Builder-based scalar expressions run through `col(...)`, `lit(...)`, `eq(...)`, `gt(...)`, `add(...)`, and `mul(...)`
-5. Query blocks activate through `pub::inql` in dependency consumers, desugar into carrier calls, and meet the rest of
-   InQL at the Substrait boundary
+5. Query blocks activate through `pub::incql` in dependency consumers, desugar into carrier calls, and meet the rest of
+   IncQL at the Substrait boundary
 6. Session execution provides `collect`, `display`, and write sinks over DataFusion
 
 They serve three purposes:
@@ -99,7 +99,7 @@ They serve three purposes:
 - **RFC 041** (First-Class Rust Interop Authoring): Implemented in Incan v0.2
 - **RFC 042** (Traits Are Always Abstract): Implemented in Incan v0.2
 
-These RFCs provide the trait and interop foundation InQL builds on.
+These RFCs provide the trait and interop foundation IncQL builds on.
 
 ## Scope boundaries
 

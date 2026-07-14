@@ -419,7 +419,7 @@ module tests:
     def test_ranking_call_over_records_registry_identity() -> None:
         application = rank().over(window().order_by([col("amount")]))
         assert application.kind == WindowFunctionKind.Rank
-        assert application.function_ref == "inql.functions.rank"
+        assert application.function_ref == "incql.functions.rank"
         assert application.requires_ordering
     def test_offset_and_value_calls_record_arguments() -> None:
         lagged = lag(col("amount"), 2).ignore_nulls()

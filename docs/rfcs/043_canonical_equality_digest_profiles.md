@@ -1,25 +1,25 @@
-# InQL RFC 043: Canonical equality and digest profiles
+# IncQL RFC 043: Canonical equality and digest profiles
 
 - **Status:** Draft
 - **Created:** 2026-06-20
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 028 (semantic identity and target model)
-  - InQL RFC 032 (execution observations)
-  - InQL RFC 033 (adapter requirements and coverage)
-  - InQL RFC 034 (quality assertions and observations)
-  - InQL RFC 036 (governed plan bundle)
-  - InQL RFC 040 (interoperability semantic profiles)
-  - InQL RFC 042 (async verification evidence)
-- **Issue:** [InQL #78](https://github.com/encero-systems/InQL/issues/78)
-- **RFC PR:** [InQL #83](https://github.com/encero-systems/InQL/pull/83)
-- **Written against:** Incan v0.3-era InQL
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 028 (semantic identity and target model)
+  - IncQL RFC 032 (execution observations)
+  - IncQL RFC 033 (adapter requirements and coverage)
+  - IncQL RFC 034 (quality assertions and observations)
+  - IncQL RFC 036 (governed plan bundle)
+  - IncQL RFC 040 (interoperability semantic profiles)
+  - IncQL RFC 042 (async verification evidence)
+- **Issue:** [IncQL #78](https://github.com/encero-systems/IncQL/issues/78)
+- **RFC PR:** [IncQL #83](https://github.com/encero-systems/IncQL/pull/83)
+- **Written against:** Incan v0.3-era IncQL
 - **Shipped in:** —
 
 ## Summary
 
-This RFC defines canonical equality and digest profiles for InQL verification evidence. A profile records how rows, fields, relations, partitions, and result tables are normalized, ordered, compared, and hashed so deterministic verification can claim `verified` assurance without relying on hidden engine-specific equality rules.
+This RFC defines canonical equality and digest profiles for IncQL verification evidence. A profile records how rows, fields, relations, partitions, and result tables are normalized, ordered, compared, and hashed so deterministic verification can claim `verified` assurance without relying on hidden engine-specific equality rules.
 
 ## Core model
 
@@ -33,7 +33,7 @@ This RFC defines canonical equality and digest profiles for InQL verification ev
 
 Async verification can say that a partition, relation, or result was checked, but it cannot responsibly say that the check was deterministic unless both sides agree on what equality means. Real systems differ on decimal scale, timestamp precision, time zones, Unicode normalization, string collation, null ordering, NaN handling, duplicate rows, binary encoding, and nested value serialization. Without a canonical profile, a row digest can match or fail for reasons unrelated to the relational claim being verified.
 
-The practical verification path needs digestible evidence even when no proof verifier is involved. Row counts, aggregate checks, per-partition digests, keyed row digests, and full relation digests are useful only if they carry enough information for another tool or an InQL RFC 044 verifier to understand the statement that was checked.
+The practical verification path needs digestible evidence even when no proof verifier is involved. Row counts, aggregate checks, per-partition digests, keyed row digests, and full relation digests are useful only if they carry enough information for another tool or an IncQL RFC 044 verifier to understand the statement that was checked.
 
 ## Goals
 
@@ -48,7 +48,7 @@ The practical verification path needs digestible evidence even when no proof ver
 
 - Defining every concrete canonicalization profile in this RFC.
 - Requiring one global canonical encoding for all engines and formats.
-- Replacing InQL scalar, aggregate, ordering, or profile semantics.
+- Replacing IncQL scalar, aggregate, ordering, or profile semantics.
 - Defining cryptographic proof systems or proof artifact formats.
 - Guaranteeing privacy, encryption, or zero-knowledge properties for digest evidence.
 
@@ -147,11 +147,11 @@ This RFC introduces no authoring syntax. Helper APIs and artifact records are th
 
 ### Semantics
 
-Canonical equality profiles define evidence comparison semantics. They do not change authored InQL relational semantics, query result semantics, or backend execution behavior. A profile explains how verification normalizes and compares observed values.
+Canonical equality profiles define evidence comparison semantics. They do not change authored IncQL relational semantics, query result semantics, or backend execution behavior. A profile explains how verification normalizes and compares observed values.
 
 Digest profiles are downstream of equality profiles. A digest can only support a claim to the extent that the canonicalization and comparison rules support that claim.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 RFC 040 semantic profiles provide source and target context. Canonical equality profiles may use that context but must not replace it.
 
@@ -165,7 +165,7 @@ RFC 034 quality assertions may be compared through canonical profiles when asser
 
 Canonical equality and digest profile artifacts should be bridgeable to dataset and quality metadata standards where the mapping is meaningful. W3C DCAT, DCAT-AP, schema.org Dataset, and Dublin Core can describe datasets, distributions, access metadata, licensing, and descriptive metadata around the relations being compared. W3C Data Quality Vocabulary can describe quality metrics and measurements that use canonical equality or digest results as evidence.
 
-When a digest profile uses JSON or signed payloads, bridge profiles should use public canonicalization and signature specifications rather than ad hoc encodings. The digest algorithm, canonicalization profile, payload framing, and rollup rules must still be InQL evidence fields; an external serialization format alone is not a canonical equality profile.
+When a digest profile uses JSON or signed payloads, bridge profiles should use public canonicalization and signature specifications rather than ad hoc encodings. The digest algorithm, canonicalization profile, payload framing, and rollup rules must still be IncQL evidence fields; an external serialization format alone is not a canonical equality profile.
 
 ### Compatibility / migration
 
@@ -191,8 +191,8 @@ This section is non-normative. A practical implementation can support exact prof
 
 ## Layers affected
 
-- **InQL specification** — canonical equality and digest profile vocabulary becomes part of verification evidence.
-- **InQL library package** — verification helpers should be able to select and report canonical profiles.
+- **IncQL specification** — canonical equality and digest profile vocabulary becomes part of verification evidence.
+- **IncQL library package** — verification helpers should be able to select and report canonical profiles.
 - **Execution / interchange** — adapters may need capability records for canonical encoding and digest generation.
 - **Documentation** — docs must explain that digest equality depends on canonicalization and profile compatibility.
 

@@ -1,41 +1,41 @@
-# InQL RFC 041: Prism plan ingress and external client frontends
+# IncQL RFC 041: Prism plan ingress and external client frontends
 
 - **Status:** Draft
 - **Created:** 2026-05-30
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 000 (core language model and layer boundaries)
-  - InQL RFC 004 (execution context)
-  - InQL RFC 007 (Prism logical planning and optimization engine)
-  - InQL RFC 012 (unified scalar expression surface)
-  - InQL RFC 013 (function catalog program)
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 028 (semantic identity and target model)
-  - InQL RFC 029 (typed metadata attachments)
-  - InQL RFC 030 (Prism lineage graph)
-  - InQL RFC 031 (local inspection APIs and artifacts)
-  - InQL RFC 033 (adapter requirements and coverage)
-  - InQL RFC 040 (interoperability semantic profiles)
-- **Issue:** [InQL #75](https://github.com/encero-systems/InQL/issues/75)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
-- **Written against:** Incan v0.3-era InQL
+  - IncQL RFC 000 (core language model and layer boundaries)
+  - IncQL RFC 004 (execution context)
+  - IncQL RFC 007 (Prism logical planning and optimization engine)
+  - IncQL RFC 012 (unified scalar expression surface)
+  - IncQL RFC 013 (function catalog program)
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 028 (semantic identity and target model)
+  - IncQL RFC 029 (typed metadata attachments)
+  - IncQL RFC 030 (Prism lineage graph)
+  - IncQL RFC 031 (local inspection APIs and artifacts)
+  - IncQL RFC 033 (adapter requirements and coverage)
+  - IncQL RFC 040 (interoperability semantic profiles)
+- **Issue:** [IncQL #75](https://github.com/encero-systems/IncQL/issues/75)
+- **RFC PR:** [IncQL #60](https://github.com/encero-systems/IncQL/pull/60)
+- **Written against:** Incan v0.3-era IncQL
 - **Shipped in:** —
 
 ## Summary
 
-This RFC defines Prism plan ingress and external client frontends for InQL. A frontend receives an external authoring or client protocol such as Spark Connect, SQL, or another unresolved relational plan surface, decodes it into a Prism-owned unresolved ingress plan, and asks Prism to analyze that plan into ordinary InQL relational semantics. The frontend may preserve client-origin evidence, client-session evidence, protocol diagnostics, and ingress coverage records, but it must not make the external protocol, Spark, Substrait, DataFusion, or any backend adapter the semantic owner of the plan.
+This RFC defines Prism plan ingress and external client frontends for IncQL. A frontend receives an external authoring or client protocol such as Spark Connect, SQL, or another unresolved relational plan surface, decodes it into a Prism-owned unresolved ingress plan, and asks Prism to analyze that plan into ordinary IncQL relational semantics. The frontend may preserve client-origin evidence, client-session evidence, protocol diagnostics, and ingress coverage records, but it must not make the external protocol, Spark, Substrait, DataFusion, or any backend adapter the semantic owner of the plan.
 
 ## Motivation
 
-InQL should be able to interoperate with established client APIs without pretending that those APIs own InQL's semantics. Spark Connect is the clearest pressure: a PySpark client can submit plan-shaped calls over a protocol boundary, and those calls may depend on client session state such as configuration, current catalog, temporary views, or function aliases. InQL should not route those calls through Spark just to recover meaning later. Prism should receive an unresolved representation, resolve names and functions, apply InQL semantic rules under an explicit profile and session context, and then continue through the normal planning, evidence, Substrait, and execution paths.
+IncQL should be able to interoperate with established client APIs without pretending that those APIs own IncQL's semantics. Spark Connect is the clearest pressure: a PySpark client can submit plan-shaped calls over a protocol boundary, and those calls may depend on client session state such as configuration, current catalog, temporary views, or function aliases. IncQL should not route those calls through Spark just to recover meaning later. Prism should receive an unresolved representation, resolve names and functions, apply IncQL semantic rules under an explicit profile and session context, and then continue through the normal planning, evidence, Substrait, and execution paths.
 
-Without a first-class ingress contract, external API support will be squeezed into session adapters, backend adapters, Substrait metadata, or compatibility flags. That would hide the real boundary. Execution adapters run plans. Plan ingress frontends receive external plan requests and let Prism create InQL plans.
+Without a first-class ingress contract, external API support will be squeezed into session adapters, backend adapters, Substrait metadata, or compatibility flags. That would hide the real boundary. Execution adapters run plans. Plan ingress frontends receive external plan requests and let Prism create IncQL plans.
 
 ## Goals
 
 - Define plan ingress frontends as distinct from execution session adapters.
 - Define a Prism-owned unresolved ingress plan model for external client plans.
-- Preserve client-origin evidence without treating external node identifiers as InQL semantic identities.
+- Preserve client-origin evidence without treating external node identifiers as IncQL semantic identities.
 - Represent client session state that can affect Prism analysis.
 - Allow Spark Connect-style clients to submit supported relation, expression, and command calls that Prism analyzes directly.
 - Require structured unsupported-feature diagnostics and ingress coverage records.
@@ -46,31 +46,31 @@ Without a first-class ingress contract, external API support will be squeezed in
 
 - Defining full Spark API parity.
 - Defining every Spark Connect protobuf message, gRPC service method, or streaming transport detail.
-- Making Spark, PySpark, Spark Connect, DataFusion, or Substrait the source of InQL relational meaning.
+- Making Spark, PySpark, Spark Connect, DataFusion, or Substrait the source of IncQL relational meaning.
 - Defining SQL transpilation as the internal planning model.
 - Reimplementing every external client session lifecycle rule.
 - Defining a hosted compatibility service or global conformance registry.
-- Requiring every InQL deployment to expose an external client protocol.
+- Requiring every IncQL deployment to expose an external client protocol.
 
 ## Guide-level explanation (how authors think about it)
 
-An external client frontend lets an existing tool submit relational intent while InQL keeps Prism as the planner:
+An external client frontend lets an existing tool submit relational intent while IncQL keeps Prism as the planner:
 
 ```incan
-from pub::inql.frontends.spark import spark_connect_frontend
-from pub::inql.session import datafusion_session
+from pub::incql.frontends.spark import spark_connect_frontend
+from pub::incql.session import datafusion_session
 
 frontend = spark_connect_frontend(session_factory=datafusion_session)
 frontend.serve("127.0.0.1:15002")
 ```
 
-A PySpark client may send a supported Spark Connect plan to that endpoint. The frontend decodes the request into a Prism ingress plan, Prism analyzes it, and the selected InQL session executes the resulting plan through the normal adapter path.
+A PySpark client may send a supported Spark Connect plan to that endpoint. The frontend decodes the request into a Prism ingress plan, Prism analyzes it, and the selected IncQL session executes the resulting plan through the normal adapter path.
 
-The important user model is not that InQL becomes Spark internally. The model is that InQL can speak a client protocol at the edge while keeping Prism responsible for names, functions, types, lineage, diagnostics, evidence, and execution requirements.
+The important user model is not that IncQL becomes Spark internally. The model is that IncQL can speak a client protocol at the edge while keeping Prism responsible for names, functions, types, lineage, diagnostics, evidence, and execution requirements.
 
 ## Reference-level explanation (precise rules)
 
-InQL must define a plan ingress frontend boundary. A frontend may parse, decode, authenticate, route, frame client requests, and maintain client session state. It must not resolve relational semantics by delegating to an external engine when Prism can represent the requested plan.
+IncQL must define a plan ingress frontend boundary. A frontend may parse, decode, authenticate, route, frame client requests, and maintain client session state. It must not resolve relational semantics by delegating to an external engine when Prism can represent the requested plan.
 
 An ingress frontend must produce a Prism-owned unresolved ingress plan or a structured unsupported diagnostic. An unresolved ingress plan must represent at least:
 
@@ -97,7 +97,7 @@ Ingress frontends must distinguish at least the following coverage states for pr
 - supported: Prism can represent and analyze the feature under the selected profile
 - partially_supported: Prism can represent the feature only under recorded restrictions
 - unsupported: Prism cannot represent or analyze the feature
-- unknown: InQL cannot determine support for the feature
+- unknown: IncQL cannot determine support for the feature
 
 Unsupported and unknown ingress features must be reported before execution when they affect plan semantics. They must not be silently lowered to backend-specific behavior.
 
@@ -105,7 +105,7 @@ Spark Connect compatibility must be modeled as a frontend protocol profile plus 
 
 Semantic profiles may affect ingress analysis. Profile dimensions may control identifier resolution, case sensitivity, function aliases, type coercion, null and NaN behavior, timestamp semantics, decimal behavior, ANSI mode, and other compatibility-sensitive rules. Profile evidence must be explicit when the frontend uses those rules.
 
-Commands that do not describe relational computation, such as session configuration, catalog inspection, temporary view registration, cache control, or client lifecycle operations, must be represented as command ingress nodes, mapped to explicit InQL client session or execution session behavior, or rejected with structured diagnostics. Accepted commands that mutate client session state must produce client session evidence. They must not be disguised as ordinary relational plan nodes.
+Commands that do not describe relational computation, such as session configuration, catalog inspection, temporary view registration, cache control, or client lifecycle operations, must be represented as command ingress nodes, mapped to explicit IncQL client session or execution session behavior, or rejected with structured diagnostics. Accepted commands that mutate client session state must produce client session evidence. They must not be disguised as ordinary relational plan nodes.
 
 Plan ingress evidence must be inspectable. Tools must be able to see which frontend produced a plan, which client session context affected analysis, which client protocol features were used, which features were unsupported or partially supported, which profile governed analysis, and how client-origin references map to Prism targets.
 
@@ -113,7 +113,7 @@ Plan ingress evidence must be inspectable. Tools must be able to see which front
 
 ### Syntax
 
-This RFC introduces no InQL authoring syntax. Frontends are package or service APIs around Prism and Session.
+This RFC introduces no IncQL authoring syntax. Frontends are package or service APIs around Prism and Session.
 
 ### Semantics
 
@@ -121,7 +121,7 @@ Plan ingress is a semantic boundary before Prism analysis. It is not an executio
 
 The unresolved ingress model should be general enough for Spark Connect, SQL parsers, notebook clients, and future external plan protocols, but each frontend must declare its own protocol coverage, session-state model, and profile assumptions.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 Method chains, `query {}` blocks, SQL frontends, and Spark Connect frontends may all produce Prism plans. Equivalent relational intent should converge on comparable Prism targets after analysis, subject to explicit profile differences.
 
@@ -133,14 +133,14 @@ Adapter requirements and coverage remain execution-facing evidence. Ingress cove
 
 ### Compatibility / migration
 
-Existing InQL plans and sessions remain valid without ingress evidence. Frontends are additive. Tools that require client-origin evidence must report missing ingress evidence as unsupported or unknown rather than inferring it from display names or backend plans.
+Existing IncQL plans and sessions remain valid without ingress evidence. Frontends are additive. Tools that require client-origin evidence must report missing ingress evidence as unsupported or unknown rather than inferring it from display names or backend plans.
 
 ## Alternatives considered
 
 - **Use Spark as the planner.** Rejected because that would make Spark the semantic owner and reduce Prism to an execution bridge.
-- **Translate Spark Connect directly to Substrait.** Rejected because Substrait is an interchange boundary, not the full InQL semantic analysis and evidence model.
+- **Translate Spark Connect directly to Substrait.** Rejected because Substrait is an interchange boundary, not the full IncQL semantic analysis and evidence model.
 - **Treat Spark Connect support as a backend adapter.** Rejected because receiving client plan calls and executing an analyzed plan are different boundaries.
-- **Only support InQL-native authoring.** Rejected because external client protocols are valuable when they feed Prism honestly instead of bypassing it.
+- **Only support IncQL-native authoring.** Rejected because external client protocols are valuable when they feed Prism honestly instead of bypassing it.
 - **Accept unsupported calls and hope the backend handles them.** Rejected because unknown frontend semantics must be visible before execution.
 
 ## Drawbacks
@@ -152,8 +152,8 @@ Existing InQL plans and sessions remain valid without ingress evidence. Frontend
 
 ## Layers affected
 
-- **InQL specification** — plan ingress, frontend coverage, origin mapping, and Prism analysis boundaries become normative vocabulary.
-- **InQL library package** — frontend APIs, unresolved ingress plan records, diagnostics, and inspection records must be exposed through public modules where implemented.
+- **IncQL specification** — plan ingress, frontend coverage, origin mapping, and Prism analysis boundaries become normative vocabulary.
+- **IncQL library package** — frontend APIs, unresolved ingress plan records, diagnostics, and inspection records must be exposed through public modules where implemented.
 - **Execution / interchange** — Session and backend adapters execute Prism-owned plans and may report adapter coverage, but they do not own ingress semantics.
 - **Documentation** — docs must distinguish external client protocol support from Spark engine compatibility, Substrait interchange, and DataFusion execution.
 

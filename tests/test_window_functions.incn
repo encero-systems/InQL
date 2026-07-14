@@ -55,7 +55,7 @@ def test_window_builders__ranking_helpers_return_unplaced_calls() -> None:
     assert rank_app.kind == WindowFunctionKind.Rank, "rank should keep typed window identity"
     assert dense_rank_app.kind == WindowFunctionKind.DenseRank, "dense_rank should keep typed window identity"
     assert row_number_app.requires_ordering, "ranking helpers should require explicit window ordering"
-    assert rank_app.function_ref == "inql.functions.rank", "rank should derive stable registry identity"
+    assert rank_app.function_ref == "incql.functions.rank", "rank should derive stable registry identity"
     assert dense_rank_app.canonical_name == "dense_rank", "dense_rank should expose its canonical name"
 
 

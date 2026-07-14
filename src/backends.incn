@@ -1,7 +1,7 @@
 """
 Backend configuration objects for session execution.
 
-The root `Session` API stays portable, while backend-specific configuration lives under `pub::inql.backends`.
+The root `Session` API stays portable, while backend-specific configuration lives under `pub::incql.backends`.
 Backend selection is an adapter-neutral kind plus options envelope so adding another backend does not require adding
 one field per implementation to the core Session state.
 """

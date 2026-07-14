@@ -1,15 +1,15 @@
 name: "RFC proposal"
-description: Propose a significant InQL specification or surface change that should go through the RFC process.
+description: Propose a significant IncQL specification or surface change that should go through the RFC process.
 labels: ["RFC"]
 body:
   - type: markdown
     attributes:
       value: |
         Use this issue to propose an RFC topic and get early alignment.
-        If accepted, we typically ask for a PR adding an RFC under [`docs/rfcs/`](https://github.com/encero-systems/InQL/tree/main/docs/rfcs): copy [**TEMPLATE.md**](https://github.com/encero-systems/InQL/blob/main/docs/rfcs/TEMPLATE.md), name it `NNN_short_slug.md`, and follow that structure. For workflow and conventions, see [**Writing InQL RFCs**](https://github.com/encero-systems/InQL/blob/main/docs/contributing/writing_rfcs.md).
+        If accepted, we typically ask for a PR adding an RFC under [`docs/rfcs/`](https://github.com/encero-systems/IncQL/tree/main/docs/rfcs): copy [**TEMPLATE.md**](https://github.com/encero-systems/IncQL/blob/main/docs/rfcs/TEMPLATE.md), name it `NNN_short_slug.md`, and follow that structure. For workflow and conventions, see [**Writing IncQL RFCs**](https://github.com/encero-systems/IncQL/blob/main/docs/contributing/writing_rfcs.md).
 
-        **InQL RFCs** cover the relational layer, dataset carriers, Substrait contract, `query {}` syntax, execution context, and related docs.
-        Pure Incan language/compiler changes without InQL impact usually belong in the **Incan** repository instead.
+        **IncQL RFCs** cover the relational layer, dataset carriers, Substrait contract, `query {}` syntax, execution context, and related docs.
+        Pure Incan language/compiler changes without IncQL impact usually belong in the **Incan** repository instead.
   - type: dropdown
     id: area
     attributes:

@@ -21,7 +21,7 @@ pub def display[T with Clone](data: LazyFrame[T]) -> None:
     """
     match data.clone().collect():
         Ok(df) => _render_data_frame(df)
-        Err(err) => println(f"InQL display failed: {err.error_message()}")
+        Err(err) => println(f"IncQL display failed: {err.error_message()}")
 
 
 def _join_columns(columns: list[str]) -> str:
@@ -33,7 +33,7 @@ def _render_data_frame[T with Clone](data: DataFrame[T]) -> None:
     """Render one collected DataFrame preview using structured materialization metadata."""
     preview = data.preview_text()
     columns = data.columns()
-    println("InQL display")
+    println("IncQL display")
     if len(columns) > 0:
         println(f"columns: [{_join_columns(columns)}]")
     println(f"rows: {data.row_count()}")

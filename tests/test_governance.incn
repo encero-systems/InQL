@@ -57,7 +57,7 @@ def test_governed_attribute__carries_provenance_confidence_status_and_lifetime()
     assert attribute.attribute_id == "governed:plan:fixture:field:customer_email:classification", "attribute identity should include target and key"
     assert attribute.target.name == "customer_email", "attribute should stay anchored to its semantic target"
     assert attribute.key == "classification", "attribute should carry its governed key"
-    assert attribute.value.schema == "inql.governance.string.v0.1", "string helpers should declare their payload schema"
+    assert attribute.value.schema == "incql.governance.string.v0.1", "string helpers should declare their payload schema"
     assert attribute.value.value == "personal_data", "attribute should carry its typed payload value"
     assert attribute.scope == GovernedAttributeScope.Field, "field attributes should declare their scope"
     assert attribute.source == GovernedAttributeSource.User, "attribute provenance should be explicit"

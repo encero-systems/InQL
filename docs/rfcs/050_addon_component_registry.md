@@ -1,42 +1,42 @@
-# InQL RFC 050: Addon component registry and package contract
+# IncQL RFC 050: Addon component registry and package contract
 
 - **Status:** Draft
 - **Created:** 2026-07-11
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 002 (Apache Substrait integration)
-  - InQL RFC 004 (execution context)
-  - InQL RFC 007 (Prism logical planning and optimization engine)
-  - InQL RFC 009 (session format handler registry)
-  - InQL RFC 014 (function registry and catalog governance)
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 032 (execution observations)
-  - InQL RFC 033 (adapter requirements and coverage)
-  - InQL RFC 040 (interoperability semantic profiles)
-  - InQL RFC 041 (Prism plan ingress and external client frontends)
-  - InQL RFC 048 (cluster execution backend mode)
-- **Issue:** [InQL #101](https://github.com/encero-systems/InQL/issues/101)
-- **RFC PR:** [InQL #102](https://github.com/encero-systems/InQL/pull/102)
-- **Written against:** Incan 0.4.0 and InQL 0.1.0
+  - IncQL RFC 002 (Apache Substrait integration)
+  - IncQL RFC 004 (execution context)
+  - IncQL RFC 007 (Prism logical planning and optimization engine)
+  - IncQL RFC 009 (session format handler registry)
+  - IncQL RFC 014 (function registry and catalog governance)
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 032 (execution observations)
+  - IncQL RFC 033 (adapter requirements and coverage)
+  - IncQL RFC 040 (interoperability semantic profiles)
+  - IncQL RFC 041 (Prism plan ingress and external client frontends)
+  - IncQL RFC 048 (cluster execution backend mode)
+- **Issue:** [IncQL #101](https://github.com/encero-systems/IncQL/issues/101)
+- **RFC PR:** [IncQL #102](https://github.com/encero-systems/IncQL/pull/102)
+- **Written against:** Incan 0.4.0 and IncQL 0.1.0
 - **Shipped in:** —
 
 ## Summary
 
-This RFC defines the package and registry contract through which ordinary Incan packages can extend InQL with data connectors, compute runtimes, plan-ingress frontends, and evidence providers. An addon package may provide several components, but each component must be registered, identified, selected, inspected, and versioned independently. InQL must keep pure component descriptors separate from executable hooks, use open namespaced component identifiers instead of backend or source enums, freeze a registry snapshot at an execution or frontend boundary, and keep read/write components separate from the runtime that computes a plan. DataFusion remains the built-in default runtime and first registry-shaped implementation; DuckDB is the first external proof target rather than a privileged core backend.
+This RFC defines the package and registry contract through which ordinary Incan packages can extend IncQL with data connectors, compute runtimes, plan-ingress frontends, and evidence providers. An addon package may provide several components, but each component must be registered, identified, selected, inspected, and versioned independently. IncQL must keep pure component descriptors separate from executable hooks, use open namespaced component identifiers instead of backend or source enums, freeze a registry snapshot at an execution or frontend boundary, and keep read/write components separate from the runtime that computes a plan. DataFusion remains the built-in default runtime and first registry-shaped implementation; DuckDB is the first external proof target rather than a privileged core backend.
 
 ## Motivation
 
-InQL's current execution path is appropriate for proving DataFusion integration, but it does not scale to an ecosystem. Adding another backend currently tends to require edits to core backend enums, source enums, session dispatch, public exports, the core package manifest, and source registration logic. That makes every integration a core feature and encourages one backend object to absorb source reading, sink writing, computation, capability reporting, and configuration.
+IncQL's current execution path is appropriate for proving DataFusion integration, but it does not scale to an ecosystem. Adding another backend currently tends to require edits to core backend enums, source enums, session dispatch, public exports, the core package manifest, and source registration logic. That makes every integration a core feature and encourages one backend object to absorb source reading, sink writing, computation, capability reporting, and configuration.
 
 The desired platform is broader. PostgreSQL may be a bounded reader and writer while DuckDB performs local computation, or PostgreSQL may also provide a SQL-pushdown runtime. Kafka is primarily a streaming connector. Spark may provide a compute runtime and a Spark Connect ingress frontend without owning the underlying storage. Snowflake may provide table connectors, warehouse compute, Snowpipe writers, streaming ingestion, catalog access, and observations as separate components in one package. Open table formats may provide connector and catalog components without providing compute at all.
 
 Treating each platform as one monolithic adapter hides those differences and makes composition accidental. Treating Substrait as the plugin contract is also insufficient: Substrait carries logical plans, but it does not install code, bind credentials, inspect catalogs, negotiate connector/runtime compatibility, manage streams, or report component metadata.
 
-InQL therefore needs a stable addon boundary before more vendor integrations are implemented. The boundary must fit Incan's package, manifest, feature, and lockfile model; preserve Prism as the owner of relational meaning; and integrate with adapter coverage, semantic profiles, execution observations, and plan ingress without merging those layers.
+IncQL therefore needs a stable addon boundary before more vendor integrations are implemented. The boundary must fit Incan's package, manifest, feature, and lockfile model; preserve Prism as the owner of relational meaning; and integrate with adapter coverage, semantic profiles, execution observations, and plan ingress without merging those layers.
 
 ## Goals
 
-- Define ordinary Incan packages as the installation and sideloading unit for InQL addons.
+- Define ordinary Incan packages as the installation and sideloading unit for IncQL addons.
 - Define independently registered data connector, compute runtime, plan ingress, and evidence provider component kinds.
 - Replace closed backend and source identities with stable, namespaced component identifiers and open source, sink, runtime-mode, and capability keys.
 - Separate pure, inspectable component descriptors from executable component hooks and live runtime state.
@@ -70,18 +70,18 @@ An addon is an ordinary Incan package dependency. Local development and private 
 
 ```toml
 [dependencies]
-inql = { path = "../InQL" }
-inql-duckdb = { path = "../inql-duckdb" }
-inql-postgres = { path = "../inql-postgres" }
+incql = { path = "../IncQL" }
+incql-duckdb = { path = "../incql-duckdb" }
+incql-postgres = { path = "../incql-postgres" }
 ```
 
 The eventual registry-resolved form uses the same package contract:
 
 ```toml
 [dependencies]
-inql = "0.1"
-inql-duckdb = { version = "0.1", features = ["httpfs", "iceberg"] }
-inql-postgres = { version = "0.1", features = ["copy", "logical-replication"] }
+incql = "0.1"
+incql-duckdb = { version = "0.1", features = ["httpfs", "iceberg"] }
+incql-postgres = { version = "0.1", features = ["copy", "logical-replication"] }
 ```
 
 Depending on or importing a package makes its checked code and descriptor metadata available. It must not silently mutate a process-global registry or change which runtime a Session uses.
@@ -91,9 +91,9 @@ Depending on or importing a package makes its checked code and descriptor metada
 Addon packages expose typed component constructors. Authors install the components they intend to use and select the compute runtime explicitly:
 
 ```incan
-from pub::inql import AddonRegistry, Session
-from pub::inql_duckdb import duckdb
-from pub::inql_postgres import postgres
+from pub::incql import AddonRegistry, Session
+from pub::incql_duckdb import duckdb
+from pub::incql_postgres import postgres
 
 registry = AddonRegistry.builtins()
 registry.install(duckdb.files())?
@@ -117,11 +117,11 @@ orders = postgres.table("analytics.orders")
 session.register("orders", orders)?
 ```
 
-This does not imply that DuckDB can consume every PostgreSQL binding. Before execution, InQL must ask the connector and selected runtime whether they have a compatible binding path and must evaluate the plan's adapter requirements. If no compatible route exists, the Session reports structured uncovered or unknown coverage rather than silently changing runtime or materializing through an undocumented fallback.
+This does not imply that DuckDB can consume every PostgreSQL binding. Before execution, IncQL must ask the connector and selected runtime whether they have a compatible binding path and must evaluate the plan's adapter requirements. If no compatible route exists, the Session reports structured uncovered or unknown coverage rather than silently changing runtime or materializing through an undocumented fallback.
 
 ### One package, several components
 
-An addon package is a distribution unit, not a semantic component. For example, an `inql-snowflake` package may expose separate table connector, warehouse runtime, Snowpipe writer, Snowpipe Streaming writer, catalog inspector, and observation provider components. An `inql-spark` package may expose a Spark runtime and Spark Connect ingress frontend. Installing one component must not imply that the others are installed or selected.
+An addon package is a distribution unit, not a semantic component. For example, an `incql-snowflake` package may expose separate table connector, warehouse runtime, Snowpipe writer, Snowpipe Streaming writer, catalog inspector, and observation provider components. An `incql-spark` package may expose a Spark runtime and Spark Connect ingress frontend. Installing one component must not imply that the others are installed or selected.
 
 This separation also allows a package to expose convenient bundles without collapsing component identity:
 
@@ -148,15 +148,15 @@ A descriptor's capability declaration is discoverability metadata. It is not pro
 
 ### Terminology and ownership
 
-An **addon package** is an Incan package that depends on InQL and exports one or more addon components.
+An **addon package** is an Incan package that depends on IncQL and exports one or more addon components.
 
-An **addon component** is one independently identified implementation of a known InQL extension boundary. Components are the unit of registration, lookup, compatibility checks, inspection, and runtime selection.
+An **addon component** is one independently identified implementation of a known IncQL extension boundary. Components are the unit of registration, lookup, compatibility checks, inspection, and runtime selection.
 
 A **component descriptor** is serializable metadata describing one component. A descriptor must be inspectable without opening network connections, resolving credentials, loading data, or creating backend-native runtime state.
 
 An **executable component** is checked code that implements the hook contract for exactly one component kind. Executable hooks and live resources are not part of the descriptor.
 
-An **addon registry** contains descriptors and executable component factories or implementations under the same component identities. A registry is scoped to the Session, frontend service, inspection operation, or other explicit owner that receives it. InQL must not rely on an implicitly mutable process-global registry.
+An **addon registry** contains descriptors and executable component factories or implementations under the same component identities. A registry is scoped to the Session, frontend service, inspection operation, or other explicit owner that receives it. IncQL must not rely on an implicitly mutable process-global registry.
 
 An **addon bundle** is a convenience value containing multiple independently registered components. A bundle is not a component kind and does not receive one combined identity.
 
@@ -164,7 +164,7 @@ Prism remains the owner of analyzed relational meaning. Components may supply bi
 
 ### Component kinds
 
-InQL must define these top-level component kinds:
+IncQL must define these top-level component kinds:
 
 | Component kind | Responsibility | Representative surfaces |
 | --- | --- | --- |
@@ -181,19 +181,19 @@ Plan ingress is not a compute runtime. Evidence provision is not plan analysis. 
 
 ### Component identity and versions
 
-Each component descriptor must contain a stable component id. Component ids must be lowercase, dot-separated, namespaced ASCII identifiers such as `inql.datafusion.local`, `inql.duckdb.files`, or `vendor.postgres.tables`. Package names and component ids need not be identical because one package may publish several components.
+Each component descriptor must contain a stable component id. Component ids must be lowercase, dot-separated, namespaced ASCII identifiers such as `incql.datafusion.local`, `incql.duckdb.files`, or `vendor.postgres.tables`. Package names and component ids need not be identical because one package may publish several components.
 
 A component id identifies a contract across compatible package releases. A package must not reuse an id for a component of another kind or for behavior that violates the previous component contract.
 
 Versioning must distinguish:
 
 - addon package version
-- InQL addon API version required by the component
+- IncQL addon API version required by the component
 - descriptor schema version
 - component or provider version when it differs from the package version
 - external engine or protocol version, which belongs in semantic profiles or runtime observations rather than package identity
 
-The registry must reject a component whose required addon API version is incompatible with the InQL version constructing the registry.
+The registry must reject a component whose required addon API version is incompatible with the IncQL version constructing the registry.
 
 ### Component descriptor
 
@@ -205,7 +205,7 @@ pub model AddonPackageDescriptor:
     pub version: str
     pub source_identity: str
     pub enabled_features: list[str]
-    pub requires_inql: str
+    pub requires_incql: str
 
 pub enum AddonComponentKind(str):
     DataConnector = "data_connector"
@@ -230,7 +230,7 @@ pub model AddonComponentDescriptor:
     pub configuration_schema: str
 ```
 
-Field names may be adjusted to fit established InQL naming conventions, but implementations must preserve these facts and distinctions.
+Field names may be adjusted to fit established IncQL naming conventions, but implementations must preserve these facts and distinctions.
 
 Descriptor surfaces say which hook families a component exposes. Capability declarations say which RFC 033 capability families the component knows how to assess or may cover. They must not use `supported` as a substitute for contextual coverage. Stability labels such as experimental, preview, and stable may qualify a surface, but they must remain distinct from covered, partially covered, uncovered, and unknown.
 
@@ -242,7 +242,7 @@ Descriptor facts must be deterministic for a resolved package and feature set. T
 
 ### Executable component contracts
 
-InQL must expose a distinct executable hook contract for each component kind rather than one optional-method object that can do everything.
+IncQL must expose a distinct executable hook contract for each component kind rather than one optional-method object that can do everything.
 
 A data connector contract must be able to expose the surfaces it declares, including as applicable:
 
@@ -273,7 +273,7 @@ The exact Incan mechanism for executable hooks may be nominal interfaces, checke
 
 ### Registry lifecycle and registration
 
-`AddonRegistry.builtins()` must return a registry containing InQL's built-in component descriptors and executable implementations. `AddonRegistry.empty()` may be provided for tooling or controlled environments.
+`AddonRegistry.builtins()` must return a registry containing IncQL's built-in component descriptors and executable implementations. `AddonRegistry.empty()` may be provided for tooling or controlled environments.
 
 Installing a component must:
 
@@ -295,7 +295,7 @@ Frontend services and inspection tools may own registry snapshots without constr
 
 ### Open source, sink, and runtime descriptors
 
-Core InQL must replace closed source and backend enums with open descriptors. The normative conceptual shapes are:
+Core IncQL must replace closed source and backend enums with open descriptors. The normative conceptual shapes are:
 
 ```incan
 pub model AddonOption:
@@ -323,7 +323,7 @@ pub model RuntimeSelection:
 
 `value_schema` must make option interpretation explicit. A future typed configuration-value carrier may replace the textual storage field without changing the requirement that values have declared schemas.
 
-`source_kind`, `sink_kind`, and `runtime_mode` are component-owned open keys. Core InQL must not add an enum variant for every external format, table type, topic type, warehouse mode, or runtime.
+`source_kind`, `sink_kind`, and `runtime_mode` are component-owned open keys. Core IncQL must not add an enum variant for every external format, table type, topic type, warehouse mode, or runtime.
 
 A source or sink descriptor must identify the connector that owns its interpretation. A descriptor must not select the compute runtime. A runtime selection must identify an installed `compute_runtime` component and must not imply installation of any connector from the same package.
 
@@ -339,7 +339,7 @@ A compute runtime must declare which binding protocols it can consume or produce
 
 When a package provides both a connector and compute runtime, the runtime may consume a package-native binding protocol. That does not merge the two components. For example, a PostgreSQL table connector and PostgreSQL SQL-pushdown runtime may cooperate directly while remaining separately selectable and inspectable.
 
-If no compatible binding path is available, execution must fail before data movement when possible with a structured binding or coverage diagnostic. InQL must not assume an Arrow materialization fallback, silently choose another runtime, or ask the connector to select a runtime.
+If no compatible binding path is available, execution must fail before data movement when possible with a structured binding or coverage diagnostic. IncQL must not assume an Arrow materialization fallback, silently choose another runtime, or ask the connector to select a runtime.
 
 Sink compatibility must include commit and failure semantics. A runtime that can compute a result is not automatically able to commit it to an installed sink. Connector-owned commit, abort, retry, replay, and streaming guarantees must remain visible in coverage and observations.
 
@@ -369,18 +369,18 @@ Evidence providers are non-authoritative sources under RFC 027. Registration gra
 
 ### Package, feature, and lockfile contract
 
-Addon distribution must use Incan package resolution. Local path dependencies are the first required sideloading mechanism. Git and registry-resolved dependencies may be added by the Incan package system without changing the InQL component contract.
+Addon distribution must use Incan package resolution. Local path dependencies are the first required sideloading mechanism. Git and registry-resolved dependencies may be added by the Incan package system without changing the IncQL component contract.
 
-Addon-specific Rust dependencies, native build requirements, and generated bindings belong to the addon package rather than core InQL unless they are required by a built-in component.
+Addon-specific Rust dependencies, native build requirements, and generated bindings belong to the addon package rather than core IncQL unless they are required by a built-in component.
 
-Package features may enable or disable component surfaces, optional components, or capability implementations. A resolved descriptor must reflect the actual enabled feature set. Core InQL should not become the primary feature bundle for provider-specific integrations such as `spark`, `snowflake`, or `postgres`.
+Package features may enable or disable component surfaces, optional components, or capability implementations. A resolved descriptor must reflect the actual enabled feature set. Core IncQL should not become the primary feature bundle for provider-specific integrations such as `spark`, `snowflake`, or `postgres`.
 
 The resolved dependency and lock model must eventually preserve enough information to reproduce addon availability:
 
 - package name, version, and source identity
 - enabled package features
 - transitive package and Rust dependency resolution
-- required InQL addon API version
+- required IncQL addon API version
 - component ids and descriptor fingerprints
 - native or system requirements when the package manager can represent them
 
@@ -433,7 +433,7 @@ Inspection APIs must distinguish:
 
 ### Syntax
 
-This RFC introduces no InQL query syntax. It defines InQL package and library contracts around Session, Prism frontends, and evidence tooling.
+This RFC introduces no IncQL query syntax. It defines IncQL package and library contracts around Session, Prism frontends, and evidence tooling.
 
 API names in examples are illustrative where the reference-level rules do not prescribe an exact name. The component kinds, identity distinctions, descriptor/runtime separation, explicit registration, frozen registry lifecycle, open binding descriptors, and connector/runtime split are normative.
 
@@ -445,12 +445,12 @@ Addon metadata is evidence and configuration. It is not a truth store for fields
 
 Component composition must be explicit. A package relationship, shared vendor name, or shared connection configuration must not be used as an implicit signal that connector, runtime, ingress, or evidence components are installed or compatible.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 - RFC 002 remains the logical interchange boundary. Component registration and physical bindings must not be encoded as ad hoc Substrait semantics.
 - RFC 004 remains the Session and execution-context contract. This RFC refines its backend reference into a registry-owned runtime selection and its source/sink identifiers into connector-owned descriptors.
 - RFC 007 keeps Prism as semantic owner. Compute and ingress components feed or execute Prism plans without redefining them.
-- RFC 009's format-handler contract, if retained, becomes an implementation strategy or subordinate surface of a data connector. InQL must not maintain a second independent plugin root that can bypass component identity, package provenance, registry freezing, or connector/runtime compatibility checks.
+- RFC 009's format-handler contract, if retained, becomes an implementation strategy or subordinate surface of a data connector. IncQL must not maintain a second independent plugin root that can bypass component identity, package provenance, registry freezing, or connector/runtime compatibility checks.
 - RFC 014's declaration-side function registry is prior art for stable ids and inspectable metadata, but addon registration is explicitly owner-scoped because components carry resources and external behavior.
 - RFC 032 observations must identify the components involved in execution and I/O.
 - RFC 033 owns requirement and coverage semantics; this RFC supplies stable component identity and declarations used by those records.
@@ -460,7 +460,7 @@ Component composition must be explicit. A package relationship, shared vendor na
 
 ### Compatibility / migration
 
-`Session.default()` remains source-compatible and continues to use DataFusion. Internally it must build or receive the built-in registry, install `inql.datafusion.files` and `inql.datafusion.local`, and select the local runtime.
+`Session.default()` remains source-compatible and continues to use DataFusion. Internally it must build or receive the built-in registry, install `incql.datafusion.files` and `incql.datafusion.local`, and select the local runtime.
 
 Existing `csv_source`, `parquet_source`, `arrow_source`, `read_csv`, `read_parquet`, `read_arrow`, `write_csv`, and `write_parquet` helpers may remain as compatibility conveniences. They must construct connector-owned source or sink descriptors and route through the registry path.
 
@@ -478,7 +478,7 @@ DataFusion must be migrated first as a built-in file connector and local compute
 - **Use Substrait as the addon API.** Rejected because plan interchange does not install code or define binding, lifecycle, credentials, coverage, and package contracts.
 - **Auto-register components when a package is imported.** Rejected because import order and hidden global mutation make sessions difficult to reproduce, inspect, test, and isolate.
 - **Load arbitrary shared libraries or addon directories at runtime.** Rejected for the initial contract because it bypasses Incan package resolution, checked types, lockfiles, and ordinary dependency review.
-- **Put every integration behind features on core `inql`.** Rejected because it centralizes provider dependencies and release cadence in core and prevents independent addon packages.
+- **Put every integration behind features on core `incql`.** Rejected because it centralizes provider dependencies and release cadence in core and prevents independent addon packages.
 - **Assume Arrow makes all connectors and runtimes interchangeable.** Rejected because streaming, pushdown, catalogs, native types, transactionality, sink commits, and operational constraints require contextual compatibility checks.
 
 ## Drawbacks
@@ -492,8 +492,8 @@ DataFusion must be migrated first as a built-in file connector and local compute
 
 ## Layers affected
 
-- **InQL specification** — addon component kinds, identities, descriptors, registration, selection, and composition become normative contracts.
-- **InQL library package** — Session, source/sink descriptors, runtime selection, inspection, and built-in DataFusion integration must use the registry-shaped path.
+- **IncQL specification** — addon component kinds, identities, descriptors, registration, selection, and composition become normative contracts.
+- **IncQL library package** — Session, source/sink descriptors, runtime selection, inspection, and built-in DataFusion integration must use the registry-shaped path.
 - **Incan compiler and package tooling** — package dependencies, feature resolution, checked component metadata, hook dispatch, and lockfile facts must support addon packages as the implementation matures.
 - **Execution / interchange** — connectors and runtimes must negotiate bindings and report coverage without changing Prism or Substrait semantics.
 - **Documentation** — execution, addon authoring, sideloading, capability inspection, and migration docs must explain package availability, component installation, and runtime selection separately.

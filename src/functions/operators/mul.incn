@@ -1,7 +1,7 @@
 """
 Multiplication scalar helper.
 
-`mul` uses the public InQL spelling while declaring the Substrait extension name `multiply` in its registry metadata.
+`mul` uses the public IncQL spelling while declaring the Substrait extension name `multiply` in its registry metadata.
 """
 
 from function_registry import (

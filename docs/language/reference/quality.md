@@ -1,6 +1,6 @@
 # Quality assertions and observations (Reference)
 
-This page documents the public quality assertion and observation surface in the InQL package. Normative design intent lives in [RFC 034][rfc-034].
+This page documents the public quality assertion and observation surface in the IncQL package. Normative design intent lives in [RFC 034][rfc-034].
 
 Quality assertions are declarations. They do not filter, quarantine, or mutate the checked relation by themselves. Quality observations are runtime evidence produced when a `Session` evaluates assertions against explicit relation inputs.
 
@@ -14,11 +14,11 @@ Quality assertions are declarations. They do not filter, quarantine, or mutate t
 | `group_row_count(group_by, min_count=1, max_count=None)` | group | Assert that every group has a row count within inclusive thresholds |
 | `cross_relation_row_count_equal()` | cross relation | Assert that two explicit relation inputs have the same row count |
 
-The first implementation evaluates these helpers through ordinary InQL plans and `Session.collect_observed(...)`. Row-count checks use structured materialization row counts. Field and group checks build filter and aggregate plans and evaluate the resulting row counts. They do not scrape rendered preview text.
+The first implementation evaluates these helpers through ordinary IncQL plans and `Session.collect_observed(...)`. Row-count checks use structured materialization row counts. Field and group checks build filter and aggregate plans and evaluate the resulting row counts. They do not scrape rendered preview text.
 
 ## Quality syntax
 
-Importing `pub::inql` activates `quality { ... }` and expression-position `quality:` syntax. Both forms return `list[QualityAssertion]`.
+Importing `pub::incql` activates `quality { ... }` and expression-position `quality:` syntax. Both forms return `list[QualityAssertion]`.
 
 ```incan
 checks = quality {

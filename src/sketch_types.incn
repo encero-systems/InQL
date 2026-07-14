@@ -31,7 +31,7 @@ pub enum SketchValueDomain(str):
 pub enum SketchSerializationFormat(str):
     """Explicit serialized sketch format identity."""
 
-    InqlHllV1 = "inql_hll_v1"
+    IncqlHllV1 = "incql_hll_v1"
 
 
 @derive(Clone)
@@ -55,7 +55,7 @@ pub model SketchExpr:
 pub def hll_type(
     value_domain: SketchValueDomain = SketchValueDomain.StringIdentifier,
     precision: int = 14,
-    format: SketchSerializationFormat = SketchSerializationFormat.InqlHllV1,
+    format: SketchSerializationFormat = SketchSerializationFormat.IncqlHllV1,
 ) -> SketchLogicalType:
     """
     Build HyperLogLog logical type metadata.
@@ -146,7 +146,7 @@ module tests:
         assert sketch_type.family == SketchFamily.HyperLogLog
         assert sketch_type.value_domain == SketchValueDomain.IntegerIdentifier
         assert sketch_type.precision == 12
-        assert sketch_type.format == SketchSerializationFormat.InqlHllV1
+        assert sketch_type.format == SketchSerializationFormat.IncqlHllV1
     def test_hll_type_rejects_non_positive_precision() -> None:
         assert_raises[ValueError](_invalid_hll_precision)
     def test_sketch_col_preserves_expression_and_type() -> None:

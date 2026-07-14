@@ -1,8 +1,8 @@
 """
-Compact schemas used by the InQL examples.
+Compact schemas used by the IncQL examples.
 
 Each executable example binds source reads to `LazyFrame[Model]` so the row contract is visible at the boundary where
-data enters InQL.
+data enters IncQL.
 
 ## Models
 

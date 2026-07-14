@@ -9,7 +9,7 @@ Use the observed Session methods when you need an auditable execution attempt re
 Use `collect_observed(...)` when you need materialized data and execution evidence from the same attempt.
 
 ```incan
-from pub::inql import ExecutionObservationStatus, LazyFrame, Session
+from pub::incql import ExecutionObservationStatus, LazyFrame, Session
 from models import Order
 
 session = Session.default()
@@ -48,7 +48,7 @@ match observed.error:
 Use `write_observed(...)` when the write itself is the operation you want to audit.
 
 ```incan
-from pub::inql import csv_sink
+from pub::incql import csv_sink
 
 write_attempt = session.write_observed(orders, csv_sink("target/orders.csv"))
 
@@ -61,11 +61,11 @@ The write result has no `data` field. The output artifact is the sink side effec
 
 ## Check inferred adapter requirements
 
-Use `check_plan_coverage(...)` when you want InQL to inspect a lazy plan and evaluate the adapter requirements that are visible in that plan evidence.
+Use `check_plan_coverage(...)` when you want IncQL to inspect a lazy plan and evaluate the adapter requirements that are visible in that plan evidence.
 
 ```incan
-from pub::inql import AdapterCoverageState
-from pub::inql.functions import col, desc, eq
+from pub::incql import AdapterCoverageState
+from pub::incql.functions import col, desc, eq
 
 review = orders
     .filter(eq(col("status"), "paid"))
@@ -86,7 +86,7 @@ for record in coverage:
 Use `check_coverage(...)` when the requirement comes from a policy, workflow, or review step rather than directly from the inspected plan shape. Build the requirements that matter, then ask the selected adapter for coverage records.
 
 ```incan
-from pub::inql import (
+from pub::incql import (
     AdapterCoverageState,
     AdapterRequirement,
     AdapterRequirementCapability,
@@ -112,7 +112,7 @@ match coverage[0].state:
     AdapterCoverageState.Unknown => println(coverage[0].diagnostics[0].message)
 ```
 
-Treat `Unknown` as non-enforcing. It means InQL has not classified that adapter capability; it does not mean the adapter has proven support.
+Treat `Unknown` as non-enforcing. It means IncQL has not classified that adapter capability; it does not mean the adapter has proven support.
 
 ## Choose the right observed method
 

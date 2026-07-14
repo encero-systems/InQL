@@ -52,7 +52,7 @@ body:
     attributes:
       label: Audience
       options:
-        - InQL user (library, queries, datasets)
+        - IncQL user (library, queries, datasets)
         - Contributor (RFCs, package layout, CI)
         - Incan / compiler integrator
         - Not sure
