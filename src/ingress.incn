@@ -11,7 +11,7 @@ from evidence import ExecutionDiagnosticSeverity, SemanticTarget, SemanticTarget
 from projection_builders import ColumnExpr, ProjectionAssignment
 from semantic_profiles import SemanticProfile, SemanticProfileAssessment, assess_profile_for_target
 
-pub const INGRESS_SCHEMA_VERSION: str = "inql.ingress.v0.1"
+pub const INGRESS_SCHEMA_VERSION: str = "incql.ingress.v0.1"
 
 
 @derive(Clone)
@@ -85,7 +85,7 @@ pub enum IngressAnalysisStatus(str):
 
 @derive(Clone)
 pub model IngressRequest:
-    """One external request entering InQL through a frontend boundary."""
+    """One external request entering IncQL through a frontend boundary."""
 
     pub request_id: str
     pub frontend_id: str
@@ -136,7 +136,7 @@ pub model ClientSessionContext:
 
 @derive(Clone)
 pub model IngressOriginReference:
-    """Mapping from an external protocol node or expression to an InQL evidence target."""
+    """Mapping from an external protocol node or expression to an IncQL evidence target."""
 
     pub origin_id: str
     pub kind: IngressOriginKind
@@ -180,7 +180,7 @@ pub model IngressReadNamedTable:
 
 @derive(Clone)
 pub model IngressFilter:
-    """Unresolved filter request already decoded into an InQL scalar predicate expression."""
+    """Unresolved filter request already decoded into an IncQL scalar predicate expression."""
 
     pub predicate: ColumnExpr
     pub origin: Option[IngressOriginReference]
@@ -188,7 +188,7 @@ pub model IngressFilter:
 
 @derive(Clone)
 pub model IngressSelect:
-    """Unresolved projection request decoded into InQL projection assignments."""
+    """Unresolved projection request decoded into IncQL projection assignments."""
 
     pub assignments: list[ProjectionAssignment]
     pub origin: Option[IngressOriginReference]
@@ -196,7 +196,7 @@ pub model IngressSelect:
 
 @derive(Clone)
 pub model IngressGroupBy:
-    """Unresolved grouping-key request decoded into InQL scalar expressions."""
+    """Unresolved grouping-key request decoded into IncQL scalar expressions."""
 
     pub columns: list[ColumnExpr]
     pub origin: Option[IngressOriginReference]
@@ -204,7 +204,7 @@ pub model IngressGroupBy:
 
 @derive(Clone)
 pub model IngressAggregate:
-    """Unresolved aggregate-measure request decoded into InQL aggregate measures."""
+    """Unresolved aggregate-measure request decoded into IncQL aggregate measures."""
 
     pub measures: list[AggregateMeasure]
     pub origin: Option[IngressOriginReference]
@@ -212,7 +212,7 @@ pub model IngressAggregate:
 
 @derive(Clone)
 pub model IngressOrderBy:
-    """Unresolved ordering request decoded into InQL ordering expressions."""
+    """Unresolved ordering request decoded into IncQL ordering expressions."""
 
     pub columns: list[ColumnExpr]
     pub origin: Option[IngressOriginReference]
@@ -267,14 +267,14 @@ pub model IngressEvidence:
 
 @derive(Clone)
 pub model IngressAnalysis[T with Clone]:
-    """Result of analyzing one ingress plan into ordinary InQL relational semantics."""
+    """Result of analyzing one ingress plan into ordinary IncQL relational semantics."""
 
     pub status: IngressAnalysisStatus
     pub plan: Option[LazyFrame[T]]
     pub evidence: IngressEvidence
 
     def is_accepted(self) -> bool:
-        """Return whether analysis produced an executable InQL plan."""
+        """Return whether analysis produced an executable IncQL plan."""
         return self.status == IngressAnalysisStatus.Analyzed
 
 
@@ -342,7 +342,7 @@ pub def ingress_origin_reference(
     external_path: str,
     name: str,
 ) -> IngressOriginReference:
-    """Create one origin reference that maps external protocol identity to an InQL evidence target."""
+    """Create one origin reference that maps external protocol identity to an IncQL evidence target."""
     mut target_kind = SemanticTargetKind.IngressNode
     if kind == IngressOriginKind.Expression:
         target_kind = SemanticTargetKind.IngressExpression

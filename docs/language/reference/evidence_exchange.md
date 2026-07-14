@@ -1,11 +1,11 @@
 # Evidence exchange bridges (Reference)
 
-Evidence exchange bridges turn InQL evidence into local handoff artifacts, or preserve external artifacts as typed evidence inputs. They do not make external systems the semantic owner of InQL plans, lineage, quality, coverage, or governance evidence.
+Evidence exchange bridges turn IncQL evidence into local handoff artifacts, or preserve external artifacts as typed evidence inputs. They do not make external systems the semantic owner of IncQL plans, lineage, quality, coverage, or governance evidence.
 
 ## Entry points
 
 ```incan
-from pub::inql import (
+from pub::incql import (
     bundle_summary_exchange,
     openlineage_exchange,
     telemetry_exchange,
@@ -24,7 +24,7 @@ from pub::inql import (
 | `external_evidence_artifact(...)` | external artifact identity fields | `ExternalEvidenceArtifact` |
 | `external_evidence_exchange(artifact)` | `ExternalEvidenceArtifact` | `EvidenceExchangeArtifact` |
 
-`bundle_summary_exchange(...)` is a native InQL summary bridge. `openlineage_exchange(...)` and `telemetry_exchange(...)` produce OpenLineage-shaped and OpenTelemetry-shaped local records. `transformation_project_exchange(...)` produces generic source, model, and test suggestions for transformation-project workflows. The inbound external artifact helpers preserve artifact identity, source URI, fingerprint, confidence, diagnostics, and evidence references without importing those artifacts as authoritative InQL semantics.
+`bundle_summary_exchange(...)` is a native IncQL summary bridge. `openlineage_exchange(...)` and `telemetry_exchange(...)` produce OpenLineage-shaped and OpenTelemetry-shaped local records. `transformation_project_exchange(...)` produces generic source, model, and test suggestions for transformation-project workflows. The inbound external artifact helpers preserve artifact identity, source URI, fingerprint, confidence, diagnostics, and evidence references without importing those artifacts as authoritative IncQL semantics.
 
 ## Record types
 
@@ -43,7 +43,7 @@ The current schema identifier is `EVIDENCE_EXCHANGE_SCHEMA_VERSION`.
 | Enum | Values |
 | ---- | ------ |
 | `EvidenceExchangeDirection` | `Inbound`, `Outbound` |
-| `EvidenceExchangeTargetFormat` | `InqlBundleSummary`, `OpenLineage`, `OpenTelemetry`, `TransformationProject`, `CatalogMetadata`, `DataContract`, `DataProduct`, `EvidenceGraph`, `Sidecar`, `ExternalArtifact` |
+| `EvidenceExchangeTargetFormat` | `IncqlBundleSummary`, `OpenLineage`, `OpenTelemetry`, `TransformationProject`, `CatalogMetadata`, `DataContract`, `DataProduct`, `EvidenceGraph`, `Sidecar`, `ExternalArtifact` |
 | `EvidenceExchangeMappingCoverage` | `Complete`, `Partial`, `Lossy`, `Unsupported` |
 | `EvidenceExchangeRedactionMode` | `PreserveVisibility`, `PublicOnly`, `RedactSensitive`, `SidecarOnly` |
 | `EvidenceExchangeRecordKind` | bundle, OpenLineage, telemetry, transformation suggestion, and external artifact record kinds |
@@ -75,9 +75,9 @@ Methods:
 
 ## Mapping coverage and loss
 
-Mapping coverage is explicit. A native InQL bundle summary can be `Complete`; an OpenLineage-shaped projection is currently `Lossy` because OpenLineage does not natively distinguish every InQL lineage relationship and transformation dimension. Transformation-project suggestions and telemetry projections are `Partial` because they are review artifacts, not complete external project definitions or managed telemetry exports.
+Mapping coverage is explicit. A native IncQL bundle summary can be `Complete`; an OpenLineage-shaped projection is currently `Lossy` because OpenLineage does not natively distinguish every IncQL lineage relationship and transformation dimension. Transformation-project suggestions and telemetry projections are `Partial` because they are review artifacts, not complete external project definitions or managed telemetry exports.
 
-Lossy bridges must emit `EvidenceExchangeLoss` records instead of silently dropping semantic dimensions. Consumers can use those records to decide whether to inspect the InQL sidecar artifact, require manual review, or reject the exchange.
+Lossy bridges must emit `EvidenceExchangeLoss` records instead of silently dropping semantic dimensions. Consumers can use those records to decide whether to inspect the IncQL sidecar artifact, require manual review, or reject the exchange.
 
 ## Boundary
 

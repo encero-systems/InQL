@@ -15,7 +15,7 @@ from semantic_profiles import (
     adapter_binding_profile,
     assess_profile_for_target,
     coverage_record_for_profile,
-    inql_baseline_profile,
+    incql_baseline_profile,
     semantic_dimension,
     semantic_profile,
     sql_dialect_profile,
@@ -58,14 +58,14 @@ def _spend_summary(table_name: str) -> LazyFrame[ProfileOrder]:
 def test_semantic_profiles__baseline_profile_is_versioned_and_serializable() -> None:
     """RFC 040: baseline profiles should be typed, versioned, and serializable."""
     # -- Arrange --
-    evidence_refs = ["profile:inql"]
+    evidence_refs = ["profile:incql"]
 
     # -- Act --
-    profile = inql_baseline_profile("v0.1", evidence_refs=evidence_refs)
+    profile = incql_baseline_profile("v0.1", evidence_refs=evidence_refs)
 
     # -- Assert --
     assert profile.schema_version == SEMANTIC_PROFILE_SCHEMA_VERSION, "profile schema version should be stable"
-    assert profile.target_class == SemanticProfileTargetClass.InqlBaseline, "baseline should name the InQL target class"
+    assert profile.target_class == SemanticProfileTargetClass.IncqlBaseline, "baseline should name the IncQL target class"
     assert len(profile.dimensions) > 0, "baseline profile should declare core dimensions"
     assert profile.to_json_text().unwrap().contains("\"target_class\""), "profile JSON should expose target class"
 
@@ -133,7 +133,7 @@ def test_semantic_profiles__bundle_packages_profiles_and_assessments() -> None:
         project_version=Some("manifest-v12"),
         dimensions=[semantic_dimension(
             SemanticProfileDimensionKind.TransformationProject,
-            "project metadata is imported evidence, not InQL semantics",
+            "project metadata is imported evidence, not IncQL semantics",
             state=SemanticProfileDimensionState.Constrained,
         )],
         evidence_refs=["profile:dbt"],

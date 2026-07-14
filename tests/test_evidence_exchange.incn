@@ -74,8 +74,8 @@ def test_bundle_summary_exchange__packages_sections_and_schema_versions() -> Non
     # -- Assert --
     assert exchange.schema_version == EVIDENCE_EXCHANGE_SCHEMA_VERSION, "exchange artifacts should expose a schema version"
     assert exchange.direction == EvidenceExchangeDirection.Outbound, "bundle summary exchange should be outbound"
-    assert exchange.target_format == EvidenceExchangeTargetFormat.InqlBundleSummary, "bundle summary exchange should name its target format"
-    assert exchange.profile.mapping_coverage == EvidenceExchangeMappingCoverage.Complete, "InQL summary exchange should be complete"
+    assert exchange.target_format == EvidenceExchangeTargetFormat.IncqlBundleSummary, "bundle summary exchange should name its target format"
+    assert exchange.profile.mapping_coverage == EvidenceExchangeMappingCoverage.Complete, "IncQL summary exchange should be complete"
     assert exchange.source_bundle_id == Some(bundle.bundle_id), "exchange should preserve the source bundle id"
     assert len(exchange.records) >= len(bundle.sections), "bundle sections should become exchange records"
     assert _has_record_kind(exchange.records, EvidenceExchangeRecordKind.BundleSection), "section records should be present"

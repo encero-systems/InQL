@@ -1855,7 +1855,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "inql"
+name = "incql"
 version = "0.4.0"
 dependencies = [
  "blake2",

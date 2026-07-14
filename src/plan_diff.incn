@@ -17,8 +17,8 @@ from inspect import PlanInspection, PlanNodeInspection, inspect_plan
 from quality import QualityAssertion, QualityObservation
 from scalar_schema import ScalarColumnSpec
 
-pub const PLAN_DIFF_SCHEMA_VERSION: str = "inql.plan-diff.v0.1"
-pub const BLAST_RADIUS_INPUT_SCHEMA_VERSION: str = "inql.blast-radius-input.v0.1"
+pub const PLAN_DIFF_SCHEMA_VERSION: str = "incql.plan-diff.v0.1"
+pub const BLAST_RADIUS_INPUT_SCHEMA_VERSION: str = "incql.blast-radius-input.v0.1"
 
 
 @derive(Clone)
@@ -76,7 +76,7 @@ pub enum PlanDiffConfidence(str):
 
 @derive(Clone)
 pub model PlanDiffRecord:
-    """One structured change between two InQL evidence artifacts."""
+    """One structured change between two IncQL evidence artifacts."""
 
     pub record_id: str
     pub family: PlanDiffChangeFamily
@@ -115,7 +115,7 @@ pub model BlastRadiusInput:
 
 @derive(Clone)
 pub model PlanDiff:
-    """Structured local comparison between two InQL evidence artifacts."""
+    """Structured local comparison between two IncQL evidence artifacts."""
 
     pub schema_version: str
     pub diff_id: str
@@ -144,7 +144,7 @@ pub model PlanDiff:
         return _records_for_family(self.records, PlanDiffChangeFamily.Lineage)
 
     def unknown_impacts(self) -> list[PlanDiffRecord]:
-        """Return records where InQL cannot classify impact precisely."""
+        """Return records where IncQL cannot classify impact precisely."""
         mut records: list[PlanDiffRecord] = []
         for record in self.records:
             if record.kind == PlanDiffChangeKind.Unknown or record.compatibility == PlanDiffCompatibility.Unknown:

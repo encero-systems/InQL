@@ -93,7 +93,7 @@ def test_verification_helpers__separate_assertion_run_and_observation_state() ->
         input_targets=[orders],
         comparison_intent="source and target relation row counts match",
         scope_kind=VerificationScopeKind.Relation,
-        required_semantic_profile_ids=["profile:inql:v0.1"],
+        required_semantic_profile_ids=["profile:incql:v0.1"],
     )
 
     # -- Act --

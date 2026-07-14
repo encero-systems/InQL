@@ -5,8 +5,8 @@ Semantic profiles describe the environment a plan is authored for, compared with
 ## Entry points
 
 ```incan
-from pub::inql import (
-    inql_baseline_profile,
+from pub::incql import (
+    incql_baseline_profile,
     adapter_binding_profile,
     execution_engine_profile,
     sql_dialect_profile,
@@ -24,7 +24,7 @@ from pub::inql import (
 | --- | ----- | ------ |
 | `semantic_dimension(...)` | dimension kind, behavior, state, source, confidence | `SemanticProfileDimension` |
 | `semantic_profile(...)` | target class, profile name, version/configuration, dimensions | `SemanticProfile` |
-| `inql_baseline_profile(...)` | optional version and evidence references | `SemanticProfile` |
+| `incql_baseline_profile(...)` | optional version and evidence references | `SemanticProfile` |
 | `adapter_binding_profile(...)` | adapter name/version/configuration and dimensions | `SemanticProfile` |
 | `execution_engine_profile(...)` | engine name/version/configuration and dimensions | `SemanticProfile` |
 | `sql_dialect_profile(...)` | dialect name/version and dimensions | `SemanticProfile` |
@@ -50,7 +50,7 @@ The current schema identifier is `SEMANTIC_PROFILE_SCHEMA_VERSION`.
 
 | Enum | Values |
 | ---- | ------ |
-| `SemanticProfileTargetClass` | `InqlBaseline`, `ClientProtocol`, `PlanIngressFrontend`, `ExecutionEngine`, `AdapterBinding`, `SqlDialect`, `CatalogSchemaSystem`, `TransformationProject`, `InterchangeConsumer`, `ConformanceBaseline` |
+| `SemanticProfileTargetClass` | `IncqlBaseline`, `ClientProtocol`, `PlanIngressFrontend`, `ExecutionEngine`, `AdapterBinding`, `SqlDialect`, `CatalogSchemaSystem`, `TransformationProject`, `InterchangeConsumer`, `ConformanceBaseline` |
 | `SemanticProfileDimensionKind` | `TypeSystem`, `NumericDecimal`, `TemporalCalendar`, `BooleanNullNan`, `StringComparison`, `IdentifierResolution`, `SchemaCatalog`, `TransformationProject`, `ClientSessionState`, `RelationOrdering`, `AggregateGrouping`, `WindowSemantics`, `NestedSemiStructured`, `FunctionOperatorIdentity`, `ExtensionFallback`, `PlanStageObservability` |
 | `SemanticProfileDimensionState` | `Exact`, `Constrained`, `Unknown`, `NotApplicable` |
 | `SemanticProfileConfidence` | `Declared`, `Attested`, `Observed`, `Inferred`, `Unknown` |

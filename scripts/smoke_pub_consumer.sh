@@ -84,7 +84,7 @@ from pub::incql import (
     governed_attribute,
     governed_plan_bundle,
     governed_plan_bundle_from_inspection,
-    inql_baseline_profile,
+    incql_baseline_profile,
     analyze_ingress_plan,
     client_session_context,
     inspect_plan,
@@ -459,7 +459,7 @@ def _plan_diff_exports_compile_for_pub_consumers() -> None:
     diff = diff_plan_bundles(before, after)
 
     # -- Assert --
-    assert diff.schema_version == "inql.plan-diff.v0.1", "pub consumers should receive typed plan diffs"
+    assert diff.schema_version == "incql.plan-diff.v0.1", "pub consumers should receive typed plan diffs"
     assert len(diff.records) > 0, "pub consumers should see evidence-reference changes"
     assert _diff_has_family(diff, PlanDiffChangeFamily.EvidenceReference), "pub consumers should inspect diff families"
     assert len(diff.blast_radius_inputs) > 0, "pub consumers should receive local blast-radius inputs"
@@ -492,7 +492,7 @@ def _evidence_exchange_exports_compile_for_pub_consumers() -> None:
     inbound = external_evidence_exchange(external)
 
     # -- Assert --
-    assert summary.target_format == EvidenceExchangeTargetFormat.InqlBundleSummary, "bundle summary exchange should export"
+    assert summary.target_format == EvidenceExchangeTargetFormat.IncqlBundleSummary, "bundle summary exchange should export"
     assert _exchange_has_kind(lineage.records, EvidenceExchangeRecordKind.OpenLineageJob), "OpenLineage exchange should export job records"
     assert _exchange_has_kind(telemetry.records, EvidenceExchangeRecordKind.TelemetryEvent), "telemetry exchange should export events"
     assert _exchange_has_kind(
@@ -506,7 +506,7 @@ def _semantic_profile_exports_compile_for_pub_consumers() -> None:
     # -- Arrange --
     mut session = Session.default()
     inspection = inspect_plan(_orders(session, "semantic_profile_orders"))
-    baseline = inql_baseline_profile("smoke", evidence_refs=["smoke:profile"])
+    baseline = incql_baseline_profile("smoke", evidence_refs=["smoke:profile"])
     dialect = sql_dialect_profile(
         "athena",
         dimensions=[
@@ -553,7 +553,7 @@ def _ingress_exports_compile_for_pub_consumers() -> None:
             ingress_filter(eq(col("customer_id"), "A")),
             ingress_limit(1),
         ],
-        requested_profile=Some(inql_baseline_profile("smoke")),
+        requested_profile=Some(incql_baseline_profile("smoke")),
     )
 
     # -- Act --

@@ -1,13 +1,13 @@
 # Track async verification state
 
-Use verification evidence when checks happen over time or come from different evidence strengths. A migration or reconciliation run might first receive an attested source count, then verified partition checks, then a waiver for a known mismatch. InQL keeps those as append-only observations and derives current state from them instead of overwriting older evidence.
+Use verification evidence when checks happen over time or come from different evidence strengths. A migration or reconciliation run might first receive an attested source count, then verified partition checks, then a waiver for a known mismatch. IncQL keeps those as append-only observations and derives current state from them instead of overwriting older evidence.
 
 ## Declare what should be checked
 
 A verification assertion describes intent. It is stable while observations change.
 
 ```incan
-from pub::inql import VerificationAssertionKind, VerificationScopeKind, verification_assertion
+from pub::incql import VerificationAssertionKind, VerificationScopeKind, verification_assertion
 
 assertion = verification_assertion(
     "orders_partition_digest",
@@ -26,7 +26,7 @@ The assertion does not say passed or failed. It anchors the check to semantic ta
 A run records the attempt. Observations record facts emitted by the run.
 
 ```incan
-from pub::inql import (
+from pub::incql import (
     VerificationAssurance,
     VerificationCaptureBasis,
     VerificationLifecycle,
@@ -64,7 +64,7 @@ Lifecycle, outcome, and assurance are separate. A check can be complete but fail
 Waivers are observations, not edits. Keep the failed observation and add a later waived observation that supersedes it for the current projection.
 
 ```incan
-from pub::inql import verification_waiver, waived_verification_observation
+from pub::incql import verification_waiver, waived_verification_observation
 
 waiver = verification_waiver(
     "waiver:orders:2026-06-19",
@@ -93,7 +93,7 @@ The current projection can show the waived observation as active, but the outcom
 Use `project_verification_state(...)` to derive the current state for an assertion and scope from the append-only observation stream.
 
 ```incan
-from pub::inql import project_verification_state
+from pub::incql import project_verification_state
 
 projection = project_verification_state(
     assertion,
@@ -112,7 +112,7 @@ No observations means `Unknown`, not passed and not covered. Mixed active observ
 Pass verification evidence into a governed plan bundle when a local tool needs one handoff value with the plan and evidence together.
 
 ```incan
-from pub::inql import governed_plan_bundle, verification_evidence
+from pub::incql import governed_plan_bundle, verification_evidence
 
 evidence = verification_evidence(
     [assertion],

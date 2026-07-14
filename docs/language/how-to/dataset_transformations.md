@@ -57,11 +57,11 @@ top_orders = (
 
 ## Use familiar exploration aliases
 
-The carrier API also exposes small pandas/Spark-familiar aliases for exploration code. These aliases still build ordinary InQL plans; they do not make the carrier eager or mutable.
+The carrier API also exposes small pandas/Spark-familiar aliases for exploration code. These aliases still build ordinary IncQL plans; they do not make the carrier eager or mutable.
 
 ```incan
-from pub::inql import LazyFrame
-from pub::inql.functions import avg, col, count, eq, sum
+from pub::incql import LazyFrame
+from pub::incql.functions import avg, col, count, eq, sum
 from models import Order
 
 def paid_rollup(orders: LazyFrame[Order]) -> LazyFrame[Order]:

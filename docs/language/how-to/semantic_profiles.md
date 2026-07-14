@@ -1,21 +1,21 @@
 # Use semantic profiles in evidence
 
-Use semantic profiles when a plan is being evaluated for a specific environment, such as an InQL baseline, SQL dialect, execution engine, adapter binding, catalog system, transformation project, interchange consumer, or conformance baseline. A profile records the assumptions around that environment so coverage, observations, bundles, and exchanges do not silently depend on an unnamed backend or external project.
+Use semantic profiles when a plan is being evaluated for a specific environment, such as an IncQL baseline, SQL dialect, execution engine, adapter binding, catalog system, transformation project, interchange consumer, or conformance baseline. A profile records the assumptions around that environment so coverage, observations, bundles, and exchanges do not silently depend on an unnamed backend or external project.
 
 ## Create a baseline profile
 
 ```incan
-from pub::inql import inql_baseline_profile
+from pub::incql import incql_baseline_profile
 
-profile = inql_baseline_profile("v0.1", evidence_refs=["profile:inql"])
+profile = incql_baseline_profile("v0.1", evidence_refs=["profile:incql"])
 ```
 
-The InQL baseline profile declares core exact dimensions such as InQL's typed model, function registry identity, unordered relation model, and Prism inspection observability. This is useful when a bundle should state that its evidence was evaluated against InQL's own local semantics rather than an external engine.
+The IncQL baseline profile declares core exact dimensions such as IncQL's typed model, function registry identity, unordered relation model, and Prism inspection observability. This is useful when a bundle should state that its evidence was evaluated against IncQL's own local semantics rather than an external engine.
 
 ## Declare an external profile dimension
 
 ```incan
-from pub::inql import (
+from pub::incql import (
     SemanticProfileDimensionKind,
     SemanticProfileDimensionState,
     semantic_dimension,
@@ -34,12 +34,12 @@ oracle = sql_dialect_profile(
 )
 ```
 
-Unknown dimensions remain unknown. InQL does not treat an Oracle, Athena, Spark, dbt, Glue, OpenLineage, or DataHub profile as compatible merely because the profile exists. Compatibility evidence has to say which dimensions are exact, constrained, mismatched, unknown, or not applicable.
+Unknown dimensions remain unknown. IncQL does not treat an Oracle, Athena, Spark, dbt, Glue, OpenLineage, or DataHub profile as compatible merely because the profile exists. Compatibility evidence has to say which dimensions are exact, constrained, mismatched, unknown, or not applicable.
 
 ## Assess a plan target
 
 ```incan
-from pub::inql import assess_profile_for_target, inspect_plan
+from pub::incql import assess_profile_for_target, inspect_plan
 
 inspection = inspect_plan(summary)
 assessment = assess_profile_for_target(inspection.plan_target, oracle)
@@ -52,7 +52,7 @@ assert assessment.state.value() == "unknown"
 ## Bind coverage to a profile
 
 ```incan
-from pub::inql import adapter_binding_profile, coverage_record_for_profile
+from pub::incql import adapter_binding_profile, coverage_record_for_profile
 
 datafusion = adapter_binding_profile("datafusion", adapter_version=Some("53.1"))
 profiled_coverage = coverage_record_for_profile(coverage, datafusion)
@@ -63,7 +63,7 @@ This does not change the coverage answer. It records that the answer was evaluat
 ## Package profiles in a governed bundle
 
 ```incan
-from pub::inql import governed_plan_bundle_from_inspection
+from pub::incql import governed_plan_bundle_from_inspection
 
 bundle = governed_plan_bundle_from_inspection(
     inspection,

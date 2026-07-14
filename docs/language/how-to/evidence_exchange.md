@@ -1,15 +1,15 @@
 # Exchange evidence locally
 
-Use evidence exchange bridges when an InQL plan bundle needs to leave InQL as a reviewable artifact, or when an external artifact should be preserved as evidence input without becoming InQL's source of truth.
+Use evidence exchange bridges when an IncQL plan bundle needs to leave IncQL as a reviewable artifact, or when an external artifact should be preserved as evidence input without becoming IncQL's source of truth.
 
 ## Export a native bundle summary
 
 ```incan
-from pub::inql import bundle_summary_exchange, governed_plan_bundle
+from pub::incql import bundle_summary_exchange, governed_plan_bundle
 
 bundle = governed_plan_bundle(summary)
 exchange = bundle_summary_exchange(bundle)
-exchange.write("target/inql/bundle-exchange.json")?
+exchange.write("target/incql/bundle-exchange.json")?
 ```
 
 The native bundle summary is the least lossy exchange. It preserves the bundle id, schema versions, section availability, record counts, evidence references, and output/lineage summary counts.
@@ -17,7 +17,7 @@ The native bundle summary is the least lossy exchange. It preserves the bundle i
 ## Project OpenLineage-shaped records
 
 ```incan
-from pub::inql import openlineage_exchange
+from pub::incql import openlineage_exchange
 
 openlineage = openlineage_exchange(bundle)
 
@@ -25,12 +25,12 @@ for loss in openlineage.losses:
     println(f"{loss.field_path}: {loss.reason}")
 ```
 
-OpenLineage-shaped exchange records include job, run, dataset, and lineage-facet records. The bridge also emits loss records because InQL lineage distinguishes relationship and transformation dimensions that OpenLineage cannot always carry directly without extensions or a sidecar.
+OpenLineage-shaped exchange records include job, run, dataset, and lineage-facet records. The bridge also emits loss records because IncQL lineage distinguishes relationship and transformation dimensions that OpenLineage cannot always carry directly without extensions or a sidecar.
 
 ## Project telemetry-shaped records
 
 ```incan
-from pub::inql import telemetry_exchange
+from pub::incql import telemetry_exchange
 
 telemetry = telemetry_exchange(bundle)
 
@@ -43,17 +43,17 @@ Telemetry exchange emits a bundle-level event and adds event or metric records f
 ## Generate transformation-project suggestions
 
 ```incan
-from pub::inql import transformation_project_exchange
+from pub::incql import transformation_project_exchange
 
 suggestions = transformation_project_exchange(bundle)
 ```
 
-Transformation-project exchange emits reviewable source, model, and quality-test suggestions. These records are intentionally generic, so they can be translated into dbt-shaped YAML, notebook checks, migration review artifacts, or another transformation stack by downstream tooling. The suggestions are not proof that the external project already implements the InQL plan.
+Transformation-project exchange emits reviewable source, model, and quality-test suggestions. These records are intentionally generic, so they can be translated into dbt-shaped YAML, notebook checks, migration review artifacts, or another transformation stack by downstream tooling. The suggestions are not proof that the external project already implements the IncQL plan.
 
 ## Preserve inbound artifact identity
 
 ```incan
-from pub::inql import (
+from pub::incql import (
     EvidenceExchangeTargetFormat,
     ExternalEvidenceConfidence,
     external_evidence_artifact,
@@ -84,4 +84,4 @@ Typical local review flow:
 4. Review `mapping_coverage`, `unsupported_fields`, and `losses`.
 5. Pass the exchange JSON to catalog, CI, migration, or governance tooling that understands the selected profile.
 
-The exchange JSON is a handoff artifact. Keep the original InQL bundle available when a target format is lossy.
+The exchange JSON is a handoff artifact. Keep the original IncQL bundle available when a target format is lossy.

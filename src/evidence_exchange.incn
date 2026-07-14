@@ -1,8 +1,8 @@
 """
 Local evidence exchange bridge records.
 
-Exchange artifacts project InQL evidence into adjacent formats or preserve inbound external artifacts as evidence
-inputs. They are handoff values, not alternate sources of InQL relational semantics.
+Exchange artifacts project IncQL evidence into adjacent formats or preserve inbound external artifacts as evidence
+inputs. They are handoff values, not alternate sources of IncQL relational semantics.
 """
 
 from std.fs import IoError, Path
@@ -12,7 +12,7 @@ from evidence import AdapterCoverageRecord, ExecutionDiagnostic, ExecutionObserv
 from quality import QualityAssertion, QualityObservation
 from scalar_schema import ScalarColumnSpec
 
-pub const EVIDENCE_EXCHANGE_SCHEMA_VERSION: str = "inql.evidence-exchange.v0.1"
+pub const EVIDENCE_EXCHANGE_SCHEMA_VERSION: str = "incql.evidence-exchange.v0.1"
 
 
 @derive(Clone)
@@ -27,7 +27,7 @@ pub enum EvidenceExchangeDirection(str):
 pub enum EvidenceExchangeTargetFormat(str):
     """External or adjacent artifact format targeted by one exchange bridge."""
 
-    InqlBundleSummary = "inql_bundle_summary"
+    IncqlBundleSummary = "incql_bundle_summary"
     OpenLineage = "openlineage"
     OpenTelemetry = "opentelemetry"
     TransformationProject = "transformation_project"
@@ -41,7 +41,7 @@ pub enum EvidenceExchangeTargetFormat(str):
 
 @derive(Clone)
 pub enum EvidenceExchangeMappingCoverage(str):
-    """How completely one bridge profile maps InQL evidence into the target format."""
+    """How completely one bridge profile maps IncQL evidence into the target format."""
 
     Complete = "complete"
     Partial = "partial"
@@ -269,11 +269,11 @@ pub def evidence_exchange_profile(
 
 
 pub def bundle_summary_exchange(bundle: GovernedPlanBundle) -> EvidenceExchangeArtifact:
-    """Project a governed plan bundle into InQL's native bundle-summary exchange format."""
+    """Project a governed plan bundle into IncQL's native bundle-summary exchange format."""
     profile = evidence_exchange_profile(
         EvidenceExchangeDirection.Outbound,
-        EvidenceExchangeTargetFormat.InqlBundleSummary,
-        "inql.governed-plan-bundle-summary",
+        EvidenceExchangeTargetFormat.IncqlBundleSummary,
+        "incql.governed-plan-bundle-summary",
         target_format_version=Some("v0.1"),
         source_schema_versions=bundle.rule_versions,
         mapping_coverage=EvidenceExchangeMappingCoverage.Complete,
@@ -283,7 +283,7 @@ pub def bundle_summary_exchange(bundle: GovernedPlanBundle) -> EvidenceExchangeA
         EvidenceExchangeRecordKind.BundleSummary,
         Some(bundle.plan_target),
         bundle.bundle_id,
-        "inql.bundle.summary.v0.1",
+        "incql.bundle.summary.v0.1",
         f"sections={len(bundle.sections)} outputs={len(bundle.output_schema)} lineage_edges={len(bundle.lineage.edges)}",
         [],
         false,
@@ -295,7 +295,7 @@ pub def bundle_summary_exchange(bundle: GovernedPlanBundle) -> EvidenceExchangeA
                 EvidenceExchangeRecordKind.BundleSection,
                 Some(bundle.plan_target),
                 section.family,
-                "inql.bundle.section.v0.1",
+                "incql.bundle.section.v0.1",
                 f"{section.availability.value()} records={section.record_count} requirement={section.requirement.value()}",
                 section.evidence_refs,
                 false,
@@ -310,7 +310,7 @@ pub def openlineage_exchange(bundle: GovernedPlanBundle) -> EvidenceExchangeArti
     losses = [_loss(
         Some(bundle.plan_target),
         "lineage.relationship",
-        "OpenLineage facets do not natively distinguish every InQL lineage relationship and transformation kind.",
+        "OpenLineage facets do not natively distinguish every IncQL lineage relationship and transformation kind.",
         true,
         bundle.evidence_refs,
     )]
@@ -460,7 +460,7 @@ pub def external_evidence_exchange(artifact: ExternalEvidenceArtifact) -> Eviden
         source_schema_versions=[],
         mapping_coverage=EvidenceExchangeMappingCoverage.Partial,
         redaction_mode=EvidenceExchangeRedactionMode.PreserveVisibility,
-        unsupported_fields=["authoritative_inql_semantics"],
+        unsupported_fields=["authoritative_incql_semantics"],
         evidence_refs=artifact.evidence_refs,
     )
     records = [_record(
@@ -558,7 +558,7 @@ def _openlineage_dataset_record(bundle: GovernedPlanBundle, field: SemanticTarge
 
 
 def _openlineage_lineage_record(edge: LineageEdge) -> EvidenceExchangeRecord:
-    """Build an OpenLineage-shaped lineage facet record from one InQL lineage edge."""
+    """Build an OpenLineage-shaped lineage facet record from one IncQL lineage edge."""
     return _record(
         EvidenceExchangeRecordKind.OpenLineageLineageFacet,
         Some(edge.destination),

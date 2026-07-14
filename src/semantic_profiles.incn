@@ -2,21 +2,21 @@
 Interoperability semantic profile records.
 
 Semantic profiles describe the environment a plan is authored for, compared with, executed under, or exchanged with.
-They are evidence context, not alternative owners of InQL relational semantics.
+They are evidence context, not alternative owners of IncQL relational semantics.
 """
 
 from std.fs import IoError, Path
 from std.json import JsonError, JsonValue, dumps_pretty
 from evidence import AdapterCoverageRecord, ExecutionDiagnostic, MetadataLifecycle, MetadataSource, SemanticTarget
 
-pub const SEMANTIC_PROFILE_SCHEMA_VERSION: str = "inql.semantic-profile.v0.1"
+pub const SEMANTIC_PROFILE_SCHEMA_VERSION: str = "incql.semantic-profile.v0.1"
 
 
 @derive(Clone)
 pub enum SemanticProfileTargetClass(str):
     """Environment class described by a semantic profile."""
 
-    InqlBaseline = "inql_baseline"
+    IncqlBaseline = "incql_baseline"
     ClientProtocol = "client_protocol"
     PlanIngressFrontend = "plan_ingress_frontend"
     ExecutionEngine = "execution_engine"
@@ -188,7 +188,7 @@ pub def semantic_dimension(
     declared_behavior: str,
     state: SemanticProfileDimensionState = SemanticProfileDimensionState.Unknown,
     lifecycle: MetadataLifecycle = MetadataLifecycle.Analyzed,
-    source: MetadataSource = MetadataSource.InQL,
+    source: MetadataSource = MetadataSource.IncQL,
     confidence: SemanticProfileConfidence = SemanticProfileConfidence.Declared,
     diagnostics: list[ExecutionDiagnostic] = [],
     evidence_refs: list[str] = [],
@@ -234,20 +234,20 @@ pub def semantic_profile(
     )
 
 
-pub def inql_baseline_profile(version: str = "current", evidence_refs: list[str] = []) -> SemanticProfile:
-    """Return the local InQL baseline profile used when no external target owns semantics."""
+pub def incql_baseline_profile(version: str = "current", evidence_refs: list[str] = []) -> SemanticProfile:
+    """Return the local IncQL baseline profile used when no external target owns semantics."""
     return semantic_profile(
-        SemanticProfileTargetClass.InqlBaseline,
-        "inql",
-        source=MetadataSource.InQL,
+        SemanticProfileTargetClass.IncqlBaseline,
+        "incql",
+        source=MetadataSource.IncQL,
         target_version=Some(version),
         dimensions=[_exact_dimension(
             SemanticProfileDimensionKind.TypeSystem,
-            "InQL typed scalar and relation model",
+            "IncQL typed scalar and relation model",
             evidence_refs,
         ), _exact_dimension(
             SemanticProfileDimensionKind.FunctionOperatorIdentity,
-            "InQL function registry identity",
+            "IncQL function registry identity",
             evidence_refs,
         ), _exact_dimension(
             SemanticProfileDimensionKind.RelationOrdering,
@@ -385,7 +385,7 @@ pub def conformance_baseline_profile(
     return semantic_profile(
         SemanticProfileTargetClass.ConformanceBaseline,
         baseline_name,
-        source=MetadataSource.InQL,
+        source=MetadataSource.IncQL,
         target_version=baseline_version,
         dimensions=dimensions,
         confidence=SemanticProfileConfidence.Declared,
@@ -454,12 +454,12 @@ def _exact_dimension(
     declared_behavior: str,
     evidence_refs: list[str],
 ) -> SemanticProfileDimension:
-    """Return an exact InQL-authored dimension for built-in baseline profiles."""
+    """Return an exact IncQL-authored dimension for built-in baseline profiles."""
     return semantic_dimension(
         kind,
         declared_behavior,
         state=SemanticProfileDimensionState.Exact,
-        source=MetadataSource.InQL,
+        source=MetadataSource.IncQL,
         confidence=SemanticProfileConfidence.Declared,
         evidence_refs=evidence_refs,
     )

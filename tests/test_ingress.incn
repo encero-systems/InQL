@@ -33,7 +33,7 @@ from projection_builders import with_column_assignment
 from semantic_profiles import (
     SemanticProfileDimensionKind,
     SemanticProfileDimensionState,
-    inql_baseline_profile,
+    incql_baseline_profile,
     semantic_dimension,
     sql_dialect_profile,
 )
@@ -109,7 +109,7 @@ def test_ingress__supported_relation_steps_analyze_to_prism_plan() -> None:
         request,
         session_context,
         [read_step, filter_step, select_step, group_step, aggregate_step, order_step, limit_step],
-        requested_profile=Some(inql_baseline_profile("v0.1")),
+        requested_profile=Some(incql_baseline_profile("v0.1")),
         evidence_refs=["ingress:orders"],
     )
 

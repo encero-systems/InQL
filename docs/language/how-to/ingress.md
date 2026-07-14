@@ -1,11 +1,11 @@
 # Analyze external frontend intent
 
-Use ingress records when a local tool or frontend has already decoded external client intent and needs Prism to analyze that intent as InQL. The examples here model a Spark Connect-shaped request, but the same records can describe SQL, notebook, or API-client frontends.
+Use ingress records when a local tool or frontend has already decoded external client intent and needs Prism to analyze that intent as IncQL. The examples here model a Spark Connect-shaped request, but the same records can describe SQL, notebook, or API-client frontends.
 
 ## Create request and session context
 
 ```incan
-from pub::inql import (
+from pub::incql import (
     IngressFrontendKind,
     client_session_context,
     ingress_request,
@@ -35,7 +35,7 @@ The request identifies the frontend and protocol. The session context records an
 ## Preserve origin references
 
 ```incan
-from pub::inql import IngressOriginKind, ingress_origin_reference
+from pub::incql import IngressOriginKind, ingress_origin_reference
 
 orders_origin = ingress_origin_reference(
     request,
@@ -46,12 +46,12 @@ orders_origin = ingress_origin_reference(
 )
 ```
 
-Origin references map external protocol ids or paths to InQL evidence targets. They help inspection explain where a Prism target came from without making external ids the source of semantic identity.
+Origin references map external protocol ids or paths to IncQL evidence targets. They help inspection explain where a Prism target came from without making external ids the source of semantic identity.
 
 ## Analyze a supported relation plan
 
 ```incan
-from pub::inql import (
+from pub::incql import (
     IngressAnalysis,
     aggregate_as,
     analyze_ingress_plan,
@@ -105,13 +105,13 @@ Supported relation steps emit `Supported` frontend coverage. Unsupported command
 ## Attach a semantic profile
 
 ```incan
-from pub::inql import IngressAnalysis, inql_baseline_profile
+from pub::incql import IngressAnalysis, incql_baseline_profile
 
 profiled_plan = ingress_plan(
     request,
     session_context,
     [ingress_named_table("orders")],
-    requested_profile=Some(inql_baseline_profile("v0.1")),
+    requested_profile=Some(incql_baseline_profile("v0.1")),
 )
 
 profiled_analysis: IngressAnalysis[Order] = analyze_ingress_plan[Order](profiled_plan)
@@ -123,7 +123,7 @@ Profiles make compatibility assumptions explicit. They do not force compatibilit
 ## Package ingress evidence
 
 ```incan
-from pub::inql import governed_plan_bundle_from_inspection, inspect_plan
+from pub::incql import governed_plan_bundle_from_inspection, inspect_plan
 
 match analysis.plan:
     Some(summary) =>
@@ -142,7 +142,7 @@ Bundling ingress evidence keeps client-session context, origin mappings, coverag
 ## Handle commands deliberately
 
 ```incan
-from pub::inql import IngressAnalysis, IngressCommandKind, ingress_command
+from pub::incql import IngressAnalysis, IngressCommandKind, ingress_command
 
 command_plan = ingress_plan(
     request,

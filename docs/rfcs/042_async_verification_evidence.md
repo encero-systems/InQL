@@ -1,31 +1,31 @@
-# InQL RFC 042: Async verification evidence
+# IncQL RFC 042: Async verification evidence
 
 - **Status:** Implemented
 - **Created:** 2026-06-20
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 028 (semantic identity and target model)
-  - InQL RFC 029 (typed metadata attachments)
-  - InQL RFC 031 (local inspection APIs and artifacts)
-  - InQL RFC 032 (execution observations)
-  - InQL RFC 033 (adapter requirements and coverage)
-  - InQL RFC 034 (quality assertions and observations)
-  - InQL RFC 036 (governed plan bundle)
-  - InQL RFC 038 (evidence exchange bridges)
-  - InQL RFC 040 (interoperability semantic profiles)
-  - InQL RFC 043 (canonical equality and digest profiles)
-  - InQL RFC 044 (verifier statements and proof artifacts)
-  - InQL RFC 045 (constraint evidence and verification-aware planning)
-- **Issue:** [InQL #77](https://github.com/encero-systems/InQL/issues/77)
-- **RFC PR:** [InQL #83](https://github.com/encero-systems/InQL/pull/83)
-- **Implementation PR:** [InQL #95](https://github.com/encero-systems/InQL/pull/95)
-- **Written against:** Incan v0.3-era InQL
-- **Shipped in:** InQL v0.1
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 028 (semantic identity and target model)
+  - IncQL RFC 029 (typed metadata attachments)
+  - IncQL RFC 031 (local inspection APIs and artifacts)
+  - IncQL RFC 032 (execution observations)
+  - IncQL RFC 033 (adapter requirements and coverage)
+  - IncQL RFC 034 (quality assertions and observations)
+  - IncQL RFC 036 (governed plan bundle)
+  - IncQL RFC 038 (evidence exchange bridges)
+  - IncQL RFC 040 (interoperability semantic profiles)
+  - IncQL RFC 043 (canonical equality and digest profiles)
+  - IncQL RFC 044 (verifier statements and proof artifacts)
+  - IncQL RFC 045 (constraint evidence and verification-aware planning)
+- **Issue:** [IncQL #77](https://github.com/encero-systems/IncQL/issues/77)
+- **RFC PR:** [IncQL #83](https://github.com/encero-systems/IncQL/pull/83)
+- **Implementation PR:** [IncQL #95](https://github.com/encero-systems/IncQL/pull/95)
+- **Written against:** Incan v0.3-era IncQL
+- **Shipped in:** IncQL v0.1
 
 ## Summary
 
-This RFC defines async verification evidence for InQL. Verification assertions are stable semantic targets, verification runs emit append-only observations over time, and current verification state is a projection over those observations rather than a mutable field. The model separates lifecycle, outcome, assurance, scope, and commitment context so tools can distinguish deterministic verification, external attestations, sampled checks, accepted waivers, unknown evidence, and proof-backed verification without pretending that all checks carry the same trust.
+This RFC defines async verification evidence for IncQL. Verification assertions are stable semantic targets, verification runs emit append-only observations over time, and current verification state is a projection over those observations rather than a mutable field. The model separates lifecycle, outcome, assurance, scope, and commitment context so tools can distinguish deterministic verification, external attestations, sampled checks, accepted waivers, unknown evidence, and proof-backed verification without pretending that all checks carry the same trust.
 
 ## Core model
 
@@ -35,13 +35,13 @@ This RFC defines async verification evidence for InQL. Verification assertions a
 4. A current verification state is a projection over observations for a specific assertion, scope, source snapshot, target snapshot, semantic profile context, and stream watermark.
 5. Lifecycle, outcome, and assurance are separate axes. A check can be complete but failed, passed but only attested, or failed but waived.
 6. Assurance is scoped. A relation may be sampled overall while individual partitions are verified, waived, unknown, or later proven.
-7. Cryptographic proof verification plugs into the same event model through verifier statements and proof artifacts defined by InQL RFC 044. This RFC defines observation state, not proof-system mechanics.
+7. Cryptographic proof verification plugs into the same event model through verifier statements and proof artifacts defined by IncQL RFC 044. This RFC defines observation state, not proof-system mechanics.
 8. Verification is always relative to recorded snapshots, stream positions, commitments, or attestations. It does not prove that those references faithfully represent reality unless their own authority and basis are also verified.
 9. Privacy is a separate evidence concern. Verification assurance must not imply zero-knowledge, confidentiality, or payload redaction.
 
 ## Motivation
 
-Migration, modernization, replicated analytics, and cross-system validation work rarely complete as one atomic yes-or-no check. Source counts may be reported by a connector before target data finishes loading. Partition digests may stream in over minutes or hours. A sampled comparison may later be replaced by a deterministic check. A mismatch may be waived for a specific partition while the rest of the relation remains verified. A proof verifier may also prove a bounded query result against committed inputs through the statement and artifact model defined by InQL RFC 044. InQL needs a vocabulary that can represent those movements without overwriting older evidence or collapsing weak and strong evidence into the same status.
+Migration, modernization, replicated analytics, and cross-system validation work rarely complete as one atomic yes-or-no check. Source counts may be reported by a connector before target data finishes loading. Partition digests may stream in over minutes or hours. A sampled comparison may later be replaced by a deterministic check. A mismatch may be waived for a specific partition while the rest of the relation remains verified. A proof verifier may also prove a bounded query result against committed inputs through the statement and artifact model defined by IncQL RFC 044. IncQL needs a vocabulary that can represent those movements without overwriting older evidence or collapsing weak and strong evidence into the same status.
 
 The existing evidence RFCs already define execution observations, quality observations, adapter coverage, governed bundles, exchange bridges, and semantic profiles. They do not yet define a cross-cutting assurance axis or an async verification event stream. Reusing only quality status would conflate "the predicate passed" with "the evidence is independently verified." Reusing only execution status would conflate "the job succeeded" with "the migration is correct." Reusing only adapter coverage would conflate "the adapter can perform a check" with "the check has actually been performed."
 
@@ -53,7 +53,7 @@ The existing evidence RFCs already define execution observations, quality observ
 - Let verification evidence attach to semantic targets, snapshots, stream positions, watermarks, profiles, and evidence references.
 - Require snapshot and commitment context to record authority, time, and basis when those facts are available.
 - Define assurance labels for proven, verified, attested, sampled, waived, and unknown evidence.
-- Define how proof-backed observations use the same lifecycle, outcome, assurance, scope, and commitment model while deferring statement and artifact details to InQL RFC 044.
+- Define how proof-backed observations use the same lifecycle, outcome, assurance, scope, and commitment model while deferring statement and artifact details to IncQL RFC 044.
 - Require unsupported and omitted verification coverage to stay explicit in observations and projections.
 - Clarify how verification evidence composes with quality observations, execution observations, adapter coverage, governed plan bundles, evidence exchange bridges, and semantic profiles.
 
@@ -170,7 +170,7 @@ Assurance label must distinguish at least:
 
 - proven: a cryptographic proof was verified against recorded commitments for the observation scope
 - verified: a deterministic check ran against recorded source and target snapshots or stream positions for the observation scope
-- attested: a connector, external tool, catalog, or runtime reported a fact that InQL did not independently verify
+- attested: a connector, external tool, catalog, or runtime reported a fact that IncQL did not independently verify
 - sampled: only part of the population was checked, or the check was deterministic only for a sampled subset
 - waived: a mismatch, missing check, or weaker evidence was explicitly accepted with a recorded reason
 - unknown: no usable evidence is available for the observation scope
@@ -181,7 +181,7 @@ The `waived` assurance label must not be rendered as equivalent to `verified` or
 
 The `verified` assurance label requires recorded inputs. For relation, row, or partition digest checks, the observation must identify the digest algorithm and canonicalization profile used, or must report unknown or unsupported evidence rather than claiming deterministic verification.
 
-The `proven` assurance label requires recorded public inputs sufficient for an independent verifier to understand the checked statement. At minimum, a proven observation must identify the proof system or verifier profile, source commitments, result commitments or result references, the verified statement identity, commitment authority, commitment basis, and verifier diagnostics. Statement and artifact details belong to InQL RFC 044; proof-system mathematics remain outside this RFC.
+The `proven` assurance label requires recorded public inputs sufficient for an independent verifier to understand the checked statement. At minimum, a proven observation must identify the proof system or verifier profile, source commitments, result commitments or result references, the verified statement identity, commitment authority, commitment basis, and verifier diagnostics. Statement and artifact details belong to IncQL RFC 044; proof-system mathematics remain outside this RFC.
 
 Verification observations are append-only. An implementation must not update an old observation in place to change its outcome, assurance, scope, or evidence. Corrections, revocations, upgrades, downgrades, waivers, and finalizations must be represented as later observations with explicit supersedes or diagnostic references when they affect prior evidence.
 
@@ -189,7 +189,7 @@ A current verification projection is derived evidence. It must identify the asse
 
 Projection rules must preserve weaker and stronger evidence separately. If a table has verified partitions, sampled partitions, waived partitions, and unknown partitions, the table-level projection should report mixed outcome or partial coverage rather than flattening the table to verified. Unsupported operators, omitted columns, omitted predicates, profile gaps, skipped partitions, and unknown digest semantics must remain visible as coverage diagnostics.
 
-Verification evidence may reference quality observations when the checked condition is expressed as an InQL quality assertion. In that case, the quality observation status remains the predicate outcome, while the verification observation assurance records how the predicate result was established.
+Verification evidence may reference quality observations when the checked condition is expressed as an IncQL quality assertion. In that case, the quality observation status remains the predicate outcome, while the verification observation assurance records how the predicate result was established.
 
 Verification evidence may reference execution observations when a verification run executes through a session or adapter. Execution success must not imply verification success, and verification success must not imply that every execution detail was covered.
 
@@ -199,7 +199,7 @@ Verification evidence must carry semantic profile context when source or target 
 
 Verification evidence must not imply privacy. If a verification process also provides payload redaction, confidentiality, encryption, or zero-knowledge properties, those properties must be represented as separate evidence or profile facts.
 
-Inbound exchange bridges may import external verification facts, but imported facts are attested unless InQL can represent and validate the underlying evidence under this RFC. Outbound exchange bridges must preserve assertion identity, scope, outcome, assurance, coverage, and diagnostics when the target format can carry them, or must report mapping loss.
+Inbound exchange bridges may import external verification facts, but imported facts are attested unless IncQL can represent and validate the underlying evidence under this RFC. Outbound exchange bridges must preserve assertion identity, scope, outcome, assurance, coverage, and diagnostics when the target format can carry them, or must report mapping loss.
 
 Governed plan bundles may include verification assertions, runs, observations, current projections, snapshot references, proof references, and waiver records. Bundles must distinguish unsupported verification evidence from empty verification evidence.
 
@@ -217,7 +217,7 @@ Verification is evidence-producing relational work. It may compare source and ta
 
 Current state is not authoritative storage. It is a projection over append-only observations. Consumers that need auditability must retain the observation stream or a bundle that can identify the observations used to compute the projection.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 Verification assertions reuse semantic targets from RFC 028 and may use metadata attachments from RFC 029 for provenance, source, visibility, and evidence references.
 
@@ -229,7 +229,7 @@ Verification checks may require RFC 033 adapter coverage. Unknown or uncovered v
 
 Verification evidence may be included in RFC 036 governed plan bundles as an evidence family with required, optional, unavailable, and unsupported section states.
 
-RFC 038 evidence exchange bridges may import and export verification evidence. Bridge mappings must not silently upgrade attested external facts to verified or proven InQL evidence.
+RFC 038 evidence exchange bridges may import and export verification evidence. Bridge mappings must not silently upgrade attested external facts to verified or proven IncQL evidence.
 
 RFC 040 semantic profiles provide source and target context for verification. Profile mismatches or unknown dimensions must be diagnostic evidence and may prevent verified or proven assurance.
 
@@ -268,8 +268,8 @@ This section is non-normative. A practical implementation can store verification
 
 ## Layers affected
 
-- **InQL specification** — verification assertion, run, observation, assurance, and projection vocabulary become part of the relational evidence program.
-- **InQL library package** — inspection, quality, session, and bundle APIs should be able to expose verification assertions, observations, and projections.
+- **IncQL specification** — verification assertion, run, observation, assurance, and projection vocabulary become part of the relational evidence program.
+- **IncQL library package** — inspection, quality, session, and bundle APIs should be able to expose verification assertions, observations, and projections.
 - **Execution / interchange** — adapters may need capability records for snapshot capture, canonical digests, event streams, reconciliation checks, and proof verification.
 - **Documentation** — docs must explain the difference between lifecycle, outcome, assurance, coverage, and waived evidence.
 
@@ -278,8 +278,8 @@ This section is non-normative. A practical implementation can store verification
 ### Resolved
 
 - `verification_assertion(...)`, `quality_verification_assertion(...)`, `verification_run(...)`, `verification_observation(...)`, `waived_verification_observation(...)`, `project_verification_state(...)`, `verification_coverage(...)`, `verification_snapshot_reference(...)`, `verification_commitment_reference(...)`, `verification_waiver(...)`, and `verification_evidence(...)` are the normative first helper surface for this RFC.
-- Digest-based deterministic verification may carry `verified` assurance only when the observation references explicit canonicalization and digest profile evidence. The concrete equality and digest profile vocabulary belongs to InQL RFC 043, so this RFC does not invent hidden digest semantics.
+- Digest-based deterministic verification may carry `verified` assurance only when the observation references explicit canonicalization and digest profile evidence. The concrete equality and digest profile vocabulary belongs to IncQL RFC 043, so this RFC does not invent hidden digest semantics.
 - A waiver record must carry waiver id, reason, source, optional approver, and evidence references. Organization-wide approval workflow, expiry, and authorization policy remain out of scope, but the evidence model carries enough information to keep waived evidence auditable and distinct from passed evidence.
-- `proven` assurance is representable as an assurance label, but proof-backed observations need statement, commitment, verifier, and artifact references owned by InQL RFC 044 before a proof-producing implementation should emit it. This RFC supplies the observation lane, not the proof-system mechanics.
-- The first projection rule is `inql.verification.projection.latest-open-scope.v0.1`: match assertion and scope, ignore revoked observations, ignore observations superseded by later observations, preserve mixed outcomes, keep assurance counts by label, and emit unknown evidence when no observations match.
+- `proven` assurance is representable as an assurance label, but proof-backed observations need statement, commitment, verifier, and artifact references owned by IncQL RFC 044 before a proof-producing implementation should emit it. This RFC supplies the observation lane, not the proof-system mechanics.
+- The first projection rule is `incql.verification.projection.latest-open-scope.v0.1`: match assertion and scope, ignore revoked observations, ignore observations superseded by later observations, preserve mixed outcomes, keep assurance counts by label, and emit unknown evidence when no observations match.
 - Verification remains an API and artifact surface in this RFC. Any future `verify { ... }` or similar authoring syntax requires its own RFC and must lower to the same assertion, run, observation, and projection records.

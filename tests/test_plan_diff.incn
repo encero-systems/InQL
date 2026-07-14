@@ -156,7 +156,7 @@ def test_diff_plans__reports_unknown_for_incompatible_artifact_versions() -> Non
     after = inspect_plan(_spend_summary("diff_incompatible_orders"))
     incompatible = PlanInspection(
         schema_version="foreign.inspection.v9",
-        inql_version=after.inql_version,
+        incql_version=after.incql_version,
         plan_id=after.plan_id,
         plan_target=after.plan_target,
         root_target=after.root_target,

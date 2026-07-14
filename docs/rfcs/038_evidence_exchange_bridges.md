@@ -1,53 +1,53 @@
-# InQL RFC 038: Evidence exchange bridges
+# IncQL RFC 038: Evidence exchange bridges
 
 - **Status:** Implemented
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 002 (Apache Substrait integration)
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 029 (typed metadata attachments)
-  - InQL RFC 030 (Prism lineage graph)
-  - InQL RFC 031 (local inspection APIs and artifacts)
-  - InQL RFC 032 (execution observations)
-  - InQL RFC 036 (governed plan bundle)
-  - InQL RFC 040 (interoperability semantic profiles)
-  - InQL RFC 042 (async verification evidence)
-  - InQL RFC 043 (canonical equality and digest profiles)
-  - InQL RFC 044 (verifier statements and proof artifacts)
-  - InQL RFC 045 (constraint evidence and verification-aware planning)
-  - InQL RFC 046 (data contract ingress and product topology)
-  - InQL RFC 047 (semantic evidence graph and agent query surface)
-- **Issue:** [InQL #72](https://github.com/encero-systems/InQL/issues/72)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60); [InQL #83](https://github.com/encero-systems/InQL/pull/83); [InQL #95](https://github.com/encero-systems/InQL/pull/95)
-- **Written against:** Incan v0.4-era InQL
-- **Shipped in:** InQL v0.1
+  - IncQL RFC 002 (Apache Substrait integration)
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 029 (typed metadata attachments)
+  - IncQL RFC 030 (Prism lineage graph)
+  - IncQL RFC 031 (local inspection APIs and artifacts)
+  - IncQL RFC 032 (execution observations)
+  - IncQL RFC 036 (governed plan bundle)
+  - IncQL RFC 040 (interoperability semantic profiles)
+  - IncQL RFC 042 (async verification evidence)
+  - IncQL RFC 043 (canonical equality and digest profiles)
+  - IncQL RFC 044 (verifier statements and proof artifacts)
+  - IncQL RFC 045 (constraint evidence and verification-aware planning)
+  - IncQL RFC 046 (data contract ingress and product topology)
+  - IncQL RFC 047 (semantic evidence graph and agent query surface)
+- **Issue:** [IncQL #72](https://github.com/encero-systems/IncQL/issues/72)
+- **RFC PR:** [IncQL #60](https://github.com/encero-systems/IncQL/pull/60); [IncQL #83](https://github.com/encero-systems/IncQL/pull/83); [IncQL #95](https://github.com/encero-systems/IncQL/pull/95)
+- **Written against:** Incan v0.4-era IncQL
+- **Shipped in:** IncQL v0.1
 
 ## Summary
 
-This RFC defines evidence exchange bridges between InQL's internal evidence model and external or adjacent formats. Exchange bridges map InQL plan, lineage, schema-flow, execution, quality, verification, canonical equality, proof artifact, constraint, contract, product topology, evidence graph, coverage, semantic profile, and bundle records into downstream views such as OpenLineage events, telemetry signals, semantic inspection fragments, transformation-project artifacts, data-contract artifacts, product-topology artifacts, graph projections, and catalog/governance integration artifacts. They may also ingest external evidence artifacts such as transformation manifests, source catalogs, schema catalogs, run results, verification results, proof results, constraint metadata, contract artifacts, product artifacts, runtime lineage events, and orchestration metadata. Representative artifact families include dbt manifests and run results, Open Data Contract Standard artifacts, Open Data Product Standard artifacts, legacy Data Contract Specification artifacts, Glue Data Catalog or Hive Metastore snapshots, Airflow or MWAA DAG metadata, Dagster assets, Prefect deployment metadata, OpenLineage events, DataHub or OpenMetadata catalog records, and Great Expectations-style quality results. Inbound artifacts and outbound projections are evidence exchange records, not the internal source of truth.
+This RFC defines evidence exchange bridges between IncQL's internal evidence model and external or adjacent formats. Exchange bridges map IncQL plan, lineage, schema-flow, execution, quality, verification, canonical equality, proof artifact, constraint, contract, product topology, evidence graph, coverage, semantic profile, and bundle records into downstream views such as OpenLineage events, telemetry signals, semantic inspection fragments, transformation-project artifacts, data-contract artifacts, product-topology artifacts, graph projections, and catalog/governance integration artifacts. They may also ingest external evidence artifacts such as transformation manifests, source catalogs, schema catalogs, run results, verification results, proof results, constraint metadata, contract artifacts, product artifacts, runtime lineage events, and orchestration metadata. Representative artifact families include dbt manifests and run results, Open Data Contract Standard artifacts, Open Data Product Standard artifacts, legacy Data Contract Specification artifacts, Glue Data Catalog or Hive Metastore snapshots, Airflow or MWAA DAG metadata, Dagster assets, Prefect deployment metadata, OpenLineage events, DataHub or OpenMetadata catalog records, and Great Expectations-style quality results. Inbound artifacts and outbound projections are evidence exchange records, not the internal source of truth.
 
 ## Motivation
 
-InQL evidence should be useful outside InQL, and external project artifacts should be usable as evidence inputs when they are explicit about their source and scope. CI systems, lineage tools, telemetry pipelines, catalogs, notebooks, transformation frameworks, orchestrators, and agents may all consume or produce different formats. Systems such as dbt, Airflow, MWAA, Dagster, Prefect, Glue Data Catalog, Hive Metastore, DataHub, OpenMetadata, OpenLineage, and Great Expectations are useful ecosystem examples, but none of them should become InQL's internal evidence model. If each integration reconstructs evidence independently, semantics will drift. InQL should provide exchange bridges that preserve its local evidence model while acknowledging that external formats may be less expressive or may represent facts at a different semantic layer.
+IncQL evidence should be useful outside IncQL, and external project artifacts should be usable as evidence inputs when they are explicit about their source and scope. CI systems, lineage tools, telemetry pipelines, catalogs, notebooks, transformation frameworks, orchestrators, and agents may all consume or produce different formats. Systems such as dbt, Airflow, MWAA, Dagster, Prefect, Glue Data Catalog, Hive Metastore, DataHub, OpenMetadata, OpenLineage, and Great Expectations are useful ecosystem examples, but none of them should become IncQL's internal evidence model. If each integration reconstructs evidence independently, semantics will drift. IncQL should provide exchange bridges that preserve its local evidence model while acknowledging that external formats may be less expressive or may represent facts at a different semantic layer.
 
 ## Goals
 
-- Define exchange bridges as inbound and outbound mappings around InQL evidence.
+- Define exchange bridges as inbound and outbound mappings around IncQL evidence.
 - Preserve semantic target references and evidence versions where possible.
 - Allow lossy external mappings only when loss is explicit.
-- Allow external artifacts to seed metadata, lineage hints, quality observations, verification observations, proof artifact references, constraint evidence, contract evidence, product topology, run observations, graph projections, and target mappings without becoming authoritative InQL semantics.
+- Allow external artifacts to seed metadata, lineage hints, quality observations, verification observations, proof artifact references, constraint evidence, contract evidence, product topology, run observations, graph projections, and target mappings without becoming authoritative IncQL semantics.
 - Prefer public standards and open ecosystem specifications for external projections when they fit the evidence being exchanged.
 - Support transformation-framework artifacts such as manifests, catalogs, run results, source definitions, model metadata, tests, tags, and documentation scaffolds, including dbt-shaped artifacts where a bridge supports that profile.
-- Keep provider configuration and hosted ingestion outside InQL core.
+- Keep provider configuration and hosted ingestion outside IncQL core.
 - Support local exchange without requiring a specific external service.
 
 ## Non-Goals
 
-- Making any external format the internal InQL evidence model.
+- Making any external format the internal IncQL evidence model.
 - Defining hosted ingestion, storage, dashboards, or managed governance behavior.
 - Defining a telemetry provider, collector, exporter, or sampling policy.
-- Guaranteeing that every external tool can represent every InQL evidence feature.
+- Guaranteeing that every external tool can represent every IncQL evidence feature.
 - Guaranteeing that imported transformation, catalog, or orchestration artifacts are complete or semantically authoritative.
 - Defining a full migration product, transformation runtime, or orchestration engine.
 
@@ -57,11 +57,11 @@ An author or CI job can exchange evidence with local artifacts:
 
 ```incan
 bundle = governed_plan_bundle(summary)
-bundle.export_openlineage("target/inql/openlineage.json")
-bundle.export_telemetry("target/inql/telemetry.json")
+bundle.export_openlineage("target/incql/openlineage.json")
+bundle.export_telemetry("target/incql/telemetry.json")
 ```
 
-The names are illustrative. The key contract is that outbound exports are generated from InQL evidence artifacts, not from backend logs or reconstructed SQL strings.
+The names are illustrative. The key contract is that outbound exports are generated from IncQL evidence artifacts, not from backend logs or reconstructed SQL strings.
 
 For transformation-project workflows, an exchange bridge can also ingest project artifacts and emit reviewable suggestions:
 
@@ -73,7 +73,7 @@ sources = bundle.export_transformation_sources()
 tests = bundle.export_transformation_quality_suggestions()
 ```
 
-The bridge may read common artifacts such as manifests, catalogs, run results, source definitions, tests, tags, metadata, and documentation fragments. In a dbt-shaped bridge, for example, those inputs may include `manifest.json`, `catalog.json`, `run_results.json`, source YAML, model YAML, tags, exposures, tests, and documentation blocks. It may emit suggested source declarations, model metadata, test definitions, tags, exposures, or documentation scaffolds. Those suggestions remain projections from InQL evidence and imported artifact evidence; they do not make the transformation framework the semantic owner of the plan.
+The bridge may read common artifacts such as manifests, catalogs, run results, source definitions, tests, tags, metadata, and documentation fragments. In a dbt-shaped bridge, for example, those inputs may include `manifest.json`, `catalog.json`, `run_results.json`, source YAML, model YAML, tags, exposures, tests, and documentation blocks. It may emit suggested source declarations, model metadata, test definitions, tags, exposures, or documentation scaffolds. Those suggestions remain projections from IncQL evidence and imported artifact evidence; they do not make the transformation framework the semantic owner of the plan.
 
 ## Reference-level explanation (precise rules)
 
@@ -81,9 +81,9 @@ An exchange bridge must declare its direction, source evidence schema versions, 
 
 Outbound exchange bridges must preserve semantic target identifiers when the target format can carry them. When the target format cannot carry them directly, the bridge should preserve them in an extension, custom facet, attribute, or sidecar artifact when safe.
 
-Inbound exchange bridges must preserve external artifact identity, source location, artifact version, and confidence. Imported records may attach metadata, origin hints, observed run facts, quality observations, verification observations, or candidate mappings to InQL semantic targets. They must not create InQL lineage, policy decisions, quality pass/fail states, verification assurance stronger than attested, or adapter coverage unless the corresponding InQL evidence contract can represent and validate that evidence.
+Inbound exchange bridges must preserve external artifact identity, source location, artifact version, and confidence. Imported records may attach metadata, origin hints, observed run facts, quality observations, verification observations, or candidate mappings to IncQL semantic targets. They must not create IncQL lineage, policy decisions, quality pass/fail states, verification assurance stronger than attested, or adapter coverage unless the corresponding IncQL evidence contract can represent and validate that evidence.
 
-Lossy mappings must be explicit. If an external lineage format cannot distinguish value, control, grouping, join, and sort lineage, the bridge must either preserve the distinction through an extension or report the loss. If an imported artifact collapses source relation, model, test, and run-result semantics into one node vocabulary, the bridge must report that limitation instead of pretending the artifact has InQL target precision.
+Lossy mappings must be explicit. If an external lineage format cannot distinguish value, control, grouping, join, and sort lineage, the bridge must either preserve the distinction through an extension or report the loss. If an imported artifact collapses source relation, model, test, and run-result semantics into one node vocabulary, the bridge must report that limitation instead of pretending the artifact has IncQL target precision.
 
 Sensitive attachments must follow visibility rules. Exchange bridges must not leak sensitive payloads merely because a target format lacks redaction semantics.
 
@@ -97,7 +97,7 @@ This RFC introduces no authoring syntax.
 
 ### Semantics
 
-Outbound exports are projections. Inbound artifacts are evidence inputs. Neither direction may become the authoritative source of InQL plan, lineage, quality, or execution semantics.
+Outbound exports are projections. Inbound artifacts are evidence inputs. Neither direction may become the authoritative source of IncQL plan, lineage, quality, or execution semantics.
 
 ### Standards alignment
 
@@ -111,17 +111,17 @@ Exchange bridges should prefer public standards and open ecosystem specification
 - in-toto and SLSA provenance for signed supply-chain-style attestations, materials, subjects, builders, and reproducible provenance claims.
 - W3C Verifiable Credentials, JSON Web Signature, COSE, and JSON canonicalization specifications when portable signed claims or canonical signed payloads are required by a bridge profile.
 
-Open-data governance frameworks such as the Open Data Charter, EU open-data policy guidance, public data governance training materials, and IEEE open-data governance principles should inform documentation, transparency, privacy, reuse, and stewardship guidance. They are not internal evidence schemas and must not override InQL semantic targets.
+Open-data governance frameworks such as the Open Data Charter, EU open-data policy guidance, public data governance training materials, and IEEE open-data governance principles should inform documentation, transparency, privacy, reuse, and stewardship guidance. They are not internal evidence schemas and must not override IncQL semantic targets.
 
-Standards mappings must be versioned bridge profiles. If a target standard cannot represent InQL evidence without loss, the bridge must report mapping loss and should emit an extension, custom facet, credential claim, or sidecar artifact when safe. An external standards document must not become the internal source of InQL semantics merely because an exchange bridge supports it.
+Standards mappings must be versioned bridge profiles. If a target standard cannot represent IncQL evidence without loss, the bridge must report mapping loss and should emit an extension, custom facet, credential claim, or sidecar artifact when safe. An external standards document must not become the internal source of IncQL semantics merely because an exchange bridge supports it.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 Exchange bridges depend on inspection artifacts, execution observations, quality observations, adapter coverage, interoperability profiles, and governed plan bundles. They should map from or into those records rather than from backend-specific plans.
 
 Transformation-framework bridges are a first-class example. A bridge may ingest manifest, catalog, run-result, source, model, test, tag, exposure, metadata, and documentation artifacts from systems such as dbt, Airflow, MWAA, Dagster, or Prefect when the bridge profile supports them. It may export suggested source definitions, model metadata, quality tests, documentation scaffolds, exposures, tags, or run validation summaries. The bridge must keep imported project semantics distinct from Prism-authored semantics and must identify any profile assumptions used to compare source and target environments.
 
-Data-contract, data-product, and graph bridge profiles are specialized by InQL RFC 046 and InQL RFC 047. Contract and product artifacts may seed normalized evidence, product topology, and graph nodes or edges, but they remain imported evidence. Runtime lineage events may seed observed graph relationships, but they remain observed or attested evidence unless separate verification evidence supports a stronger assurance label.
+Data-contract, data-product, and graph bridge profiles are specialized by IncQL RFC 046 and IncQL RFC 047. Contract and product artifacts may seed normalized evidence, product topology, and graph nodes or edges, but they remain imported evidence. Runtime lineage events may seed observed graph relationships, but they remain observed or attested evidence unless separate verification evidence supports a stronger assurance label.
 
 ### Compatibility / migration
 
@@ -129,9 +129,9 @@ Exchange bridges must version their mappings. Adding a new internal evidence fie
 
 ## Alternatives considered
 
-- **Adopt one external lineage model internally.** Rejected because InQL needs evidence that many external tools cannot represent directly.
+- **Adopt one external lineage model internally.** Rejected because IncQL needs evidence that many external tools cannot represent directly.
 - **Leave all exchange to downstream systems.** Rejected because independent reconstruction causes drift.
-- **Require hosted ingestion.** Rejected because local export must work in open InQL.
+- **Require hosted ingestion.** Rejected because local export must work in open IncQL.
 - **Treat transformation project artifacts as authoritative semantics.** Rejected because those artifacts are valuable evidence, but they are not Prism's analyzed relational model.
 
 ## Drawbacks
@@ -143,8 +143,8 @@ Exchange bridges must version their mappings. Adding a new internal evidence fie
 
 ## Layers affected
 
-- **InQL specification** — exchange bridge responsibilities and loss reporting become normative.
-- **InQL library package** — exchange APIs may live in core or optional modules.
+- **IncQL specification** — exchange bridge responsibilities and loss reporting become normative.
+- **IncQL library package** — exchange APIs may live in core or optional modules.
 - **Execution / interchange** — exchanges may include Substrait references, telemetry-shaped observations, lineage events, transformation artifacts, and run-result evidence.
 - **Documentation** — docs must identify external exchanges as evidence inputs or projections, not internal truth.
 
@@ -152,9 +152,9 @@ Exchange bridges must version their mappings. Adding a new internal evidence fie
 
 ### Resolved
 
-- The required first bridge profiles are native InQL bundle summary exchange, OpenLineage-shaped outbound lineage exchange, OpenTelemetry-shaped outbound observation exchange, generic transformation-project suggestion exchange, and inbound external artifact identity exchange.
+- The required first bridge profiles are native IncQL bundle summary exchange, OpenLineage-shaped outbound lineage exchange, OpenTelemetry-shaped outbound observation exchange, generic transformation-project suggestion exchange, and inbound external artifact identity exchange.
 - OpenLineage and OpenTelemetry are the required public-standard-shaped first projections because they map directly to lineage/run and telemetry/observation evidence already present in bundles. W3C provenance, data-quality vocabulary, in-toto/SLSA, verifiable credentials, data contract, data product, catalog, and graph projections remain target-format vocabulary until a later RFC or issue implements those concrete profiles.
 - The core package owns the typed local exchange model and first generic bridge profiles. Provider configuration, hosted ingestion, network transport, and service-specific parsers belong in optional integration packages or downstream tooling.
-- The native `EvidenceExchangeArtifact` JSON summary is the sidecar format for InQL-specific evidence when another target format is lossy. Lossy bridges must emit `EvidenceExchangeLoss` records pointing to the dimensions that need sidecar review.
+- The native `EvidenceExchangeArtifact` JSON summary is the sidecar format for IncQL-specific evidence when another target format is lossy. Lossy bridges must emit `EvidenceExchangeLoss` records pointing to the dimensions that need sidecar review.
 - The first transformation-project profile emits generic source, model, and quality-test suggestions plus inbound artifact identity records. Framework-specific parsers or writers, including dbt-shaped YAML generation, are separate concrete bridge profiles rather than hidden semantics in this RFC.
 - Data contract, product topology, and graph projection bridge profiles remain aligned with RFC 046 and RFC 047. RFC 038 provides the exchange envelope and target-format vocabulary; those RFCs own the specialized evidence models and concrete mapping rules.

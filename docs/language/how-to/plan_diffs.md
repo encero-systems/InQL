@@ -5,7 +5,7 @@ Use a plan diff when you want to review how a relational plan changed as structu
 ## Compare two lazy plans
 
 ```incan
-from pub::inql import diff_lazy_plans
+from pub::incql import diff_lazy_plans
 
 before_diff_target = query {
     FROM orders
@@ -44,7 +44,7 @@ Removing an output field is classified as locally breaking because a downstream 
 If you already inspected the plans, compare the inspection artifacts directly.
 
 ```incan
-from pub::inql import diff_plans, inspect_plan
+from pub::incql import diff_plans, inspect_plan
 
 before_inspection = inspect_plan(before_diff_target)
 after_inspection = inspect_plan(after_diff_target)
@@ -59,7 +59,7 @@ This avoids inspecting the same plans twice in CI or review tools that already n
 Use `diff_plan_bundles(...)` when caller-supplied evidence matters. Bundle diffs include quality assertions, quality observations, execution observations, adapter coverage records, bundle section states, and evidence references in addition to inspection-derived evidence.
 
 ```incan
-from pub::inql import diff_plan_bundles, governed_plan_bundle, row_count, unique
+from pub::incql import diff_plan_bundles, governed_plan_bundle, row_count, unique
 
 before_bundle = governed_plan_bundle(before_diff_target, quality_assertions=[row_count(Some(1))])
 after_bundle = governed_plan_bundle(
@@ -75,7 +75,7 @@ The bundle diff reports both plan evidence changes and evidence-package changes.
 
 ## Use blast-radius inputs
 
-Every non-unchanged diff record produces a local `BlastRadiusInput`. These records are deliberately local: they name affected InQL semantic target IDs and adapter requirement changes, but they do not claim to know every dashboard, job, model, or consumer outside InQL.
+Every non-unchanged diff record produces a local `BlastRadiusInput`. These records are deliberately local: they name affected IncQL semantic target IDs and adapter requirement changes, but they do not claim to know every dashboard, job, model, or consumer outside IncQL.
 
 ```incan
 for impact in diff.blast_radius_inputs:
@@ -84,7 +84,7 @@ for impact in diff.blast_radius_inputs:
         println(target_id)
 ```
 
-Downstream tooling can combine these records with its own dependency graph, catalog, deployment metadata, or approval workflow. InQL’s responsibility is to provide conservative structured evidence, not to own a global blast-radius service.
+Downstream tooling can combine these records with its own dependency graph, catalog, deployment metadata, or approval workflow. IncQL’s responsibility is to provide conservative structured evidence, not to own a global blast-radius service.
 
 ## Handle unknown impact
 

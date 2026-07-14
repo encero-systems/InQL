@@ -1,11 +1,11 @@
 # Governed plan bundles (Reference)
 
-Governed plan bundles package local InQL evidence for one planned relation. They keep the rich typed records in memory and expose a stable JSON summary for handoff tools that need to understand which evidence families are present, unavailable, or unsupported.
+Governed plan bundles package local IncQL evidence for one planned relation. They keep the rich typed records in memory and expose a stable JSON summary for handoff tools that need to understand which evidence families are present, unavailable, or unsupported.
 
 ## Entry points
 
 ```incan
-from pub::inql import governed_plan_bundle, governed_plan_bundle_from_inspection
+from pub::incql import governed_plan_bundle, governed_plan_bundle_from_inspection
 
 bundle = governed_plan_bundle(summary)
 bundle_from_existing_inspection = governed_plan_bundle_from_inspection(inspection)
@@ -26,7 +26,7 @@ Both entry points accept optional `quality_assertions`, `quality_observations`, 
 | `BundleEvidenceSection` | Evidence-family section state with requirement, availability, record count, reason, and evidence references. |
 | `BundleSectionRequirement` | `Required` or `Optional`. |
 | `BundleSectionAvailability` | `Available`, `Unavailable`, or `Unsupported`. |
-| `BundleExportStatus` | Local export state. Bundles created by InQL start as `Local`. |
+| `BundleExportStatus` | Local export state. Bundles created by IncQL start as `Local`. |
 
 `GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION` is the current schema identifier for the stable bundle summary shape.
 
@@ -37,7 +37,7 @@ Both entry points accept optional `quality_assertions`, `quality_observations`, 
 | Field | Type | Meaning |
 | ----- | ---- | ------- |
 | `schema_version` | `str` | Bundle schema identifier. |
-| `inql_version` | `str` | InQL package version observed by inspection. |
+| `incql_version` | `str` | IncQL package version observed by inspection. |
 | `bundle_id` | `str` | Stable local bundle id derived from the inspected plan id. |
 | `rule_versions` | `list[str]` | Bundle, inspection, and lineage rule versions that shaped the bundle. |
 | `plan_target` | `SemanticTarget` | Plan-level semantic target. |
@@ -69,11 +69,11 @@ Sections are the compatibility surface for consumers that do not understand ever
 
 | Availability | Meaning |
 | ------------ | ------- |
-| `Available` | InQL computed or the caller supplied the section evidence. `record_count` may still be zero when an empty computed result is meaningful. |
+| `Available` | IncQL computed or the caller supplied the section evidence. `record_count` may still be zero when an empty computed result is meaningful. |
 | `Unavailable` | The family is supported by this bundle surface, but no evidence was supplied or discovered for this bundle. |
-| `Unsupported` | The RFC series reserves the family, but this InQL implementation does not produce that family yet. |
+| `Unsupported` | The RFC series reserves the family, but this IncQL implementation does not produce that family yet. |
 
-Required sections cover the local core evidence InQL can produce today: plan target, input schema references, output schema, output fields, lineage graph, metadata attachments, governed attributes, policy checkpoints, adapter requirements, and unsupported-evidence markers. Optional sections cover caller-provided execution, quality, coverage, semantic profiles, profile assessments, ingress requests, ingress mappings, frontend coverage, ingress diagnostics, verification assertions, verification runs, verification observations, verification projections, verification snapshots, verification commitments, verification waivers, Substrait artifact references, and reserved evidence families such as canonical equality profiles, proof artifacts, constraint evidence, data contract evidence, product topology, semantic evidence graph projections, and exchange bridges.
+Required sections cover the local core evidence IncQL can produce today: plan target, input schema references, output schema, output fields, lineage graph, metadata attachments, governed attributes, policy checkpoints, adapter requirements, and unsupported-evidence markers. Optional sections cover caller-provided execution, quality, coverage, semantic profiles, profile assessments, ingress requests, ingress mappings, frontend coverage, ingress diagnostics, verification assertions, verification runs, verification observations, verification projections, verification snapshots, verification commitments, verification waivers, Substrait artifact references, and reserved evidence families such as canonical equality profiles, proof artifacts, constraint evidence, data contract evidence, product topology, semantic evidence graph projections, and exchange bridges.
 
 ## Methods
 

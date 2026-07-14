@@ -76,7 +76,7 @@ Methods marked **all root carriers** are available through the root `DataSet[T]`
 
 ## Familiar exploration aliases
 
-The familiar aliases are API aliases over the same InQL carrier operations; they do not introduce pandas mutable frames, eager Series values, row-position indexes, or Spark engine semantics. For bounded carriers, `orders.where(predicate).head(10)` builds the same logical filter and fetch plan as `orders.filter(predicate).limit(10)`, and `orders.groupby(["region"]).agg([...])` builds the same grouping relation as `orders.group_by([col("region")]).agg([...])`. For `DataStream[T]`, use row-local aliases such as `where(...)`, `assign(...)`, and `withColumn(...)`; bounded-only aliases remain unavailable for the same reason their canonical operations are unavailable.
+The familiar aliases are API aliases over the same IncQL carrier operations; they do not introduce pandas mutable frames, eager Series values, row-position indexes, or Spark engine semantics. For bounded carriers, `orders.where(predicate).head(10)` builds the same logical filter and fetch plan as `orders.filter(predicate).limit(10)`, and `orders.groupby(["region"]).agg([...])` builds the same grouping relation as `orders.group_by([col("region")]).agg([...])`. For `DataStream[T]`, use row-local aliases such as `where(...)`, `assign(...)`, and `withColumn(...)`; bounded-only aliases remain unavailable for the same reason their canonical operations are unavailable.
 
 Bracket syntax such as `orders["amount"]`, `orders[["id", "amount"]]`, and `orders[predicate]` is specified by RFC 039, but it is not implemented in this package slice because generic carrier support depends on Incan issue [#815][incan-815]. Until that compiler issue is fixed, use `col("amount")`, `select(...)`, and `filter(...)` or the aliases above.
 
@@ -84,7 +84,7 @@ Bracket syntax such as `orders["amount"]`, `orders[["id", "amount"]]`, and `orde
 
 - `join(...)` and `left_join(...)` are constrained to same-carrier inputs and the `ColumnExpr` predicate surface shown in the signature.
 - Query-block and scoped DSL surfaces lower into these carrier methods rather than defining separate method semantics.
-- Incan issue [#817][incan-817] currently prevents InQL from fully enforcing the most-restrictive rule for values typed as the root `DataSet[T]`; direct `DataStream[T]` calls are gated by the current library surface.
+- Incan issue [#817][incan-817] currently prevents IncQL from fully enforcing the most-restrictive rule for values typed as the root `DataSet[T]`; direct `DataStream[T]` calls are gated by the current library surface.
 - For task-oriented examples, see [Build deferred dataset transformations](../how-to/dataset_transformations.md).
 
 [incan-815]: https://github.com/encero-systems/incan/issues/815

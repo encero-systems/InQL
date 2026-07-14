@@ -1,11 +1,11 @@
 # Prism plan ingress (Reference)
 
-Plan ingress records describe external client requests before Prism analyzes them into ordinary InQL relational plans. They are not execution adapters, backend capabilities, or Substrait metadata. A frontend may decode Spark Connect, SQL, notebook, or API-client intent into ingress records; Prism remains the semantic owner once `analyze_ingress_plan(...)` produces a `LazyFrame`.
+Plan ingress records describe external client requests before Prism analyzes them into ordinary IncQL relational plans. They are not execution adapters, backend capabilities, or Substrait metadata. A frontend may decode Spark Connect, SQL, notebook, or API-client intent into ingress records; Prism remains the semantic owner once `analyze_ingress_plan(...)` produces a `LazyFrame`.
 
 ## Entry points
 
 ```incan
-from pub::inql import (
+from pub::incql import (
     analyze_ingress_plan,
     client_session_context,
     ingress_aggregate,
@@ -42,9 +42,9 @@ from pub::inql import (
 
 | Record | Purpose |
 | ------ | ------- |
-| `IngressRequest` | One external request entering InQL through a frontend boundary. |
+| `IngressRequest` | One external request entering IncQL through a frontend boundary. |
 | `ClientSessionContext` | Client session facts that can affect frontend analysis. |
-| `IngressOriginReference` | Mapping from an external protocol node to an InQL evidence target. |
+| `IngressOriginReference` | Mapping from an external protocol node to an IncQL evidence target. |
 | `IngressDiagnostic` | Structured ingress diagnostic emitted before execution. |
 | `IngressCoverageRecord` | Frontend coverage answer for one external protocol feature. |
 | `IngressPlan` | Unresolved ingress request that Prism can analyze or reject. |
@@ -79,7 +79,7 @@ Non-relational commands are represented as `IngressCommand` records. The current
 
 `IngressEvidence` contains the request, session context, origin references, diagnostics, coverage records, profile assessments, and evidence refs for one analysis attempt. Consumers should inspect this evidence before executing or packaging a plan, especially when the request came from a compatibility frontend.
 
-`IngressRequest.target()` returns a semantic target for the request. `ClientSessionContext.target()` returns a semantic target for the client session. Origin references carry their own targets so inspection and governed bundles can show how external protocol nodes map to InQL evidence targets without letting external node ids replace Prism identity.
+`IngressRequest.target()` returns a semantic target for the request. `ClientSessionContext.target()` returns a semantic target for the client session. Origin references carry their own targets so inspection and governed bundles can show how external protocol nodes map to IncQL evidence targets without letting external node ids replace Prism identity.
 
 ## Bundle integration
 
@@ -97,6 +97,6 @@ When ingress evidence is present, the bundle includes `INGRESS_SCHEMA_VERSION` i
 
 Ingress coverage is frontend-facing evidence. Adapter coverage is execution-facing evidence. A Spark Connect-shaped relation node being accepted by ingress analysis does not prove that a backend adapter can execute the resulting plan. Use adapter requirement and coverage APIs for execution readiness.
 
-Plan ingress also does not make Spark, SQL, Substrait, DataFusion, or any other external system the owner of InQL semantics. Frontends decode external intent; Prism performs InQL analysis; session adapters execute analyzed plans.
+Plan ingress also does not make Spark, SQL, Substrait, DataFusion, or any other external system the owner of IncQL semantics. Frontends decode external intent; Prism performs IncQL analysis; session adapters execute analyzed plans.
 
 For a task-oriented workflow, see [Analyze external frontend intent](../how-to/ingress.md).

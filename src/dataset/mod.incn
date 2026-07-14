@@ -1,5 +1,5 @@
 """
-Dataset carriers for InQL.
+Dataset carriers for IncQL.
 
 This module defines the *author-facing* type hierarchy used to carry schema-parameterized tabular data through
 relational pipelines:
@@ -39,8 +39,8 @@ delegate to the canonical bounded methods; string selectors normalize to `col(na
 Illustrative current-shape examples:
 
 ```incan
-from pub::inql import LazyFrame
-from pub::inql.functions import add, avg, col, count, gt, max, min, sum
+from pub::incql import LazyFrame
+from pub::incql.functions import add, avg, col, count, gt, max, min, sum
 from models import Order, OrderSummary
 
 def high_value_orders(orders: LazyFrame[Order]) -> LazyFrame[Order]:
@@ -55,7 +55,7 @@ def summarize_orders(orders: LazyFrame[Order]) -> LazyFrame[OrderSummary]:
 
 See also:
 
-- `docs/rfcs/001_inql_dataset.md`
+- `docs/rfcs/001_incql_dataset.md`
 - `docs/language/explanation/dataset_carriers.md`
 - `docs/language/reference/dataset_methods.md`
 - `docs/language/reference/builders/filters.md`
@@ -144,7 +144,7 @@ pub trait DataSet[T with Clone]:
     def try_to_substrait_plan(self) -> Result[Plan, SubstraitLoweringError]
     def filter(self, predicate: ColumnExpr) -> Self
     def where(self, predicate: ColumnExpr) -> Self
-    # TODO(InQL RFC 004): Replace the Self-only join surface with heterogeneous join typing and an explicit output-schema contract.
+    # TODO(IncQL RFC 004): Replace the Self-only join surface with heterogeneous join typing and an explicit output-schema contract.
     def join(self, other: Self, on: ColumnExpr, relation_name: str = "") -> Self
     def left_join(self, other: Self, on: ColumnExpr, relation_name: str = "") -> Self
     def with_column(self, name: str, expr: ColumnExpr) -> Self

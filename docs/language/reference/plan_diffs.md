@@ -1,11 +1,11 @@
 # Plan diffs and blast-radius inputs (Reference)
 
-Plan diffs compare structured InQL evidence artifacts. They do not compare raw source text, generated SQL, Substrait payload bytes, or backend physical plans. The diff result is a local evidence artifact that downstream tools can combine with their own dependency indexes, review workflows, or catalog data.
+Plan diffs compare structured IncQL evidence artifacts. They do not compare raw source text, generated SQL, Substrait payload bytes, or backend physical plans. The diff result is a local evidence artifact that downstream tools can combine with their own dependency indexes, review workflows, or catalog data.
 
 ## Entry points
 
 ```incan
-from pub::inql import diff_lazy_plans, diff_plans, diff_plan_bundles
+from pub::incql import diff_lazy_plans, diff_plans, diff_plan_bundles
 
 diff = diff_lazy_plans(before_summary, after_summary)
 inspection_diff = diff_plans(before_inspection, after_inspection)
@@ -37,7 +37,7 @@ bundle_diff = diff_plan_bundles(before_bundle, after_bundle)
 
 ## Compared evidence families
 
-Plan diffs compare the evidence InQL owns today:
+Plan diffs compare the evidence IncQL owns today:
 
 - output fields and output schema facts
 - authored and rewritten plan node shape
@@ -86,12 +86,12 @@ Methods:
 
 ## Unknown impact
 
-Unknown impact is explicit. If inspection schema versions or bundle schema versions are incompatible, InQL emits an `ArtifactCompatibility` record with `kind = Unknown` and `compatibility = Unknown`. It does not return an empty diff merely because the comparison cannot be performed safely.
+Unknown impact is explicit. If inspection schema versions or bundle schema versions are incompatible, IncQL emits an `ArtifactCompatibility` record with `kind = Unknown` and `compatibility = Unknown`. It does not return an empty diff merely because the comparison cannot be performed safely.
 
-Generated or plan-local IDs are not treated as global identity. Where InQL can compare by semantic key, it does. Where identity is ambiguous, records use conservative or unknown confidence rather than silently dropping the change.
+Generated or plan-local IDs are not treated as global identity. Where IncQL can compare by semantic key, it does. Where identity is ambiguous, records use conservative or unknown confidence rather than silently dropping the change.
 
 ## Blast-radius boundary
 
-`BlastRadiusInput` records name local affected targets and adapter requirement changes. They are inputs to downstream blast-radius tooling, not final global impact answers. InQL does not discover dashboards, jobs, consumers, approvals, or cross-repository dependencies in this API.
+`BlastRadiusInput` records name local affected targets and adapter requirement changes. They are inputs to downstream blast-radius tooling, not final global impact answers. IncQL does not discover dashboards, jobs, consumers, approvals, or cross-repository dependencies in this API.
 
 For a task-oriented workflow, see [Compare two plans](../how-to/plan_diffs.md).

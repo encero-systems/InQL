@@ -3,8 +3,8 @@
 from evidence import ExecutionDiagnostic, ExecutionDiagnosticSeverity, SemanticTarget, SemanticTargetKind
 from quality import QualityAssertion
 
-pub const VERIFICATION_SCHEMA_VERSION: str = "inql.verification.v0.1"
-pub const VERIFICATION_PROJECTION_RULE_VERSION: str = "inql.verification.projection.latest-open-scope.v0.1"
+pub const VERIFICATION_SCHEMA_VERSION: str = "incql.verification.v0.1"
+pub const VERIFICATION_PROJECTION_RULE_VERSION: str = "incql.verification.projection.latest-open-scope.v0.1"
 
 
 @derive(Clone)

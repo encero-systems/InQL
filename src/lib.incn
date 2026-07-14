@@ -556,7 +556,7 @@ pub from semantic_profiles import (
     conformance_baseline_profile,
     coverage_record_for_profile,
     execution_engine_profile,
-    inql_baseline_profile,
+    incql_baseline_profile,
     interchange_consumer_profile,
     profile_assessment,
     semantic_dimension,

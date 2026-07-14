@@ -1,62 +1,62 @@
-# InQL RFC 040: Interoperability semantic profiles
+# IncQL RFC 040: Interoperability semantic profiles
 
 - **Status:** Implemented
 - **Created:** 2026-05-30
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 000 (core language model and layer boundaries)
-  - InQL RFC 002 (Apache Substrait integration)
-  - InQL RFC 004 (execution context)
-  - InQL RFC 007 (Prism logical planning and optimization engine)
-  - InQL RFC 008 (optimizer boundary, statistics, cost-based optimization, and adaptive execution)
-  - InQL RFC 012 (unified scalar expression surface)
-  - InQL RFC 013 (function catalog program)
-  - InQL RFC 024 (function extension policy)
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 028 (semantic identity and target model)
-  - InQL RFC 029 (typed metadata attachments)
-  - InQL RFC 030 (Prism lineage graph)
-  - InQL RFC 031 (local inspection APIs and artifacts)
-  - InQL RFC 032 (execution observations)
-  - InQL RFC 033 (adapter requirements and coverage)
-  - InQL RFC 036 (governed plan bundle)
-  - InQL RFC 038 (evidence exchange bridges)
-  - InQL RFC 041 (Prism plan ingress and external client frontends)
-- **Issue:** [InQL #74](https://github.com/encero-systems/InQL/issues/74)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60), [InQL #95](https://github.com/encero-systems/InQL/pull/95)
-- **Written against:** Incan v0.4-era InQL
-- **Shipped in:** InQL v0.1
+  - IncQL RFC 000 (core language model and layer boundaries)
+  - IncQL RFC 002 (Apache Substrait integration)
+  - IncQL RFC 004 (execution context)
+  - IncQL RFC 007 (Prism logical planning and optimization engine)
+  - IncQL RFC 008 (optimizer boundary, statistics, cost-based optimization, and adaptive execution)
+  - IncQL RFC 012 (unified scalar expression surface)
+  - IncQL RFC 013 (function catalog program)
+  - IncQL RFC 024 (function extension policy)
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 028 (semantic identity and target model)
+  - IncQL RFC 029 (typed metadata attachments)
+  - IncQL RFC 030 (Prism lineage graph)
+  - IncQL RFC 031 (local inspection APIs and artifacts)
+  - IncQL RFC 032 (execution observations)
+  - IncQL RFC 033 (adapter requirements and coverage)
+  - IncQL RFC 036 (governed plan bundle)
+  - IncQL RFC 038 (evidence exchange bridges)
+  - IncQL RFC 041 (Prism plan ingress and external client frontends)
+- **Issue:** [IncQL #74](https://github.com/encero-systems/IncQL/issues/74)
+- **RFC PR:** [IncQL #60](https://github.com/encero-systems/IncQL/pull/60), [IncQL #95](https://github.com/encero-systems/IncQL/pull/95)
+- **Written against:** Incan v0.4-era IncQL
+- **Shipped in:** IncQL v0.1
 
 ## Summary
 
-This RFC defines interoperability semantic profiles for InQL evidence. A profile describes the semantic environment a plan is being received from, compared with, targeted at, or observed under: an InQL baseline, client protocol, plan ingress frontend, execution engine, adapter binding, SQL dialect, catalog/schema system, transformation project, interchange consumer, or conformance baseline. Profiles give ingress coverage records, adapter requirements, coverage records, execution observations, plan diffs, bundles, and exchanges a shared context without making any external system the owner of InQL relational meaning.
+This RFC defines interoperability semantic profiles for IncQL evidence. A profile describes the semantic environment a plan is being received from, compared with, targeted at, or observed under: an IncQL baseline, client protocol, plan ingress frontend, execution engine, adapter binding, SQL dialect, catalog/schema system, transformation project, interchange consumer, or conformance baseline. Profiles give ingress coverage records, adapter requirements, coverage records, execution observations, plan diffs, bundles, and exchanges a shared context without making any external system the owner of IncQL relational meaning.
 
 ## Motivation
 
 Interoperability requires more than lowering a plan and asking whether an adapter has a support flag. Different target environments can share the same relational vocabulary while differing on edge semantics: type coercion, decimal overflow, timestamp and timezone behavior, identifier resolution, null and NaN ordering, collation, case sensitivity, function definitions, aggregate edge cases, window defaults, nested data behavior, row ordering, and fallback execution.
 
-If InQL does not name the semantic profile used for an inspection or execution, those assumptions will be scattered across adapters, Substrait metadata, docs, and runtime diagnostics. That would make coverage hard to trust. A plan could appear portable while relying on target-specific behavior that was never recorded as evidence.
+If IncQL does not name the semantic profile used for an inspection or execution, those assumptions will be scattered across adapters, Substrait metadata, docs, and runtime diagnostics. That would make coverage hard to trust. A plan could appear portable while relying on target-specific behavior that was never recorded as evidence.
 
-Profiles provide the missing layer between InQL-authored semantics, plan ingress, and adapter coverage. Prism remains the source of authored and rewritten relational meaning. Profiles describe source and target environments well enough for InQL to produce ingress diagnostics, requirements, coverage records, and observations against them.
+Profiles provide the missing layer between IncQL-authored semantics, plan ingress, and adapter coverage. Prism remains the source of authored and rewritten relational meaning. Profiles describe source and target environments well enough for IncQL to produce ingress diagnostics, requirements, coverage records, and observations against them.
 
-Profiles are intentionally ecosystem-neutral, but concrete profiles may describe systems and formats such as Oracle, PostgreSQL, SQL Server, MySQL, Athena, Presto, Trino, Spark, Snowflake, BigQuery, Redshift, Databricks, Glue Data Catalog, Hive Metastore, dbt, Airflow, MWAA, Dagster, Prefect, OpenLineage, DataHub, OpenMetadata, or Great Expectations. Listing a system as a possible profile target does not make that system normative for InQL semantics.
+Profiles are intentionally ecosystem-neutral, but concrete profiles may describe systems and formats such as Oracle, PostgreSQL, SQL Server, MySQL, Athena, Presto, Trino, Spark, Snowflake, BigQuery, Redshift, Databricks, Glue Data Catalog, Hive Metastore, dbt, Airflow, MWAA, Dagster, Prefect, OpenLineage, DataHub, OpenMetadata, or Great Expectations. Listing a system as a possible profile target does not make that system normative for IncQL semantics.
 
 ## Goals
 
 - Define semantic profiles as versioned evidence records.
-- Allow profiles for InQL baselines, client protocols, plan ingress frontends, execution engines, adapter bindings, SQL dialects, catalog/schema systems, transformation projects, interchange consumers, and conformance baselines.
+- Allow profiles for IncQL baselines, client protocols, plan ingress frontends, execution engines, adapter bindings, SQL dialects, catalog/schema systems, transformation projects, interchange consumers, and conformance baselines.
 - Name the semantic dimensions that affect relational correctness and evidence interpretation.
 - Let adapter requirements and coverage records state which profile they were evaluated against.
 - Let execution observations report the profile requested before execution and the profile observed at runtime when available.
 - Keep profiles local and open, without requiring a hosted registry or managed control plane.
-- Keep external target profiles non-authoritative for InQL semantics.
+- Keep external target profiles non-authoritative for IncQL semantics.
 
 ## Non-Goals
 
 - Defining a profile for one specific external engine.
-- Making any external engine, SQL dialect, or interchange format the normative InQL semantic model.
+- Making any external engine, SQL dialect, or interchange format the normative IncQL semantic model.
 - Defining SQL transpilation, physical planning, or backend execution strategies.
-- Defining transformation-project semantics as InQL semantics.
+- Defining transformation-project semantics as IncQL semantics.
 - Defining a full conformance test suite.
 - Defining a global registry of every engine version or deployment configuration.
 - Guaranteeing semantic equivalence merely because a profile name is present.
@@ -66,7 +66,7 @@ Profiles are intentionally ecosystem-neutral, but concrete profiles may describe
 Most authors should encounter profiles through inspection, coverage, and execution evidence:
 
 ```incan
-from pub::inql.inspect import inspect_plan
+from pub::incql.inspect import inspect_plan
 
 inspection = inspect_plan(summary)
 profile = inspection.semantic_profile("portable_relational")
@@ -90,7 +90,7 @@ If the runtime adapter reports a different engine version, configuration, or sem
 
 ## Reference-level explanation (precise rules)
 
-InQL must define an interoperability semantic profile record. A profile record must include:
+IncQL must define an interoperability semantic profile record. A profile record must include:
 
 - profile identity
 - profile schema version
@@ -106,7 +106,7 @@ InQL must define an interoperability semantic profile record. A profile record m
 
 Target class must distinguish at least:
 
-- inql_baseline
+- incql_baseline
 - client_protocol
 - plan_ingress_frontend
 - execution_engine
@@ -138,16 +138,16 @@ Semantic dimensions must be represented as structured records rather than free-f
 - extension and fallback behavior
 - plan-stage observability
 
-A semantic dimension record must include dimension identity, lifecycle, declared behavior when known, source, evidence references, confidence, and diagnostics. A dimension may be exact, constrained, unknown, or not_applicable. Unknown dimensions must not be treated as matching InQL semantics.
+A semantic dimension record must include dimension identity, lifecycle, declared behavior when known, source, evidence references, confidence, and diagnostics. A dimension may be exact, constrained, unknown, or not_applicable. Unknown dimensions must not be treated as matching IncQL semantics.
 
-InQL may define profile assessments that compare a plan or bundle with a profile. A profile assessment must include the plan target, profile identity, affected semantic targets, assessed dimensions, result state, evidence references, confidence, and diagnostics.
+IncQL may define profile assessments that compare a plan or bundle with a profile. A profile assessment must include the plan target, profile identity, affected semantic targets, assessed dimensions, result state, evidence references, confidence, and diagnostics.
 
 Profile assessment result state must distinguish at least:
 
-- matched: InQL can determine that the plan's required semantics match the profile for the assessed dimension
+- matched: IncQL can determine that the plan's required semantics match the profile for the assessed dimension
 - constrained: the profile can satisfy the dimension only under recorded restrictions
 - mismatched: the profile does not satisfy the plan's required semantics for the dimension
-- unknown: InQL cannot determine whether the profile satisfies the dimension
+- unknown: IncQL cannot determine whether the profile satisfies the dimension
 - not_applicable: the dimension does not apply to the plan or target profile
 
 Adapter requirements and coverage records may cite profile records and profile assessments. If coverage depends on a profile, the coverage record must identify the profile. Coverage evaluated under one profile must not be reused under a different profile unless the evidence proves that the relevant semantic dimensions are equivalent.
@@ -166,11 +166,11 @@ This RFC introduces no authoring syntax.
 
 ### Semantics
 
-Semantic profiles are evidence contexts. They describe the target environment against which InQL evidence is checked, exported, or observed. They do not define InQL relational meaning.
+Semantic profiles are evidence contexts. They describe the target environment against which IncQL evidence is checked, exported, or observed. They do not define IncQL relational meaning.
 
-Profiles may be authored, built into InQL, imported from artifacts, produced by adapters, or observed during execution. The source and lifecycle must be recorded so tools can distinguish a trusted built-in profile from an adapter-reported runtime observation or an imported profile.
+Profiles may be authored, built into IncQL, imported from artifacts, produced by adapters, or observed during execution. The source and lifecycle must be recorded so tools can distinguish a trusted built-in profile from an adapter-reported runtime observation or an imported profile.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 Prism remains the source of authored and rewritten relational meaning. Profile assessments consume Prism targets, lineage, schema flow, function registry facts, ingress coverage records, and adapter requirements. They must not infer semantic structure from backend plan strings or external client protocol node identifiers.
 
@@ -195,23 +195,23 @@ Profile schemas must be versioned from the start. Profile names that appear in s
 ## Alternatives considered
 
 - **Use adapter support flags only.** Rejected because support depends on target semantics, engine version, configuration, and execution mode.
-- **Use Substrait as the profile model.** Rejected because Substrait is an interchange boundary and does not capture every InQL evidence dimension.
-- **Make one external engine profile normative.** Rejected because InQL needs to interoperate with multiple targets without importing one target's semantics as the language definition.
+- **Use Substrait as the profile model.** Rejected because Substrait is an interchange boundary and does not capture every IncQL evidence dimension.
+- **Make one external engine profile normative.** Rejected because IncQL needs to interoperate with multiple targets without importing one target's semantics as the language definition.
 - **Rely only on conformance tests.** Rejected because tests are valuable evidence but do not replace structured profile records, coverage states, or diagnostics.
 - **Leave profiles to downstream integrations.** Rejected because independent profile reconstruction would cause drift across adapters, CI, notebooks, agents, transformation projects, and governance exchanges.
 
 ## Drawbacks
 
 - Profiles add another evidence concept that must stay distinct from requirements and coverage.
-- Profile dimension vocabulary will require maintenance as InQL and target environments grow.
+- Profile dimension vocabulary will require maintenance as IncQL and target environments grow.
 - Early profiles may contain many unknown dimensions, which can make reports feel conservative.
 - Runtime-observed profiles can differ from requested profiles, requiring clear diagnostics.
 
 ## Layers affected
 
-- **InQL specification** — semantic profile records, dimensions, and assessment states become part of the relational evidence vocabulary.
-- **InQL library package** — inspection, coverage, bundle, and export APIs must be able to expose profile records when available.
-- **Execution / interchange** — sessions and adapters may report requested and observed profile evidence without owning InQL semantics.
+- **IncQL specification** — semantic profile records, dimensions, and assessment states become part of the relational evidence vocabulary.
+- **IncQL library package** — inspection, coverage, bundle, and export APIs must be able to expose profile records when available.
+- **Execution / interchange** — sessions and adapters may report requested and observed profile evidence without owning IncQL semantics.
 - **Documentation** — docs must explain profiles as evidence contexts, not as alternative semantic authorities.
 
 ## Design Decisions

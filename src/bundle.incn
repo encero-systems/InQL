@@ -26,7 +26,7 @@ from scalar_schema import ScalarColumnSpec
 from semantic_profiles import SEMANTIC_PROFILE_SCHEMA_VERSION, SemanticProfile, SemanticProfileAssessment
 from verification import VERIFICATION_SCHEMA_VERSION, VerificationEvidence
 
-pub const GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION: str = "inql.governed-plan-bundle.v0.1"
+pub const GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION: str = "incql.governed-plan-bundle.v0.1"
 
 
 @derive(Clone)
@@ -112,12 +112,12 @@ pub model GovernedPlanBundle:
     """
     Local governed evidence package for one planned relation.
 
-    The bundle keeps rich InQL records in memory and exposes a stable JSON summary for handoff tools that only need
+    The bundle keeps rich IncQL records in memory and exposes a stable JSON summary for handoff tools that only need
     bundle metadata and section coverage.
     """
 
     pub schema_version: str
-    pub inql_version: str
+    pub incql_version: str
     pub bundle_id: str
     pub rule_versions: list[str]
     pub plan_target: SemanticTarget
@@ -160,7 +160,7 @@ pub model GovernedPlanBundle:
         """Return the stable governed-plan-bundle JSON summary."""
         mut entries: Dict[str, JsonValue] = {}
         entries["schema_version"] = JsonValue.str(self.schema_version)
-        entries["inql_version"] = JsonValue.str(self.inql_version)
+        entries["incql_version"] = JsonValue.str(self.incql_version)
         entries["bundle_id"] = JsonValue.str(self.bundle_id)
         entries["rule_versions"] = JsonValue.array(_strings_to_json_values(self.rule_versions))
         entries["plan"] = _semantic_target_json_value(self.plan_target)
@@ -236,7 +236,7 @@ pub def governed_plan_bundle_from_inspection(
     )
     return GovernedPlanBundle(
         schema_version=GOVERNED_PLAN_BUNDLE_SCHEMA_VERSION,
-        inql_version=inspection.inql_version,
+        incql_version=inspection.incql_version,
         bundle_id=f"bundle:{inspection.plan_id}",
         rule_versions=_bundle_rule_versions(
             inspection,
