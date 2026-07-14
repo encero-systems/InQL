@@ -7,7 +7,7 @@ from rust::substrait::proto import Expression
 from std.io import BytesIO, Endian, IoError, _BytesIO
 
 # ASCII "INCQLGEN1"; this lets decoders reject unrelated relation-extension payloads before reading length fields.
-const _MAGIC: list[int] = [73, 78, 81, 76, 71, 69, 78, 49]
+const _MAGIC: list[int] = [73, 78, 67, 81, 76, 71, 69, 78, 49]
 
 
 @derive(Clone)
