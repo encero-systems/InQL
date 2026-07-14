@@ -398,12 +398,15 @@ pub from backends import (
     BackendOption,
     BackendSelection,
     DataFusion,
+    PlanValidation,
     TableSource,
     arrow_source,
     csv_source,
     datafusion_backend_from_selection,
     datafusion_backend_selection,
     parquet_source,
+    plan_validation_backend_from_selection,
+    plan_validation_backend_selection,
 )
 pub from metadata import incql_version
 pub from session.domain import SinkKind, SinkTarget, csv_sink, parquet_sink, sink_kind_name

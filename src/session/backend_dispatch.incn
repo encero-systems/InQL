@@ -2,8 +2,9 @@
 
 import std.async
 from rust::substrait::proto import Plan
+from rust::substrait::proto::plan_rel import RelType as PlanRelType
 from rust::incan_stdlib::async::runtime import block_on
-from backends import BackendKind, BackendSelection
+from backends import BackendKind, BackendSelection, plan_validation_backend_from_selection
 from dataset.materialization import DataFrameMaterialization
 from session.backend_types import BackendError, BackendErrorKind, BackendRegistration, backend_error
 from session.domain import SinkKind
@@ -26,6 +27,7 @@ pub def backend_execute_plan(
             match block_on(datafusion_execute_async(registrations, plan)):
                 Ok(result) => return result
                 Err(err) => return Err(backend_error(BackendErrorKind.RuntimeInitError, err.message()))
+        BackendKind.PlanValidationEngine => return _plan_validation_execute(selection, plan)
 
 
 pub def backend_collect_plan(
@@ -39,6 +41,13 @@ pub def backend_collect_plan(
             match block_on(datafusion_collect_materialization_async(registrations, plan)):
                 Ok(result) => return result
                 Err(err) => return Err(backend_error(BackendErrorKind.RuntimeInitError, err.message()))
+        BackendKind.PlanValidationEngine =>
+            return Err(
+                backend_error(
+                    BackendErrorKind.BackendExecutionError,
+                    "plan_validation backend validates plans but does not materialize rows",
+                ),
+            )
 
 
 pub def backend_write_plan(
@@ -60,3 +69,28 @@ pub def backend_write_plan(
                     match block_on(datafusion_write_parquet_async(registrations, plan, uri)):
                         Ok(result) => return result
                         Err(err) => return Err(backend_error(BackendErrorKind.RuntimeInitError, err.message()))
+        BackendKind.PlanValidationEngine =>
+            return Err(
+                backend_error(
+                    BackendErrorKind.BackendSinkError,
+                    "plan_validation backend validates plans but does not write sinks",
+                ),
+            )
+
+
+def _plan_validation_execute(selection: BackendSelection, plan: Plan) -> Result[None, BackendError]:
+    """Validate one portable plan shape without handing execution to a row engine."""
+    backend = plan_validation_backend_from_selection(selection)
+    if backend.require_root_relation and not _plan_has_root_relation(plan):
+        return Err(backend_error(BackendErrorKind.BackendPlanningError, "plan has no root relation"))
+    return Ok(None)
+
+
+def _plan_has_root_relation(plan: Plan) -> bool:
+    """Return whether the first plan relation is a real root relation with input."""
+    if len(plan.relations) == 0:
+        return false
+    if let Some(PlanRelType.Root(root)) = plan.relations[0].rel_type:
+        if let Some(_) = root.input:
+            return true
+    return false

@@ -10,6 +10,7 @@ This page documents the public execution surface in the IncQL package. Normative
 - `BackendSelection` is the portable backend selection envelope stored by a session.
 - `BackendOption` carries adapter-specific configuration without adding one field per backend to `Session`.
 - `backends.DataFusion()` is the current reference backend configuration entry point.
+- `backends.PlanValidation(require_root_relation=true)` selects the portable validation backend. It validates plan and binding shape without executing rows.
 
 ## Construction
 
@@ -19,6 +20,7 @@ This page documents the public execution surface in the IncQL package. Normative
 | `Session.builder()`                                                | Create a builder for backend selection and configuration            |
 | `Session.builder().with_backend(selection).build()`                | Build a session from a portable backend-selection envelope           |
 | `Session.builder().with_datafusion(backends.DataFusion()).build()` | Build an explicit DataFusion-backed session                         |
+| `Session.builder().with_plan_validation(backends.PlanValidation(require_root_relation=true)).build()` | Build a validation-only backend session                             |
 
 ## Read and registration surface
 
@@ -44,6 +46,8 @@ All read APIs return `LazyFrame[T]`. They create deferred logical work; they do 
 
 - `execute(...)` proves the plan can bind, lower, and run.
 - `collect(...)` performs that same work and materializes a local `DataFrame[T]`.
+
+The `plan_validation` backend supports `execute(...)` as a portable validation checkpoint. It does not materialize rows or write sinks, so `collect(...)`, `write(...)`, `write_csv(...)`, and `write_parquet(...)` return typed backend errors when selected. Use DataFusion for local row execution.
 
 ## Execution observations
 
@@ -73,7 +77,7 @@ Observed execution methods preserve the ordinary session contracts while also re
 | `context_targets`                       | `list[SemanticTarget]`        | Session or binding context targets attached to the attempt     |
 | `operation`                             | `ExecutionOperationKind`      | Operation family: `execute`, `collect`, or `write`             |
 | `status`                                | `ExecutionObservationStatus`  | Terminal status                                                |
-| `backend_name`                          | `str`                         | Selected backend name, currently `datafusion` by default       |
+| `backend_name`                          | `str`                         | Selected backend name, such as `datafusion` or `plan_validation` |
 | `adapter_version`                       | `Option[str]`                 | Adapter version when reported by the backend                   |
 | `requested_semantic_profile_id`         | `Option[str]`                 | Requested semantic profile identity when one is bound          |
 | `observed_semantic_profile_id`          | `Option[str]`                 | Observed semantic profile identity when the adapter reports one |
