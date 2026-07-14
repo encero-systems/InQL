@@ -167,7 +167,7 @@ def _sketch_measure_suffix(options: list[FunctionOption]) -> str:
         suffix = suffix + "_" + value_domain
     if precision != "" and precision != "14":
         suffix = suffix + "_p" + precision
-    if format != "" and format != "inql_hll_v1":
+    if format != "" and format != "incql_hll_v1":
         suffix = suffix + "_" + format
     return suffix
 
@@ -232,7 +232,7 @@ def _window_output_columns(window_rel: ConsistentPartitionWindowRel) -> list[str
 
 
 def _window_function_output_name(options: list[FunctionOption]) -> str:
-    """Return the InQL output alias encoded on one lowered window function."""
+    """Return the IncQL output alias encoded on one lowered window function."""
     for option in options:
         if option.name == WINDOW_OUTPUT_NAME_OPTION and len(option.preference) > 0:
             return option.preference[0]

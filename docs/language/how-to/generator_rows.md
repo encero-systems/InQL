@@ -9,8 +9,8 @@ Generators return `GeneratorApplication` values. Apply them through `generate(..
 Use `explode(...)` when each array element should become a generated row.
 
 ```incan
-from pub::inql import LazyFrame
-from pub::inql.functions import col, explode
+from pub::incql import LazyFrame
+from pub::incql.functions import col, explode
 from models import Order
 
 def order_lines(orders: LazyFrame[Order]) -> LazyFrame[Order]:
@@ -22,8 +22,8 @@ def order_lines(orders: LazyFrame[Order]) -> LazyFrame[Order]:
 Use `inline(...)` when the generated rows should expose one output column per struct field.
 
 ```incan
-from pub::inql import LazyFrame
-from pub::inql.functions import array, inline, lit, named_struct
+from pub::incql import LazyFrame
+from pub::incql.functions import array, inline, lit, named_struct
 from models import Order
 
 def fixed_items(orders: LazyFrame[Order]) -> LazyFrame[Order]:

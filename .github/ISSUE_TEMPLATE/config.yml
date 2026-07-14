@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
   - name: Documentation
-    url: https://github.com/encero-systems/InQL#readme
-    about: Start here for InQL overview, RFC index, and project links.
+    url: https://github.com/encero-systems/IncQL#readme
+    about: Start here for IncQL overview, RFC index, and project links.

@@ -1,8 +1,8 @@
-# InQL RFCs
+# IncQL RFCs
 
-InQL uses its **own** RFC series (starting at 000), independent of the [Incan language RFCs][incan-rfcs].
+IncQL uses its **own** RFC series (starting at 000), independent of the [Incan language RFCs][incan-rfcs].
 
-**New RFC:** copy [TEMPLATE.md], name the file `NNN_short_slug.md`, pick the next number from the table (or from open issues), and open a PR. Section order and header fields follow that template. For workflow and conventions, see [Writing InQL RFCs].
+**New RFC:** copy [TEMPLATE.md], name the file `NNN_short_slug.md`, pick the next number from the table (or from open issues), and open a PR. Section order and header fields follow that template. For workflow and conventions, see [Writing IncQL RFCs].
 
 | RFC            | Status      | Title                                                                                             |     |
 | -------------- | ----------- | ------------------------------------------------------------------------------------------------- | --- |
@@ -59,20 +59,20 @@ InQL uses its **own** RFC series (starting at 000), independent of the [Incan la
 
 <!-- TODO: #7: auto populate this table (like how we do in incan) -->
 
-**v0.1 tracking:** RFCs 000–004 plus RFC 007 remain the foundation that defines when InQL v0.1 is complete: authors can read data, write typed queries, lower through Prism to Substrait, execute through DataFusion, and write results. The table also marks additional v0.1-shipped slices that landed before the whole foundation is closed, including the function catalog and evidence/observation work.
+**v0.1 tracking:** RFCs 000–004 plus RFC 007 remain the foundation that defines when IncQL v0.1 is complete: authors can read data, write typed queries, lower through Prism to Substrait, execute through DataFusion, and write results. The table also marks additional v0.1-shipped slices that landed before the whole foundation is closed, including the function catalog and evidence/observation work.
 
-New RFCs should follow [TEMPLATE.md] (aligned with Incan’s RFC structure, adapted for InQL).
+New RFCs should follow [TEMPLATE.md] (aligned with Incan’s RFC structure, adapted for IncQL).
 
 <!-- References -->
 
 [TEMPLATE.md]: TEMPLATE.md
-[Writing InQL RFCs]: ../contributing/writing_rfcs.md
-[rfc-000]: 000_inql_syntax.md
-[rfc-001]: 001_inql_dataset.md
+[Writing IncQL RFCs]: ../contributing/writing_rfcs.md
+[rfc-000]: 000_incql_syntax.md
+[rfc-001]: 001_incql_dataset.md
 [rfc-002]: 002_apache_substrait_integration.md
-[rfc-003]: 003_inql_query_blocks.md
-[rfc-004]: 004_inql_execution_context.md
-[rfc-005]: 005_inql_pipe_forward.md
+[rfc-003]: 003_incql_query_blocks.md
+[rfc-004]: 004_incql_execution_context.md
+[rfc-005]: 005_incql_pipe_forward.md
 [rfc-006]: 006_unnest_core_substrait.md
 [rfc-007]: 007_prism_planning_engine.md
 [rfc-008]: 008_optimizer_boundary_stats_cbo_aqe.md

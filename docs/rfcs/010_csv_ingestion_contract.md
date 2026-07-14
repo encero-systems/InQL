@@ -1,12 +1,12 @@
-# InQL RFC 010: CSV dialect and interpretation contract
+# IncQL RFC 010: CSV dialect and interpretation contract
 
 - **Status:** Draft
 - **Created:** 2026-04-19
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 001 (dataset types and carrier schema surfaces)
-  - InQL RFC 004 (execution context and session read boundaries)
-  - InQL RFC 009 (session format handler registry)
+  - IncQL RFC 001 (dataset types and carrier schema surfaces)
+  - IncQL RFC 004 (execution context and session read boundaries)
+  - IncQL RFC 009 (session format handler registry)
 - **Issue:** —
 - **RFC PR:** —
 - **Written against:** Incan v0.2-rc5
@@ -14,23 +14,23 @@
 
 ## Summary
 
-This RFC defines InQL's north-star CSV dialect and interpretation contract. It standardizes how authors describe CSV dialect, header policy, malformed-row behavior, and schema or type inference so that the `csv` format behaves predictably across execution backends and future format-handler implementations. The core claim is that CSV parsing semantics must be expressed as stable structured InQL configuration and validated as part of the InQL contract, rather than being left to whatever parser quirks a specific backend happens to expose.
+This RFC defines IncQL's north-star CSV dialect and interpretation contract. It standardizes how authors describe CSV dialect, header policy, malformed-row behavior, and schema or type inference so that the `csv` format behaves predictably across execution backends and future format-handler implementations. The core claim is that CSV parsing semantics must be expressed as stable structured IncQL configuration and validated as part of the IncQL contract, rather than being left to whatever parser quirks a specific backend happens to expose.
 
 ## Core model
 
 1. CSV ingestion configuration is structured data, not ad-hoc booleans or backend-specific string flags.
 2. CSV **dialect**, **schema or type interpretation**, and **malformed-row policy** are distinct concerns and must remain separate in the public API.
-3. CSV reads participate in InQL's schema layering: declared schema, planned schema, and resolved schema are related but not interchangeable.
+3. CSV reads participate in IncQL's schema layering: declared schema, planned schema, and resolved schema are related but not interchangeable.
 4. Execution backends and format handlers must either honor the requested CSV contract or reject unsupported configuration before query execution begins.
 5. `Session.read_csv(...)` is convenience sugar over the session's format-dispatch surface for the `csv` format key.
 
 ## Motivation
 
-CSV is deceptively simple. In practice, a read surface that says "read CSV" without a precise contract leaves critical behavior undefined: quoting, embedded delimiters, multiline fields, header handling, null tokens, numeric grouping, timestamp recognition, and malformed-row policy. That creates two problems for InQL.
+CSV is deceptively simple. In practice, a read surface that says "read CSV" without a precise contract leaves critical behavior undefined: quoting, embedded delimiters, multiline fields, header handling, null tokens, numeric grouping, timestamp recognition, and malformed-row policy. That creates two problems for IncQL.
 
-First, authors cannot reason about portability. A workflow that succeeds with one execution backend may silently change meaning under another backend or after an internal parser change. Second, InQL's typed carrier model becomes weaker if CSV ingestion can quietly reinterpret columns or infer different shapes based on parser quirks rather than an explicit contract.
+First, authors cannot reason about portability. A workflow that succeeds with one execution backend may silently change meaning under another backend or after an internal parser change. Second, IncQL's typed carrier model becomes weaker if CSV ingestion can quietly reinterpret columns or infer different shapes based on parser quirks rather than an explicit contract.
 
-InQL should not inherit the accidental complexity of backend-specific CSV readers as its user-facing semantics. It needs its own contract: explicit enough that authors can rely on it, and precise enough that conformance tests can verify it.
+IncQL should not inherit the accidental complexity of backend-specific CSV readers as its user-facing semantics. It needs its own contract: explicit enough that authors can rely on it, and precise enough that conformance tests can verify it.
 
 ## Goals
 
@@ -39,7 +39,7 @@ InQL should not inherit the accidental complexity of backend-specific CSV reader
 - Specify the default CSV behavior authors get when they do not override options.
 - Define how CSV reads interact with declared, planned, and resolved schema layers.
 - Require early rejection when a backend or format handler cannot satisfy the requested CSV contract.
-- Make conformance testing possible without binding InQL semantics to one specific parser implementation.
+- Make conformance testing possible without binding IncQL semantics to one specific parser implementation.
 
 ## Non-Goals
 
@@ -61,8 +61,8 @@ Authors should think of CSV reads as a contract between their program and the ru
 The public surface should therefore expose one structured options value for CSV reads.
 
 ```incan
-from pub::inql import LazyFrame, Session
-from pub::inql.formats import (
+from pub::incql import LazyFrame, Session
+from pub::incql.formats import (
     CsvDialect,
     CsvHeaderMode,
     CsvInference,
@@ -116,7 +116,7 @@ orders: LazyFrame[Order] = session.read_format(
 )
 ```
 
-If an author does not provide options, InQL still has a defined default contract rather than an implementation accident.
+If an author does not provide options, IncQL still has a defined default contract rather than an implementation accident.
 
 ```incan
 orders: LazyFrame[Order] = session.read_csv("orders", "s3://warehouse/orders.csv")
@@ -127,7 +127,7 @@ That default should mean "standard CSV with headers, quoted-field support, stric
 Headerless CSV is still allowed, but it should be explicit because it changes how schema is established.
 
 ```incan
-from pub::inql.formats import CsvDialect, CsvHeaderMode, CsvReadOptions
+from pub::incql.formats import CsvDialect, CsvHeaderMode, CsvReadOptions
 
 rows: LazyFrame[Order] = session.read_csv(
     "orders",
@@ -142,7 +142,7 @@ rows: LazyFrame[Order] = session.read_csv(
 
 ### Public configuration model
 
-InQL must expose one stable structured CSV configuration surface for read operations. The exact namespace may evolve, but the public API must include the equivalent of:
+IncQL must expose one stable structured CSV configuration surface for read operations. The exact namespace may evolve, but the public API must include the equivalent of:
 
 - `CsvReadOptions`
 - `CsvDialect`
@@ -164,7 +164,7 @@ The normative contract is owned by the `csv` format entry in the session's forma
 - `header`: whether the first logical record is a header row
 - `multiline_fields`: whether quoted fields may span multiple physical lines
 
-InQL's default dialect must behave as follows:
+IncQL's default dialect must behave as follows:
 
 - delimiter is `,`
 - quote is `"`
@@ -173,14 +173,14 @@ InQL's default dialect must behave as follows:
 - quoted fields may contain delimiters and line breaks
 - malformed rows are not silently ignored
 
-The default contract should align with standard CSV expectations, but InQL owns the contract text. It must not outsource semantics to a backend documentation page.
+The default contract should align with standard CSV expectations, but IncQL owns the contract text. It must not outsource semantics to a backend documentation page.
 
 ### Schema and type interpretation
 
 CSV ingestion must distinguish three schema layers:
 
 - **declared schema**: the author- or model-level schema the program is written against
-- **planned schema**: the schema InQL can establish before execution from configuration, headers, and compatible schema analysis
+- **planned schema**: the schema IncQL can establish before execution from configuration, headers, and compatible schema analysis
 - **resolved schema**: the schema observed from materialized output after execution
 
 When the call context requires `LazyFrame[T]`, `T` is the declared schema contract. CSV ingestion must validate compatibility between the file and `T` according to the configured header and inference policy. A backend must not silently reorder columns or reinterpret field names in a way that breaks the declared schema.
@@ -197,7 +197,7 @@ If numeric grouping separators are allowed, the contract must define which separ
 
 ### Malformed-row policy
 
-InQL must expose an explicit malformed-row policy. At minimum the contract must support an `Error` mode that fails the read. Additional policies may exist, but they must be explicit and portable.
+IncQL must expose an explicit malformed-row policy. At minimum the contract must support an `Error` mode that fails the read. Additional policies may exist, but they must be explicit and portable.
 
 Malformed input includes at least:
 
@@ -210,9 +210,9 @@ If a backend cannot implement a requested malformed-row policy faithfully, it mu
 
 ### Early validation and capability rejection
 
-CSV option validation must happen before query execution starts. InQL must reject invalid option combinations and unsupported backend capabilities at the session or planning boundary.
+CSV option validation must happen before query execution starts. IncQL must reject invalid option combinations and unsupported backend capabilities at the session or planning boundary.
 
-Backends and format handlers may support more behavior internally than the portable contract defines, but that additional behavior must not leak into InQL's normative semantics unless a future RFC standardizes it.
+Backends and format handlers may support more behavior internally than the portable contract defines, but that additional behavior must not leak into IncQL's normative semantics unless a future RFC standardizes it.
 
 ### Diagnostics
 
@@ -238,13 +238,13 @@ This RFC does not introduce new language grammar. It standardizes library-surfac
 
 The default path must be strict enough to be predictable. Convenience cannot come from ambiguity. A permissive parser mode may exist, but only as an explicit policy choice.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
-CSV ingestion must compose with carrier-schema layering from InQL RFC 001. `planned_columns` may be established from declared schema, header contract, or compatible pre-execution analysis, while `resolved_columns` remain a runtime fact on materialized output.
+CSV ingestion must compose with carrier-schema layering from IncQL RFC 001. `planned_columns` may be established from declared schema, header contract, or compatible pre-execution analysis, while `resolved_columns` remain a runtime fact on materialized output.
 
-CSV ingestion must compose with the execution boundary from InQL RFC 004. Session-owned read configuration is part of the execution contract, not an implementation detail hidden in a backend adapter.
+CSV ingestion must compose with the execution boundary from IncQL RFC 004. Session-owned read configuration is part of the execution contract, not an implementation detail hidden in a backend adapter.
 
-CSV-specific configuration should also remain compatible with the format-handler model in InQL RFC 009. The `csv` format entry owns the contract; `read_csv` is convenience sugar over that dispatch path. A CSV handler may implement the contract, but it does not get to redefine the contract.
+CSV-specific configuration should also remain compatible with the format-handler model in IncQL RFC 009. The `csv` format entry owns the contract; `read_csv` is convenience sugar over that dispatch path. A CSV handler may implement the contract, but it does not get to redefine the contract.
 
 ### Compatibility / migration
 
@@ -254,10 +254,10 @@ Implementations should provide a clear migration path for currently implicit def
 
 ## Alternatives considered
 
-- Leaving CSV semantics to the execution backend: rejected, because it makes InQL's read surface non-portable and weakens the typed carrier contract.
+- Leaving CSV semantics to the execution backend: rejected, because it makes IncQL's read surface non-portable and weakens the typed carrier contract.
 - Defining only a minimal RFC 4180 subset and deferring all inference semantics: rejected, because authors still need stable rules for nulls, numerics, booleans, and timestamps when reading typed data.
-- Copying pandas or Spark behavior wholesale: rejected, because those systems optimize for their own ecosystems and backward-compatibility constraints. InQL should learn from them, not inherit them uncritically.
-- Exposing only backend-specific option maps: rejected, because it would bypass InQL's role as the contract owner.
+- Copying pandas or Spark behavior wholesale: rejected, because those systems optimize for their own ecosystems and backward-compatibility constraints. IncQL should learn from them, not inherit them uncritically.
+- Exposing only backend-specific option maps: rejected, because it would bypass IncQL's role as the contract owner.
 
 ## Drawbacks
 
@@ -267,14 +267,14 @@ Implementations should provide a clear migration path for currently implicit def
 
 ## Layers affected
 
-- **InQL specification** must define CSV ingestion as a portable contract rather than a backend-specific convenience.
-- **InQL library package** must expose stable structured CSV read options and typed diagnostics consistent with this RFC.
+- **IncQL specification** must define CSV ingestion as a portable contract rather than a backend-specific convenience.
+- **IncQL library package** must expose stable structured CSV read options and typed diagnostics consistent with this RFC.
 - **Execution / interchange** must validate backend or handler capability against the requested CSV contract before execution begins.
 - **Documentation** must explain the default CSV contract and its explicit override model without relying on backend documentation as the source of truth.
 
 ## Unresolved questions
 
-- Should headerless CSV be supported only when a declared schema is present, or may InQL synthesize stable placeholder column names as part of the portable contract?
+- Should headerless CSV be supported only when a declared schema is present, or may IncQL synthesize stable placeholder column names as part of the portable contract?
 - Should the default numeric-grouping policy remain strict and reject separators such as `_` and `,`, or should common grouping separators be allowed by default?
 - Should unquoted leading and trailing whitespace be preserved exactly by default, or normalized as part of the portable CSV contract?
 

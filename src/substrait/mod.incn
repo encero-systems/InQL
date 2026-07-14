@@ -1,5 +1,5 @@
 """
-Substrait support for InQL.
+Substrait support for IncQL.
 
 The implementation is split into focused owner modules:
 

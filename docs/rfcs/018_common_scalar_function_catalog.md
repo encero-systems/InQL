@@ -1,15 +1,15 @@
-# InQL RFC 018: Common scalar function catalog
+# IncQL RFC 018: Common scalar function catalog
 
 - **Status:** Implemented
 - **Created:** 2026-04-27
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 012 (unified scalar expression surface)
-  - InQL RFC 013 (function catalog program)
-  - InQL RFC 014 (function registry and catalog governance)
-  - InQL RFC 015 (core scalar functions and operators)
-- **Issue:** [InQL #35](https://github.com/encero-systems/InQL/issues/35)
-- **RFC PR:** [InQL #44](https://github.com/encero-systems/InQL/pull/44) (initial math slice); [InQL #54](https://github.com/encero-systems/InQL/pull/54) (full implementation)
+  - IncQL RFC 012 (unified scalar expression surface)
+  - IncQL RFC 013 (function catalog program)
+  - IncQL RFC 014 (function registry and catalog governance)
+  - IncQL RFC 015 (core scalar functions and operators)
+- **Issue:** [IncQL #35](https://github.com/encero-systems/IncQL/issues/35)
+- **RFC PR:** [IncQL #44](https://github.com/encero-systems/IncQL/pull/44) (initial math slice); [IncQL #54](https://github.com/encero-systems/IncQL/pull/54) (full implementation)
 - **Written against:** Incan v0.2
 - **Shipped in:** v0.1
 
@@ -19,7 +19,7 @@ This RFC defines the common scalar function catalog beyond the core scalar slice
 
 ## Motivation
 
-After the core scalar vocabulary exists, authors still need everyday data cleaning and feature engineering functions. Spark, Snowflake, DataFusion, Arrow, dbt, and SQL systems all provide broad scalar coverage because real tabular work needs string normalization, date extraction, numeric transforms, regex predicates, and parsing helpers. InQL should add that breadth deliberately rather than through scattered helper additions.
+After the core scalar vocabulary exists, authors still need everyday data cleaning and feature engineering functions. Spark, Snowflake, DataFusion, Arrow, dbt, and SQL systems all provide broad scalar coverage because real tabular work needs string normalization, date extraction, numeric transforms, regex predicates, and parsing helpers. IncQL should add that breadth deliberately rather than through scattered helper additions.
 
 The catalog should still avoid copying every backend-specific function. Functions that require nested types, JSON/CSV values, geospatial types, sketch state, encryption policy, or physical execution metadata belong elsewhere.
 
@@ -42,7 +42,7 @@ The catalog should still avoid copying every backend-specific function. Function
 Authors should be able to clean and enrich ordinary scalar columns using familiar functions:
 
 ```incan
-from pub::inql.functions import col, concat, date_trunc, lower, round, substring, trim
+from pub::incql.functions import col, concat, date_trunc, lower, round, substring, trim
 
 cleaned = (
     orders
@@ -53,21 +53,21 @@ cleaned = (
 )
 ```
 
-Compatibility aliases are useful, but authors should see one canonical InQL name in docs for each semantic function.
+Compatibility aliases are useful, but authors should see one canonical IncQL name in docs for each semantic function.
 
 ## Reference-level explanation (precise rules)
 
-InQL should define common math functions including `abs`, `ceil`, `floor`, `round`, `sqrt`, `power`, `exp`, `ln`, `log`, `log10`, `sign`, `least`, `greatest`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `degrees`, and `radians`.
+IncQL should define common math functions including `abs`, `ceil`, `floor`, `round`, `sqrt`, `power`, `exp`, `ln`, `log`, `log10`, `sign`, `least`, `greatest`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `degrees`, and `radians`.
 
-InQL should define common string functions including `char_length`, `octet_length`, `upper`, `lower`, `trim`, `ltrim`, `rtrim`, `substring`, `position`, `overlay`, `concat`, `concat_ws`, `replace`, `translate`, `repeat`, `left`, `right`, `lpad`, `rpad`, and `split_part`.
+IncQL should define common string functions including `char_length`, `octet_length`, `upper`, `lower`, `trim`, `ltrim`, `rtrim`, `substring`, `position`, `overlay`, `concat`, `concat_ws`, `replace`, `translate`, `repeat`, `left`, `right`, `lpad`, `rpad`, and `split_part`.
 
-InQL should define common text encoding functions including `encode`, `decode`, `base64`, `unbase64`, `hex`, and `unhex`, provided their character encoding and invalid-input behavior are specified.
+IncQL should define common text encoding functions including `encode`, `decode`, `base64`, `unbase64`, `hex`, and `unhex`, provided their character encoding and invalid-input behavior are specified.
 
-InQL should define common regex functions including `regexp_like`, `regexp_replace`, and `regexp_extract` once the regex flavor and capture semantics are specified.
+IncQL should define common regex functions including `regexp_like`, `regexp_replace`, and `regexp_extract` once the regex flavor and capture semantics are specified.
 
-InQL should define common date/time functions including `current_date`, `current_time`, `current_timestamp`, `extract`, `date_part`, `date_trunc`, `time_trunc`, `date_add`, `date_sub`, `date_diff`, `timestamp_diff`, `to_date`, `to_time`, `to_timestamp`, `from_unixtime`, `unix_seconds`, `unix_millis`, `unix_micros`, `make_date`, `make_time`, `make_timestamp`, and `last_day`.
+IncQL should define common date/time functions including `current_date`, `current_time`, `current_timestamp`, `extract`, `date_part`, `date_trunc`, `time_trunc`, `date_add`, `date_sub`, `date_diff`, `timestamp_diff`, `to_date`, `to_time`, `to_timestamp`, `from_unixtime`, `unix_seconds`, `unix_millis`, `unix_micros`, `make_date`, `make_time`, `make_timestamp`, and `last_day`.
 
-The catalog should explicitly account for dbt-style portability names such as `dateadd`, `datediff`, and `safe_cast`. These names may be canonical helpers or compatibility aliases, but their adapter-specific rendering requirements must be represented through the registry rather than undocumented backend conditionals. Deterministic hash helpers belong to InQL RFC 022. Semi-structured type and variant helpers belong to InQL RFC 026.
+The catalog should explicitly account for dbt-style portability names such as `dateadd`, `datediff`, and `safe_cast`. These names may be canonical helpers or compatibility aliases, but their adapter-specific rendering requirements must be represented through the registry rather than undocumented backend conditionals. Deterministic hash helpers belong to IncQL RFC 022. Semi-structured type and variant helpers belong to IncQL RFC 026.
 
 Every function added by this RFC must be entered in the function registry with type rules, null behavior, determinism, and backend support. Current time functions must be marked stable within a query or explicitly nondeterministic; the registry must not leave that ambiguous.
 
@@ -85,9 +85,9 @@ String functions must use one-based SQL-compatible positions for functions such 
 
 Regex functions use a safe Rust-regex-compatible flavor: no lookaround or backreferences are guaranteed by the portable contract. `regexp_extract` defaults to capture group `1`; group `0` returns the full match.
 
-Current date, time, and timestamp helpers are registry-marked as nondeterministic because InQL's registry has no separate statement-stable determinism category. Backends may evaluate them statement-stably, but InQL authors must not rely on them as deterministic pure functions.
+Current date, time, and timestamp helpers are registry-marked as nondeterministic because IncQL's registry has no separate statement-stable determinism category. Backends may evaluate them statement-stably, but IncQL authors must not rely on them as deterministic pure functions.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 The same scalar catalog must be usable in filters, computed projections, grouping keys where allowed, aggregate arguments, and query-block expressions. Function availability must not depend on whether the author used dataframe methods or query blocks.
 
@@ -97,8 +97,8 @@ Existing arithmetic helpers should be treated as the start of this catalog but s
 
 ## Alternatives considered
 
-- **Add all Spark scalar functions.** Rejected because many Spark functions are format-specific, engine-specific, physical-execution-specific, or require types InQL has not standardized.
-- **Only expose DataFusion functions.** Rejected because backend availability should inform lowering, not define the portable InQL author contract.
+- **Add all Spark scalar functions.** Rejected because many Spark functions are format-specific, engine-specific, physical-execution-specific, or require types IncQL has not standardized.
+- **Only expose DataFusion functions.** Rejected because backend availability should inform lowering, not define the portable IncQL author contract.
 - **Delay scalar breadth until every edge case is settled.** Rejected because practical data cleaning needs a common catalog, but unresolved families can remain Draft until semantics are precise.
 
 ## Drawbacks
@@ -109,8 +109,8 @@ Existing arithmetic helpers should be treated as the start of this catalog but s
 
 ## Layers affected
 
-- **InQL specification** — the common scalar catalog must extend the registry without contradicting core scalar semantics.
-- **InQL library package** — public helpers should expose canonical names and selected aliases.
+- **IncQL specification** — the common scalar catalog must extend the registry without contradicting core scalar semantics.
+- **IncQL library package** — public helpers should expose canonical names and selected aliases.
 - **Incan compiler** — query-block operator and keyword forms should lower to registry entries where applicable.
 - **Execution / interchange** — Prism and Substrait lowering must either preserve semantics, use registered extensions, or diagnose unsupported functions.
 - **Documentation** — function reference docs should group scalar functions by family and show aliases.
@@ -125,7 +125,7 @@ Existing arithmetic helpers should be treated as the start of this catalog but s
 ### Phase 2: Complete common scalar catalog
 
 - Add the remaining math helpers, string helpers, text encoding helpers, regex helpers, date/time helpers, and compatibility aliases.
-- Preserve InQL semantics through registry metadata and Substrait extension mappings, with adapter-owned DataFusion UDFs only where DataFusion has no direct API-level equivalent.
+- Preserve IncQL semantics through registry metadata and Substrait extension mappings, with adapter-owned DataFusion UDFs only where DataFusion has no direct API-level equivalent.
 - Cover registry metadata, Substrait lowering, expression shape, and concrete DataFusion-backed session execution.
 
 ## Progress Checklist
@@ -152,5 +152,5 @@ Existing arithmetic helpers should be treated as the start of this catalog but s
 - **Regex flavor:** RFC 018 regex helpers use Rust-regex-compatible semantics. The portable contract does not require lookaround or backreference support.
 - **Regex captures:** `regexp_extract(expr, pattern)` defaults to capture group `1`; group `0` returns the full match.
 - **Current time determinism:** `current_date`, `current_time`, and `current_timestamp` are registry-marked nondeterministic until the registry has a statement-stable category.
-- **Encoding scope:** RFC 018 encoding helpers are text-to-text helpers. Binary and semi-structured logical value surfaces belong to InQL RFC 026 rather than hidden DataFusion-specific behavior.
-- **DataFusion boundary:** DataFusion native functions are used where they preserve InQL semantics directly. Adapter UDFs are DataFusion execution details and do not own the InQL semantic contract.
+- **Encoding scope:** RFC 018 encoding helpers are text-to-text helpers. Binary and semi-structured logical value surfaces belong to IncQL RFC 026 rather than hidden DataFusion-specific behavior.
+- **DataFusion boundary:** DataFusion native functions are used where they preserve IncQL semantics directly. Adapter UDFs are DataFusion execution details and do not own the IncQL semantic contract.

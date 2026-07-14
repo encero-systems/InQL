@@ -1,26 +1,26 @@
-# InQL RFC 006: Promote unnest/explode to core Substrait lowering
+# IncQL RFC 006: Promote unnest/explode to core Substrait lowering
 
 - **Status:** Blocked
 - **Created:** 2026-03-27
 - **Author(s):** Danny Meijer
 - **Related:**
-  - InQL RFC 002 (Apache Substrait — normative gap classification for unnest; **prerequisite**)
-  - InQL RFC 003 (`query {}` — `EXPLODE` clause; no surface change required)
-  - InQL RFC 001 (dataset types — `explode` method on `DataSet[T]`; no surface change required)
-- **Issue:** [InQL #14](https://github.com/encero-systems/InQL/issues/14)
+  - IncQL RFC 002 (Apache Substrait — normative gap classification for unnest; **prerequisite**)
+  - IncQL RFC 003 (`query {}` — `EXPLODE` clause; no surface change required)
+  - IncQL RFC 001 (dataset types — `explode` method on `DataSet[T]`; no surface change required)
+- **Issue:** [IncQL #14](https://github.com/encero-systems/IncQL/issues/14)
 - **RFC PR:** -
 - **Written against:** Incan v0.2
 - **Shipped in:** -
 
-> **Blocked** on upstream Apache Substrait standardizing a portable logical unnest/explode `Rel` in a revision InQL can pin to. See [Substrait operator catalog — Gap profiles: Unnest / explode][ref-operator-catalog].
+> **Blocked** on upstream Apache Substrait standardizing a portable logical unnest/explode `Rel` in a revision IncQL can pin to. See [Substrait operator catalog — Gap profiles: Unnest / explode][ref-operator-catalog].
 
 ## Summary
 
-InQL RFC 002 classifies `EXPLODE`/unnest as a **gap** capability: no stable logical `Rel` exists in core Substrait, so implementations must lower through a registered extension relation with a declared URI. This RFC records the intent to promote that capability from `gap` to `core` — updating the operator catalog, retiring the extension encoding requirement, and updating Incan compiler lowering — once upstream Substrait ships a portable unnest `Rel` that InQL can adopt.
+IncQL RFC 002 classifies `EXPLODE`/unnest as a **gap** capability: no stable logical `Rel` exists in core Substrait, so implementations must lower through a registered extension relation with a declared URI. This RFC records the intent to promote that capability from `gap` to `core` — updating the operator catalog, retiring the extension encoding requirement, and updating Incan compiler lowering — once upstream Substrait ships a portable unnest `Rel` that IncQL can adopt.
 
 ## Motivation
 
-The current extension encoding for unnest adds extension URI maintenance burden to every conforming InQL toolchain release and limits plan portability to consumers that happen to support the same registered extension. The gap classification is not a permanent design choice; it reflects a gap in Substrait at the time of RFC 002. Once upstream closes that gap with a stable logical `Rel`, there is no reason for InQL to keep the extension path as the normative encoding. Reclassifying promptly gives authors core-portable `EXPLODE` semantics without requiring consumers to register or recognize InQL-specific URIs.
+The current extension encoding for unnest adds extension URI maintenance burden to every conforming IncQL toolchain release and limits plan portability to consumers that happen to support the same registered extension. The gap classification is not a permanent design choice; it reflects a gap in Substrait at the time of RFC 002. Once upstream closes that gap with a stable logical `Rel`, there is no reason for IncQL to keep the extension path as the normative encoding. Reclassifying promptly gives authors core-portable `EXPLODE` semantics without requiring consumers to register or recognize IncQL-specific URIs.
 
 ## Goals
 
@@ -30,13 +30,13 @@ The current extension encoding for unnest adds extension URI maintenance burden 
 
 ## Non-Goals
 
-- Changing the InQL surface syntax for unnest — `EXPLODE` in `query {}` (InQL RFC 003) and `generate(explode(...))` remain unchanged.
-- Defining the semantics of the new core `Rel` — that is an upstream Substrait concern; InQL aligns to whatever the pinned revision specifies.
+- Changing the IncQL surface syntax for unnest — `EXPLODE` in `query {}` (IncQL RFC 003) and `generate(explode(...))` remain unchanged.
+- Defining the semantics of the new core `Rel` — that is an upstream Substrait concern; IncQL aligns to whatever the pinned revision specifies.
 - Keeping the extension encoding as an alternate path — once the core `Rel` is adopted, the extension path is retired.
 
 ## Guide-level explanation
 
-From an author's perspective, nothing changes. `EXPLODE` in `query {}` and `generate(explode(...))` work exactly as before. The only observable difference is in the serialized Substrait plan: before promotion, the emitted plan contains an `ExtensionSingleRel` or `ExtensionLeafRel` with an InQL-registered URI; after promotion, it contains the standard logical unnest `Rel` from the pinned Substrait revision. Consumers that previously required the InQL extension URI to execute unnest plans no longer do.
+From an author's perspective, nothing changes. `EXPLODE` in `query {}` and `generate(explode(...))` work exactly as before. The only observable difference is in the serialized Substrait plan: before promotion, the emitted plan contains an `ExtensionSingleRel` or `ExtensionLeafRel` with an IncQL-registered URI; after promotion, it contains the standard logical unnest `Rel` from the pinned Substrait revision. Consumers that previously required the IncQL extension URI to execute unnest plans no longer do.
 
 ## Reference-level explanation
 
@@ -66,14 +66,14 @@ Serialized Substrait plans containing the extension encoding for unnest will nee
 
 ## Design details
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 No surface changes. The `EXPLODE` clause in `query {}` and the `generate(explode(...))` dataset form retain their existing semantics; only the Substrait emission changes.
 
 ### Compatibility / migration
 
 - Breaking for serialized plans: existing plans with the extension encoding for unnest must be re-emitted. No author source code changes are required.
-- Non-breaking for InQL source: `EXPLODE` and `generate(explode(...))` continue to compile and type-check identically.
+- Non-breaking for IncQL source: `EXPLODE` and `generate(explode(...))` continue to compile and type-check identically.
 
 ## Alternatives considered
 
@@ -83,18 +83,18 @@ No surface changes. The `EXPLODE` clause in `query {}` and the `generate(explode
 ## Drawbacks
 
 - Bumping the Substrait pin for this change is a plan-level breaking change, requiring coordinated consumer updates if any downstream tooling relies on the extension encoding.
-- Timing depends entirely on upstream Substrait; InQL cannot control when a portable unnest `Rel` ships.
+- Timing depends entirely on upstream Substrait; IncQL cannot control when a portable unnest `Rel` ships.
 
 ## Layers affected
 
-- **InQL specification** — operator catalog reference updated; revision and extension policy retirement entry required.
+- **IncQL specification** — operator catalog reference updated; revision and extension policy retirement entry required.
 - **Incan compiler** — lowering for `EXPLODE` / `explode` updated to emit the core `Rel` (work in the Incan repository).
 - **Documentation** — release notes entry; operator catalog update.
 
 ## Unresolved questions
 
 - Which exact Substrait revision introduces the portable unnest `Rel`? (Blocked on upstream; track `substrait-io/substrait`.)
-- Are there semantic edge cases between the InQL extension encoding and the upstream core `Rel` that require a compatibility shim or a lowering-time rewrite?
+- Are there semantic edge cases between the IncQL extension encoding and the upstream core `Rel` that require a compatibility shim or a lowering-time rewrite?
 
 <!-- References -->
 

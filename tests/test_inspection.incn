@@ -157,7 +157,7 @@ def test_inspect_plan__exposes_stable_plan_targets_schema_and_artifacts() -> Non
     assert inspection.output_fields[1].name == "total_amount", "explicit aggregate alias should become output field target"
     assert inspection.output_fields[0].target_id != "customer_id", "field identity must not be the display name alone"
     assert len(inspection.attachments) >= 3, "inspection should emit typed metadata attachments for versions and known schema facts"
-    assert inspection.attachments[0].payload.schema == "inql.metadata.string.v0.1", "metadata payloads should declare a schema"
+    assert inspection.attachments[0].payload.schema == "incql.metadata.string.v0.1", "metadata payloads should declare a schema"
     assert len(inspection.governed_attributes) >= 1, "inspection should expose inferred governed attributes for known fields"
     assert len(inspection.policy_checkpoints) == 1, "inspection should expose the local planning checkpoint record"
     assert len(inspection.artifacts) == 9, "inspection should expose the full deterministic artifact family set"
@@ -200,7 +200,7 @@ def test_inspect_plan__exposes_governed_attributes_and_policy_checkpoints() -> N
     for attribute in inspection.governed_attributes:
         if attribute.target.name == "customer_id" and attribute.key == "schema.substrait_primitive_kind":
             schema_attribute_found = true
-            assert attribute.value.schema == "inql.governance.schema-primitive-kind.v0.1", "schema governed attributes should use a governance payload schema"
+            assert attribute.value.schema == "incql.governance.schema-primitive-kind.v0.1", "schema governed attributes should use a governance payload schema"
             assert attribute.value.value == "i64", "schema governed attributes should preserve primitive kind"
             assert attribute.source == GovernedAttributeSource.Lineage, "inspection-derived field attributes should name lineage/schema evidence as source"
             assert attribute.status == GovernedAttributeStatus.Inferred, "inspection-derived field attributes should not claim asserted authority"

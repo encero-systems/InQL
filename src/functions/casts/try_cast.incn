@@ -88,7 +88,7 @@ pub def try_cast(expr: ColumnExpr, target_type: str) -> ColumnExpr:
 
     Parameters:
         expr: Expression to convert.
-        target_type: InQL type spelling to cast to. Prefer primitive type tokens such as `int`, `float`, `str`, and
+        target_type: IncQL type spelling to cast to. Prefer primitive type tokens such as `int`, `float`, `str`, and
             `bool` when the target is a common scalar primitive.
     """
     return _try_cast_application(expr, target_type)

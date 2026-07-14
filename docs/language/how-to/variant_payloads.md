@@ -9,7 +9,7 @@ Use variant helpers when the plan needs kind-aware semi-structured inspection. U
 Parse once, then apply `typeof(...)`, `variant_get(...)`, and variant predicates to the typed value.
 
 ```incan
-from pub::inql.functions import col, is_array, is_null_value, parse_variant_json, typeof, variant_get
+from pub::incql.functions import col, is_array, is_null_value, parse_variant_json, typeof, variant_get
 
 payload = parse_variant_json(col("payload"))
 literal_payload = parse_variant_json("{\"status\":\"paid\"}")

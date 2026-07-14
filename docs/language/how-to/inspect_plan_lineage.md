@@ -7,8 +7,8 @@ Use `inspect_plan(...)` when you need the full inspection record. Use `inspect_l
 ## Build a lazy plan
 
 ```incan
-from pub::inql import LazyFrame
-from pub::inql.functions import col, eq, str_lit, sum
+from pub::incql import LazyFrame
+from pub::incql.functions import col, eq, str_lit, sum
 from models import Order
 
 def paid_spend_summary(orders: LazyFrame[Order]) -> LazyFrame[Order]:
@@ -23,7 +23,7 @@ def paid_spend_summary(orders: LazyFrame[Order]) -> LazyFrame[Order]:
 ## Inspect the plan
 
 ```incan
-from pub::inql import inspect_plan
+from pub::incql import inspect_plan
 
 summary = paid_spend_summary(orders)
 inspection = inspect_plan(summary)
@@ -37,7 +37,7 @@ println(inspection.output_fields[0].name)
 ## Read lineage directly
 
 ```incan
-from pub::inql import inspect_lineage
+from pub::incql import inspect_lineage
 
 lineage = inspect_lineage(summary)
 

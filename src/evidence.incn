@@ -51,7 +51,7 @@ pub enum MetadataLifecycle(str):
 pub enum MetadataSource(str):
     """Source family for one metadata attachment."""
 
-    InQL = "inql"
+    IncQL = "incql"
     User = "user"
     Prism = "prism"
     Session = "session"

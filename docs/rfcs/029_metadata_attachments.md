@@ -1,20 +1,20 @@
-# InQL RFC 029: Typed metadata attachments
+# IncQL RFC 029: Typed metadata attachments
 
 - **Status:** In Progress
 - **Created:** 2026-05-29
 - **Author(s):** Danny Meijer (@dannymeijer)
 - **Related:**
-  - InQL RFC 007 (Prism logical planning and optimization engine)
-  - InQL RFC 027 (relational evidence program)
-  - InQL RFC 028 (semantic identity and target model)
-- **Issue:** [InQL #63](https://github.com/encero-systems/InQL/issues/63)
-- **RFC PR:** [InQL #60](https://github.com/encero-systems/InQL/pull/60)
-- **Written against:** Incan v0.3-era InQL
+  - IncQL RFC 007 (Prism logical planning and optimization engine)
+  - IncQL RFC 027 (relational evidence program)
+  - IncQL RFC 028 (semantic identity and target model)
+- **Issue:** [IncQL #63](https://github.com/encero-systems/IncQL/issues/63)
+- **RFC PR:** [IncQL #60](https://github.com/encero-systems/IncQL/pull/60)
+- **Written against:** Incan v0.3-era IncQL
 - **Shipped in:** —
 
 ## Summary
 
-This RFC defines typed metadata attachments for InQL semantic targets. Attachments provide a common way to associate lifecycle, source, visibility, typed payloads, provenance, and evidence references with plans, fields, expressions, requirements, observations, and other semantic targets without hardcoding every evidence family into one model.
+This RFC defines typed metadata attachments for IncQL semantic targets. Attachments provide a common way to associate lifecycle, source, visibility, typed payloads, provenance, and evidence references with plans, fields, expressions, requirements, observations, and other semantic targets without hardcoding every evidence family into one model.
 
 ## Motivation
 
@@ -51,7 +51,7 @@ The attachment shape lets tools distinguish a user-authored label, a planner-der
 
 ## Reference-level explanation (precise rules)
 
-An InQL metadata attachment must include:
+An IncQL metadata attachment must include:
 
 - target semantic identity
 - namespace
@@ -64,7 +64,7 @@ An InQL metadata attachment must include:
 
 Attachment lifecycle must distinguish at least authored, planned, analyzed, rewritten, lowered, bound, executed, exported, and imported states.
 
-Attachment source must distinguish at least InQL, user, Prism, Session, adapter, function registry, quality engine, policy engine, external catalog, and imported artifact.
+Attachment source must distinguish at least IncQL, user, Prism, Session, adapter, function registry, quality engine, policy engine, external catalog, and imported artifact.
 
 Attachment visibility must distinguish at least public, internal, sensitive, and redacted. Sensitive attachments must not be emitted into portable artifacts by default. Redacted attachments may preserve the existence, target, and reason code of a hidden fact without exposing the payload.
 
@@ -82,7 +82,7 @@ This RFC introduces no syntax. Future helper APIs may expose attachments, but au
 
 Attachments are evidence records, not semantic authority by default. A child RFC may define an authoritative attachment kind only when the authority, lifecycle, and conflict behavior are explicit.
 
-### Interaction with other InQL surfaces
+### Interaction with other IncQL surfaces
 
 Function registry metadata may produce attachments when functions affect lineage, adapter requirements, null behavior, determinism, or extension support. Those attachments must derive from registry facts rather than duplicating function names or signatures in a separate evidence catalog.
 
@@ -104,14 +104,14 @@ Existing APIs may continue returning simple inspection data. New evidence APIs s
 
 ## Layers affected
 
-- **InQL specification** — metadata attachments must become the shared extension point for evidence families.
-- **InQL library package** — inspection and artifact APIs must preserve typed attachment payloads and visibility.
+- **IncQL specification** — metadata attachments must become the shared extension point for evidence families.
+- **IncQL library package** — inspection and artifact APIs must preserve typed attachment payloads and visibility.
 - **Execution / interchange** — lowering and adapters may carry attachment references but must not leak sensitive payloads by default.
 - **Documentation** — docs must show which attachment namespaces are stable public contracts.
 
 ## Unresolved questions
 
-- Which attachment namespaces should be reserved by InQL core?
+- Which attachment namespaces should be reserved by IncQL core?
 - Should users be able to author arbitrary attachments directly, or only through typed helper APIs?
 - What is the first serialized payload schema format for attachments?
 
