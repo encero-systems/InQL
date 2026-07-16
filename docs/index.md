@@ -104,13 +104,25 @@ Teams lose time to expression, semantics drift, and opaque pipelines that lock t
 </ul>
 </div>
 
-<div class="incql-map-bridge">One semantic model</div>
+<div class="incql-map-bridge"><span>One semantic</span><span>model</span></div>
 
 <div class="incql-map-targets" aria-label="Execution targets">
-<article><strong>DuckDB</strong><p>In-process</p></article>
-<article><strong>DataFusion</strong><p>Rust</p></article>
-<article><strong>Spark</strong><p>JVM</p></article>
-<article><strong>Substrait consumers</strong><p>Any engine</p></article>
+<article>
+<span class="incql-target-icon"><img src="shared/icons/duck.svg" alt="" aria-hidden="true"></span>
+<span class="incql-target-copy"><strong>DuckDB</strong><small>In-process</small></span>
+</article>
+<article>
+<span class="incql-target-icon"><img src="shared/icons/database-cog-outline.svg" alt="" aria-hidden="true"></span>
+<span class="incql-target-copy"><strong>DataFusion</strong><small>Rust</small></span>
+</article>
+<article>
+<span class="incql-target-icon"><img src="shared/icons/flash-outline.svg" alt="" aria-hidden="true"></span>
+<span class="incql-target-copy"><strong>Spark</strong><small>JVM</small></span>
+</article>
+<article>
+<span class="incql-target-icon"><img src="shared/icons/vector-polyline.svg" alt="" aria-hidden="true"></span>
+<span class="incql-target-copy"><strong>Substrait consumers</strong><small>Any engine</small></span>
+</article>
 </div>
 </div>
 </div>
@@ -145,11 +157,16 @@ Author in the surface that fits the task. IncQL keeps the semantics attached as 
 <h3>Compile</h3>
 </header>
 <p>Lower authoring intent into a typed relational model and Substrait plan.</p>
-<pre class="incql-mini-code"><code>model Orders {
-  id: uuid
-  status: str
-  region: str
-}</code></pre>
+<div class="incql-mini-code" markdown="1">
+
+```incan
+model Order:
+    id: int
+    status: str
+    region: str
+```
+
+</div>
 <p class="incql-tag-row">Substrait</p>
 </article>
 
@@ -202,6 +219,8 @@ Author in the surface that fits the task. IncQL keeps the semantics attached as 
 
 <section class="incql-prism-visible" markdown="1">
 <div class="incql-section-heading" markdown="1">
+<p class="incql-section-kicker">Inspect before execution</p>
+
 ## Prism makes the compiler <span class="incql-gradient-text">visible</span>
 
 IncQL plans are not opaque strings handed to a backend engine. Prism exposes the typed model and evidence before execution.
@@ -209,7 +228,10 @@ IncQL plans are not opaque strings handed to a backend engine. Prism exposes the
 
 <div class="incql-prism-board" markdown="block">
 <div class="incql-code-card" markdown="block">
-<span>Your query</span>
+<div class="incql-feature-card__header">
+<span class="incql-feature-card__step">01</span>
+<div><strong>Your query</strong><small>Authoring intent</small></div>
+</div>
 
 ```incan
 query {
@@ -224,7 +246,11 @@ query {
 </div>
 
 <div class="incql-plan-card" markdown="block">
-<span>Prism inspection</span>
+<div class="incql-feature-card__header incql-feature-card__header--prism">
+<span class="incql-feature-card__step incql-feature-card__step--prism">02</span>
+<div><strong>Prism inspection</strong><small>Typed relational model</small></div>
+<span class="incql-feature-card__status">Inspectable</span>
+</div>
 
 ```text
 Source(orders)
@@ -232,61 +258,136 @@ Source(orders)
   Aggregate(group: region)
   Project(region, total)
 ```
+
+<div class="incql-evidence-strip" aria-label="Prism evidence available before execution">
+<span><strong>Schema</strong> flow</span>
+<span><strong>Lineage</strong> attached</span>
+<span><strong>Choices</strong> visible</span>
+</div>
 </div>
 
 <div class="incql-engine-card" markdown="block">
-<span>Execution targets</span>
+<div class="incql-feature-card__header">
+<span class="incql-feature-card__step">03</span>
+<div><strong>Execution targets</strong><small>Portable boundary</small></div>
+</div>
 
-- DataFusion
-- DuckDB
-- Spark
-- Other Substrait consumers
+<ul class="incql-engine-targets">
+<li><img src="shared/icons/database-cog-outline.svg" alt="" aria-hidden="true"><span>DataFusion</span></li>
+<li><img src="shared/icons/duck.svg" alt="" aria-hidden="true"><span>DuckDB</span></li>
+<li><img src="shared/icons/flash-outline.svg" alt="" aria-hidden="true"><span>Spark</span></li>
+<li><img src="shared/icons/vector-polyline.svg" alt="" aria-hidden="true"><span>Other Substrait consumers</span></li>
+</ul>
 </div>
 </div>
 </section>
 
 <section class="incql-surfaces" markdown="1">
 <div class="incql-surfaces__copy" markdown="1">
+<p class="incql-section-kicker">Semantic convergence</p>
+
 ## One language. Many surfaces.
 
 Different ways to write. Same plan. Same result.
 </div>
 
 <div class="incql-surface-demo" markdown="1">
-<div class="incql-tabs" aria-label="Example authoring surfaces">
-<span>Query blocks</span>
-<span>SQL</span>
-<span>DataFrames</span>
-<span>LazyFrames</span>
-<span>Pipelines</span>
+<div class="incql-surface-tabs" data-incql-surface-tabs>
+<div class="incql-surface-labels" role="tablist" aria-label="Supported authoring surfaces">
+<button type="button" id="incql-surface-tab-query" role="tab" aria-selected="true" aria-controls="incql-surface-panel-query">Query blocks</button>
+<button type="button" id="incql-surface-tab-sql" role="tab" aria-selected="false" aria-controls="incql-surface-panel-sql" tabindex="-1">SQL</button>
+<button type="button" id="incql-surface-tab-dataframe" role="tab" aria-selected="false" aria-controls="incql-surface-panel-dataframe" tabindex="-1">DataFrames</button>
+<button type="button" id="incql-surface-tab-lazyframe" role="tab" aria-selected="false" aria-controls="incql-surface-panel-lazyframe" tabindex="-1">LazyFrames</button>
+<button type="button" id="incql-surface-tab-pipeline" role="tab" aria-selected="false" aria-controls="incql-surface-panel-pipeline" tabindex="-1">Pipelines</button>
 </div>
+
+<div id="incql-surface-panel-query" class="incql-surface-panel" role="tabpanel" aria-labelledby="incql-surface-tab-query" tabindex="0" markdown="1">
 
 ```incan
 query {
     FROM orders
     WHERE .status == "paid"
-    GROUP BY .region
-    SELECT
-        .region as region,
-        sum(.amount) as total
+    ORDER BY desc(.amount)
+    LIMIT 20
 }
 ```
+
+</div>
+
+<div id="incql-surface-panel-sql" class="incql-surface-panel" role="tabpanel" aria-labelledby="incql-surface-tab-sql" tabindex="0" markdown="1">
+
+```sql
+SELECT *
+FROM orders
+WHERE status = 'paid'
+ORDER BY amount DESC
+LIMIT 20;
+```
+
+</div>
+
+<div id="incql-surface-panel-dataframe" class="incql-surface-panel" role="tabpanel" aria-labelledby="incql-surface-tab-dataframe" tabindex="0" markdown="1">
+
+```incan
+preview = (
+    orders
+        .where(orders["status"] == "paid")
+        .sort_values("amount", ascending=false)
+        .head(20)
+)
+```
+
+</div>
+
+<div id="incql-surface-panel-lazyframe" class="incql-surface-panel" role="tabpanel" aria-labelledby="incql-surface-tab-lazyframe" tabindex="0" markdown="1">
+
+```incan
+preview = orders
+    .filter(eq(col("status"), "paid"))
+    .order_by([desc(col("amount"))])
+    .limit(20)
+```
+
+</div>
+
+<div id="incql-surface-panel-pipeline" class="incql-surface-panel" role="tabpanel" aria-labelledby="incql-surface-tab-pipeline" tabindex="0" markdown="1">
+
+```incan
+preview = orders
+    |> where .status == "paid"
+    |> order_by .amount desc
+    |> limit 20
+```
+
+</div>
+</div>
+</div>
+
+<div class="incql-surface-bridge" aria-hidden="true">
+<img src="shared/brand/incql-mark.png" alt="" loading="lazy" decoding="async">
+<span>One semantic model</span>
 </div>
 
 <div class="incql-same-plan" markdown="1">
-### Same Prism plan
+<div class="incql-same-plan__heading">
+<span>Prism</span>
+<h3>Same Prism plan</h3>
+</div>
 
 <ol class="incql-plan-list">
 <li><strong>Source</strong><span>Read the same typed relation.</span></li>
 <li><strong>Filter</strong><span>Apply the same predicate semantics.</span></li>
-<li><strong>Aggregate</strong><span>Keep grouping and measures attached.</span></li>
-<li><strong>Project</strong><span>Expose the same output shape.</span></li>
+<li><strong>Order</strong><span>Keep descending amount order attached.</span></li>
+<li><strong>Limit</strong><span>Return the same preview window.</span></li>
 </ol>
 </div>
 </section>
 
 <section class="incql-trust" markdown="1">
-<article markdown="1">
+<article class="incql-trust__card incql-trust__card--confidence" markdown="1">
+<div class="incql-trust__number" aria-hidden="true">01</div>
+<p class="incql-section-kicker">Confidence by construction</p>
+
 ## Built for trust
 
 - Static typing and schema flow for confidence
@@ -295,7 +396,10 @@ query {
 - Reproducible, testable, observable evidence
 </article>
 
-<article markdown="1">
+<article class="incql-trust__card incql-trust__card--developer" markdown="1">
+<div class="incql-trust__number" aria-hidden="true">02</div>
+<p class="incql-section-kicker">A surface developers can own</p>
+
 ## Engineered for developers
 
 - Familiar when you know SQL or DataFrames
@@ -306,7 +410,13 @@ query {
 </section>
 
 <section class="incql-final-cta" markdown="1">
-<div markdown="1">
+<div class="incql-final-cta__brand" aria-hidden="true">
+<img class="incql-final-cta__mark" src="shared/brand/incql-mark.png" alt="" loading="lazy" decoding="async">
+</div>
+
+<div class="incql-final-cta__copy" markdown="1">
+<p class="incql-section-kicker">Start with inspectable data logic</p>
+
 ## Ready to experience IncQL?
 
 Start with a quickstart, explore examples, or jump straight into the reference.
