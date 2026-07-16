@@ -10,13 +10,9 @@
       
       
       
-        <link rel="canonical" href="https://encero-systems.github.io/IncQL/rfcs/028_semantic_identity_targets/">
+        <link rel="canonical" href="https://encero-systems.github.io/IncQL/rfcs/050_addon_component_registry/">
       
       
-        <link rel="prev" href="../027_relational_evidence_program/">
-      
-      
-        <link rel="next" href="../029_metadata_attachments/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -24,7 +20,7 @@
     
     
       
-        <title>RFC 028 - Semantic identity and target model - IncQL</title>
+        <title>IncQL RFC 050: Addon component registry and package contract - IncQL</title>
       
     
     
@@ -72,7 +68,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#incql-rfc-028-semantic-identity-and-target-model" class="md-skip">
+        <a href="#incql-rfc-050-addon-component-registry-and-package-contract" class="md-skip">
           Skip to content
         </a>
       
@@ -107,7 +103,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              RFC 028 - Semantic identity and target model
+              IncQL RFC 050: Addon component registry and package contract
             
           </span>
         </div>
@@ -263,12 +259,10 @@
         
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href="../" class="md-tabs__link">
           
   
@@ -1664,8 +1658,6 @@
       
   
   
-    
-  
   
   
     
@@ -1778,19 +1770,16 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
           
@@ -1806,13 +1795,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             RFCs
@@ -2434,30 +2423,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    RFC 028 - Semantic identity and target model
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../028_semantic_identity_targets/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2466,167 +2435,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      Summary
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#motivation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Motivation
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#goals" class="md-nav__link">
-    <span class="md-ellipsis">
-      Goals
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#non-goals" class="md-nav__link">
-    <span class="md-ellipsis">
-      Non-Goals
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#guide-level-explanation-how-authors-think-about-it" class="md-nav__link">
-    <span class="md-ellipsis">
-      Guide-level explanation (how authors think about it)
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#reference-level-explanation-precise-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Reference-level explanation (precise rules)
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#design-details" class="md-nav__link">
-    <span class="md-ellipsis">
-      Design details
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Design details">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#syntax" class="md-nav__link">
-    <span class="md-ellipsis">
-      Syntax
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#semantics" class="md-nav__link">
-    <span class="md-ellipsis">
-      Semantics
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#interaction-with-other-incql-surfaces" class="md-nav__link">
-    <span class="md-ellipsis">
-      Interaction with other IncQL surfaces
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#compatibility-migration" class="md-nav__link">
-    <span class="md-ellipsis">
-      Compatibility / migration
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#alternatives-considered" class="md-nav__link">
-    <span class="md-ellipsis">
-      Alternatives considered
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#drawbacks" class="md-nav__link">
-    <span class="md-ellipsis">
-      Drawbacks
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#layers-affected" class="md-nav__link">
-    <span class="md-ellipsis">
-      Layers affected
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#unresolved-questions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Unresolved questions
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -3381,6 +3189,48 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Guide-level explanation (how authors think about it)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-an-addon" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing an addon
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#building-a-registry-and-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      Building a registry and session
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#one-package-several-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      One package, several components
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inspecting-what-is-available" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inspecting what is available
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3389,6 +3239,129 @@
       Reference-level explanation (precise rules)
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Reference-level explanation (precise rules)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#terminology-and-ownership" class="md-nav__link">
+    <span class="md-ellipsis">
+      Terminology and ownership
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-kinds" class="md-nav__link">
+    <span class="md-ellipsis">
+      Component kinds
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-identity-and-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Component identity and versions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-descriptor" class="md-nav__link">
+    <span class="md-ellipsis">
+      Component descriptor
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#executable-component-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Executable component contracts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#registry-lifecycle-and-registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Registry lifecycle and registration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#open-source-sink-and-runtime-descriptors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Open source, sink, and runtime descriptors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connector-and-runtime-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Connector and runtime compatibility
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-selection-and-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Runtime selection and routing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capabilities-profiles-and-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      Capabilities, profiles, and evidence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#package-feature-and-lockfile-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Package, feature, and lockfile contract
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-and-resource-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      Security and resource lifecycle
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#errors-diagnostics-and-inspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Errors, diagnostics, and inspection
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -3497,117 +3470,411 @@
   
 
 
-<h1 id="incql-rfc-028-semantic-identity-and-target-model">IncQL RFC 028: Semantic identity and target model</h1>
+<h1 id="incql-rfc-050-addon-component-registry-and-package-contract">IncQL RFC 050: Addon component registry and package contract</h1>
 <ul>
-<li><strong>Status:</strong> In Progress</li>
-<li><strong>Created:</strong> 2026-05-29</li>
+<li><strong>Status:</strong> Draft</li>
+<li><strong>Created:</strong> 2026-07-11</li>
 <li><strong>Author(s):</strong> Danny Meijer (@dannymeijer)</li>
 <li><strong>Related:</strong></li>
-<li>IncQL RFC 000 (core language model and layer boundaries)</li>
+<li>IncQL RFC 002 (Apache Substrait integration)</li>
 <li>IncQL RFC 004 (execution context)</li>
 <li>IncQL RFC 007 (Prism logical planning and optimization engine)</li>
+<li>IncQL RFC 009 (session format handler registry)</li>
+<li>IncQL RFC 014 (function registry and catalog governance)</li>
 <li>IncQL RFC 027 (relational evidence program)</li>
+<li>IncQL RFC 032 (execution observations)</li>
+<li>IncQL RFC 033 (adapter requirements and coverage)</li>
+<li>IncQL RFC 040 (interoperability semantic profiles)</li>
 <li>IncQL RFC 041 (Prism plan ingress and external client frontends)</li>
-<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/IncQL/issues/62">IncQL #62</a></li>
-<li><strong>RFC PR:</strong> <a href="https://github.com/encero-systems/IncQL/pull/60">IncQL #60</a></li>
-<li><strong>Written against:</strong> Incan v0.3-era IncQL</li>
+<li>IncQL RFC 048 (cluster execution backend mode)</li>
+<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/IncQL/issues/101">IncQL #101</a></li>
+<li><strong>RFC PR:</strong> <a href="https://github.com/encero-systems/IncQL/pull/102">IncQL #102</a></li>
+<li><strong>Written against:</strong> Incan 0.4.0 and IncQL 0.1.0</li>
 <li><strong>Shipped in:</strong> —</li>
 </ul>
 <h2 id="summary">Summary</h2>
-<p>This RFC defines the semantic identity and target model required by IncQL's relational evidence program. It establishes stable, typed targets for plans, Prism nodes, plan ingress requests, client sessions, relation outputs, fields, scalar expressions, aggregate measures, window expressions, generator outputs, read roots, quality assertions, policy decisions, adapter requirements, coverage records, and execution attempts.</p>
+<p>This RFC defines the package and registry contract through which ordinary Incan packages can extend IncQL with data connectors, compute runtimes, plan-ingress frontends, and evidence providers. An addon package may provide several components, but each component must be registered, identified, selected, inspected, and versioned independently. IncQL must keep pure component descriptors separate from executable hooks, use open namespaced component identifiers instead of backend or source enums, freeze a registry snapshot at an execution or frontend boundary, and keep read/write components separate from the runtime that computes a plan. DataFusion remains the built-in default runtime and first registry-shaped implementation; DuckDB is the first external proof target rather than a privileged core backend.</p>
 <h2 id="motivation">Motivation</h2>
-<p>Lineage, metadata attachments, quality observations, policy decisions, execution observations, adapter coverage, and plan diffs all need something precise to attach to. If evidence attaches only to display names or backend plan fragments, it becomes fragile under aliases, rewrites, projections, and execution adapter differences. IncQL needs a semantic target model before it can produce trustworthy evidence.</p>
+<p>IncQL's current execution path is appropriate for proving DataFusion integration, but it does not scale to an ecosystem. Adding another backend currently tends to require edits to core backend enums, source enums, session dispatch, public exports, the core package manifest, and source registration logic. That makes every integration a core feature and encourages one backend object to absorb source reading, sink writing, computation, capability reporting, and configuration.</p>
+<p>The desired platform is broader. PostgreSQL may be a bounded reader and writer while DuckDB performs local computation, or PostgreSQL may also provide a SQL-pushdown runtime. Kafka is primarily a streaming connector. Spark may provide a compute runtime and a Spark Connect ingress frontend without owning the underlying storage. Snowflake may provide table connectors, warehouse compute, Snowpipe writers, streaming ingestion, catalog access, and observations as separate components in one package. Open table formats may provide connector and catalog components without providing compute at all.</p>
+<p>Treating each platform as one monolithic adapter hides those differences and makes composition accidental. Treating Substrait as the plugin contract is also insufficient: Substrait carries logical plans, but it does not install code, bind credentials, inspect catalogs, negotiate connector/runtime compatibility, manage streams, or report component metadata.</p>
+<p>IncQL therefore needs a stable addon boundary before more vendor integrations are implemented. The boundary must fit Incan's package, manifest, feature, and lockfile model; preserve Prism as the owner of relational meaning; and integrate with adapter coverage, semantic profiles, execution observations, and plan ingress without merging those layers.</p>
 <h2 id="goals">Goals</h2>
 <ul>
-<li>Define the required semantic target categories for local IncQL evidence.</li>
-<li>Define which identities are plan-local, artifact-stable, and execution-local.</li>
-<li>Require deterministic identities within one plan, ingress, or profile snapshot where possible.</li>
-<li>Distinguish authored Prism targets from rewritten Prism targets and execution observations.</li>
-<li>Provide a common target vocabulary for child evidence RFCs.</li>
+<li>Define ordinary Incan packages as the installation and sideloading unit for IncQL addons.</li>
+<li>Define independently registered data connector, compute runtime, plan ingress, and evidence provider component kinds.</li>
+<li>Replace closed backend and source identities with stable, namespaced component identifiers and open source, sink, runtime-mode, and capability keys.</li>
+<li>Separate pure, inspectable component descriptors from executable component hooks and live runtime state.</li>
+<li>Define deterministic registration, collision, compatibility, freezing, and lookup rules.</li>
+<li>Keep source and sink bindings independent from compute-runtime selection.</li>
+<li>Define how a Session owns a frozen addon registry and an explicit default runtime selection.</li>
+<li>Define how connector/runtime compatibility is assessed without promising that every installed connector can feed every installed runtime.</li>
+<li>Make built-in DataFusion components use the same contracts as external components.</li>
+<li>Connect component identity and declarations to RFC 033 coverage, RFC 040 semantic profiles, RFC 032 observations, and RFC 041 ingress coverage.</li>
+<li>Keep credentials, live handles, and backend-native objects out of descriptors, Prism plans, Substrait plans, lockfiles, and ordinary inspection artifacts.</li>
+<li>Leave room for path, Git, and registry-resolved addon packages without requiring runtime dynamic loading.</li>
 </ul>
 <h2 id="non-goals">Non-Goals</h2>
 <ul>
-<li>Defining a global registry of all project assets.</li>
-<li>Defining organization-wide identity, ownership, certification, or publication lifecycle.</li>
-<li>Defining physical backend plan identifiers as semantic identities.</li>
-<li>Defining the exact serialization format for every downstream artifact.</li>
+<li>Specifying DuckDB, PostgreSQL, Spark, Snowflake, Kafka, or any other vendor integration in detail.</li>
+<li>Implementing an Incan package registry or marketplace.</li>
+<li>Defining commercial packaging, billing, licensing, or Databricks Marketplace behavior.</li>
+<li>Defining a general-purpose native shared-library ABI or loading arbitrary code from a runtime directory.</li>
+<li>Guaranteeing that arbitrary connector and runtime combinations are compatible.</li>
+<li>Defining every source, sink, stream, CDC, catalog, or execution capability key.</li>
+<li>Defining the physical data-transfer implementation between every connector and runtime pair.</li>
+<li>Defining credential storage, IAM, secret resolution, or network policy.</li>
+<li>Changing Prism ownership of logical meaning or making addon descriptors authoritative semantic plans.</li>
+<li>Defining full streaming semantics, cluster scheduling, or external protocol coverage; sibling RFCs own those contracts.</li>
 </ul>
 <h2 id="guide-level-explanation-how-authors-think-about-it">Guide-level explanation (how authors think about it)</h2>
-<p>An IncQL author should not usually construct semantic IDs manually. They appear when tools inspect a plan:</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="n">lineage</span> <span class="o">=</span> <span class="n">inspect_lineage</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
-<span class="n">field</span> <span class="o">=</span> <span class="n">lineage</span><span class="o">.</span><span class="n">output_field</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">)</span>
-
-<span class="k">assert</span> <span class="n">field</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;field&quot;</span>
-<span class="k">assert</span> <span class="n">field</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">plan_id</span> <span class="o">==</span> <span class="n">lineage</span><span class="o">.</span><span class="n">plan_id</span>
+<h3 id="installing-an-addon">Installing an addon</h3>
+<p>An addon is an ordinary Incan package dependency. Local development and private sideloading begin with path dependencies:</p>
+<div class="language-toml highlight"><pre><span></span><code><span class="k">[dependencies]</span>
+<span class="n">incql</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">&quot;../IncQL&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="n">incql-duckdb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">&quot;../incql-duckdb&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="n">incql-postgres</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">&quot;../incql-postgres&quot;</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
-<p>The target lets tools attach evidence to the field even if the field was produced by an aggregate measure, renamed by a projection, lowered through Substrait, and executed by a backend adapter.</p>
+<p>The eventual registry-resolved form uses the same package contract:</p>
+<div class="language-toml highlight"><pre><span></span><code><span class="k">[dependencies]</span>
+<span class="n">incql</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0.1&quot;</span>
+<span class="n">incql-duckdb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">&quot;0.1&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">features</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;httpfs&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;iceberg&quot;</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+<span class="n">incql-postgres</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">&quot;0.1&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">features</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;copy&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;logical-replication&quot;</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>Depending on or importing a package makes its checked code and descriptor metadata available. It must not silently mutate a process-global registry or change which runtime a Session uses.</p>
+<h3 id="building-a-registry-and-session">Building a registry and session</h3>
+<p>Addon packages expose typed component constructors. Authors install the components they intend to use and select the compute runtime explicitly:</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">AddonRegistry</span><span class="o">,</span><span class="w"> </span><span class="nn">Session</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql_duckdb</span> <span class="kn">import</span><span class="w"> </span><span class="nn">duckdb</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql_postgres</span> <span class="kn">import</span><span class="w"> </span><span class="nn">postgres</span>
+
+<span class="n">registry</span> <span class="o">=</span> <span class="nc">AddonRegistry</span><span class="o">.</span><span class="n">builtins</span><span class="p">()</span>
+<span class="n">registry</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="n">duckdb</span><span class="o">.</span><span class="n">files</span><span class="p">())</span><span class="o">?</span>
+<span class="n">registry</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="n">duckdb</span><span class="o">.</span><span class="n">local_runtime</span><span class="p">())</span><span class="o">?</span>
+<span class="n">registry</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="n">postgres</span><span class="o">.</span><span class="n">tables</span><span class="p">())</span><span class="o">?</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="kt">Session</span><span class="o">.</span><span class="n">builder</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">with_registry</span><span class="p">(</span><span class="n">registry</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">with_runtime</span><span class="p">(</span><span class="n">duckdb</span><span class="o">.</span><span class="n">local_selection</span><span class="p">())</span>
+    <span class="o">.</span><span class="n">build</span><span class="p">()</span><span class="o">?</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>The exact constructor names are illustrative. The contract is that installation and runtime selection are explicit, and <code>Session.build()</code> freezes the registry snapshot used by that Session.</p>
+<p>A source descriptor names its connector independently from the selected runtime:</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="n">orders</span> <span class="o">=</span> <span class="n">postgres</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;analytics.orders&quot;</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;orders&quot;</span><span class="p">,</span> <span class="n">orders</span><span class="p">)</span><span class="o">?</span>
+</code></pre></div>
+<p>This does not imply that DuckDB can consume every PostgreSQL binding. Before execution, IncQL must ask the connector and selected runtime whether they have a compatible binding path and must evaluate the plan's adapter requirements. If no compatible route exists, the Session reports structured uncovered or unknown coverage rather than silently changing runtime or materializing through an undocumented fallback.</p>
+<h3 id="one-package-several-components">One package, several components</h3>
+<p>An addon package is a distribution unit, not a semantic component. For example, an <code>incql-snowflake</code> package may expose separate table connector, warehouse runtime, Snowpipe writer, Snowpipe Streaming writer, catalog inspector, and observation provider components. An <code>incql-spark</code> package may expose a Spark runtime and Spark Connect ingress frontend. Installing one component must not imply that the others are installed or selected.</p>
+<p>This separation also allows a package to expose convenient bundles without collapsing component identity:</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="n">registry</span><span class="o">.</span><span class="n">install_all</span><span class="p">(</span><span class="n">duckdb</span><span class="o">.</span><span class="n">local_bundle</span><span class="p">())</span><span class="o">?</span>
+</code></pre></div>
+<p><code>local_bundle()</code> may return a file connector and local compute runtime, but inspection must still show two component descriptors and two component identities.</p>
+<h3 id="inspecting-what-is-available">Inspecting what is available</h3>
+<p>Tools should be able to distinguish package availability, component installation, runtime selection, declared capabilities, contextual coverage, and runtime readiness:</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="k">for</span> <span class="n">descriptor</span> <span class="ow">in</span> <span class="n">session</span><span class="o">.</span><span class="n">addons</span><span class="p">()</span><span class="o">.</span><span class="n">components</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">descriptor</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">descriptor</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">descriptor</span><span class="o">.</span><span class="n">package</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
+
+<span class="n">report</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">check_plan_coverage</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+</code></pre></div>
+<p>A descriptor's capability declaration is discoverability metadata. It is not proof that one plan is covered under one binding. RFC 033 coverage remains the contextual answer.</p>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>
-<p>IncQL must define semantic targets for at least the following categories:</p>
+<h3 id="terminology-and-ownership">Terminology and ownership</h3>
+<p>An <strong>addon package</strong> is an Incan package that depends on IncQL and exports one or more addon components.</p>
+<p>An <strong>addon component</strong> is one independently identified implementation of a known IncQL extension boundary. Components are the unit of registration, lookup, compatibility checks, inspection, and runtime selection.</p>
+<p>A <strong>component descriptor</strong> is serializable metadata describing one component. A descriptor must be inspectable without opening network connections, resolving credentials, loading data, or creating backend-native runtime state.</p>
+<p>An <strong>executable component</strong> is checked code that implements the hook contract for exactly one component kind. Executable hooks and live resources are not part of the descriptor.</p>
+<p>An <strong>addon registry</strong> contains descriptors and executable component factories or implementations under the same component identities. A registry is scoped to the Session, frontend service, inspection operation, or other explicit owner that receives it. IncQL must not rely on an implicitly mutable process-global registry.</p>
+<p>An <strong>addon bundle</strong> is a convenience value containing multiple independently registered components. A bundle is not a component kind and does not receive one combined identity.</p>
+<p>Prism remains the owner of analyzed relational meaning. Components may supply bindings, execution, ingress decoding, compatibility evidence, and observations, but they must not replace Prism semantic targets or redefine lineage.</p>
+<h3 id="component-kinds">Component kinds</h3>
+<p>IncQL must define these top-level component kinds:</p>
+<table>
+<thead>
+<tr>
+<th>Component kind</th>
+<th>Responsibility</th>
+<th>Representative surfaces</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data_connector</code></td>
+<td>Describe, inspect, bind, read, or write external data and catalogs</td>
+<td>bounded reader, bounded writer, stream reader, stream writer, CDC reader, catalog inspector, schema inspector</td>
+</tr>
+<tr>
+<td><code>compute_runtime</code></td>
+<td>Check execution coverage and execute Prism/Substrait-backed plans</td>
+<td>local execution, SQL pushdown, warehouse execution, cluster execution, bounded execution, streaming execution, collection</td>
+</tr>
+<tr>
+<td><code>plan_ingress</code></td>
+<td>Decode an external authoring or client protocol into Prism-owned unresolved ingress structures</td>
+<td>SQL frontend, Spark Connect frontend, notebook/client protocol, command ingress</td>
+</tr>
+<tr>
+<td><code>evidence_provider</code></td>
+<td>Observe external or runtime facts and produce typed evidence without owning relational meaning</td>
+<td>query/job observations, offsets, snapshots, table versions, pipeline runs, runtime profiles</td>
+</tr>
+</tbody>
+</table>
+<p>The top-level kinds are closed because each kind has a different trusted hook contract. Surface and capability identifiers within a kind are open, namespaced public vocabulary.</p>
+<p>One component must implement one top-level kind. A package that supports several kinds must publish several descriptors. Data reading, writing, and catalog inspection may share one <code>data_connector</code> component when they share lifecycle and configuration, but those surfaces must remain individually declared.</p>
+<p>Plan ingress is not a compute runtime. Evidence provision is not plan analysis. A connector is not automatically a runtime merely because its target system can execute SQL.</p>
+<h3 id="component-identity-and-versions">Component identity and versions</h3>
+<p>Each component descriptor must contain a stable component id. Component ids must be lowercase, dot-separated, namespaced ASCII identifiers such as <code>incql.datafusion.local</code>, <code>incql.duckdb.files</code>, or <code>vendor.postgres.tables</code>. Package names and component ids need not be identical because one package may publish several components.</p>
+<p>A component id identifies a contract across compatible package releases. A package must not reuse an id for a component of another kind or for behavior that violates the previous component contract.</p>
+<p>Versioning must distinguish:</p>
 <ul>
-<li>plan</li>
-<li>ingress request</li>
-<li>client session</li>
-<li>ingress node</li>
-<li>ingress expression</li>
-<li>analyzer binding</li>
-<li>authored Prism node</li>
-<li>rewritten Prism node</li>
-<li>relation output</li>
-<li>field</li>
-<li>scalar expression</li>
-<li>aggregate measure</li>
-<li>window expression</li>
-<li>generator output</li>
-<li>read root</li>
-<li>quality assertion</li>
-<li>quality observation</li>
-<li>policy decision</li>
-<li>adapter requirement</li>
-<li>coverage record</li>
-<li>semantic profile</li>
-<li>profile assessment</li>
-<li>execution attempt</li>
+<li>addon package version</li>
+<li>IncQL addon API version required by the component</li>
+<li>descriptor schema version</li>
+<li>component or provider version when it differs from the package version</li>
+<li>external engine or protocol version, which belongs in semantic profiles or runtime observations rather than package identity</li>
 </ul>
-<p>A semantic target must identify its category, its containing plan, ingress request, client session, profile, or execution scope, and the minimum structural path needed to distinguish it from sibling targets in the same scope.</p>
-<p>Plan, ingress request, ingress node, ingress expression, analyzer binding, authored node, rewritten node, relation output, field, scalar expression, aggregate measure, window expression, generator output, read-root, semantic profile, and profile assessment identities must be deterministic within one plan, ingress request, or profile snapshot where possible. Client sessions, execution attempts, quality observations, and runtime coverage records may be unique per frontend, session, or execution lifecycle.</p>
-<p>IncQL must distinguish authored targets from rewritten targets. If an optimizer rewrite removes, fuses, or replaces a target, the rewritten target must preserve an authored-origin relationship rather than reusing an authored identity for a different structure.</p>
-<p>Field identities must not be based only on output display names. Renames, aliases, generated names, and duplicate field names must still produce unambiguous field targets.</p>
-<p>Backend adapter identifiers may be attached as metadata or observations, but they must not replace IncQL semantic targets.</p>
-<p>External client protocol identifiers may be attached as ingress-origin evidence, but they must not replace IncQL semantic targets.</p>
-<p>A client session target identifies external client session state that can affect plan ingress analysis, such as current catalog or namespace, session configuration, temporary relation names, function registrations, profile selection, case-sensitivity mode, or dialect flags. Client session targets are not execution session identities unless an RFC or implementation explicitly binds the external client session to an IncQL execution session.</p>
+<p>The registry must reject a component whose required addon API version is incompatible with the IncQL version constructing the registry.</p>
+<h3 id="component-descriptor">Component descriptor</h3>
+<p>The normative descriptor shape is conceptually:</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="k">pub</span> <span class="k">model</span> <span class="nc">AddonPackageDescriptor</span><span class="p">:</span>
+    <span class="k">pub</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">source_identity</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">enabled_features</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="k">pub</span> <span class="n">requires_incql</span><span class="p">:</span> <span class="nb">str</span>
+
+<span class="k">pub</span> <span class="k">enum</span> <span class="nc">AddonComponentKind</span><span class="p">(</span><span class="nb">str</span><span class="p">):</span>
+    <span class="nc">DataConnector</span> <span class="o">=</span> <span class="s2">&quot;data_connector&quot;</span>
+    <span class="nc">ComputeRuntime</span> <span class="o">=</span> <span class="s2">&quot;compute_runtime&quot;</span>
+    <span class="nc">PlanIngress</span> <span class="o">=</span> <span class="s2">&quot;plan_ingress&quot;</span>
+    <span class="nc">EvidenceProvider</span> <span class="o">=</span> <span class="s2">&quot;evidence_provider&quot;</span>
+
+<span class="k">pub</span> <span class="k">model</span> <span class="nc">AddonComponentDescriptor</span><span class="p">:</span>
+    <span class="k">pub</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">kind</span><span class="p">:</span> <span class="nc">AddonComponentKind</span>
+    <span class="k">pub</span> <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">package</span><span class="p">:</span> <span class="nc">AddonPackageDescriptor</span>
+    <span class="k">pub</span> <span class="n">addon_api_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">descriptor_schema_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">component_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">surfaces</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="k">pub</span> <span class="n">capabilities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="k">pub</span> <span class="n">binding_protocols_produced</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="k">pub</span> <span class="n">binding_protocols_consumed</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="k">pub</span> <span class="n">semantic_profiles</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="k">pub</span> <span class="n">evidence_target_kinds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="k">pub</span> <span class="n">configuration_schema</span><span class="p">:</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Field names may be adjusted to fit established IncQL naming conventions, but implementations must preserve these facts and distinctions.</p>
+<p>Descriptor surfaces say which hook families a component exposes. Capability declarations say which RFC 033 capability families the component knows how to assess or may cover. They must not use <code>supported</code> as a substitute for contextual coverage. Stability labels such as experimental, preview, and stable may qualify a surface, but they must remain distinct from covered, partially covered, uncovered, and unknown.</p>
+<p>Binding protocol identifiers describe data-plane contracts a connector can produce or consume and a runtime can consume or produce. They are compatibility declarations, not live bindings. Protocol ids must be stable public vocabulary when serialized or used for routing.</p>
+<p><code>configuration_schema</code> identifies an inspectable schema for non-secret configuration and secret-reference fields. The descriptor must not contain credentials, resolved secrets, connection handles, callbacks, backend-native objects, or mutable runtime state.</p>
+<p>Descriptor facts must be deterministic for a resolved package and feature set. Tooling must be able to compute or record a descriptor fingerprint.</p>
+<h3 id="executable-component-contracts">Executable component contracts</h3>
+<p>IncQL must expose a distinct executable hook contract for each component kind rather than one optional-method object that can do everything.</p>
+<p>A data connector contract must be able to expose the surfaces it declares, including as applicable:</p>
+<ul>
+<li>validate a source or sink descriptor</li>
+<li>inspect catalog and schema information</li>
+<li>prepare a bounded or streaming source binding</li>
+<li>prepare a bounded or streaming sink binding</li>
+<li>expose the binding protocol used by a prepared binding</li>
+<li>read, subscribe, write, commit, abort, or close according to the declared surface</li>
+<li>report connector-specific requirements, coverage evidence, diagnostics, and observations</li>
+</ul>
+<p>A compute runtime contract must be able to expose the surfaces it declares, including as applicable:</p>
+<ul>
+<li>validate a runtime selection</li>
+<li>evaluate plan and binding requirements under a semantic profile</li>
+<li>report RFC 033 coverage before execution when possible</li>
+<li>prepare or lower a Prism/Substrait-backed plan for the runtime</li>
+<li>execute bounded or streaming work</li>
+<li>collect bounded results</li>
+<li>return execution handles and RFC 032 observations</li>
+<li>cooperate with connector-owned sink commit behavior without taking ownership of the sink descriptor</li>
+</ul>
+<p>A plan ingress contract must follow RFC 041. It may decode transport or protocol requests, preserve origin and client-session evidence, and produce Prism-owned unresolved ingress structures or structured diagnostics. It must not execute the plan or make the external protocol the semantic owner.</p>
+<p>An evidence provider contract may observe declared target classes and emit typed evidence records. It must identify the source and lifecycle of its evidence and must not mutate Prism plans, silently change runtime selection, or convert an observation into authoritative semantic meaning.</p>
+<p>The exact Incan mechanism for executable hooks may be nominal interfaces, checked protocols, generated dispatch records, or another typed mechanism. It must preserve the kind-specific contracts and must not reduce them to untyped callback maps.</p>
+<h3 id="registry-lifecycle-and-registration">Registry lifecycle and registration</h3>
+<p><code>AddonRegistry.builtins()</code> must return a registry containing IncQL's built-in component descriptors and executable implementations. <code>AddonRegistry.empty()</code> may be provided for tooling or controlled environments.</p>
+<p>Installing a component must:</p>
+<ol>
+<li>validate descriptor structure and component id</li>
+<li>validate addon API compatibility</li>
+<li>validate that the executable hook kind matches the descriptor kind</li>
+<li>compute or accept the deterministic descriptor fingerprint</li>
+<li>reject an identity collision when the same id is already registered with a different kind, package identity, version, feature set, or descriptor fingerprint</li>
+<li>treat exact reinstallation of the same component identity and fingerprint as idempotent</li>
+<li>record the package and feature provenance needed for inspection</li>
+</ol>
+<p>Installation must not open external connections, resolve secrets, scan catalogs, read data, or initialize a compute engine. Resource initialization occurs only when a registry owner prepares or uses the component.</p>
+<p>Importing an addon package must not auto-install a component into a hidden global registry. Package code may expose a bundle or helper that explicitly installs several components into a caller-owned registry.</p>
+<p><code>Session.build()</code> must freeze the supplied registry and store a stable snapshot or snapshot identity. A component may maintain session-scoped mutable runtime state after initialization, but the set of registered component ids and descriptor facts must not change for that Session. Adding or replacing components requires building a new Session.</p>
+<p>Frontend services and inspection tools may own registry snapshots without constructing an execution Session. They must follow the same registration and freezing rules for the lifetime of one reproducible operation or service configuration.</p>
+<h3 id="open-source-sink-and-runtime-descriptors">Open source, sink, and runtime descriptors</h3>
+<p>Core IncQL must replace closed source and backend enums with open descriptors. The normative conceptual shapes are:</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="k">pub</span> <span class="k">model</span> <span class="nc">AddonOption</span><span class="p">:</span>
+    <span class="k">pub</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">value_schema</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span>
+
+<span class="k">pub</span> <span class="k">model</span> <span class="nc">SourceDescriptor</span><span class="p">:</span>
+    <span class="k">pub</span> <span class="n">connector_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">source_kind</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">locator</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">options</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nc">AddonOption</span><span class="p">]</span>
+
+<span class="k">pub</span> <span class="k">model</span> <span class="nc">SinkDescriptor</span><span class="p">:</span>
+    <span class="k">pub</span> <span class="n">connector_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">sink_kind</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">locator</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">options</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nc">AddonOption</span><span class="p">]</span>
+
+<span class="k">pub</span> <span class="k">model</span> <span class="nc">RuntimeSelection</span><span class="p">:</span>
+    <span class="k">pub</span> <span class="n">runtime_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">runtime_mode</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">pub</span> <span class="n">options</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nc">AddonOption</span><span class="p">]</span>
+</code></pre></div>
+<p><code>value_schema</code> must make option interpretation explicit. A future typed configuration-value carrier may replace the textual storage field without changing the requirement that values have declared schemas.</p>
+<p><code>source_kind</code>, <code>sink_kind</code>, and <code>runtime_mode</code> are component-owned open keys. Core IncQL must not add an enum variant for every external format, table type, topic type, warehouse mode, or runtime.</p>
+<p>A source or sink descriptor must identify the connector that owns its interpretation. A descriptor must not select the compute runtime. A runtime selection must identify an installed <code>compute_runtime</code> component and must not imply installation of any connector from the same package.</p>
+<p>Logical relation names remain Session/Prism identities and are not fields of the physical source descriptor. Session registration maps a logical name to a source descriptor and keeps the resulting live binding outside Prism and Substrait.</p>
+<h3 id="connector-and-runtime-compatibility">Connector and runtime compatibility</h3>
+<p>Installing a connector and runtime in the same registry does not establish that they can interoperate.</p>
+<p>A connector must resolve a source or sink descriptor into a session-private prepared binding. The binding must declare a stable binding protocol id and the schema, boundedness, and relevant capability facts needed for compatibility checks. Live binding handles must remain outside serializable plans and descriptors.</p>
+<p>A compute runtime must declare which binding protocols it can consume or produce and must evaluate compatibility for the concrete binding, plan, runtime mode, and semantic profile. Compatibility may be direct and backend-native, mediated through Arrow or another interchange, or unavailable.</p>
+<p>When a package provides both a connector and compute runtime, the runtime may consume a package-native binding protocol. That does not merge the two components. For example, a PostgreSQL table connector and PostgreSQL SQL-pushdown runtime may cooperate directly while remaining separately selectable and inspectable.</p>
+<p>If no compatible binding path is available, execution must fail before data movement when possible with a structured binding or coverage diagnostic. IncQL must not assume an Arrow materialization fallback, silently choose another runtime, or ask the connector to select a runtime.</p>
+<p>Sink compatibility must include commit and failure semantics. A runtime that can compute a result is not automatically able to commit it to an installed sink. Connector-owned commit, abort, retry, replay, and streaming guarantees must remain visible in coverage and observations.</p>
+<h3 id="runtime-selection-and-routing">Runtime selection and routing</h3>
+<p>A Session must have one explicit default <code>RuntimeSelection</code>. <code>Session.default()</code> must select the built-in DataFusion local runtime through the registry-shaped path.</p>
+<p>An execution API may accept an explicit runtime override. The override must reference an installed compute runtime and must be recorded in inspection or execution evidence.</p>
+<p>Future routing policy may choose among several installed runtimes, but it must evaluate connector/runtime compatibility and RFC 033 requirements, record the selected component and reasons, and never change logical meaning. Silent fallback after an uncovered requirement or runtime failure is forbidden unless an explicit policy permits it and records the attempt and fallback as evidence.</p>
+<p>The connector that owns a source or sink must not implicitly become the default compute runtime. SQL pushdown is a compute-runtime mode, not an automatic property of reading from a SQL source.</p>
+<h3 id="capabilities-profiles-and-evidence">Capabilities, profiles, and evidence</h3>
+<p>Descriptor capability declarations are static discoverability metadata. RFC 033 adapter requirements and coverage records are contextual evidence for a plan, binding, component version, runtime mode, and semantic profile.</p>
+<p>Coverage records must identify the component id, package or component version, descriptor fingerprint when available, and semantic profile when relevant. Unknown coverage must remain unknown.</p>
+<p>RFC 040 semantic profiles may be declared or consumed by components, but profile declarations do not let a component redefine Prism semantics. Requested and observed runtime profiles must remain distinguishable.</p>
+<p>RFC 032 execution observations must identify the compute runtime and relevant connector components that produced the observation. Connector observations such as offsets, snapshots, table versions, and sink commits must remain attributable to the connector or evidence provider that observed them.</p>
+<p>RFC 041 ingress coverage is distinct from execution adapter coverage. A plan-ingress component accepting a Spark Connect node does not imply that the selected compute runtime can execute the resulting Prism plan.</p>
+<p>Evidence providers are non-authoritative sources under RFC 027. Registration grants them no right to create Prism semantic identities, redefine lineage, or mark requirements covered without evidence.</p>
+<h3 id="package-feature-and-lockfile-contract">Package, feature, and lockfile contract</h3>
+<p>Addon distribution must use Incan package resolution. Local path dependencies are the first required sideloading mechanism. Git and registry-resolved dependencies may be added by the Incan package system without changing the IncQL component contract.</p>
+<p>Addon-specific Rust dependencies, native build requirements, and generated bindings belong to the addon package rather than core IncQL unless they are required by a built-in component.</p>
+<p>Package features may enable or disable component surfaces, optional components, or capability implementations. A resolved descriptor must reflect the actual enabled feature set. Core IncQL should not become the primary feature bundle for provider-specific integrations such as <code>spark</code>, <code>snowflake</code>, or <code>postgres</code>.</p>
+<p>The resolved dependency and lock model must eventually preserve enough information to reproduce addon availability:</p>
+<ul>
+<li>package name, version, and source identity</li>
+<li>enabled package features</li>
+<li>transitive package and Rust dependency resolution</li>
+<li>required IncQL addon API version</li>
+<li>component ids and descriptor fingerprints</li>
+<li>native or system requirements when the package manager can represent them</li>
+</ul>
+<p>The component registry must still function for path-based packages before every future registry and lockfile feature is implemented.</p>
+<h3 id="security-and-resource-lifecycle">Security and resource lifecycle</h3>
+<p>Descriptors, manifests, lockfiles, Prism plans, Substrait plans, and ordinary evidence exports must not contain passwords, access tokens, private keys, credential-bearing connection strings, or live credential values.</p>
+<p>Configuration schemas may declare secret-reference fields, environment variable names, credential profile ids, or opaque storage-profile ids. Runtime initialization resolves those references through an explicitly supplied operational facility outside this RFC.</p>
+<p>Component installation must be side-effect free with respect to external systems. Component initialization, connection creation, subscriptions, background tasks, and native resources must be scoped to an explicit Session or frontend lifecycle and must be released when that owner closes.</p>
+<p>Inspection must be able to report that required configuration or credentials are unavailable without exposing secret values.</p>
+<h3 id="errors-diagnostics-and-inspection">Errors, diagnostics, and inspection</h3>
+<p>The registry and Session must distinguish at least:</p>
+<ul>
+<li>invalid component descriptor</li>
+<li>invalid or duplicate component id</li>
+<li>incompatible addon API version</li>
+<li>component identity collision</li>
+<li>executable hook kind mismatch</li>
+<li>missing component</li>
+<li>wrong component kind</li>
+<li>invalid component configuration</li>
+<li>unavailable credential or configuration reference</li>
+<li>unsupported binding protocol</li>
+<li>connector/runtime incompatibility</li>
+<li>uncovered or unknown required capability</li>
+<li>component initialization failure</li>
+<li>connector, runtime, ingress, and evidence-provider operation failures</li>
+</ul>
+<p>Diagnostics must preserve component id, component kind, package identity and version, operation stage, and relevant source, sink, runtime mode, or protocol key. Backend-native error context should be retained without leaking secrets.</p>
+<p>Inspection APIs must distinguish:</p>
+<ul>
+<li>package dependency available to the build</li>
+<li>component descriptor available to tooling</li>
+<li>executable component installed in one registry</li>
+<li>component selected as a default or override</li>
+<li>component initialized and runtime-ready</li>
+<li>declared capability or binding protocol</li>
+<li>contextual RFC 033 coverage</li>
+<li>missing configuration or credentials</li>
+<li>registry snapshot identity or fingerprint</li>
+</ul>
 <h2 id="design-details">Design details</h2>
 <h3 id="syntax">Syntax</h3>
-<p>This RFC introduces no authoring syntax.</p>
+<p>This RFC introduces no IncQL query syntax. It defines IncQL package and library contracts around Session, Prism frontends, and evidence tooling.</p>
+<p>API names in examples are illustrative where the reference-level rules do not prescribe an exact name. The component kinds, identity distinctions, descriptor/runtime separation, explicit registration, frozen registry lifecycle, open binding descriptors, and connector/runtime split are normative.</p>
 <h3 id="semantics">Semantics</h3>
-<p>Semantic targets are evidence anchors. They do not by themselves define lineage, policy, quality, or execution behavior. Those contracts belong to child RFCs that reference this target model.</p>
+<p>Installing a component changes available implementation capability; it does not change the meaning of an existing Prism plan. Selecting a compute runtime changes execution placement and available coverage, not logical semantics.</p>
+<p>Addon metadata is evidence and configuration. It is not a truth store for fields, expressions, lineage, or query meaning.</p>
+<p>Component composition must be explicit. A package relationship, shared vendor name, or shared connection configuration must not be used as an implicit signal that connector, runtime, ingress, or evidence components are installed or compatible.</p>
 <h3 id="interaction-with-other-incql-surfaces">Interaction with other IncQL surfaces</h3>
-<p>Method chains and <code>query {}</code> blocks that express equivalent relational intent should produce equivalent target categories. They are not required to produce byte-identical IDs if their authored syntax differs, but the resulting semantic graph must preserve comparable targets for downstream tools.</p>
+<ul>
+<li>RFC 002 remains the logical interchange boundary. Component registration and physical bindings must not be encoded as ad hoc Substrait semantics.</li>
+<li>RFC 004 remains the Session and execution-context contract. This RFC refines its backend reference into a registry-owned runtime selection and its source/sink identifiers into connector-owned descriptors.</li>
+<li>RFC 007 keeps Prism as semantic owner. Compute and ingress components feed or execute Prism plans without redefining them.</li>
+<li>RFC 009's format-handler contract, if retained, becomes an implementation strategy or subordinate surface of a data connector. IncQL must not maintain a second independent plugin root that can bypass component identity, package provenance, registry freezing, or connector/runtime compatibility checks.</li>
+<li>RFC 014's declaration-side function registry is prior art for stable ids and inspectable metadata, but addon registration is explicitly owner-scoped because components carry resources and external behavior.</li>
+<li>RFC 032 observations must identify the components involved in execution and I/O.</li>
+<li>RFC 033 owns requirement and coverage semantics; this RFC supplies stable component identity and declarations used by those records.</li>
+<li>RFC 040 profiles contextualize ingress and execution compatibility without becoming component identity.</li>
+<li>RFC 041 plan ingress uses a distinct <code>plan_ingress</code> component kind and remains separate from execution adapters.</li>
+<li>RFC 048 cluster mode is a compute-runtime mode or component capability under this registry, not a separate semantic model.</li>
+</ul>
 <h3 id="compatibility-migration">Compatibility / migration</h3>
-<p>Existing plans without semantic targets remain valid for execution. Tools that require relational evidence must report missing semantic identity as unsupported evidence rather than inferring identity from names alone.</p>
+<p><code>Session.default()</code> remains source-compatible and continues to use DataFusion. Internally it must build or receive the built-in registry, install <code>incql.datafusion.files</code> and <code>incql.datafusion.local</code>, and select the local runtime.</p>
+<p>Existing <code>csv_source</code>, <code>parquet_source</code>, <code>arrow_source</code>, <code>read_csv</code>, <code>read_parquet</code>, <code>read_arrow</code>, <code>write_csv</code>, and <code>write_parquet</code> helpers may remain as compatibility conveniences. They must construct connector-owned source or sink descriptors and route through the registry path.</p>
+<p>Closed <code>BackendKind</code> and <code>SourceKind</code> enums may remain during migration, but external addon registration must not require new variants. They should be deprecated once all built-ins use open descriptors.</p>
+<p>Backend-specific root exports and methods such as a core <code>SessionBuilder.with_duckdb(...)</code> must not be the addon model. Typed provider helpers belong in the addon package and produce core registry components, descriptors, and selections.</p>
+<p>DataFusion must be migrated first as a built-in file connector and local compute runtime. DuckDB should then prove that the same contracts work from a path-resolved external package with separate file connector and local runtime descriptors.</p>
 <h2 id="alternatives-considered">Alternatives considered</h2>
 <ul>
-<li><strong>Use display names as identities.</strong> Rejected because aliases, duplicate names, rewrites, and generated columns make display names insufficient.</li>
-<li><strong>Use backend plan node identifiers.</strong> Rejected because backend adapters are not semantic owners and may change plans physically.</li>
-<li><strong>Require global durable IDs immediately.</strong> Rejected because local plan evidence should work before global registry or publication semantics exist.</li>
+<li><strong>One monolithic adapter object per platform.</strong> Rejected because source, sink, compute, ingress, and evidence responsibilities compose differently and have different trust and lifecycle boundaries.</li>
+<li><strong>Continue adding core enum variants and dispatch branches.</strong> Rejected because external packages cannot extend closed enums and every provider would remain a core change.</li>
+<li><strong>Use RFC 009 format handlers as the only plugin system.</strong> Rejected because format handlers do not model sinks, streams, catalogs, compute runtimes, ingress, evidence, package provenance, or connector/runtime compatibility.</li>
+<li><strong>Use Substrait as the addon API.</strong> Rejected because plan interchange does not install code or define binding, lifecycle, credentials, coverage, and package contracts.</li>
+<li><strong>Auto-register components when a package is imported.</strong> Rejected because import order and hidden global mutation make sessions difficult to reproduce, inspect, test, and isolate.</li>
+<li><strong>Load arbitrary shared libraries or addon directories at runtime.</strong> Rejected for the initial contract because it bypasses Incan package resolution, checked types, lockfiles, and ordinary dependency review.</li>
+<li><strong>Put every integration behind features on core <code>incql</code>.</strong> Rejected because it centralizes provider dependencies and release cadence in core and prevents independent addon packages.</li>
+<li><strong>Assume Arrow makes all connectors and runtimes interchangeable.</strong> Rejected because streaming, pushdown, catalogs, native types, transactionality, sink commits, and operational constraints require contextual compatibility checks.</li>
 </ul>
 <h2 id="drawbacks">Drawbacks</h2>
 <ul>
-<li>Stable identity increases the complexity of planning and inspection.</li>
-<li>Some targets may need conservative IDs until Prism has richer authored-origin tracking.</li>
-<li>Deterministic local IDs can be mistaken for global identity unless docs are clear.</li>
+<li>The component model adds more explicit configuration than a single backend switch.</li>
+<li>Descriptor, API, capability, and binding-protocol versions require governance.</li>
+<li>Connector/runtime composition introduces a compatibility matrix that tools and tests must expose honestly.</li>
+<li>Frozen registry snapshots require rebuilding Sessions when components change.</li>
+<li>Addon packages with native dependencies may still face platform-specific build and distribution constraints.</li>
+<li>The initial Incan implementation may need compiler or runtime support for typed executable hook dispatch and richer package metadata.</li>
 </ul>
 <h2 id="layers-affected">Layers affected</h2>
 <ul>
-<li><strong>IncQL specification</strong> — semantic target categories must become shared terminology for relational evidence RFCs.</li>
-<li><strong>IncQL library package</strong> — inspection and artifact APIs must expose targets rather than unstructured strings.</li>
-<li><strong>Execution / interchange</strong> — Session, Substrait lowering, and adapters must preserve references to semantic targets where they emit related evidence.</li>
-<li><strong>Documentation</strong> — docs must explain local plan identity versus global asset identity.</li>
+<li><strong>IncQL specification</strong> — addon component kinds, identities, descriptors, registration, selection, and composition become normative contracts.</li>
+<li><strong>IncQL library package</strong> — Session, source/sink descriptors, runtime selection, inspection, and built-in DataFusion integration must use the registry-shaped path.</li>
+<li><strong>Incan compiler and package tooling</strong> — package dependencies, feature resolution, checked component metadata, hook dispatch, and lockfile facts must support addon packages as the implementation matures.</li>
+<li><strong>Execution / interchange</strong> — connectors and runtimes must negotiate bindings and report coverage without changing Prism or Substrait semantics.</li>
+<li><strong>Documentation</strong> — execution, addon authoring, sideloading, capability inspection, and migration docs must explain package availability, component installation, and runtime selection separately.</li>
 </ul>
 <h2 id="unresolved-questions">Unresolved questions</h2>
 <ul>
-<li>Which targets require artifact-stable IDs beyond one plan snapshot in the first release?</li>
-<li>Should target IDs be human-readable, opaque, or both?</li>
-<li>How should target identity behave when an optimizer rewrite duplicates one authored expression into multiple rewritten positions?</li>
+<li>Which typed Incan mechanism should carry executable component hooks: nominal interfaces, checked protocols, generated dispatch records, or another representation?</li>
+<li>What is the minimum first set of binding protocol ids needed to prove DataFusion files, external DuckDB files, Arrow transfer, and one backend-native pushdown route?</li>
+<li>Should checked component descriptors be authored in Incan source, declared partly in <code>incan.toml</code>, or generated from declaration-side metadata?</li>
+<li>Which descriptor and feature facts can the current Incan lockfile preserve, and which require package-tooling changes?</li>
+<li>How should a future multi-runtime routing policy be represented and fingerprinted without making routing part of Prism logical meaning?</li>
+<li>How should native addon artifacts be distributed when a package cannot be built from Rust dependencies alone on a target platform?</li>
 </ul>
 <!-- When every question is resolved, rename this section to **Design Decisions**, group answers under ### Resolved, and remove this comment. -->
 

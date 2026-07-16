@@ -10,10 +10,10 @@
       
       
       
-        <link rel="canonical" href="https://encero-systems.github.io/InQL/rfcs/006_unnest_core_substrait/">
+        <link rel="canonical" href="https://encero-systems.github.io/IncQL/rfcs/006_unnest_core_substrait/">
       
       
-        <link rel="prev" href="../005_inql_pipe_forward/">
+        <link rel="prev" href="../005_incql_pipe_forward/">
       
       
         <link rel="next" href="../007_prism_planning_engine/">
@@ -24,7 +24,7 @@
     
     
       
-        <title>RFC 006 - Unnest core Substrait - InQL</title>
+        <title>RFC 006 - Unnest core Substrait - IncQL</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#inql-rfc-006-promote-unnestexplode-to-core-substrait-lowering" class="md-skip">
+        <a href="#incql-rfc-006-promote-unnestexplode-to-core-substrait-lowering" class="md-skip">
           Skip to content
         </a>
       
@@ -88,9 +88,9 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="InQL" class="md-header__button md-logo" aria-label="InQL" data-md-component="logo">
+    <a href="../.." title="IncQL" class="md-header__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../shared/brand/inql-mark.png" alt="logo">
+  <img src="../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -101,7 +101,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            InQL
+            IncQL
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -170,13 +170,13 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/encero-systems/IncQL" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
   </div>
   <div class="md-source__repository">
-    encero-systems/InQL
+    encero-systems/IncQL
   </div>
 </a>
       </div>
@@ -370,22 +370,22 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="InQL" class="md-nav__button md-logo" aria-label="InQL" data-md-component="logo">
+    <a href="../.." title="IncQL" class="md-nav__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../shared/brand/inql-mark.png" alt="logo">
+  <img src="../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
-    InQL
+    IncQL
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/encero-systems/IncQL" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
   </div>
   <div class="md-source__repository">
-    encero-systems/InQL
+    encero-systems/IncQL
   </div>
 </a>
     </div>
@@ -1849,7 +1849,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../000_inql_syntax/" class="md-nav__link">
+      <a href="../000_incql_syntax/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1870,7 +1870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../001_inql_dataset/" class="md-nav__link">
+      <a href="../001_incql_dataset/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1912,7 +1912,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../003_inql_query_blocks/" class="md-nav__link">
+      <a href="../003_incql_query_blocks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1933,7 +1933,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../004_inql_execution_context/" class="md-nav__link">
+      <a href="../004_incql_execution_context/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1954,7 +1954,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../005_inql_pipe_forward/" class="md-nav__link">
+      <a href="../005_incql_pipe_forward/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2127,9 +2127,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#interaction-with-other-inql-surfaces" class="md-nav__link">
+  <a href="#interaction-with-other-incql-surfaces" class="md-nav__link">
     <span class="md-ellipsis">
-      Interaction with other InQL surfaces
+      Interaction with other IncQL surfaces
     </span>
   </a>
   
@@ -3220,11 +3220,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../whitepapers/inql_db/" class="md-nav__link">
+      <a href="../../whitepapers/incql_db/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    InQL DB
+    IncQL DB
   </span>
   
 
@@ -3469,9 +3469,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#interaction-with-other-inql-surfaces" class="md-nav__link">
+  <a href="#interaction-with-other-incql-surfaces" class="md-nav__link">
     <span class="md-ellipsis">
-      Interaction with other InQL surfaces
+      Interaction with other IncQL surfaces
     </span>
   </a>
   
@@ -3545,27 +3545,27 @@
   
 
 
-<h1 id="inql-rfc-006-promote-unnestexplode-to-core-substrait-lowering">InQL RFC 006: Promote unnest/explode to core Substrait lowering</h1>
+<h1 id="incql-rfc-006-promote-unnestexplode-to-core-substrait-lowering">IncQL RFC 006: Promote unnest/explode to core Substrait lowering</h1>
 <ul>
 <li><strong>Status:</strong> Blocked</li>
 <li><strong>Created:</strong> 2026-03-27</li>
 <li><strong>Author(s):</strong> Danny Meijer</li>
 <li><strong>Related:</strong></li>
-<li>InQL RFC 002 (Apache Substrait — normative gap classification for unnest; <strong>prerequisite</strong>)</li>
-<li>InQL RFC 003 (<code>query {}</code> — <code>EXPLODE</code> clause; no surface change required)</li>
-<li>InQL RFC 001 (dataset types — <code>explode</code> method on <code>DataSet[T]</code>; no surface change required)</li>
-<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/InQL/issues/14">InQL #14</a></li>
+<li>IncQL RFC 002 (Apache Substrait — normative gap classification for unnest; <strong>prerequisite</strong>)</li>
+<li>IncQL RFC 003 (<code>query {}</code> — <code>EXPLODE</code> clause; no surface change required)</li>
+<li>IncQL RFC 001 (dataset types — <code>explode</code> method on <code>DataSet[T]</code>; no surface change required)</li>
+<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/IncQL/issues/14">IncQL #14</a></li>
 <li><strong>RFC PR:</strong> -</li>
 <li><strong>Written against:</strong> Incan v0.2</li>
 <li><strong>Shipped in:</strong> -</li>
 </ul>
 <blockquote>
-<p><strong>Blocked</strong> on upstream Apache Substrait standardizing a portable logical unnest/explode <code>Rel</code> in a revision InQL can pin to. See <a href="../../language/reference/substrait/operator_catalog/">Substrait operator catalog — Gap profiles: Unnest / explode</a>.</p>
+<p><strong>Blocked</strong> on upstream Apache Substrait standardizing a portable logical unnest/explode <code>Rel</code> in a revision IncQL can pin to. See <a href="../../language/reference/substrait/operator_catalog/">Substrait operator catalog — Gap profiles: Unnest / explode</a>.</p>
 </blockquote>
 <h2 id="summary">Summary</h2>
-<p>InQL RFC 002 classifies <code>EXPLODE</code>/unnest as a <strong>gap</strong> capability: no stable logical <code>Rel</code> exists in core Substrait, so implementations must lower through a registered extension relation with a declared URI. This RFC records the intent to promote that capability from <code>gap</code> to <code>core</code> — updating the operator catalog, retiring the extension encoding requirement, and updating Incan compiler lowering — once upstream Substrait ships a portable unnest <code>Rel</code> that InQL can adopt.</p>
+<p>IncQL RFC 002 classifies <code>EXPLODE</code>/unnest as a <strong>gap</strong> capability: no stable logical <code>Rel</code> exists in core Substrait, so implementations must lower through a registered extension relation with a declared URI. This RFC records the intent to promote that capability from <code>gap</code> to <code>core</code> — updating the operator catalog, retiring the extension encoding requirement, and updating Incan compiler lowering — once upstream Substrait ships a portable unnest <code>Rel</code> that IncQL can adopt.</p>
 <h2 id="motivation">Motivation</h2>
-<p>The current extension encoding for unnest adds extension URI maintenance burden to every conforming InQL toolchain release and limits plan portability to consumers that happen to support the same registered extension. The gap classification is not a permanent design choice; it reflects a gap in Substrait at the time of RFC 002. Once upstream closes that gap with a stable logical <code>Rel</code>, there is no reason for InQL to keep the extension path as the normative encoding. Reclassifying promptly gives authors core-portable <code>EXPLODE</code> semantics without requiring consumers to register or recognize InQL-specific URIs.</p>
+<p>The current extension encoding for unnest adds extension URI maintenance burden to every conforming IncQL toolchain release and limits plan portability to consumers that happen to support the same registered extension. The gap classification is not a permanent design choice; it reflects a gap in Substrait at the time of RFC 002. Once upstream closes that gap with a stable logical <code>Rel</code>, there is no reason for IncQL to keep the extension path as the normative encoding. Reclassifying promptly gives authors core-portable <code>EXPLODE</code> semantics without requiring consumers to register or recognize IncQL-specific URIs.</p>
 <h2 id="goals">Goals</h2>
 <ul>
 <li>Reclassify the unnest/explode capability from <code>gap</code> to <code>core</code> in the <a href="../../language/reference/substrait/operator_catalog/">Substrait operator catalog reference</a>.</li>
@@ -3574,12 +3574,12 @@
 </ul>
 <h2 id="non-goals">Non-Goals</h2>
 <ul>
-<li>Changing the InQL surface syntax for unnest — <code>EXPLODE</code> in <code>query {}</code> (InQL RFC 003) and <code>generate(explode(...))</code> remain unchanged.</li>
-<li>Defining the semantics of the new core <code>Rel</code> — that is an upstream Substrait concern; InQL aligns to whatever the pinned revision specifies.</li>
+<li>Changing the IncQL surface syntax for unnest — <code>EXPLODE</code> in <code>query {}</code> (IncQL RFC 003) and <code>generate(explode(...))</code> remain unchanged.</li>
+<li>Defining the semantics of the new core <code>Rel</code> — that is an upstream Substrait concern; IncQL aligns to whatever the pinned revision specifies.</li>
 <li>Keeping the extension encoding as an alternate path — once the core <code>Rel</code> is adopted, the extension path is retired.</li>
 </ul>
 <h2 id="guide-level-explanation">Guide-level explanation</h2>
-<p>From an author's perspective, nothing changes. <code>EXPLODE</code> in <code>query {}</code> and <code>generate(explode(...))</code> work exactly as before. The only observable difference is in the serialized Substrait plan: before promotion, the emitted plan contains an <code>ExtensionSingleRel</code> or <code>ExtensionLeafRel</code> with an InQL-registered URI; after promotion, it contains the standard logical unnest <code>Rel</code> from the pinned Substrait revision. Consumers that previously required the InQL extension URI to execute unnest plans no longer do.</p>
+<p>From an author's perspective, nothing changes. <code>EXPLODE</code> in <code>query {}</code> and <code>generate(explode(...))</code> work exactly as before. The only observable difference is in the serialized Substrait plan: before promotion, the emitted plan contains an <code>ExtensionSingleRel</code> or <code>ExtensionLeafRel</code> with an IncQL-registered URI; after promotion, it contains the standard logical unnest <code>Rel</code> from the pinned Substrait revision. Consumers that previously required the IncQL extension URI to execute unnest plans no longer do.</p>
 <h2 id="reference-level-explanation">Reference-level explanation</h2>
 <h3 id="operator-catalog-update">Operator catalog update</h3>
 <p>When the unnest capability is promoted, <code>docs/language/reference/substrait/operator_catalog.md</code> <strong>must</strong> be updated:</p>
@@ -3602,12 +3602,12 @@
 <h3 id="plan-compatibility">Plan compatibility</h3>
 <p>Serialized Substrait plans containing the extension encoding for unnest will need to be re-emitted after a toolchain upgrade. This is a plan-level breaking change and <strong>must</strong> be documented in release notes per the revision and extension policy.</p>
 <h2 id="design-details">Design details</h2>
-<h3 id="interaction-with-other-inql-surfaces">Interaction with other InQL surfaces</h3>
+<h3 id="interaction-with-other-incql-surfaces">Interaction with other IncQL surfaces</h3>
 <p>No surface changes. The <code>EXPLODE</code> clause in <code>query {}</code> and the <code>generate(explode(...))</code> dataset form retain their existing semantics; only the Substrait emission changes.</p>
 <h3 id="compatibility-migration">Compatibility / migration</h3>
 <ul>
 <li>Breaking for serialized plans: existing plans with the extension encoding for unnest must be re-emitted. No author source code changes are required.</li>
-<li>Non-breaking for InQL source: <code>EXPLODE</code> and <code>generate(explode(...))</code> continue to compile and type-check identically.</li>
+<li>Non-breaking for IncQL source: <code>EXPLODE</code> and <code>generate(explode(...))</code> continue to compile and type-check identically.</li>
 </ul>
 <h2 id="alternatives-considered">Alternatives considered</h2>
 <ul>
@@ -3617,18 +3617,18 @@
 <h2 id="drawbacks">Drawbacks</h2>
 <ul>
 <li>Bumping the Substrait pin for this change is a plan-level breaking change, requiring coordinated consumer updates if any downstream tooling relies on the extension encoding.</li>
-<li>Timing depends entirely on upstream Substrait; InQL cannot control when a portable unnest <code>Rel</code> ships.</li>
+<li>Timing depends entirely on upstream Substrait; IncQL cannot control when a portable unnest <code>Rel</code> ships.</li>
 </ul>
 <h2 id="layers-affected">Layers affected</h2>
 <ul>
-<li><strong>InQL specification</strong> — operator catalog reference updated; revision and extension policy retirement entry required.</li>
+<li><strong>IncQL specification</strong> — operator catalog reference updated; revision and extension policy retirement entry required.</li>
 <li><strong>Incan compiler</strong> — lowering for <code>EXPLODE</code> / <code>explode</code> updated to emit the core <code>Rel</code> (work in the Incan repository).</li>
 <li><strong>Documentation</strong> — release notes entry; operator catalog update.</li>
 </ul>
 <h2 id="unresolved-questions">Unresolved questions</h2>
 <ul>
 <li>Which exact Substrait revision introduces the portable unnest <code>Rel</code>? (Blocked on upstream; track <code>substrait-io/substrait</code>.)</li>
-<li>Are there semantic edge cases between the InQL extension encoding and the upstream core <code>Rel</code> that require a compatibility shim or a lowering-time rewrite?</li>
+<li>Are there semantic edge cases between the IncQL extension encoding and the upstream core <code>Rel</code> that require a compatibility shim or a lowering-time rewrite?</li>
 </ul>
 <!-- References -->
 

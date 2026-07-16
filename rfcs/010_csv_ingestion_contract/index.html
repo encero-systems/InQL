@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://encero-systems.github.io/InQL/rfcs/010_csv_ingestion_contract/">
+        <link rel="canonical" href="https://encero-systems.github.io/IncQL/rfcs/010_csv_ingestion_contract/">
       
       
         <link rel="prev" href="../009_session_format_handler_registry/">
@@ -24,7 +24,7 @@
     
     
       
-        <title>RFC 010 - CSV ingestion contract - InQL</title>
+        <title>RFC 010 - CSV ingestion contract - IncQL</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#inql-rfc-010-csv-dialect-and-interpretation-contract" class="md-skip">
+        <a href="#incql-rfc-010-csv-dialect-and-interpretation-contract" class="md-skip">
           Skip to content
         </a>
       
@@ -88,9 +88,9 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="InQL" class="md-header__button md-logo" aria-label="InQL" data-md-component="logo">
+    <a href="../.." title="IncQL" class="md-header__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../shared/brand/inql-mark.png" alt="logo">
+  <img src="../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -101,7 +101,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            InQL
+            IncQL
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -170,13 +170,13 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/encero-systems/IncQL" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
   </div>
   <div class="md-source__repository">
-    encero-systems/InQL
+    encero-systems/IncQL
   </div>
 </a>
       </div>
@@ -370,22 +370,22 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="InQL" class="md-nav__button md-logo" aria-label="InQL" data-md-component="logo">
+    <a href="../.." title="IncQL" class="md-nav__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../shared/brand/inql-mark.png" alt="logo">
+  <img src="../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
-    InQL
+    IncQL
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/encero-systems/IncQL" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
   </div>
   <div class="md-source__repository">
-    encero-systems/InQL
+    encero-systems/IncQL
   </div>
 </a>
     </div>
@@ -1849,7 +1849,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../000_inql_syntax/" class="md-nav__link">
+      <a href="../000_incql_syntax/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1870,7 +1870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../001_inql_dataset/" class="md-nav__link">
+      <a href="../001_incql_dataset/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1912,7 +1912,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../003_inql_query_blocks/" class="md-nav__link">
+      <a href="../003_incql_query_blocks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1933,7 +1933,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../004_inql_execution_context/" class="md-nav__link">
+      <a href="../004_incql_execution_context/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1954,7 +1954,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../005_inql_pipe_forward/" class="md-nav__link">
+      <a href="../005_incql_pipe_forward/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2256,9 +2256,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#interaction-with-other-inql-surfaces" class="md-nav__link">
+  <a href="#interaction-with-other-incql-surfaces" class="md-nav__link">
     <span class="md-ellipsis">
-      Interaction with other InQL surfaces
+      Interaction with other IncQL surfaces
     </span>
   </a>
   
@@ -3265,11 +3265,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../whitepapers/inql_db/" class="md-nav__link">
+      <a href="../../whitepapers/incql_db/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    InQL DB
+    IncQL DB
   </span>
   
 
@@ -3559,9 +3559,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#interaction-with-other-inql-surfaces" class="md-nav__link">
+  <a href="#interaction-with-other-incql-surfaces" class="md-nav__link">
     <span class="md-ellipsis">
-      Interaction with other InQL surfaces
+      Interaction with other IncQL surfaces
     </span>
   </a>
   
@@ -3635,34 +3635,34 @@
   
 
 
-<h1 id="inql-rfc-010-csv-dialect-and-interpretation-contract">InQL RFC 010: CSV dialect and interpretation contract</h1>
+<h1 id="incql-rfc-010-csv-dialect-and-interpretation-contract">IncQL RFC 010: CSV dialect and interpretation contract</h1>
 <ul>
 <li><strong>Status:</strong> Draft</li>
 <li><strong>Created:</strong> 2026-04-19</li>
 <li><strong>Author(s):</strong> Danny Meijer (@dannymeijer)</li>
 <li><strong>Related:</strong></li>
-<li>InQL RFC 001 (dataset types and carrier schema surfaces)</li>
-<li>InQL RFC 004 (execution context and session read boundaries)</li>
-<li>InQL RFC 009 (session format handler registry)</li>
+<li>IncQL RFC 001 (dataset types and carrier schema surfaces)</li>
+<li>IncQL RFC 004 (execution context and session read boundaries)</li>
+<li>IncQL RFC 009 (session format handler registry)</li>
 <li><strong>Issue:</strong> —</li>
 <li><strong>RFC PR:</strong> —</li>
 <li><strong>Written against:</strong> Incan v0.2-rc5</li>
 <li><strong>Shipped in:</strong> —</li>
 </ul>
 <h2 id="summary">Summary</h2>
-<p>This RFC defines InQL's north-star CSV dialect and interpretation contract. It standardizes how authors describe CSV dialect, header policy, malformed-row behavior, and schema or type inference so that the <code>csv</code> format behaves predictably across execution backends and future format-handler implementations. The core claim is that CSV parsing semantics must be expressed as stable structured InQL configuration and validated as part of the InQL contract, rather than being left to whatever parser quirks a specific backend happens to expose.</p>
+<p>This RFC defines IncQL's north-star CSV dialect and interpretation contract. It standardizes how authors describe CSV dialect, header policy, malformed-row behavior, and schema or type inference so that the <code>csv</code> format behaves predictably across execution backends and future format-handler implementations. The core claim is that CSV parsing semantics must be expressed as stable structured IncQL configuration and validated as part of the IncQL contract, rather than being left to whatever parser quirks a specific backend happens to expose.</p>
 <h2 id="core-model">Core model</h2>
 <ol>
 <li>CSV ingestion configuration is structured data, not ad-hoc booleans or backend-specific string flags.</li>
 <li>CSV <strong>dialect</strong>, <strong>schema or type interpretation</strong>, and <strong>malformed-row policy</strong> are distinct concerns and must remain separate in the public API.</li>
-<li>CSV reads participate in InQL's schema layering: declared schema, planned schema, and resolved schema are related but not interchangeable.</li>
+<li>CSV reads participate in IncQL's schema layering: declared schema, planned schema, and resolved schema are related but not interchangeable.</li>
 <li>Execution backends and format handlers must either honor the requested CSV contract or reject unsupported configuration before query execution begins.</li>
 <li><code>Session.read_csv(...)</code> is convenience sugar over the session's format-dispatch surface for the <code>csv</code> format key.</li>
 </ol>
 <h2 id="motivation">Motivation</h2>
-<p>CSV is deceptively simple. In practice, a read surface that says "read CSV" without a precise contract leaves critical behavior undefined: quoting, embedded delimiters, multiline fields, header handling, null tokens, numeric grouping, timestamp recognition, and malformed-row policy. That creates two problems for InQL.</p>
-<p>First, authors cannot reason about portability. A workflow that succeeds with one execution backend may silently change meaning under another backend or after an internal parser change. Second, InQL's typed carrier model becomes weaker if CSV ingestion can quietly reinterpret columns or infer different shapes based on parser quirks rather than an explicit contract.</p>
-<p>InQL should not inherit the accidental complexity of backend-specific CSV readers as its user-facing semantics. It needs its own contract: explicit enough that authors can rely on it, and precise enough that conformance tests can verify it.</p>
+<p>CSV is deceptively simple. In practice, a read surface that says "read CSV" without a precise contract leaves critical behavior undefined: quoting, embedded delimiters, multiline fields, header handling, null tokens, numeric grouping, timestamp recognition, and malformed-row policy. That creates two problems for IncQL.</p>
+<p>First, authors cannot reason about portability. A workflow that succeeds with one execution backend may silently change meaning under another backend or after an internal parser change. Second, IncQL's typed carrier model becomes weaker if CSV ingestion can quietly reinterpret columns or infer different shapes based on parser quirks rather than an explicit contract.</p>
+<p>IncQL should not inherit the accidental complexity of backend-specific CSV readers as its user-facing semantics. It needs its own contract: explicit enough that authors can rely on it, and precise enough that conformance tests can verify it.</p>
 <h2 id="goals">Goals</h2>
 <ul>
 <li>Define a stable, backend-portable CSV dialect and interpretation contract for <code>Session.read_csv(...)</code>.</li>
@@ -3670,7 +3670,7 @@
 <li>Specify the default CSV behavior authors get when they do not override options.</li>
 <li>Define how CSV reads interact with declared, planned, and resolved schema layers.</li>
 <li>Require early rejection when a backend or format handler cannot satisfy the requested CSV contract.</li>
-<li>Make conformance testing possible without binding InQL semantics to one specific parser implementation.</li>
+<li>Make conformance testing possible without binding IncQL semantics to one specific parser implementation.</li>
 </ul>
 <h2 id="non-goals">Non-Goals</h2>
 <ul>
@@ -3689,8 +3689,8 @@
 <li>what should happen when the input is malformed or ambiguous</li>
 </ul>
 <p>The public surface should therefore expose one structured options value for CSV reads.</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">Session</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">formats</span> <span class="kn">import</span><span class="w"> </span><span class="p">(</span>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">Session</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span><span class="o">.</span><span class="n">formats</span> <span class="kn">import</span><span class="w"> </span><span class="p">(</span>
     <span class="nc">CsvDialect</span><span class="p">,</span>
     <span class="nc">CsvHeaderMode</span><span class="p">,</span>
     <span class="nc">CsvInference</span><span class="p">,</span>
@@ -3740,12 +3740,12 @@
     <span class="p">),</span>
 <span class="p">)</span>
 </code></pre></div>
-<p>If an author does not provide options, InQL still has a defined default contract rather than an implementation accident.</p>
+<p>If an author does not provide options, IncQL still has a defined default contract rather than an implementation accident.</p>
 <div class="language-incan highlight"><pre><span></span><code><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;orders&quot;</span><span class="p">,</span> <span class="s2">&quot;s3://warehouse/orders.csv&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>That default should mean "standard CSV with headers, quoted-field support, strict malformed-row handling, and deterministic type interpretation rules", not "whatever the current backend happened to do this week."</p>
 <p>Headerless CSV is still allowed, but it should be explicit because it changes how schema is established.</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">formats</span> <span class="kn">import</span><span class="w"> </span><span class="nn">CsvDialect</span><span class="o">,</span><span class="w"> </span><span class="nn">CsvHeaderMode</span><span class="o">,</span><span class="w"> </span><span class="nn">CsvReadOptions</span>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span><span class="o">.</span><span class="n">formats</span> <span class="kn">import</span><span class="w"> </span><span class="nn">CsvDialect</span><span class="o">,</span><span class="w"> </span><span class="nn">CsvHeaderMode</span><span class="o">,</span><span class="w"> </span><span class="nn">CsvReadOptions</span>
 
 <span class="n">rows</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
     <span class="s2">&quot;orders&quot;</span><span class="p">,</span>
@@ -3757,7 +3757,7 @@
 </code></pre></div>
 <h2 id="reference-level-explanation-precise-rules">Reference-level explanation (precise rules)</h2>
 <h3 id="public-configuration-model">Public configuration model</h3>
-<p>InQL must expose one stable structured CSV configuration surface for read operations. The exact namespace may evolve, but the public API must include the equivalent of:</p>
+<p>IncQL must expose one stable structured CSV configuration surface for read operations. The exact namespace may evolve, but the public API must include the equivalent of:</p>
 <ul>
 <li><code>CsvReadOptions</code></li>
 <li><code>CsvDialect</code></li>
@@ -3776,7 +3776,7 @@
 <li><code>header</code>: whether the first logical record is a header row</li>
 <li><code>multiline_fields</code>: whether quoted fields may span multiple physical lines</li>
 </ul>
-<p>InQL's default dialect must behave as follows:</p>
+<p>IncQL's default dialect must behave as follows:</p>
 <ul>
 <li>delimiter is <code>,</code></li>
 <li>quote is <code>"</code></li>
@@ -3785,12 +3785,12 @@
 <li>quoted fields may contain delimiters and line breaks</li>
 <li>malformed rows are not silently ignored</li>
 </ul>
-<p>The default contract should align with standard CSV expectations, but InQL owns the contract text. It must not outsource semantics to a backend documentation page.</p>
+<p>The default contract should align with standard CSV expectations, but IncQL owns the contract text. It must not outsource semantics to a backend documentation page.</p>
 <h3 id="schema-and-type-interpretation">Schema and type interpretation</h3>
 <p>CSV ingestion must distinguish three schema layers:</p>
 <ul>
 <li><strong>declared schema</strong>: the author- or model-level schema the program is written against</li>
-<li><strong>planned schema</strong>: the schema InQL can establish before execution from configuration, headers, and compatible schema analysis</li>
+<li><strong>planned schema</strong>: the schema IncQL can establish before execution from configuration, headers, and compatible schema analysis</li>
 <li><strong>resolved schema</strong>: the schema observed from materialized output after execution</li>
 </ul>
 <p>When the call context requires <code>LazyFrame[T]</code>, <code>T</code> is the declared schema contract. CSV ingestion must validate compatibility between the file and <code>T</code> according to the configured header and inference policy. A backend must not silently reorder columns or reinterpret field names in a way that breaks the declared schema.</p>
@@ -3804,7 +3804,7 @@
 </ul>
 <p>If numeric grouping separators are allowed, the contract must define which separators are permitted and where they may appear. For example, <code>1_000.00</code> and <code>1,234.567</code> must not be accepted or rejected by accident; acceptance must follow the configured grouping policy.</p>
 <h3 id="malformed-row-policy">Malformed-row policy</h3>
-<p>InQL must expose an explicit malformed-row policy. At minimum the contract must support an <code>Error</code> mode that fails the read. Additional policies may exist, but they must be explicit and portable.</p>
+<p>IncQL must expose an explicit malformed-row policy. At minimum the contract must support an <code>Error</code> mode that fails the read. Additional policies may exist, but they must be explicit and portable.</p>
 <p>Malformed input includes at least:</p>
 <ul>
 <li>unmatched quotes</li>
@@ -3814,8 +3814,8 @@
 </ul>
 <p>If a backend cannot implement a requested malformed-row policy faithfully, it must reject the read before execution rather than silently degrading behavior.</p>
 <h3 id="early-validation-and-capability-rejection">Early validation and capability rejection</h3>
-<p>CSV option validation must happen before query execution starts. InQL must reject invalid option combinations and unsupported backend capabilities at the session or planning boundary.</p>
-<p>Backends and format handlers may support more behavior internally than the portable contract defines, but that additional behavior must not leak into InQL's normative semantics unless a future RFC standardizes it.</p>
+<p>CSV option validation must happen before query execution starts. IncQL must reject invalid option combinations and unsupported backend capabilities at the session or planning boundary.</p>
+<p>Backends and format handlers may support more behavior internally than the portable contract defines, but that additional behavior must not leak into IncQL's normative semantics unless a future RFC standardizes it.</p>
 <h3 id="diagnostics">Diagnostics</h3>
 <p>CSV read failures must report typed diagnostics that distinguish at least:</p>
 <ul>
@@ -3832,19 +3832,19 @@
 <h3 id="semantics">Semantics</h3>
 <p><code>Session.read_csv(...)</code> is not merely "open a file and guess." It establishes a portable parsing and interpretation contract that downstream planning and execution must honor. CSV reads remain lazy from a data-execution perspective, but option validation and schema compatibility checks should occur as early as possible.</p>
 <p>The default path must be strict enough to be predictable. Convenience cannot come from ambiguity. A permissive parser mode may exist, but only as an explicit policy choice.</p>
-<h3 id="interaction-with-other-inql-surfaces">Interaction with other InQL surfaces</h3>
-<p>CSV ingestion must compose with carrier-schema layering from InQL RFC 001. <code>planned_columns</code> may be established from declared schema, header contract, or compatible pre-execution analysis, while <code>resolved_columns</code> remain a runtime fact on materialized output.</p>
-<p>CSV ingestion must compose with the execution boundary from InQL RFC 004. Session-owned read configuration is part of the execution contract, not an implementation detail hidden in a backend adapter.</p>
-<p>CSV-specific configuration should also remain compatible with the format-handler model in InQL RFC 009. The <code>csv</code> format entry owns the contract; <code>read_csv</code> is convenience sugar over that dispatch path. A CSV handler may implement the contract, but it does not get to redefine the contract.</p>
+<h3 id="interaction-with-other-incql-surfaces">Interaction with other IncQL surfaces</h3>
+<p>CSV ingestion must compose with carrier-schema layering from IncQL RFC 001. <code>planned_columns</code> may be established from declared schema, header contract, or compatible pre-execution analysis, while <code>resolved_columns</code> remain a runtime fact on materialized output.</p>
+<p>CSV ingestion must compose with the execution boundary from IncQL RFC 004. Session-owned read configuration is part of the execution contract, not an implementation detail hidden in a backend adapter.</p>
+<p>CSV-specific configuration should also remain compatible with the format-handler model in IncQL RFC 009. The <code>csv</code> format entry owns the contract; <code>read_csv</code> is convenience sugar over that dispatch path. A CSV handler may implement the contract, but it does not get to redefine the contract.</p>
 <h3 id="compatibility-migration">Compatibility / migration</h3>
 <p>This RFC is additive in intent, but existing code paths that depend on underspecified CSV behavior may observe stricter validation once the contract is implemented. That is acceptable: ambiguous ingestion behavior is technical debt, not a compatibility guarantee.</p>
 <p>Implementations should provide a clear migration path for currently implicit defaults by documenting which old behavior maps to explicit <code>CsvReadOptions</code> values.</p>
 <h2 id="alternatives-considered">Alternatives considered</h2>
 <ul>
-<li>Leaving CSV semantics to the execution backend: rejected, because it makes InQL's read surface non-portable and weakens the typed carrier contract.</li>
+<li>Leaving CSV semantics to the execution backend: rejected, because it makes IncQL's read surface non-portable and weakens the typed carrier contract.</li>
 <li>Defining only a minimal RFC 4180 subset and deferring all inference semantics: rejected, because authors still need stable rules for nulls, numerics, booleans, and timestamps when reading typed data.</li>
-<li>Copying pandas or Spark behavior wholesale: rejected, because those systems optimize for their own ecosystems and backward-compatibility constraints. InQL should learn from them, not inherit them uncritically.</li>
-<li>Exposing only backend-specific option maps: rejected, because it would bypass InQL's role as the contract owner.</li>
+<li>Copying pandas or Spark behavior wholesale: rejected, because those systems optimize for their own ecosystems and backward-compatibility constraints. IncQL should learn from them, not inherit them uncritically.</li>
+<li>Exposing only backend-specific option maps: rejected, because it would bypass IncQL's role as the contract owner.</li>
 </ul>
 <h2 id="drawbacks">Drawbacks</h2>
 <ul>
@@ -3854,14 +3854,14 @@
 </ul>
 <h2 id="layers-affected">Layers affected</h2>
 <ul>
-<li><strong>InQL specification</strong> must define CSV ingestion as a portable contract rather than a backend-specific convenience.</li>
-<li><strong>InQL library package</strong> must expose stable structured CSV read options and typed diagnostics consistent with this RFC.</li>
+<li><strong>IncQL specification</strong> must define CSV ingestion as a portable contract rather than a backend-specific convenience.</li>
+<li><strong>IncQL library package</strong> must expose stable structured CSV read options and typed diagnostics consistent with this RFC.</li>
 <li><strong>Execution / interchange</strong> must validate backend or handler capability against the requested CSV contract before execution begins.</li>
 <li><strong>Documentation</strong> must explain the default CSV contract and its explicit override model without relying on backend documentation as the source of truth.</li>
 </ul>
 <h2 id="unresolved-questions">Unresolved questions</h2>
 <ul>
-<li>Should headerless CSV be supported only when a declared schema is present, or may InQL synthesize stable placeholder column names as part of the portable contract?</li>
+<li>Should headerless CSV be supported only when a declared schema is present, or may IncQL synthesize stable placeholder column names as part of the portable contract?</li>
 <li>Should the default numeric-grouping policy remain strict and reject separators such as <code>_</code> and <code>,</code>, or should common grouping separators be allowed by default?</li>
 <li>Should unquoted leading and trailing whitespace be preserved exactly by default, or normalized as part of the portable CSV contract?</li>
 </ul>

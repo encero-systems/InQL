@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://encero-systems.github.io/InQL/rfcs/000_inql_syntax/">
+        <link rel="canonical" href="https://encero-systems.github.io/IncQL/rfcs/001_incql_dataset/">
       
       
-        <link rel="prev" href="../TEMPLATE/">
+        <link rel="prev" href="../000_incql_syntax/">
       
       
-        <link rel="next" href="../001_inql_dataset/">
+        <link rel="next" href="../002_apache_substrait_integration/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -24,7 +24,7 @@
     
     
       
-        <title>RFC 000 - Language specification - InQL</title>
+        <title>RFC 001 - Dataset types - IncQL</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#inql-rfc-000-language-specification" class="md-skip">
+        <a href="#incql-rfc-001-dataset-types-and-carriers-datasett" class="md-skip">
           Skip to content
         </a>
       
@@ -88,9 +88,9 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="InQL" class="md-header__button md-logo" aria-label="InQL" data-md-component="logo">
+    <a href="../.." title="IncQL" class="md-header__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../shared/brand/inql-mark.png" alt="logo">
+  <img src="../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -101,13 +101,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            InQL
+            IncQL
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              RFC 000 - Language specification
+              RFC 001 - Dataset types
             
           </span>
         </div>
@@ -170,13 +170,13 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/encero-systems/IncQL" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
   </div>
   <div class="md-source__repository">
-    encero-systems/InQL
+    encero-systems/IncQL
   </div>
 </a>
       </div>
@@ -370,22 +370,22 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="InQL" class="md-nav__button md-logo" aria-label="InQL" data-md-component="logo">
+    <a href="../.." title="IncQL" class="md-nav__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../shared/brand/inql-mark.png" alt="logo">
+  <img src="../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
-    InQL
+    IncQL
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/encero-systems/IncQL" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
   </div>
   <div class="md-source__repository">
-    encero-systems/InQL
+    encero-systems/IncQL
   </div>
 </a>
     </div>
@@ -1846,6 +1846,27 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../000_incql_syntax/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 000 - Language specification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1862,7 +1883,7 @@
           
   
   <span class="md-ellipsis">
-    RFC 000 - Language specification
+    RFC 001 - Dataset types
   </span>
   
 
@@ -1873,7 +1894,7 @@
         
   
   <span class="md-ellipsis">
-    RFC 000 - Language specification
+    RFC 001 - Dataset types
   </span>
   
 
@@ -1950,36 +1971,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#what-inql-does" class="md-nav__link">
+  <a href="#type-signature-levels" class="md-nav__link">
     <span class="md-ellipsis">
-      What InQL does
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#the-four-naming-forms" class="md-nav__link">
-    <span class="md-ellipsis">
-      The four naming forms
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#schema-shapes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Schema shapes
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#two-authoring-surfaces-v01" class="md-nav__link">
-    <span class="md-ellipsis">
-      Two authoring surfaces (v0.1)
+      Type signature levels
     </span>
   </a>
   
@@ -2001,234 +1995,54 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-what-inql-owns" class="md-nav__link">
+  <a href="#packaging" class="md-nav__link">
     <span class="md-ellipsis">
-      1. What InQL owns
+      Packaging
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-naming-forms" class="md-nav__link">
+  <a href="#type-hierarchy" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Naming forms
+      Type hierarchy
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-current-query-schema" class="md-nav__link">
+  <a href="#static-capability-gating" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Current query schema
+      Static capability gating
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-resolution-rules" class="md-nav__link">
+  <a href="#operation-api-for-lowering-and-direct-use" class="md-nav__link">
     <span class="md-ellipsis">
-      4. Resolution rules
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="4. Resolution rules">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#rule-1-column-is-always-the-primary-input-relation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Rule 1: .column is always the primary input relation
+      Operation API (for lowering and direct use)
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#rule-2-relationcolumn-is-always-the-named-relation" class="md-nav__link">
+  <a href="#execution-backend-boundary" class="md-nav__link">
     <span class="md-ellipsis">
-      Rule 2: relation.column is always the named relation
+      Execution backend boundary
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#rule-3-bare-names-resolve-against-the-current-query-schema-first" class="md-nav__link">
+  <a href="#interaction-with-incan" class="md-nav__link">
     <span class="md-ellipsis">
-      Rule 3: bare names resolve against the current query schema first
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#rule-4-select-alias-visibility" class="md-nav__link">
-    <span class="md-ellipsis">
-      Rule 4: SELECT alias visibility
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#rule-5-ordinary-incan-values-when-no-column-matches" class="md-nav__link">
-    <span class="md-ellipsis">
-      Rule 5: ordinary Incan values when no column matches
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-ambiguity-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. Ambiguity examples
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Ambiguity examples">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#51-outer-binding-vs-query-column" class="md-nav__link">
-    <span class="md-ellipsis">
-      5.1 Outer binding vs query column
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#52-alias-after-projection" class="md-nav__link">
-    <span class="md-ellipsis">
-      5.2 Alias after projection
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#53-joined-relation-stays-explicit" class="md-nav__link">
-    <span class="md-ellipsis">
-      5.3 Joined relation stays explicit
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#6-query-surfaces-and-semantic-equivalence" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. Query surfaces and semantic equivalence
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#7-scope-restriction-column-is-only-valid-in-relational-positions" class="md-nav__link">
-    <span class="md-ellipsis">
-      7. Scope restriction: .column is only valid in relational positions
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#8-schema-shapes" class="md-nav__link">
-    <span class="md-ellipsis">
-      8. Schema shapes
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="8. Schema shapes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#81-fully-typed-dataframet" class="md-nav__link">
-    <span class="md-ellipsis">
-      8.1 Fully typed: DataFrame[T]
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#82-open-ended-model-x-with-openended" class="md-nav__link">
-    <span class="md-ellipsis">
-      8.2 Open-ended: model X with OpenEnded
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#83-dynamic-dataframedynamic" class="md-nav__link">
-    <span class="md-ellipsis">
-      8.3 Dynamic: DataFrame[Dynamic]
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#84-four-schema-shapes" class="md-nav__link">
-    <span class="md-ellipsis">
-      8.4 Four schema shapes
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#85-schema-boundary-validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      8.5 Schema boundary validation
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#9-relationship-to-incan-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      9. Relationship to Incan models
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#10-compilation-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      10. Compilation model
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#11-layer-boundaries" class="md-nav__link">
-    <span class="md-ellipsis">
-      11. Layer boundaries
+      Interaction with Incan
     </span>
   </a>
   
@@ -2250,9 +2064,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#cross-rfc-consistency" class="md-nav__link">
+  <a href="#unified-api-model" class="md-nav__link">
     <span class="md-ellipsis">
-      Cross-RFC consistency
+      Unified API model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trait-naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      Trait naming
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#future-extensibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Future extensibility
     </span>
   </a>
   
@@ -2306,33 +2138,27 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Design Decisions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resolved
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../001_inql_dataset/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    RFC 001 - Dataset types
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -2366,7 +2192,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../003_inql_query_blocks/" class="md-nav__link">
+      <a href="../003_incql_query_blocks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2387,7 +2213,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../004_inql_execution_context/" class="md-nav__link">
+      <a href="../004_incql_execution_context/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2408,7 +2234,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../005_inql_pipe_forward/" class="md-nav__link">
+      <a href="../005_incql_pipe_forward/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3469,11 +3295,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../whitepapers/inql_db/" class="md-nav__link">
+      <a href="../../whitepapers/incql_db/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    InQL DB
+    IncQL DB
   </span>
   
 
@@ -3667,36 +3493,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#what-inql-does" class="md-nav__link">
+  <a href="#type-signature-levels" class="md-nav__link">
     <span class="md-ellipsis">
-      What InQL does
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#the-four-naming-forms" class="md-nav__link">
-    <span class="md-ellipsis">
-      The four naming forms
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#schema-shapes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Schema shapes
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#two-authoring-surfaces-v01" class="md-nav__link">
-    <span class="md-ellipsis">
-      Two authoring surfaces (v0.1)
+      Type signature levels
     </span>
   </a>
   
@@ -3718,234 +3517,54 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-what-inql-owns" class="md-nav__link">
+  <a href="#packaging" class="md-nav__link">
     <span class="md-ellipsis">
-      1. What InQL owns
+      Packaging
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-naming-forms" class="md-nav__link">
+  <a href="#type-hierarchy" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Naming forms
+      Type hierarchy
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-current-query-schema" class="md-nav__link">
+  <a href="#static-capability-gating" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Current query schema
+      Static capability gating
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-resolution-rules" class="md-nav__link">
+  <a href="#operation-api-for-lowering-and-direct-use" class="md-nav__link">
     <span class="md-ellipsis">
-      4. Resolution rules
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="4. Resolution rules">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#rule-1-column-is-always-the-primary-input-relation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Rule 1: .column is always the primary input relation
+      Operation API (for lowering and direct use)
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#rule-2-relationcolumn-is-always-the-named-relation" class="md-nav__link">
+  <a href="#execution-backend-boundary" class="md-nav__link">
     <span class="md-ellipsis">
-      Rule 2: relation.column is always the named relation
+      Execution backend boundary
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#rule-3-bare-names-resolve-against-the-current-query-schema-first" class="md-nav__link">
+  <a href="#interaction-with-incan" class="md-nav__link">
     <span class="md-ellipsis">
-      Rule 3: bare names resolve against the current query schema first
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#rule-4-select-alias-visibility" class="md-nav__link">
-    <span class="md-ellipsis">
-      Rule 4: SELECT alias visibility
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#rule-5-ordinary-incan-values-when-no-column-matches" class="md-nav__link">
-    <span class="md-ellipsis">
-      Rule 5: ordinary Incan values when no column matches
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-ambiguity-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. Ambiguity examples
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Ambiguity examples">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#51-outer-binding-vs-query-column" class="md-nav__link">
-    <span class="md-ellipsis">
-      5.1 Outer binding vs query column
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#52-alias-after-projection" class="md-nav__link">
-    <span class="md-ellipsis">
-      5.2 Alias after projection
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#53-joined-relation-stays-explicit" class="md-nav__link">
-    <span class="md-ellipsis">
-      5.3 Joined relation stays explicit
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#6-query-surfaces-and-semantic-equivalence" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. Query surfaces and semantic equivalence
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#7-scope-restriction-column-is-only-valid-in-relational-positions" class="md-nav__link">
-    <span class="md-ellipsis">
-      7. Scope restriction: .column is only valid in relational positions
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#8-schema-shapes" class="md-nav__link">
-    <span class="md-ellipsis">
-      8. Schema shapes
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="8. Schema shapes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#81-fully-typed-dataframet" class="md-nav__link">
-    <span class="md-ellipsis">
-      8.1 Fully typed: DataFrame[T]
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#82-open-ended-model-x-with-openended" class="md-nav__link">
-    <span class="md-ellipsis">
-      8.2 Open-ended: model X with OpenEnded
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#83-dynamic-dataframedynamic" class="md-nav__link">
-    <span class="md-ellipsis">
-      8.3 Dynamic: DataFrame[Dynamic]
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#84-four-schema-shapes" class="md-nav__link">
-    <span class="md-ellipsis">
-      8.4 Four schema shapes
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#85-schema-boundary-validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      8.5 Schema boundary validation
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#9-relationship-to-incan-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      9. Relationship to Incan models
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#10-compilation-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      10. Compilation model
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#11-layer-boundaries" class="md-nav__link">
-    <span class="md-ellipsis">
-      11. Layer boundaries
+      Interaction with Incan
     </span>
   </a>
   
@@ -3967,9 +3586,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#cross-rfc-consistency" class="md-nav__link">
+  <a href="#unified-api-model" class="md-nav__link">
     <span class="md-ellipsis">
-      Cross-RFC consistency
+      Unified API model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trait-naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      Trait naming
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#future-extensibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Future extensibility
     </span>
   </a>
   
@@ -4023,6 +3660,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Design Decisions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resolved
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -4043,426 +3695,286 @@
   
 
 
-<h1 id="inql-rfc-000-language-specification">InQL RFC 000: Language Specification</h1>
+<h1 id="incql-rfc-001-dataset-types-and-carriers-datasett">IncQL RFC 001: Dataset types and carriers (<code>DataSet[T]</code>)</h1>
 <ul>
-<li><strong>Status:</strong> Planned</li>
-<li><strong>Created:</strong> 2026-03-18</li>
+<li><strong>Status:</strong> In Progress</li>
+<li><strong>Created:</strong> 2026-03-22</li>
 <li><strong>Author(s):</strong> Danny Meijer</li>
-<li><strong>Related:</strong> -</li>
-<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/InQL/issues/1">InQL #1</a></li>
+<li><strong>Related:</strong></li>
+<li>IncQL RFC 000 (language specification — naming, schema shapes, layer boundaries)</li>
+<li>Incan compiler — static capability gating enforcement: <a href="https://github.com/encero-systems/incan/issues/187">incan#187</a></li>
+<li>IncQL follow-up when enforcement lands: <a href="https://github.com/encero-systems/IncQL/issues/10">IncQL #10</a></li>
+<li>IncQL aggregate helper semantics follow-up: <a href="https://github.com/encero-systems/IncQL/issues/23">IncQL #23</a></li>
+<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/IncQL/issues/2">IncQL #2</a></li>
 <li><strong>RFC PR:</strong> -</li>
 <li><strong>Written against:</strong> Incan v0.2</li>
-<li><strong>Shipped in:</strong> -</li>
+<li><strong>Shipped in:</strong> —</li>
 </ul>
 <h2 id="summary">Summary</h2>
-<p>InQL is the typed data logic plane for the Incan ecosystem: relational queries, schema-parameterized DataFrame transformations, and backend-neutral logical planning. This RFC is the foundational specification for InQL v0.1. It defines what InQL is and what it owns, the core semantic model, naming forms and resolution rules, schema shapes, the compilation model, and layer boundaries. Companion RFCs address dataset types, plan interchange, query grammar, execution context, and pipe-forward syntax.</p>
+<p>This RFC specifies the <strong>dataset type hierarchy</strong> for IncQL: the traits and concrete types that carry schema-parameterized tabular data through relational pipelines. The hierarchy is rooted in the <strong><code>DataSet[T]</code></strong> trait, split into <strong><code>BoundedDataSet[T]</code></strong> (finite extent) and <strong><code>UnboundedDataSet[T]</code></strong> (streaming/unbounded), with three concrete types: <strong><code>DataFrame[T]</code></strong> (materialized/eager), <strong><code>LazyFrame[T]</code></strong> (deferred plan), and <strong><code>DataStream[T]</code></strong> (streaming). The bounded/unbounded split enables <strong>static capability gating</strong>: operations that require unbounded state are rejected at compile time when the target is unbounded, without requiring a separate streaming API. This RFC also defines the <strong>relational operation API</strong> on <code>DataSet[T]</code> and the <strong>execution backend boundary</strong> so implementations can delegate without exposing engine internals as the author contract.</p>
 <h2 id="core-model">Core model</h2>
-<p>InQL treats all data logic as one relational semantic model exposed through multiple authoring surfaces:</p>
 <ol>
-<li><strong><code>query {}</code> blocks</strong> — SQL-familiar clause surface</li>
-<li><strong><code>DataSet[T]</code> method chains</strong> — programmatic API</li>
+<li><strong><code>DataSet[T]</code></strong> is the root trait — any schema-parameterized tabular data whose row shape is an Incan <code>model</code> <code>T</code>.</li>
+<li><strong><code>BoundedDataSet[T]</code></strong> extends <code>DataSet[T]</code> — data with a finite, known extent. All relational operations are allowed.</li>
+<li><strong><code>UnboundedDataSet[T]</code></strong> extends <code>DataSet[T]</code> — data from a streaming or unbounded source. Operations requiring unbounded state <strong>must</strong> be rejected at compile time.</li>
+<li><strong><code>DataFrame[T]</code></strong> implements <code>BoundedDataSet[T]</code> — materialized/eager result; always bounded.</li>
+<li><strong><code>LazyFrame[T]</code></strong> implements <code>BoundedDataSet[T]</code> — deferred plan over a bounded source; the workhorse for batch pipelines.</li>
+<li><strong><code>DataStream[T]</code></strong> implements <code>UnboundedDataSet[T]</code> — streaming specialization; unbounded.</li>
 </ol>
-<p>These are not separate languages; they are two authoring surfaces over one internal model. A future pipe-forward surface <strong>must</strong> desugar to the same model when introduced.</p>
-<p>That model has four ingredients:</p>
-<ol>
-<li><strong>Lexical Incan scope</strong> — ordinary bindings, imports, constants, and functions visible from the surrounding module or function.</li>
-<li><strong>Relation registry</strong> — the current primary relation plus any named joined relations.</li>
-<li><strong>Current query schema</strong> — the columns currently visible at this stage of the relational plan.</li>
-<li><strong>Published projection aliases</strong> — the output schema produced after a projection boundary.</li>
-</ol>
-<p>The key rule: <strong>in relational clause positions, bare identifiers resolve against the current query schema before lexical Incan bindings.</strong></p>
 <h2 id="motivation">Motivation</h2>
-<p>Relational code in Incan must resolve field access and column names deterministically and statically where the language promises checking. Without a single foundational specification, <code>query {}</code> and method-chain surfaces would drift, schema-shape rules would be inconsistent across carriers, and the boundary between data logic and execution would blur. This RFC consolidates that model so every companion RFC can cite it rather than redefine it, and so that completion of RFCs 000–004 constitutes a usable InQL v0.1.</p>
+<p>Typed pipelines need a first-class carrier for columnar data indexed by <code>T</code>. Without <code>DataSet[T]</code>, relational authoring surfaces would lack a stable primary relation and schema flow for <code>FROM</code>-style entry points. The <strong>bounded/unbounded</strong> distinction — inspired by Spark Structured Streaming's principle that a stream is an unbounded table — must be expressed at the <strong>type level</strong> so the compiler can enforce streaming constraints statically rather than at runtime. An intermediate trait layer (<code>BoundedDataSet</code> / <code>UnboundedDataSet</code>) gives authors clean type signatures for consumers that accept "any batch data" or "any streaming data" without listing concrete types.</p>
 <h2 id="goals">Goals</h2>
 <ul>
-<li>Define what InQL is, what it owns, and what it does not own.</li>
-<li>Establish the core semantic model: one relational model, multiple authoring surfaces.</li>
-<li>Define the four naming forms and resolution rules for identifier binding inside relational contexts.</li>
-<li>Define schema shapes: fully typed, open-ended, and dynamic.</li>
-<li>Define the compilation model: how InQL source flows through the Incan compiler pipeline to portable plans and execution.</li>
-<li>Define layer boundaries: InQL owns typed data logic and logical planning; execution, orchestration, and operational semantics belong to adjacent layers.</li>
-<li>Establish the relationship to Incan models as the schema surface for query authoring and validation.</li>
-<li>State that <code>query {}</code> and method-chain surfaces, when both are present, <strong>must not</strong> change resolution rules relative to each other.</li>
-<li>State that <code>.column</code> is only valid inside relational expression positions — <code>query {}</code> blocks, relational operation arguments (e.g. <code>.filter(...)</code>, <code>.join(...)</code>), and future pipe-forward stages — and is not a general Incan expression form.</li>
+<li>Specify the <strong>trait hierarchy</strong>: <code>DataSet[T]</code> → <code>BoundedDataSet[T]</code> / <code>UnboundedDataSet[T]</code> → concrete types.</li>
+<li>Require <code>T</code> to be carried from Incan <code>model</code> definitions (or an equivalent fixed field bundle) for strongly typed mode.</li>
+<li>Define <strong><code>LazyFrame[T]</code></strong> as the universal deferred plan type for batch relational work.</li>
+<li>Define <strong><code>DataFrame[T]</code></strong> as the materialized/eager result — always bounded; the product of collecting or executing a <code>LazyFrame</code>.</li>
+<li>Define <strong><code>DataStream[T]</code></strong> as the streaming specialization: same operation API through <code>DataSet[T]</code>, but unbounded, enabling compile-time constraint enforcement.</li>
+<li>Define <strong>static capability gating</strong> through the trait hierarchy: <code>BoundedDataSet</code> → all operations; <code>UnboundedDataSet</code> → unbounded-state operations rejected; <code>DataSet</code> → most restrictive (because the concrete kind may be unknown).</li>
+<li>Specify the <strong>relational operation API</strong> on <code>DataSet[T]</code> as the programmatic relational surface (implementations <strong>may</strong> share a lowering path with other authoring surfaces; that is outside the scope of this RFC).</li>
+<li>Specify an <strong>execution backend boundary</strong>: materialize, run plan, or hand off Substrait / IR to a consumer — without mandating a single engine.</li>
 </ul>
 <h2 id="non-goals">Non-Goals</h2>
 <ul>
-<li>Dataset types, carriers, and the trait hierarchy (<code>DataSet[T]</code>, <code>BoundedDataSet[T]</code>, <code>UnboundedDataSet[T]</code>) — InQL RFC 001.</li>
-<li>Apache Substrait plan interchange and <code>Rel</code>-level mapping — InQL RFC 002.</li>
-<li><code>query {}</code> grammar, clause inventory, and typechecking — InQL RFC 003.</li>
-<li>Execution context, session, DataFusion, read/write — InQL RFC 004.</li>
-<li>Pipe-forward (<code>|&gt;</code>) syntax — InQL RFC 005 (not in v0.1 scope).</li>
-<li>Orchestration, workflows, quality gates, contract enforcement — execution and operational layers.</li>
-<li>Governed business meaning and semantic serving — semantic layer.</li>
-<li>Cluster-scale scheduling, distributed fault tolerance — orchestration layer.</li>
+<li>Normative naming rules (four naming forms, current query schema, resolution order) — IncQL RFC 000.</li>
+<li>Apache Substrait <code>Rel</code>-level mapping and extension policy — IncQL RFC 002.</li>
+<li>Clause-based relational grammar, aggregate rules, Substrait lowering from that surface — IncQL RFC 003.</li>
+<li>Execution context, session, DataFusion — IncQL RFC 004.</li>
+<li>Pipe-forward (<code>|&gt;</code>) grammar — IncQL RFC 005 (not in v0.1 scope).</li>
+<li>Cluster-scale scheduling, shuffle, distributed fault tolerance — orchestration layer.</li>
+<li>Drop-in API compatibility with Apache Beam, Flink, or Spark SDKs.</li>
 </ul>
 <h2 id="guide-level-explanation">Guide-level explanation</h2>
-<h3 id="what-inql-does">What InQL does</h3>
-<p>InQL lets authors express typed data logic — queries, transformations, aggregations, joins — against schema-parameterized datasets, with compile-time validation and backend-neutral logical plans. Authors write relational intent; the compiler checks it against <code>model</code> schemas; the toolchain lowers it to a portable plan (Apache Substrait) that an execution context can optimize and run.</p>
-<h3 id="the-four-naming-forms">The four naming forms</h3>
-<p>When you write <code>.amount</code>, <code>amount</code>, <code>orders.amount</code>, or <code>total_spend</code> inside an InQL query, what exactly are you referring to?</p>
-<p>InQL has four distinct naming forms, and the answer depends on which one you're using:</p>
-<ul>
-<li><code>.column</code> — the field from the current input relation</li>
-<li><code>relation.column</code> — the field from a named joined relation</li>
-<li>bare <code>column</code> — a column currently visible in the query schema</li>
-<li>an ordinary Incan name — a binding, function, or constant from the surrounding code</li>
-</ul>
-<p>Here are all four forms in one query:</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="n">threshold</span> <span class="o">=</span> <span class="mi">1000</span>
+<p>Authors import dataset types from the IncQL package and parameterize with a <code>model</code>:</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-<span class="k">query</span> <span class="p">{</span>
-    <span class="k">FROM</span> <span class="n">orders</span>
-    <span class="k">JOIN</span> <span class="n">customers</span> <span class="k">ON</span> <span class="o">.</span><span class="n">customer_id</span> <span class="o">==</span> <span class="n">customers</span><span class="o">.</span><span class="n">id</span>
-    <span class="k">WHERE</span> <span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="n">threshold</span>
-    <span class="k">SELECT</span>
-        <span class="o">.</span><span class="n">order_id</span><span class="p">,</span>
-        <span class="n">customers</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-        <span class="o">.</span><span class="n">amount</span><span class="p">,</span>
-<span class="p">}</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_orders</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
+    <span class="o">...</span>
 </code></pre></div>
-<p><code>.amount</code> and <code>.customer_id</code> are form 1 (primary relation). <code>customers.name</code> is form 2 (named join). <code>threshold</code> is form 4 (ordinary Incan binding — no column by that name exists in the query schema).</p>
-<p>If you remember only five things about InQL naming:</p>
-<ol>
-<li><code>.column</code> is explicit access to the current input relation.</li>
-<li><code>relation.column</code> is explicit access to a named joined relation.</li>
-<li>Bare names resolve to the current query schema first. When a bare name shadows an outer binding, the compiler warns and suggests the <code>.column</code> form.</li>
-<li>Projection aliases are visible to later expressions in the same <code>SELECT</code> list (in order) and to all following clauses.</li>
-<li>If no column matches, ordinary Incan bindings may still be used where the grammar allows ordinary expressions.</li>
-</ol>
-<h3 id="schema-shapes">Schema shapes</h3>
-<p>InQL supports several schema modes without losing its semantic model:</p>
-<ul>
-<li><strong>Fully typed</strong> (<code>DataFrame[Order]</code>) — the compiler knows every field name, type, and nullability. This is the strongest and most ergonomic mode.</li>
-<li><strong>Open-ended</strong> (<code>DataFrame[Event]</code> where <code>Event</code> is declared <code>with OpenEnded</code>) — declared fields are fully typed; undeclared fields become soft-runtime references with a warning.</li>
-<li><strong>Dynamic</strong> (<code>DataFrame[Dynamic]</code>) — full field resolution is runtime-driven, but the compiler still tracks a lower-bound structural surface (minimum required inputs, minimum guaranteed outputs).</li>
-</ul>
-<h3 id="two-authoring-surfaces-v01">Two authoring surfaces (v0.1)</h3>
-<p>The examples in this section assume aggregate helpers such as <code>sum</code> are imported from <code>pub::inql.functions</code> (they are not ambient builtins).</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">sum</span>
+<p>They compose data using methods exposed through the <code>DataSet[T]</code> trait:</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-<span class="c1"># query {} blocks</span>
-<span class="k">query</span> <span class="p">{</span>
-    <span class="k">FROM</span> <span class="n">orders</span>
-    <span class="k">WHERE</span> <span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span>
-    <span class="k">GROUP</span> <span class="k">BY</span> <span class="o">.</span><span class="n">region</span>
-    <span class="k">SELECT</span> <span class="n">region</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total</span>
-<span class="p">}</span>
-
-<span class="c1"># method chains</span>
-<span class="n">orders</span>
-    <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="o">.</span><span class="n">region</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">high_value_orders</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="n">orders</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">)</span>
 </code></pre></div>
-<p>These lower to the same relational plan. Identifier resolution rules do not change between them.</p>
+<p>Authors can derive computed columns through <code>with_column(...)</code>:</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">int_expr</span><span class="o">,</span><span class="w"> </span><span class="nn">mul</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">enrich_orders</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="n">orders</span><span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;amount_x2&quot;</span><span class="p">,</span> <span class="n">mul</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">),</span> <span class="n">int_expr</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
+</code></pre></div>
+<p>Because <code>DataStream[T]</code> shares the same operation API, streaming code looks identical — only the type signature changes:</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">DataStream</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Event</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">important_events</span><span class="p">(</span><span class="n">events</span><span class="p">:</span> <span class="nc">DataStream</span><span class="p">[</span><span class="nc">Event</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nc">DataStream</span><span class="p">[</span><span class="nc">Event</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="n">events</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="o">.</span><span class="n">severity</span> <span class="o">==</span> <span class="s2">&quot;critical&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="type-signature-levels">Type signature levels</h3>
+<p>The trait hierarchy gives authors three levels of specificity:</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">DataSet</span><span class="o">,</span><span class="w"> </span><span class="nn">BoundedDataSet</span><span class="o">,</span><span class="w"> </span><span class="nn">UnboundedDataSet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span><span class="p">,</span> <span class="nc">Event</span>
+
+<span class="c1"># Accepts any carrier — generic utilities</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">row_count</span><span class="p">[</span><span class="nc">T</span><span class="p">](</span><span class="n">data</span><span class="p">:</span> <span class="kt">DataSet</span><span class="p">[</span><span class="nc">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="o">...</span>
+
+<span class="c1"># Batch only — Parquet writers, batch sinks</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_parquet</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nc">BoundedDataSet</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="o">...</span>
+
+<span class="c1"># Streaming only — Kafka sinks, event processors</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_to_kafka</span><span class="p">(</span><span class="n">events</span><span class="p">:</span> <span class="nc">UnboundedDataSet</span><span class="p">[</span><span class="nc">Event</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="o">...</span>
+</code></pre></div>
+<p>And two levels of concrete-type specificity:</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">DataFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">DataStream</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span><span class="p">,</span> <span class="nc">Summary</span><span class="p">,</span> <span class="nc">Event</span><span class="p">,</span> <span class="nc">Alert</span>
+
+<span class="c1"># Materialized data in hand</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">inspect</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="kt">DataFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="o">...</span>
+
+<span class="c1"># Deferred plan — compose before execution</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_pipeline</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Summary</span><span class="p">]:</span>
+    <span class="o">...</span>
+
+<span class="c1"># Streaming specifically</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_stream</span><span class="p">(</span><span class="n">events</span><span class="p">:</span> <span class="nc">DataStream</span><span class="p">[</span><span class="nc">Event</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nc">DataStream</span><span class="p">[</span><span class="nc">Alert</span><span class="p">]:</span>
+    <span class="o">...</span>
+</code></pre></div>
 <h2 id="reference-level-explanation">Reference-level explanation</h2>
-<h3 id="1-what-inql-owns">1. What InQL owns</h3>
-<p>InQL owns the data-logic concerns of the platform:</p>
+<h3 id="packaging">Packaging</h3>
 <ul>
-<li>query authoring</li>
-<li>relational plan construction</li>
-<li>column and alias resolution</li>
-<li>schema flow through query stages</li>
-<li>typed DataFrame semantics</li>
-<li>backend-neutral logical planning</li>
+<li>The dataset types and traits in this RFC <strong>must</strong> be exposed from a buildable Incan library package with public exports.</li>
+<li>This RFC <strong>may</strong> require vocabulary only for symbols strictly needed for the dataset API surface; vocabulary for other IncQL authoring surfaces is a separate concern.</li>
 </ul>
-<p>It <strong>must not</strong> become:</p>
+<h3 id="type-hierarchy">Type hierarchy</h3>
+<div class="language-text highlight"><pre><span></span><code>DataSet[T]                       (root trait — any tabular data)
+├── BoundedDataSet[T]            (trait — finite extent)
+│   ├── DataFrame[T]             (concrete — materialized/eager)
+│   └── LazyFrame[T]             (concrete — deferred plan, bounded source)
+└── UnboundedDataSet[T]          (trait — streaming/unbounded)
+    └── DataStream[T]            (concrete — streaming)
+</code></pre></div>
 <ul>
-<li>an orchestration or pipeline framework</li>
-<li>a semantic catalog or governed business-meaning layer</li>
-<li>an execution runtime that swallows runner and adapter concerns</li>
-<li>a catch-all engine abstraction</li>
+<li><strong><code>DataSet[T]</code></strong> is the root trait. All relational operations are defined here. The compiler <strong>must</strong> apply the <strong>most restrictive</strong> constraint set when the concrete kind is unknown at a call site (because the argument might be unbounded).</li>
+<li><strong><code>BoundedDataSet[T]</code></strong> extends <code>DataSet[T]</code>. All relational operations are allowed without streaming constraints.</li>
+<li><strong><code>UnboundedDataSet[T]</code></strong> extends <code>DataSet[T]</code>. Operations requiring unbounded state <strong>must</strong> be rejected at compile time.</li>
+<li><strong><code>DataFrame[T]</code></strong> implements <code>BoundedDataSet[T]</code>. Always bounded. Conceptually the product of collecting or executing a <code>LazyFrame</code>. Concrete runtime representation is implementation-defined but <strong>must</strong> preserve <code>T</code> in the type system.</li>
+<li><strong><code>LazyFrame[T]</code></strong> implements <code>BoundedDataSet[T]</code>. Holds a logical plan (or equivalent) until an explicit execute, collect, or write boundary. Always bounded.</li>
+<li><strong><code>DataStream[T]</code></strong> implements <code>UnboundedDataSet[T]</code>. Shares the <code>DataSet[T]</code> operation API but signals that its source is unbounded. The compiler <strong>must</strong> apply static streaming constraints.</li>
 </ul>
-<p>Its job is to preserve one deterministic, type-aware model of data intent across authoring surfaces.</p>
-<h3 id="2-naming-forms">2. Naming forms</h3>
-<p>Inside InQL relational contexts there are four distinct naming forms:</p>
-<ol>
-<li>
-<p><strong><code>.column</code></strong> (primary relation)
-    Explicit field access against the current input relation. In <code>query {}</code>, that is the relation established by <code>FROM</code> for <code>.column</code> positions — including after <code>JOIN</code>. <code>.column</code> does not refer to joined relations.</p>
-</li>
-<li>
-<p><strong><code>relation.column</code></strong> (named relation)
-    Explicit field access against a named relation (e.g. a <code>JOIN</code> alias). <code>relation</code> is the relation name; <code>column</code> is the field on that relation's row type.</p>
-</li>
-<li>
-<p><strong>Bare <code>column</code></strong>
-    A bare identifier interpreted as a column in the current query schema (see §3), in relational clause positions.</p>
-</li>
-<li>
-<p><strong>Ordinary Incan binding</strong>
-    Lexical bindings, functions, constants, imports, and other symbols that are not query-schema columns. Used when the grammar allows a general Incan expression and a bare name does not resolve as a column (§4.5).</p>
-</li>
-</ol>
-<p>The syntax is asymmetric by design:</p>
+<p>The three concrete types <strong>must not</strong> imply three unrelated relational languages. All operations are defined on <code>DataSet[T]</code>; the bounded/unbounded distinction is a type-level property that enables or restricts specific operations statically.</p>
+<h3 id="static-capability-gating">Static capability gating</h3>
+<table>
+<thead>
+<tr>
+<th>Trait bound in signature</th>
+<th>Allowed operations</th>
+<th>Constraint level</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DataSet[T]</code></td>
+<td>Intersection of bounded + unbounded capabilities</td>
+<td>Most restrictive (concrete kind unknown)</td>
+</tr>
+<tr>
+<td><code>BoundedDataSet[T]</code></td>
+<td>All relational operations</td>
+<td>Unrestricted</td>
+</tr>
+<tr>
+<td><code>UnboundedDataSet[T]</code></td>
+<td>Relational operations minus unbounded-state operations</td>
+<td>Streaming constraints enforced</td>
+</tr>
+</tbody>
+</table>
+<p>When a function accepts <code>DataSet[T]</code> (the root trait), the compiler <strong>must</strong> enforce streaming constraints because the input <strong>might</strong> be unbounded. Authors who want the full operation set <strong>must</strong> accept <code>BoundedDataSet[T]</code> or a concrete bounded type.</p>
+<p>For <code>UnboundedDataSet[T]</code>, the governing rule is semantic rather than ad hoc: operations that require end-of-input semantics or unbounded retained state are not valid unless a later RFC gives them bounded-state semantics. In v0.1, the obvious disallowed examples include global <code>order_by</code>, global <code>limit</code>, unwindowed <code>group_by</code> / <code>agg</code>, eager materialization to a finite <code>DataFrame[T]</code>, and finite file writes.</p>
+<h3 id="operation-api-for-lowering-and-direct-use">Operation API (for lowering and direct use)</h3>
+<p>The IncQL library <strong>must</strong> expose the following instance methods on <code>DataSet[T]</code> (exact signatures may live in companion library docs; semantics <strong>must</strong> match this table and stay consistent with any normative lowering rules for the same logical operators elsewhere in IncQL). Method names are illustrative; implementations <strong>may</strong> use equivalent spellings if the compiler maps them consistently.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>filter</code></strong></td>
+<td>Restrict rows by an explicit predicate builder in the current package slice (for example <code>eq(col("status"), str_lit("open"))</code>), with future sugar lowering to the same semantic target.</td>
+</tr>
+<tr>
+<td><strong><code>join</code></strong></td>
+<td>Combine with another <code>DataSet[U]</code> on a join condition; named relations for <code>relation.column</code></td>
+</tr>
+<tr>
+<td><strong><code>select</code></strong></td>
+<td>Project columns and expressions; output row type becomes a new schema <code>U</code> the typechecker can track.</td>
+</tr>
+<tr>
+<td><strong><code>with_column</code></strong></td>
+<td>Add or replace one projected column by name using an explicit projection builder expression.</td>
+</tr>
+<tr>
+<td><strong><code>group_by</code></strong></td>
+<td>Define grouping keys for aggregation; keys are relational expressions.</td>
+</tr>
+<tr>
+<td><strong><code>agg</code></strong></td>
+<td>Apply aggregate functions over groups (often chained after <code>group_by</code>); produces grouped/aggregated schema.</td>
+</tr>
+<tr>
+<td><strong><code>order_by</code></strong></td>
+<td>Define sort keys and directions.</td>
+</tr>
+<tr>
+<td><strong><code>limit</code></strong></td>
+<td>Cap the number of rows (after sort when both apply).</td>
+</tr>
+<tr>
+<td><strong><code>explode</code></strong></td>
+<td>Expand a nested list column into rows (or equivalent).</td>
+</tr>
+</tbody>
+</table>
+<p>Additional requirements:</p>
 <ul>
-<li><code>.column</code> — "field from the current input relation."</li>
-<li><code>relation.column</code> — "field from that named relation."</li>
-<li>bare <code>column</code> — "column visible at this stage of the query."</li>
+<li>Operations <strong>must</strong> preserve or update <code>T</code> (or output model <code>U</code>) in a way the typechecker can verify.</li>
+<li>Operations that are statically invalid on <code>UnboundedDataSet[T]</code> (e.g. unbounded-state operations) <strong>must</strong> produce compile-time errors, not runtime failures.</li>
+<li>Aggregate helpers used with <code>.agg(...)</code> are imported library symbols (from <code>pub::incql.functions</code>), not ambient builtins.</li>
+<li>The minimum required aggregate-helper surface for the current package slice is <code>col</code>, <code>sum</code>, and <code>count</code>.</li>
+<li>The current IncQL-only implementation uses <code>col(...)</code> builders as the semantic target that later <code>.column</code> sugar and query-block lowering should compile to.</li>
+<li>The current IncQL-only projection implementation uses <code>with_column(name, expr)</code> plus projection builders such as <code>add(...)</code>, <code>mul(...)</code>, and <code>int_expr(...)</code> as the semantic target that later projection sugar should compile to.</li>
+<li>This RFC defines the minimum required aggregate-function import model for <code>.agg(...)</code>; it is not an exhaustive catalog of all present or future IncQL functions. Additional functions <strong>may</strong> be added later through additive library evolution or follow-up RFCs, provided they do not change the semantics of the required set defined by the IncQL RFC suite.</li>
 </ul>
-<p>That split keeps a SQL-familiar surface while preserving static checking.</p>
-<h3 id="3-current-query-schema">3. Current query schema</h3>
-<p>Every stage of a <code>query {}</code> block has a current query schema: the set of column names (and their types) that bare identifiers may denote in relational positions.</p>
-<p>It evolves top to bottom, including at least:</p>
+<h3 id="execution-backend-boundary">Execution backend boundary</h3>
 <ul>
-<li><code>FROM</code> establishes the base schema of the primary relation.</li>
-<li><code>JOIN</code> adds named secondary relations; <code>relation.column</code> disambiguates fields from those relations.</li>
-<li><code>GROUP BY</code> constrains what may appear unaggregated in subsequent <code>SELECT</code>.</li>
-<li><code>WINDOW BY</code> (or equivalent) may extend the schema with computed columns.</li>
-<li><code>SELECT ... as alias</code> produces a new output schema for following clauses.</li>
-<li>Clauses after <code>SELECT</code> (e.g. post-<code>SELECT</code> filters, <code>ORDER BY</code>) see the schema produced by the preceding <code>SELECT</code>.</li>
+<li>Implementations <strong>must</strong> separate the author-facing <code>DataSet</code> API from engine-specific code (Rust crates, Substrait consumers, etc.).</li>
+<li>Substrait consumption or emission at the collection/plan layer <strong>may</strong> be specified here as optional; the Substrait contract (IncQL RFC 002) governs plan semantics. If more than one relational authoring surface emits Substrait, they <strong>must not</strong> produce contradictory plans for the same logical pipeline.</li>
+<li>The execution context owns the session, plan optimization, and concrete execution backend (DataFusion as reference implementation).</li>
+<li>Materialization helpers such as <code>collect(data)</code> or <code>display(data)</code> belong to the execution context and concrete implementation model, not to the <code>DataSet[T]</code> trait surface defined in this RFC.</li>
 </ul>
-<p>Example (illustrative):</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
-    <span class="k">FROM</span> <span class="n">orders</span>
-    <span class="k">GROUP</span> <span class="k">BY</span> <span class="o">.</span><span class="n">customer_id</span>
-    <span class="k">SELECT</span>
-        <span class="n">customer_id</span><span class="p">,</span>
-        <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_spend</span><span class="p">,</span>
-    <span class="k">WHERE</span> <span class="n">total_spend</span> <span class="o">&gt;</span> <span class="mi">1000</span>
-    <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">total_spend</span> <span class="k">DESC</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><code>total_spend</code> in the later <code>WHERE</code> and <code>ORDER BY</code> is not an outer Incan variable. It is a column in the current query schema produced by the preceding <code>SELECT</code>.</p>
-<h3 id="4-resolution-rules">4. Resolution rules</h3>
-<h4 id="rule-1-column-is-always-the-primary-input-relation">Rule 1: <code>.column</code> is always the primary input relation</h4>
-<p><code>.status</code> denotes the <code>status</code> field on the primary relation from <code>FROM</code>, including after <code>JOIN</code>. <code>.column</code> does not refer to joined relations; use <code>relation.column</code> for those.</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
-    <span class="k">FROM</span> <span class="n">orders</span>
-    <span class="k">WHERE</span> <span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;completed&quot;</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>Here <code>.status</code> is <code>orders.status</code>.</p>
-<h4 id="rule-2-relationcolumn-is-always-the-named-relation">Rule 2: <code>relation.column</code> is always the named relation</h4>
-<p>Joined fields <strong>must</strong> use <code>alias.column</code> when referring to the joined relation's fields.</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
-    <span class="k">FROM</span> <span class="n">orders</span>
-    <span class="k">JOIN</span> <span class="n">customers</span> <span class="k">ON</span> <span class="o">.</span><span class="n">customer_id</span> <span class="o">==</span> <span class="n">customers</span><span class="o">.</span><span class="n">id</span>
-    <span class="k">SELECT</span>
-        <span class="o">.</span><span class="n">order_id</span><span class="p">,</span>
-        <span class="n">customers</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-        <span class="o">.</span><span class="n">amount</span><span class="p">,</span>
-<span class="p">}</span>
-</code></pre></div>
-<h4 id="rule-3-bare-names-resolve-against-the-current-query-schema-first">Rule 3: bare names resolve against the current query schema first</h4>
-<p>In relational clause positions, a bare identifier <strong>must</strong> resolve against the current query schema before ordinary lexical Incan bindings are considered, when a matching column exists.</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
-    <span class="k">FROM</span> <span class="n">orders</span>
-    <span class="k">SELECT</span> <span class="n">customer_id</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_spend</span>
-    <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">total_spend</span> <span class="k">DESC</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>Query text reads as relational logic, not a competition between relational names and outer variables. If an outer Incan binding shares a name with a query column, the column wins in those positions.</p>
-<h4 id="rule-4-select-alias-visibility">Rule 4: <code>SELECT</code> alias visibility</h4>
-<p>Aliases introduced in a <code>SELECT</code> list are available to subsequent expressions in the same projection list, in order. An alias defined on line N is visible to expressions on lines N+1, N+2, etc., but not to expressions that precede it. Aliases also become part of the output schema for all following clauses (<code>ORDER BY</code>, post-<code>SELECT WHERE</code>, etc.).</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
-    <span class="k">FROM</span> <span class="n">orders</span>
-    <span class="k">SELECT</span>
-        <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_spend</span><span class="p">,</span>
-        <span class="n">total_spend</span> <span class="o">*</span> <span class="mf">0.2</span> <span class="k">as</span> <span class="n">tax</span><span class="p">,</span>
-    <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">total_spend</span> <span class="k">DESC</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>Here <code>tax</code> may reference <code>total_spend</code> because <code>total_spend</code> is defined earlier in the same <code>SELECT</code> list. <code>total_spend</code> in <code>ORDER BY</code> refers to the projected column. This follows the lateral column alias convention used by DuckDB, Snowflake, and MySQL. Exact lowering semantics (e.g. inline expression rewriting for Substrait) are specified by the query grammar.</p>
-<h4 id="rule-5-ordinary-incan-values-when-no-column-matches">Rule 5: ordinary Incan values when no column matches</h4>
-<p>If a bare identifier does not resolve to a query schema column, it <strong>may</strong> resolve as an ordinary Incan binding or value where the grammar allows a full Incan expression.</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="n">threshold</span> <span class="o">=</span> <span class="mi">1000</span>
-
-<span class="k">query</span> <span class="p">{</span>
-    <span class="k">FROM</span> <span class="n">orders</span>
-    <span class="k">WHERE</span> <span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="n">threshold</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><code>threshold</code> is not a column; it resolves as the surrounding binding. This is how InQL stays composable with the rest of Incan instead of becoming an isolated mini-language.</p>
-<h3 id="5-ambiguity-examples">5. Ambiguity examples</h3>
-<h4 id="51-outer-binding-vs-query-column">5.1 Outer binding vs query column</h4>
-<div class="language-incan highlight"><pre><span></span><code><span class="n">customer_id</span> <span class="o">=</span> <span class="s2">&quot;debug-value&quot;</span>
-
-<span class="k">query</span> <span class="p">{</span>
-    <span class="k">FROM</span> <span class="n">orders</span>
-    <span class="k">SELECT</span> <span class="n">customer_id</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><code>customer_id</code> resolves to the query column, not the outer variable, because relational schema names win in relational clause positions. When an outer binding of the same name exists, the typechecker emits a warning and suggests the explicit form:</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
-    <span class="k">FROM</span> <span class="n">orders</span>
-    <span class="k">SELECT</span> <span class="o">.</span><span class="n">customer_id</span>
-<span class="p">}</span>
-</code></pre></div>
-<h4 id="52-alias-after-projection">5.2 Alias after projection</h4>
-<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
-    <span class="k">FROM</span> <span class="n">orders</span>
-    <span class="k">SELECT</span>
-        <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_spend</span><span class="p">,</span>
-    <span class="k">WHERE</span> <span class="n">total_spend</span> <span class="o">&gt;</span> <span class="mi">1000</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><code>total_spend</code> in <code>WHERE</code> is the projected column from the preceding <code>SELECT</code>.</p>
-<h4 id="53-joined-relation-stays-explicit">5.3 Joined relation stays explicit</h4>
-<div class="language-incan highlight"><pre><span></span><code><span class="k">query</span> <span class="p">{</span>
-    <span class="k">FROM</span> <span class="n">orders</span>
-    <span class="k">JOIN</span> <span class="n">customers</span> <span class="k">ON</span> <span class="o">.</span><span class="n">customer_id</span> <span class="o">==</span> <span class="n">customers</span><span class="o">.</span><span class="n">id</span>
-    <span class="k">SELECT</span>
-        <span class="n">customer_id</span><span class="p">,</span>
-        <span class="n">customers</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>Bare <code>customer_id</code> is the current schema column; <code>customers.name</code> stays explicit because it comes from a named joined relation.</p>
-<h3 id="6-query-surfaces-and-semantic-equivalence">6. Query surfaces and semantic equivalence</h3>
-<p>These are two surfaces over the same relational model. Identifier resolution rules do not change across them — only the syntactic setup changes.</p>
-<ol>
-<li>
-<p><code>query {}</code>
-    The SQL-familiar, clause-oriented surface.</p>
-</li>
-<li>
-<p>Collection method chains
-    The method-chain surface:</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="n">orders</span>
-    <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="o">.</span><span class="n">region</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total</span><span class="p">)</span>
-</code></pre></div>
-</li>
-</ol>
-<p><strong>Normative:</strong> wherever multiple surfaces are supported, identifier resolution (§§2–4) <strong>must</strong> be identical across them.</p>
-<p>A future pipe-forward surface is deferred from v0.1 but <strong>must</strong> also share the same resolution rules when introduced.</p>
-<h3 id="7-scope-restriction-column-is-only-valid-in-relational-positions">7. Scope restriction: <code>.column</code> is only valid in relational positions</h3>
-<p><code>.field</code> is <strong>not</strong> a general Incan expression form. It is only valid inside <strong>relational expression positions</strong>:</p>
+<h3 id="interaction-with-incan">Interaction with Incan</h3>
 <ul>
-<li>Inside a <code>query {}</code> block (any clause position that permits a relational expression).</li>
-<li>As an argument to a relational operation on a <code>DataSet[T]</code> value (e.g. <code>.filter(.amount &gt; 100)</code> — here <code>.amount</code> is in a relational argument position).</li>
-<li>Inside a future pipe-forward stage.</li>
+<li>Models supply field names and types for <code>T</code>.</li>
+<li>Rust interop is expected for backends until stdlib covers execution.</li>
 </ul>
-<p>Using <code>.field</code> outside these contexts <strong>must</strong> be a compile-time error. This keeps the dot notation unambiguous: wherever <code>.field</code> appears, there is always a well-defined primary relation that supplies the field type.</p>
-<h3 id="8-schema-shapes">8. Schema shapes</h3>
-<p>InQL needs to support several schema modes without losing its semantic model.</p>
-<h4 id="81-fully-typed-dataframet">8.1 Fully typed: <code>DataFrame[T]</code></h4>
-<p><code>DataFrame[T]</code> carries the full field-level schema through compilation. <code>.filter(.amount &gt; 100)</code> can validate <code>amount</code> exists and has a compatible type; projection can produce a new typed output shape; grouping and aggregation can be validated against the schema.</p>
-<p>When <code>T</code> is an Incan model that participates in contract semantics upstream, InQL <strong>should</strong> treat it first as a schema surface: query checking uses the model's fields and types; projection and output typing flow from that model shape.</p>
-<h4 id="82-open-ended-model-x-with-openended">8.2 Open-ended: <code>model X with OpenEnded</code></h4>
-<p>For models declared as:</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="k">model</span> <span class="nc">Event</span> <span class="k">with</span> <span class="nc">OpenEnded</span><span class="p">:</span>
-    <span class="n">event_id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">occurred_at</span><span class="p">:</span> <span class="n">datetime</span>
-    <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span>
-</code></pre></div>
-<p>the declared fields remain fully typed while undeclared fields become soft-runtime references.</p>
-<ul>
-<li>closed <code>model X:</code> → declared fields are the complete schema surface</li>
-<li><code>model X with OpenEnded:</code> → declared fields are the minimum guaranteed schema surface; additional runtime fields <strong>may</strong> exist</li>
-</ul>
-<p>Operationally:</p>
-<ul>
-<li>declared field → checked normally</li>
-<li>undeclared field → warning plus soft-runtime field node</li>
-</ul>
-<p><code>OpenEnded</code> <strong>should</strong> be treated as a compiler-known marker with schema-shaping semantics, not as an ordinary user-defined behavioral trait.</p>
-<h4 id="83-dynamic-dataframedynamic">8.3 Dynamic: <code>DataFrame[Dynamic]</code></h4>
-<p>For untyped DataFrames, the compiler still tracks relational plan shape, but full field resolution becomes runtime-driven.</p>
-<p>Even for <code>DataFrame[Dynamic]</code>, the compiler <strong>should</strong> infer a <strong>lower-bound structural surface</strong>:</p>
-<ul>
-<li>the <strong>minimum required input surface</strong>: columns that <strong>must</strong> exist because the query reads or references them</li>
-<li>the <strong>minimum guaranteed output surface</strong>: columns that the query definitely preserves or creates</li>
-</ul>
-<p>So if a query over <code>DataFrame[Dynamic]</code> reads <code>.foo</code> and then projects <code>.foo</code> plus <code>bar = some_expr(...)</code>, the compiler <strong>should</strong> be able to say: input surface is at least <code>{foo}</code>; output surface is at least <code>{foo, bar}</code>.</p>
-<p>Operationally:</p>
-<ul>
-<li><code>.column</code> lowers to a runtime column reference annotated with a required-field dependency</li>
-<li>field-not-found errors do not exist at compile time</li>
-<li>type-driven coercions from model metadata are not inserted</li>
-</ul>
-<h4 id="84-four-schema-shapes">8.4 Four schema shapes</h4>
-<p>Once both openness and subscription are allowed, InQL recognizes four common schema shapes:</p>
-<ol>
-<li><strong>Closed local</strong> — a plain local model. Declared fields are the complete schema surface.</li>
-<li><strong>Open local</strong> — a local model <code>with OpenEnded</code>. Declared fields are the minimum guaranteed schema surface.</li>
-<li><strong>Closed subscribed or projected view</strong> — a consumer model that projects an upstream model into an exact local view.</li>
-<li><strong>Open subscribed or projected view</strong> — a consumer model that projects an upstream model but remains open-ended.</li>
-</ol>
-<p>This 2x2 framing separates two concerns cleanly:</p>
-<ul>
-<li><strong>completeness</strong>: closed vs open-ended</li>
-<li><strong>provenance</strong>: local vs subscribed or projected</li>
-</ul>
-<p>InQL <strong>should</strong> be able to reason about all four shapes using the same core machinery: known guaranteed fields, openness of the schema surface, and provenance of fields where available.</p>
-<h4 id="85-schema-boundary-validation">8.5 Schema boundary validation</h4>
-<p>When a boundary exists between untyped and typed DataFrames in pipeline wiring, the platform <strong>should</strong> insert a runtime schema validation check that ensures expected fields exist, types are compatible, nullability is compatible, and collects mismatches into one diagnostic.</p>
-<p>Where lower-bound structural surfaces are available, the compiler <strong>should</strong> use them before runtime to detect obviously incompatible wiring and to distinguish "definitely required" columns from merely possible runtime columns.</p>
-<h3 id="9-relationship-to-incan-models">9. Relationship to Incan models</h3>
-<p>InQL does not invent its own schema-definition system. It relies on Incan models as the typed schema surface for query authoring and validation.</p>
-<p>An Incan model gives InQL:</p>
-<ul>
-<li>field names</li>
-<li>field types</li>
-<li>nullability</li>
-<li>structural shape for joins, projections, and outputs</li>
-</ul>
-<p>InQL <strong>must not</strong> redefine schema language or model declarations; it consumes models as-is. Subscription and compatibility semantics (narrowing, widening, blast radius) belong in the operational and contract layers above InQL, not in InQL itself. InQL <strong>may</strong> surface subscription-derived schema information during typechecking and planning, but the declaration and enforcement model belongs to the contract layer.</p>
-<h3 id="10-compilation-model">10. Compilation model</h3>
-<p>InQL queries follow the same broad compiler pipeline as ordinary Incan code, with query-specific stages for relational planning:</p>
-<div class="language-text highlight"><pre><span></span><code>InQL source
-  → parser and AST
-  → typechecker (name resolution, schema flow, type inference)
-  → InQL IR (relational operators, typed expressions)
-  → Substrait emission
-  → execution context optimization and execution
-</code></pre></div>
-<p>The user-facing query model stays stable while the lower layers evolve: AST shape may change, IR may change, Substrait maturity may improve, and execution backend implementations may change. The author should still be expressing the same typed data intent.</p>
-<h3 id="11-layer-boundaries">11. Layer boundaries</h3>
-<p>The boundaries matter:</p>
-<ul>
-<li><strong>Incan</strong> owns the shared language, type system, modules, traits, compile-time safety, and the core <code>model</code> type definitions that queries use as schemas.</li>
-<li><strong>InQL</strong> owns typed data logic, relational semantics, schema flow, and logical planning.</li>
-<li><strong>Execution layer</strong> owns runners, workflows, adapters, quality enforcement, contract enforcement, and operational workload semantics.</li>
-<li><strong>Semantic layer</strong> owns governed business meaning and semantic-serving abstractions.</li>
-</ul>
-<p>InQL sits above the language core and below execution, semantics, and product layers.</p>
 <h2 id="design-details">Design details</h2>
-<h3 id="cross-rfc-consistency">Cross-RFC consistency</h3>
+<h3 id="unified-api-model">Unified API model</h3>
+<p>The design draws on Spark Structured Streaming's core insight: a stream is an unbounded table. Rather than defining separate operation APIs for batch and streaming, <code>DataSet[T]</code> provides one relational operation surface. The bounded/unbounded property is expressed through the type system (<code>BoundedDataSet</code> vs <code>UnboundedDataSet</code>), allowing the compiler to enforce streaming constraints statically — an improvement over Spark's runtime <code>AnalysisException</code> approach.</p>
+<h3 id="trait-naming">Trait naming</h3>
 <ul>
-<li>All companion InQL RFCs <strong>must</strong> stay consistent with this document for naming forms, current query schema behavior, resolution order, schema shapes, and the relational-position restriction on <code>.column</code> described in §§2–7.</li>
-<li>Extensions in companion RFCs <strong>must not</strong> contradict these rules without an explicit amendment to this RFC.</li>
-<li>Any future authoring surface (including pipe-forward), when introduced, <strong>must</strong> desugar to the same semantic model and <strong>must not</strong> change identifier resolution rules.</li>
+<li><strong><code>DataSet[T]</code></strong> is IncQL's root trait for any schema-parameterized relational carrier. It is intentionally aligned with the Spark notion of a typed <code>Dataset</code>, but spelled <code>DataSet</code> for Incan style.</li>
+<li><strong><code>DataFrame[T]</code></strong> is a concrete eager kind, not Spark's untyped <code>DataFrame = Dataset[Row]</code> alias.</li>
+<li><strong><code>BoundedDataSet[T]</code></strong> and <strong><code>UnboundedDataSet[T]</code></strong> are intermediate traits that give clean type signatures for batch-only and streaming-only consumers respectively.</li>
 </ul>
+<h3 id="future-extensibility">Future extensibility</h3>
+<p><code>UnboundedDataSet[T]</code> currently has one concrete implementor (<code>DataStream[T]</code>). The intermediate trait is justified by: clean symmetry with <code>BoundedDataSet[T]</code> in type signatures, and future extensibility (e.g. a <code>ChangeStream[T]</code> for CDC, a <code>WindowedStream[T]</code>, or other streaming specializations).</p>
+<p>Future RFCs <strong>may</strong> add methods on <code>BoundedDataSet[T]</code> or <code>UnboundedDataSet[T]</code>, but only where the semantics are inherently boundedness-specific and remain backend-neutral. v0.1 does not require any additional core relational methods beyond the shared <code>DataSet[T]</code> surface.</p>
 <h3 id="compatibility">Compatibility</h3>
 <ul>
-<li>Naming and resolution rules are foundational; breaking changes <strong>must</strong> go through a dedicated RFC amendment.</li>
-<li>New schema shapes <strong>should</strong> be additive.</li>
+<li>New dataset methods or kinds <strong>should</strong> remain backward compatible or go through a deprecation path.</li>
 </ul>
 <h2 id="alternatives-considered">Alternatives considered</h2>
 <ul>
-<li><strong>Single global lexical scope for bare names in queries</strong> — rejected: breaks SQL-familiar <code>SELECT</code> / <code>ORDER BY</code> patterns and alias flow.</li>
-<li><strong><code>.column</code> as a general Incan expression form</strong> — rejected: without a well-defined primary relation in scope, <code>.field</code> has no unambiguous meaning. Restricting it to relational positions keeps the notation precise and allows the compiler to always resolve the field type statically.</li>
-<li><strong>Three authoring surfaces in v0.1</strong> (including pipe-forward) — deferred: v0.1 focuses on <code>query {}</code> and method chains; pipe-forward is a syntactic convenience that does not unlock new capability and can be added in a later version without breaking the semantic model.</li>
-<li><strong>Separate resolution rules per surface</strong> — rejected: would create semantic drift between <code>query {}</code> and method chains.</li>
+<li><strong>Only a clause-based relational surface, no programmatic API</strong> — rejected; traits/methods give tests, lowering targets, and incremental adoption.</li>
+<li><strong>Flat hierarchy (no intermediate traits)</strong> — rejected; without <code>BoundedDataSet</code> and <code>UnboundedDataSet</code>, authors cannot write "any batch data" in a type signature without listing concrete types. The intermediate traits make capability gating clean and type-driven.</li>
+<li><strong>Three independent kinds with separate operation APIs</strong> — rejected; a unified API through <code>DataSet[T]</code> reduces surface area.</li>
+<li><strong><code>DataStream</code> as the sole foundational type</strong> (batch as bounded streams from the start) — deferred; batch-first validates the relational core with simpler semantics. The trait hierarchy ensures the model can evolve in this direction without breaking author code.</li>
 </ul>
 <h2 id="drawbacks">Drawbacks</h2>
 <ul>
-<li>Large foundational document that many companion RFCs depend on; amendments need care.</li>
-<li>Open-ended and dynamic schema modes add compiler complexity even in v0.1.</li>
-<li>The single-model constraint across surfaces requires implementation discipline to avoid surface-specific shortcuts that break semantic equivalence.</li>
+<li>Five types/traits in the hierarchy is more surface area than a single <code>DataSet[T]</code> plus runtime flags.</li>
+<li>The static capability gating rule (root trait = most restrictive) may surprise authors who expected full operations on <code>DataSet[T]</code> without thinking about boundedness.</li>
 </ul>
 <h2 id="layers-affected">Layers affected</h2>
 <ul>
-<li><strong>Parser / AST</strong>: relational surfaces must preserve the distinct naming forms (<code>.column</code>, <code>relation.column</code>, bare identifiers, and ordinary Incan expressions) and their clause-sensitive contexts.</li>
-<li><strong>Typechecker</strong>: resolution order, current query schema flow, <code>SELECT</code> alias publication, join alias handling, and schema-shape behavior (typed, open-ended, dynamic) must remain consistent across surfaces.</li>
-<li><strong>IR / lowering</strong>: both authoring surfaces must lower to one relational semantic model without changing identifier meaning or schema-flow behavior.</li>
-<li><strong>LSP</strong>: relational positions need resolution-aware highlighting, diagnostics, and completions that reflect the same naming rules as the compiler.</li>
-<li><strong>Documentation</strong>: companion InQL RFCs and contributor docs must describe the same foundational naming, schema, and boundary rules.</li>
+<li><strong>IncQL library</strong> (primary): types, traits, Rust companion / interop.</li>
+<li><strong>Typechecker</strong>: generics for <code>DataFrame[T]</code> etc.; static streaming constraint checks for <code>UnboundedDataSet[T]</code>; capability gating based on trait bounds.</li>
+<li><strong>Parser</strong>: only if dataset API introduces new surface syntax beyond ordinary calls.</li>
 </ul>
 <h2 id="design-decisions">Design Decisions</h2>
+<h3 id="resolved">Resolved</h3>
 <ul>
-<li><strong><code>.column</code> scope restriction:</strong> <code>.field</code> is only valid in relational expression positions (<code>query {}</code> clauses, method-chain relational arguments, and future pipe-forward stages). It is a compile-time error outside those positions. This keeps the dot notation unambiguous and ensures a primary relation is always in scope when <code>.field</code> is used.</li>
-<li><strong>Lateral column aliases in <code>SELECT</code>:</strong> an alias defined in a <code>SELECT</code> list is visible to subsequent expressions in the same list, in order (lateral column alias semantics). This follows the convention of DuckDB, Snowflake, and MySQL. An alias is not visible to expressions that precede it in the list. Implementations <strong>must</strong> rewrite dependent expressions (e.g. inline substitution) before Substrait lowering, since Substrait projection nodes do not natively support lateral alias references.</li>
-<li><strong>Pipe-forward deferred to v0.2+:</strong> InQL RFC 005 specifies pipe-forward as an optional surface with the same resolution rules. It is not part of v0.1 scope. This RFC (§6) states the invariant that pipe-forward <strong>must</strong> share §§2–4 resolution rules.</li>
-<li><strong>Method-chain API scope:</strong> deferred to InQL RFC 001, which defines the <code>DataSet[T]</code> operation surface. This RFC does not mandate a particular chain API shape.</li>
-<li><strong><code>HAVING</code> keyword:</strong> not InQL syntax. Post-<code>SELECT</code> filtering uses a second <code>WHERE</code> clause (clause ordering details — InQL RFC 003).</li>
-<li><strong>Schema shape priority for v0.1:</strong> fully typed (<code>DataFrame[T]</code>) is the primary mode. Open-ended (<code>with OpenEnded</code>) and dynamic (<code>DataFrame[Dynamic]</code>) remain part of the normative model in this RFC, but any implementation that does not yet support a permitted behavior <strong>must</strong> reject it explicitly rather than silently reinterpreting or weakening these semantics.</li>
-<li><strong>Open-ended model marker syntax:</strong> <code>model X with OpenEnded</code> is the normative spelling in this RFC for v0.1. If Incan changes how openness is declared, this RFC <strong>must</strong> be amended in lockstep; implementations follow the Incan language as shipped and update InQL specification text accordingly.</li>
-<li><strong>External / catalog-bound models:</strong> resolution of <code>model X = external("catalog://...")</code> (or equivalent) and how such models surface in query schemas is <strong>out of scope for InQL RFC 000</strong> and for v0.1 closure. It depends on Incan contract and catalog semantics and <strong>may</strong> be specified in a later InQL RFC once those foundations exist.</li>
-<li><strong>Shadowing warning and LSP:</strong> when a bare name matches both a query column and an outer Incan binding, query semantics and the diagnostic (warn; suggest <code>.column</code>) are normative above. Whether the LSP offers quick-fixes (e.g. rewrite to <code>.column</code>, rename outer binding) is <strong>tooling policy</strong> in the Incan LSP and is not prescribed here; any such fixes <strong>must</strong> preserve the resolution rules in §§2–4.</li>
+<li>
+<p><strong><code>UnboundedDataSet[T]</code> restrictions:</strong> Operations requiring end-of-input semantics or unbounded retained state are not valid unless a later RFC gives them bounded-state semantics. In v0.1, disallowed examples include global <code>order_by</code>, global <code>limit</code>, unwindowed <code>group_by</code> / <code>agg</code>, eager materialization to a finite <code>DataFrame[T]</code>, and finite file writes.</p>
+</li>
+<li>
+<p><strong><code>collect</code> / <code>display</code>:</strong> Not part of the <code>DataSet[T]</code> trait surface. Helpers such as <code>collect(data)</code> or <code>display(data)</code> belong to the execution context and concrete implementation model defined in IncQL RFC 004, not in this RFC.</p>
+</li>
+<li>
+<p><strong>Intermediate traits:</strong> <code>BoundedDataSet[T]</code> and <code>UnboundedDataSet[T]</code> do not add required core relational methods in v0.1. Future RFCs may add additional methods only where the semantics are inherently boundedness-specific and remain backend-neutral.</p>
+</li>
 </ul>
 
 

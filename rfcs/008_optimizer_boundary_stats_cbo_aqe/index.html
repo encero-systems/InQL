@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://encero-systems.github.io/InQL/rfcs/008_optimizer_boundary_stats_cbo_aqe/">
+        <link rel="canonical" href="https://encero-systems.github.io/IncQL/rfcs/008_optimizer_boundary_stats_cbo_aqe/">
       
       
         <link rel="prev" href="../007_prism_planning_engine/">
@@ -24,7 +24,7 @@
     
     
       
-        <title>RFC 008 - Optimizer boundary - InQL</title>
+        <title>RFC 008 - Optimizer boundary - IncQL</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#inql-rfc-008-optimizer-boundary-statistics-cost-based-optimization-and-adaptive-execution" class="md-skip">
+        <a href="#incql-rfc-008-optimizer-boundary-statistics-cost-based-optimization-and-adaptive-execution" class="md-skip">
           Skip to content
         </a>
       
@@ -88,9 +88,9 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="InQL" class="md-header__button md-logo" aria-label="InQL" data-md-component="logo">
+    <a href="../.." title="IncQL" class="md-header__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../shared/brand/inql-mark.png" alt="logo">
+  <img src="../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -101,7 +101,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            InQL
+            IncQL
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -170,13 +170,13 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/encero-systems/IncQL" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
   </div>
   <div class="md-source__repository">
-    encero-systems/InQL
+    encero-systems/IncQL
   </div>
 </a>
       </div>
@@ -370,22 +370,22 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="InQL" class="md-nav__button md-logo" aria-label="InQL" data-md-component="logo">
+    <a href="../.." title="IncQL" class="md-nav__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../shared/brand/inql-mark.png" alt="logo">
+  <img src="../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
-    InQL
+    IncQL
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/encero-systems/IncQL" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
   </div>
   <div class="md-source__repository">
-    encero-systems/InQL
+    encero-systems/IncQL
   </div>
 </a>
     </div>
@@ -1849,7 +1849,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../000_inql_syntax/" class="md-nav__link">
+      <a href="../000_incql_syntax/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1870,7 +1870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../001_inql_dataset/" class="md-nav__link">
+      <a href="../001_incql_dataset/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1912,7 +1912,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../003_inql_query_blocks/" class="md-nav__link">
+      <a href="../003_incql_query_blocks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1933,7 +1933,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../004_inql_execution_context/" class="md-nav__link">
+      <a href="../004_incql_execution_context/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1954,7 +1954,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../005_inql_pipe_forward/" class="md-nav__link">
+      <a href="../005_incql_pipe_forward/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2205,9 +2205,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#interaction-with-other-inql-surfaces" class="md-nav__link">
+  <a href="#interaction-with-other-incql-surfaces" class="md-nav__link">
     <span class="md-ellipsis">
-      Interaction with other InQL surfaces
+      Interaction with other IncQL surfaces
     </span>
   </a>
   
@@ -3265,11 +3265,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../whitepapers/inql_db/" class="md-nav__link">
+      <a href="../../whitepapers/incql_db/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    InQL DB
+    IncQL DB
   </span>
   
 
@@ -3550,9 +3550,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#interaction-with-other-inql-surfaces" class="md-nav__link">
+  <a href="#interaction-with-other-incql-surfaces" class="md-nav__link">
     <span class="md-ellipsis">
-      Interaction with other InQL surfaces
+      Interaction with other IncQL surfaces
     </span>
   </a>
   
@@ -3635,29 +3635,29 @@
   
 
 
-<h1 id="inql-rfc-008-optimizer-boundary-statistics-cost-based-optimization-and-adaptive-execution">InQL RFC 008: Optimizer boundary, statistics, cost-based optimization, and adaptive execution</h1>
+<h1 id="incql-rfc-008-optimizer-boundary-statistics-cost-based-optimization-and-adaptive-execution">IncQL RFC 008: Optimizer boundary, statistics, cost-based optimization, and adaptive execution</h1>
 <ul>
 <li><strong>Status:</strong> Planned</li>
 <li><strong>Created:</strong> 2026-04-07</li>
 <li><strong>Author(s):</strong> Danny Meijer</li>
 <li><strong>Related:</strong></li>
-<li>InQL RFC 004 (execution context — <code>Session</code> remains the execution and backend boundary)</li>
-<li>InQL RFC 007 (Prism planning engine — this RFC narrows optimizer-boundary ownership without replacing Prism adoption)</li>
-<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/InQL/issues/18">InQL #18</a></li>
+<li>IncQL RFC 004 (execution context — <code>Session</code> remains the execution and backend boundary)</li>
+<li>IncQL RFC 007 (Prism planning engine — this RFC narrows optimizer-boundary ownership without replacing Prism adoption)</li>
+<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/IncQL/issues/18">IncQL #18</a></li>
 <li><strong>RFC PR:</strong> —</li>
 <li><strong>Written against:</strong> Incan v0.2</li>
 <li><strong>Shipped in:</strong> —</li>
 </ul>
 <h2 id="summary">Summary</h2>
-<p>This RFC defines the optimizer boundary between <strong>Prism</strong> and <strong><code>Session</code></strong> as InQL grows beyond the first Prism adoption slice. Prism remains the owner of analyzed logical planning, semantic rewrites, canonicalization, schema-preserving logical optimization, and any static planning facts that do not depend on runtime feedback. <code>Session</code> remains the owner of backend capabilities, physical planning, backend pushdown policy, runtime statistics, execution metrics, and adaptive re-planning during execution. This RFC does not replace RFC 007's role in establishing Prism as the internal planning substrate; it settles the ownership boundary needed for RFC 004 and defers deeper statistics, CBO, and AQE mechanics until the execution side is better grounded.</p>
+<p>This RFC defines the optimizer boundary between <strong>Prism</strong> and <strong><code>Session</code></strong> as IncQL grows beyond the first Prism adoption slice. Prism remains the owner of analyzed logical planning, semantic rewrites, canonicalization, schema-preserving logical optimization, and any static planning facts that do not depend on runtime feedback. <code>Session</code> remains the owner of backend capabilities, physical planning, backend pushdown policy, runtime statistics, execution metrics, and adaptive re-planning during execution. This RFC does not replace RFC 007's role in establishing Prism as the internal planning substrate; it settles the ownership boundary needed for RFC 004 and defers deeper statistics, CBO, and AQE mechanics until the execution side is better grounded.</p>
 <h2 id="motivation">Motivation</h2>
-<p>RFC 007 was intentionally written to get Prism named, scoped, and implemented as a real planning substrate. That was the right move for the first Prism adoption slice. However, once InQL aims for stronger optimization, the remaining ambiguity becomes a liability:</p>
+<p>RFC 007 was intentionally written to get Prism named, scoped, and implemented as a real planning substrate. That was the right move for the first Prism adoption slice. However, once IncQL aims for stronger optimization, the remaining ambiguity becomes a liability:</p>
 <ul>
 <li>If Prism owns all optimization in the abstract, it will tend to absorb backend policy and runtime behavior.</li>
 <li>If <code>Session</code> owns all optimization in practice, Prism becomes a passive container rather than a serious optimizer substrate.</li>
 <li>If statistics, cost-based optimization, and adaptive re-planning are not assigned cleanly, explain output, reproducibility, and backend substitution all become muddled.</li>
 </ul>
-<p>InQL needs the same kind of separation that high-performance query engines converge on in practice:</p>
+<p>IncQL needs the same kind of separation that high-performance query engines converge on in practice:</p>
 <ul>
 <li>a semantic logical optimizer that can reason about equivalence and properties</li>
 <li>a backend boundary that can exploit concrete storage and runtime facts</li>
@@ -3674,7 +3674,7 @@
 <ul>
 <li>Define which optimizer responsibilities belong to Prism versus <code>Session</code>.</li>
 <li>Establish <strong>statistics ownership</strong> clearly enough to support cost-based optimization without collapsing the Prism / <code>Session</code> boundary.</li>
-<li>Define the minimum optimizer artifacts Prism should expose as InQL moves past the initial identity-shaped optimized view.</li>
+<li>Define the minimum optimizer artifacts Prism should expose as IncQL moves past the initial identity-shaped optimized view.</li>
 <li>Reserve adaptive query re-planning as a <code>Session</code> concern rather than a Prism concern.</li>
 <li>Make precedence against RFC 007 explicit so future work does not rely on ambiguous wording.</li>
 </ul>
@@ -3702,8 +3702,8 @@
 <li><code>Session</code> can change physical strategy when runtime facts prove the original assumptions wrong.</li>
 </ul>
 <p>Conceptual example; exact explain API names may differ:</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">Session</span><span class="o">,</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">DataFrame</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">count</span>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">Session</span><span class="o">,</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">DataFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">count</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Customer</span><span class="p">,</span> <span class="nc">Order</span><span class="p">,</span> <span class="nc">RegionalSummary</span>
 
 <span class="n">session</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
@@ -3724,7 +3724,7 @@
 <span class="c1"># Prism-owned logical surfaces</span>
 <span class="n">summary</span><span class="o">.</span><span class="n">raw_plan</span><span class="p">()</span>
 <span class="n">summary</span><span class="o">.</span><span class="n">analyzed_plan</span><span class="p">()</span>
-<span class="n">summary</span><span class="o">.</span><span class="n">plan_after_inql_rules</span><span class="p">()</span>
+<span class="n">summary</span><span class="o">.</span><span class="n">plan_after_incql_rules</span><span class="p">()</span>
 
 <span class="c1"># Session-owned execution and runtime behavior (current slice uses execute/write)</span>
 <span class="n">executed</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">RegionalSummary</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span><span class="o">?</span>
@@ -3732,7 +3732,7 @@
 <span class="n">session</span><span class="o">.</span><span class="n">session_plan</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
 <span class="n">session</span><span class="o">.</span><span class="n">executed_plan</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
 </code></pre></div>
-<p>For explain and tooling, InQL should make the stages explicit instead of collapsing them into one vague “optimized plan” label. A future author or tool should be able to distinguish at least:</p>
+<p>For explain and tooling, IncQL should make the stages explicit instead of collapsing them into one vague “optimized plan” label. A future author or tool should be able to distinguish at least:</p>
 <ul>
 <li>authored Prism state</li>
 <li>analyzed Prism state</li>
@@ -3782,13 +3782,13 @@
 <li>Runtime statistics <strong>must</strong> remain session-owned execution artifacts even when they later inform planning.</li>
 </ul>
 <h3 id="3-cost-based-optimization">3. Cost-based optimization</h3>
-<p>Cost-based optimization in InQL is split across Prism and <code>Session</code>:</p>
+<p>Cost-based optimization in IncQL is split across Prism and <code>Session</code>:</p>
 <ul>
 <li>Prism <strong>should</strong> compare logical alternatives using a stable cost interface over logical properties, available statistics, and backend capability hints.</li>
 <li><code>Session</code> <strong>may</strong> provide the statistics and capability inputs Prism needs to make better logical choices.</li>
 <li>The exact cost model is not standardized by this RFC, but the ownership boundary is.</li>
 </ul>
-<p>Inference from this boundary: if InQL later adds join reordering, memo-based exploration, or reuse/materialization decisions, those features belong primarily in Prism, but they rely on inputs that <code>Session</code> can provide.</p>
+<p>Inference from this boundary: if IncQL later adds join reordering, memo-based exploration, or reuse/materialization decisions, those features belong primarily in Prism, but they rely on inputs that <code>Session</code> can provide.</p>
 <h3 id="4-adaptive-execution">4. Adaptive execution</h3>
 <p>Adaptive re-planning during execution is a <code>Session</code> concern.</p>
 <p>That means:</p>
@@ -3804,7 +3804,7 @@
 <ul>
 <li><code>raw_plan()</code></li>
 <li><code>analyzed_plan()</code></li>
-<li><code>plan_after_inql_rules()</code></li>
+<li><code>plan_after_incql_rules()</code></li>
 <li><code>session_plan()</code></li>
 <li><code>executed_plan()</code></li>
 </ul>
@@ -3812,7 +3812,7 @@
 <h3 id="6-precedence-against-older-rfcs">6. Precedence against older RFCs</h3>
 <p>RFC 007 remains authoritative for:</p>
 <ul>
-<li>Prism as InQL's internal planning substrate</li>
+<li>Prism as IncQL's internal planning substrate</li>
 <li>immutable authored state</li>
 <li>structural sharing</li>
 <li>lineage and optimized-to-authored provenance expectations</li>
@@ -3837,9 +3837,9 @@
 <li>optional logical alternative exploration and cost comparison</li>
 <li><code>Session</code> handoff for backend planning and execution</li>
 </ul>
-<p>Prism's optimizer legality <strong>must</strong> continue to derive from InQL semantics, schema facts, and expression rules rather than backend quirks.</p>
+<p>Prism's optimizer legality <strong>must</strong> continue to derive from IncQL semantics, schema facts, and expression rules rather than backend quirks.</p>
 <p><code>Session</code> <strong>may</strong> pass backend capability hints and statistics into Prism before execution, but those inputs <strong>must not</strong> collapse the ownership boundary defined above.</p>
-<h3 id="interaction-with-other-inql-surfaces">Interaction with other InQL surfaces</h3>
+<h3 id="interaction-with-other-incql-surfaces">Interaction with other IncQL surfaces</h3>
 <ul>
 <li><strong><code>DataSet[T]</code> APIs:</strong> carrier method chains continue to build Prism-managed authored state. Stronger optimization does not change carrier immutability rules.</li>
 <li><strong><code>query {}</code>:</strong> query-block lowering should target the same Prism analysis and rewrite pipeline as method chains.</li>
@@ -3865,20 +3865,20 @@
 <h2 id="alternatives-considered">Alternatives considered</h2>
 <ul>
 <li><strong>Keep RFC 007 as the only optimizer RFC</strong> — rejected; RFC 007 already serves as the Prism adoption record for the first implementation slice, and retrofitting a more detailed optimizer boundary into it would mix historical adoption work with the follow-on architecture.</li>
-<li><strong>Move all optimization to <code>Session</code></strong> — rejected; that would reduce Prism to a plan container and make InQL-owned semantic optimization too backend-dependent.</li>
+<li><strong>Move all optimization to <code>Session</code></strong> — rejected; that would reduce Prism to a plan container and make IncQL-owned semantic optimization too backend-dependent.</li>
 <li><strong>Move AQE into Prism</strong> — rejected; adaptive re-planning depends on runtime execution facts and should remain session-owned.</li>
 <li><strong>Treat statistics as purely backend-private</strong> — rejected; Prism needs a clean way to consume statistics if it is going to perform serious cost-based logical optimization.</li>
 </ul>
 <h2 id="drawbacks">Drawbacks</h2>
 <ul>
 <li>Adds another foundational RFC and another precedence edge contributors must understand.</li>
-<li>Commits InQL to a sharper optimizer vocabulary earlier than a minimal prototype would require.</li>
+<li>Commits IncQL to a sharper optimizer vocabulary earlier than a minimal prototype would require.</li>
 <li>Memo-based exploration, property inference, and stats plumbing will increase implementation complexity once work begins.</li>
 </ul>
 <h2 id="layers-affected">Layers affected</h2>
 <ul>
-<li><strong>InQL specification</strong> — RFC 004 and RFC 007 references to optimization ownership <strong>should</strong> stay consistent with this boundary.</li>
-<li><strong>InQL library package</strong> — future Prism internals <strong>should</strong> separate authored, analyzed, and rewritten artifacts more explicitly than the current prototype does.</li>
+<li><strong>IncQL specification</strong> — RFC 004 and RFC 007 references to optimization ownership <strong>should</strong> stay consistent with this boundary.</li>
+<li><strong>IncQL library package</strong> — future Prism internals <strong>should</strong> separate authored, analyzed, and rewritten artifacts more explicitly than the current prototype does.</li>
 <li><strong>Execution / interchange</strong> — <code>Session</code> and backend integration layers <strong>must</strong> own physical planning, runtime stats, and adaptive re-planning policy.</li>
 <li><strong>Documentation</strong> — explain surfaces and architecture notes <strong>should</strong> stop using “optimized plan” as an undifferentiated term.</li>
 </ul>

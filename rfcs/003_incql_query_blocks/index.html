@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://encero-systems.github.io/InQL/rfcs/005_inql_pipe_forward/">
+        <link rel="canonical" href="https://encero-systems.github.io/IncQL/rfcs/003_incql_query_blocks/">
       
       
-        <link rel="prev" href="../004_inql_execution_context/">
+        <link rel="prev" href="../002_apache_substrait_integration/">
       
       
-        <link rel="next" href="../006_unnest_core_substrait/">
+        <link rel="next" href="../004_incql_execution_context/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -24,7 +24,7 @@
     
     
       
-        <title>RFC 005 - Pipe-forward syntax - InQL</title>
+        <title>RFC 003 - Query blocks - IncQL</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#inql-rfc-005-pipe-forward-relational-syntax" class="md-skip">
+        <a href="#incql-rfc-003-query-blocks-syntax-typing-substrait" class="md-skip">
           Skip to content
         </a>
       
@@ -88,9 +88,9 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="InQL" class="md-header__button md-logo" aria-label="InQL" data-md-component="logo">
+    <a href="../.." title="IncQL" class="md-header__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../shared/brand/inql-mark.png" alt="logo">
+  <img src="../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -101,13 +101,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            InQL
+            IncQL
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              RFC 005 - Pipe-forward syntax
+              RFC 003 - Query blocks
             
           </span>
         </div>
@@ -170,13 +170,13 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/encero-systems/IncQL" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
   </div>
   <div class="md-source__repository">
-    encero-systems/InQL
+    encero-systems/IncQL
   </div>
 </a>
       </div>
@@ -370,22 +370,22 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="InQL" class="md-nav__button md-logo" aria-label="InQL" data-md-component="logo">
+    <a href="../.." title="IncQL" class="md-nav__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../shared/brand/inql-mark.png" alt="logo">
+  <img src="../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
-    InQL
+    IncQL
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/encero-systems/IncQL" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
   </div>
   <div class="md-source__repository">
-    encero-systems/InQL
+    encero-systems/IncQL
   </div>
 </a>
     </div>
@@ -1849,7 +1849,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../000_inql_syntax/" class="md-nav__link">
+      <a href="../000_incql_syntax/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1870,7 +1870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../001_inql_dataset/" class="md-nav__link">
+      <a href="../001_incql_dataset/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1909,48 +1909,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../003_inql_query_blocks/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    RFC 003 - Query blocks
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../004_inql_execution_context/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    RFC 004 - Execution context
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -1967,7 +1925,7 @@
           
   
   <span class="md-ellipsis">
-    RFC 005 - Pipe-forward syntax
+    RFC 003 - Query blocks
   </span>
   
 
@@ -1978,7 +1936,7 @@
         
   
   <span class="md-ellipsis">
-    RFC 005 - Pipe-forward syntax
+    RFC 003 - Query blocks
   </span>
   
 
@@ -2014,21 +1972,6 @@
       Motivation
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Motivation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#prior-art" class="md-nav__link">
-    <span class="md-ellipsis">
-      Prior art
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -2070,45 +2013,90 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#token-and-stage-syntax" class="md-nav__link">
+  <a href="#packaging-and-activation" class="md-nav__link">
     <span class="md-ellipsis">
-      Token and stage syntax
+      Packaging and activation
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#relational-operation-keywords" class="md-nav__link">
+  <a href="#from-and-relation-to-incql-rfc-001" class="md-nav__link">
     <span class="md-ellipsis">
-      Relational operation keywords
+      FROM and relation to IncQL RFC 001
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#desugaring" class="md-nav__link">
+  <a href="#primary-relation-and-joins" class="md-nav__link">
     <span class="md-ellipsis">
-      Desugaring
+      Primary relation and joins
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#identifier-resolution" class="md-nav__link">
+  <a href="#current-query-schema-and-bare-identifiers" class="md-nav__link">
     <span class="md-ellipsis">
-      Identifier resolution
+      Current query schema and bare identifiers
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#vocabulary-activation" class="md-nav__link">
+  <a href="#expression-operators" class="md-nav__link">
     <span class="md-ellipsis">
-      Vocabulary activation
+      Expression operators
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#select-and-alias-publication" class="md-nav__link">
+    <span class="md-ellipsis">
+      SELECT and alias publication
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aggregates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Aggregates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clause-inventory-minimum" class="md-nav__link">
+    <span class="md-ellipsis">
+      Clause inventory (minimum)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#emission" class="md-nav__link">
+    <span class="md-ellipsis">
+      Emission
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lowering-to-incql-rfc-001-operations-optional-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lowering to IncQL RFC 001 operations (optional path)
     </span>
   </a>
   
@@ -2125,6 +2113,30 @@
       Design details
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Design details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#interaction-with-incan" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interaction with Incan
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compatibility
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2168,6 +2180,48 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../004_incql_execution_context/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 004 - Execution context
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../005_incql_pipe_forward/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 005 - Pipe-forward syntax
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -3220,11 +3274,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../whitepapers/inql_db/" class="md-nav__link">
+      <a href="../../whitepapers/incql_db/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    InQL DB
+    IncQL DB
   </span>
   
 
@@ -3378,21 +3432,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Motivation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#prior-art" class="md-nav__link">
-    <span class="md-ellipsis">
-      Prior art
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -3433,45 +3472,90 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#token-and-stage-syntax" class="md-nav__link">
+  <a href="#packaging-and-activation" class="md-nav__link">
     <span class="md-ellipsis">
-      Token and stage syntax
+      Packaging and activation
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#relational-operation-keywords" class="md-nav__link">
+  <a href="#from-and-relation-to-incql-rfc-001" class="md-nav__link">
     <span class="md-ellipsis">
-      Relational operation keywords
+      FROM and relation to IncQL RFC 001
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#desugaring" class="md-nav__link">
+  <a href="#primary-relation-and-joins" class="md-nav__link">
     <span class="md-ellipsis">
-      Desugaring
+      Primary relation and joins
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#identifier-resolution" class="md-nav__link">
+  <a href="#current-query-schema-and-bare-identifiers" class="md-nav__link">
     <span class="md-ellipsis">
-      Identifier resolution
+      Current query schema and bare identifiers
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#vocabulary-activation" class="md-nav__link">
+  <a href="#expression-operators" class="md-nav__link">
     <span class="md-ellipsis">
-      Vocabulary activation
+      Expression operators
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#select-and-alias-publication" class="md-nav__link">
+    <span class="md-ellipsis">
+      SELECT and alias publication
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aggregates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Aggregates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clause-inventory-minimum" class="md-nav__link">
+    <span class="md-ellipsis">
+      Clause inventory (minimum)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#emission" class="md-nav__link">
+    <span class="md-ellipsis">
+      Emission
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lowering-to-incql-rfc-001-operations-optional-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lowering to IncQL RFC 001 operations (optional path)
     </span>
   </a>
   
@@ -3488,6 +3572,30 @@
       Design details
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Design details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#interaction-with-incan" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interaction with Incan
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compatibility
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -3545,130 +3653,160 @@
   
 
 
-<h1 id="inql-rfc-005-pipe-forward-relational-syntax">InQL RFC 005: Pipe-forward relational syntax (<code>|&gt;</code>)</h1>
+<h1 id="incql-rfc-003-query-blocks-syntax-typing-substrait">IncQL RFC 003: <code>query {}</code> blocks — syntax, typing, Substrait</h1>
 <ul>
-<li><strong>Status:</strong> Blocked</li>
-<li><strong>Created:</strong> 2026-03-18</li>
+<li><strong>Status:</strong> Implemented</li>
+<li><strong>Created:</strong> 2026-03-22</li>
 <li><strong>Author(s):</strong> Danny Meijer</li>
 <li><strong>Related:</strong></li>
-<li>InQL RFC 000 (language specification — naming and query schema; <strong>must</strong> stay aligned)</li>
-<li>InQL RFC 001 (dataset types — carriers and method APIs)</li>
-<li>InQL RFC 003 (<code>query {}</code> — primary clause surface)</li>
-<li>Incan RFC 040 (Scoped DSL Glyph Surfaces — prerequisite for <code>|&gt;</code> support)</li>
-<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/InQL/issues/6">InQL #6</a></li>
-<li><strong>RFC PR:</strong> -</li>
-<li><strong>Written against:</strong> Incan v0.2</li>
-<li><strong>Shipped in:</strong> -</li>
+<li>IncQL RFC 000 (language specification — naming and query schema; <strong>must</strong> stay consistent)</li>
+<li>IncQL RFC 001 (dataset types — <strong>prerequisite</strong>; <code>FROM</code> sources must conform to <code>DataSet[T]</code>)</li>
+<li>IncQL RFC 002 (Apache Substrait — <strong>normative <code>Rel</code>-level contract</strong> for lowering)</li>
+<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/IncQL/issues/4">IncQL #4</a></li>
+<li><strong>RFC PR:</strong> <a href="https://github.com/encero-systems/IncQL/pull/59">IncQL #59</a></li>
+<li><strong>Written against:</strong> Incan v0.3</li>
+<li><strong>Shipped in:</strong> IncQL v0.1</li>
 </ul>
 <h2 id="summary">Summary</h2>
-<p>This RFC specifies an optional <strong>pipe-forward</strong> surface for InQL relational pipelines: <code>|&gt;</code>-chained stages applied to an existing <code>DataSet[T]</code> expression, with grammar, precedence, and desugaring to the same relational semantics as <code>query {}</code> and collection method chains. Identifier resolution and current query schema behavior <strong>must</strong> match InQL RFC 000 §§2–4; this RFC does <strong>not</strong> redefine naming rules.</p>
-<blockquote>
-<p><strong>Blcoked</strong> for the following reason:</p>
-<ul>
-<li><strong>Glyph dependency</strong>: <code>|&gt;</code> depends on Incan RFC 040.</li>
-</ul>
-</blockquote>
+<p>This RFC specifies the <strong><code>query { ... }</code></strong> expression: grammar, typechecking (including clause-level use of <code>.column</code>, <code>relation.column</code>, bare identifiers, and aggregate rules), vocabulary activation for the <code>query</code> keyword (IncQL package as dependency), and lowering to Apache Substrait. IncQL also accepts the expression-position colon spelling <code>query:</code> for consistency with Incan vocabulary declarations. Naming-form semantics and current query schema are defined in IncQL RFC 000; this RFC <strong>must</strong> remain consistent with that document. It depends on IncQL RFC 001: <code>FROM</code> sources <strong>must</strong> conform to IncQL RFC 001's <code>DataSet[T]</code> trait (<code>DataFrame[T]</code>, <code>LazyFrame[T]</code>, or <code>DataStream[T]</code>) so that <code>T</code> supplies fields for resolution. IncQL RFC 002 owns the Substrait <code>Rel</code> and expression contract, mapping catalog, and read vs binding boundaries; this RFC <strong>must</strong> conform to IncQL RFC 002 for serialized plan semantics. <code>SELECT DISTINCT</code> is part of the minimum clause surface defined here.</p>
 <h2 id="motivation">Motivation</h2>
-<p>Some authors prefer a linear, left-to-right pipeline over clause blocks or method chains. In Incan specifically, pipe-forward becomes useful when authors already have a <code>DataSet[T]</code> value in scope and want concise shorthand for a few relational steps without switching into a larger <code>query {}</code> block. A dedicated RFC keeps InQL RFC 003 focused on <code>query {}</code> while still committing to one relational semantic core across surfaces (InQL RFC 000 §6).</p>
-<h3 id="prior-art">Prior art</h3>
-<p>This RFC draws inspiration from Google's pipe query syntax in BigQuery (<a href="https://docs.cloud.google.com/bigquery/docs/pipe-syntax-guide">documentation</a>), which shows that a linear relational pipeline can remain readable for complex query construction. That reference is informative, not normative: InQL pipe-forward semantics are defined by this RFC together with InQL RFC 000 and RFC 003. This RFC aims to stay close to the core value of that design, especially expression-first pipeline authoring, while still allowing Incan-specific choices where required by the type system, library model, and RFC-defined surface conventions.</p>
+<p>A SQL-familiar surface inside Incan improves readability and enables compile-time validation of relational work against <code>model</code> schemas. <code>query {}</code> is the checked authoring form; it lowers to operations on <code>DataSet</code> values (IncQL RFC 001) and/or directly to Substrait (IncQL RFC 002) for portability.</p>
 <h2 id="goals">Goals</h2>
 <ul>
-<li>Define normative pipe-forward syntax (tokens, allowed stage heads, and how an existing <code>DataSet[T]</code> value becomes the current input relation).</li>
-<li>Specify desugaring or lowering to the same relational plan shape as <code>query {}</code> / InQL RFC 001 operations (without mandating a single internal representation).</li>
-<li>Require consistency with InQL RFC 000: <code>.column</code>, <code>relation.column</code>, bare names, and <code>SELECT</code> alias boundaries behave identically to <code>query {}</code> in equivalent pipelines.</li>
-<li>Cover tooling expectations at a high level (LSP, diagnostics) where they differ from <code>query {}</code>.</li>
+<li>Specify <code>query { ... }</code> as a single expression whose body is an ordered sequence of clauses with unambiguous grammar.</li>
+<li>Typecheck relational positions: <code>.column</code> on the primary <code>FROM</code> relation; <code>relation.column</code> for joins; bare names per schema-first rules below.</li>
+<li>Lower a checked <code>query {}</code> tree to Apache Substrait as the normative interchange for supported operators; document gaps, extensions, and unsupported nodes. Lowering <strong>must</strong> conform to IncQL RFC 002.</li>
+<li>Integrate with IncQL RFC 001 so <code>FROM &lt;expr&gt;</code> resolves to a type conforming to <code>DataSet[T]</code> with known <code>T</code>.</li>
+<li>Enable end-to-end batch execution: <code>query {}</code> → Substrait → execution context.</li>
 </ul>
 <h2 id="non-goals">Non-Goals</h2>
 <ul>
-<li>Replacing <code>query {}</code> as the primary checked surface — InQL RFC 003 remains the default clause grammar unless product direction changes.</li>
-<li>Normative naming rules — InQL RFC 000.</li>
-<li><code>DataSet[T]</code> type definitions and backend boundary — InQL RFC 001.</li>
-<li>Substrait emission details — may reuse InQL RFC 003 paths after desugar; no duplicate Substrait spec unless a gap is found.</li>
-<li>Execution context and session — InQL RFC 004.</li>
-<li>Finalizing a dedicated aggregate-stage spelling analogous to BigQuery's <code>AGGREGATE</code> operator. The initial value of pipe-forward is expression-first relational shorthand; aggregate-stage surface details may be refined in a follow-up amendment as long as semantics stay aligned with InQL RFC 003.</li>
+<li>Defining the <code>DataSet[T]</code> trait, <code>DataFrame</code> / <code>LazyFrame</code> / <code>DataStream</code> types, or their method APIs — IncQL RFC 001.</li>
+<li>Pipe-forward (<code>|&gt;</code>) relational syntax — IncQL RFC 005 (must stay consistent with IncQL RFC 000).</li>
+<li>Substrait <code>Rel</code>-level mapping catalog, extension URI policy, read-root vs binding boundaries — IncQL RFC 002.</li>
+<li>Execution context, session, DataFusion — IncQL RFC 004.</li>
+<li>Cluster execution — out of scope for IncQL.</li>
 </ul>
 <h2 id="guide-level-explanation">Guide-level explanation</h2>
-<div class="language-incan highlight"><pre><span></span><code><span class="n">new_df</span> <span class="o">=</span> <span class="n">df</span>
-    <span class="o">|&gt;</span> <span class="n">where</span> <span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span>
-    <span class="o">|&gt;</span> <span class="n">select</span> <span class="p">{</span> <span class="n">region</span> <span class="p">}</span>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">DataFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">avg</span><span class="o">,</span><span class="w"> </span><span class="nn">count</span><span class="o">,</span><span class="w"> </span><span class="nn">desc</span><span class="o">,</span><span class="w"> </span><span class="nn">sum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span><span class="p">,</span> <span class="nc">OrderSummary</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">summarize_orders</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">DataFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">DataFrame</span><span class="p">[</span><span class="nc">OrderSummary</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="k">query</span> <span class="p">{</span>
+        <span class="k">FROM</span> <span class="n">orders</span>
+        <span class="k">WHERE</span> <span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;completed&quot;</span>
+        <span class="k">GROUP</span> <span class="k">BY</span> <span class="o">.</span><span class="n">region</span>
+        <span class="k">SELECT</span>
+            <span class="o">.</span><span class="n">region</span> <span class="k">as</span> <span class="n">region</span><span class="p">,</span>
+            <span class="nb">count</span><span class="p">()</span> <span class="k">as</span> <span class="n">order_count</span><span class="p">,</span>
+            <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_revenue</span><span class="p">,</span>
+            <span class="nb">avg</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">avg_order_value</span><span class="p">,</span>
+        <span class="k">ORDER</span> <span class="k">BY</span> <span class="nb">desc</span><span class="p">(</span><span class="o">.</span><span class="n">total_revenue</span><span class="p">)</span>
+    <span class="p">}</span>
 </code></pre></div>
-<p>This is the core value proposition: when a dataset value already exists in scope, pipe-forward gives a concise linear shorthand for a few relational steps. The semantics are identical to an equivalent <code>query {}</code> block or method chain; only syntax differs. <code>.amount</code> and <code>region</code> resolve using the same rules as the other InQL surfaces.</p>
-<p>Another common pattern is incremental narrowing over an existing dataset:</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="n">preview</span> <span class="o">=</span> <span class="n">orders</span>
-    <span class="o">|&gt;</span> <span class="n">where</span> <span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;completed&quot;</span>
-    <span class="o">|&gt;</span> <span class="n">order_by</span> <span class="o">.</span><span class="n">created_at</span> <span class="nb">desc</span>
-    <span class="o">|&gt;</span> <span class="n">limit</span> <span class="mi">20</span>
-</code></pre></div>
-<p>Pipe-forward also supports enrichment without leaving the linear flow:</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="n">enriched</span> <span class="o">=</span> <span class="n">orders</span>
-    <span class="o">|&gt;</span> <span class="nb">join</span> <span class="n">customers</span> <span class="n">on</span> <span class="o">.</span><span class="n">customer_id</span> <span class="o">==</span> <span class="n">customers</span><span class="o">.</span><span class="n">id</span>
-    <span class="o">|&gt;</span> <span class="n">where</span> <span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span>
-    <span class="o">|&gt;</span> <span class="n">select</span> <span class="p">{</span> <span class="o">.</span><span class="n">order_id</span><span class="p">,</span> <span class="n">customers</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="o">.</span><span class="n">amount</span> <span class="p">}</span>
-</code></pre></div>
-<p>Because the pipe attaches to any <code>DataSet[T]</code>-producing expression, it can continue from a <code>query {}</code> result as well:</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="n">filtered</span> <span class="o">=</span> <span class="k">query</span> <span class="p">{</span>
-    <span class="k">FROM</span> <span class="n">orders</span>
-<span class="p">}</span> <span class="o">|&gt;</span> <span class="n">where</span> <span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span>
-</code></pre></div>
+<p>The compiler checks <code>.status</code>, <code>.amount</code>, and <code>GROUP BY</code> / <code>SELECT</code> consistency. The <code>DataFrame[OrderSummary]</code> return type records the intended output row model; full field/type compatibility validation against annotated output models is tracked as schema-validation follow-up work. The checked tree lowers to Substrait (IncQL RFC 002); execution uses the execution context.</p>
 <h2 id="reference-level-explanation">Reference-level explanation</h2>
-<h3 id="token-and-stage-syntax">Token and stage syntax</h3>
+<h3 id="packaging-and-activation">Packaging and activation</h3>
 <ul>
-<li>Pipe-forward uses the <code>|&gt;</code> token to chain relational stages.</li>
-<li>A pipe-forward expression may begin with any expression whose type conforms to <code>DataSet[T]</code> per InQL RFC 001; that expression establishes the primary relation and its schema <code>T</code>.</li>
-<li>A pipe chain may follow any expression whose type conforms to <code>DataSet[T]</code>, including a named dataset value, a method-chain result, or a <code>query { ... }</code> expression.</li>
-<li>Each subsequent stage is introduced by <code>|&gt;</code> followed by a relational operation keyword and its arguments.</li>
-<li>Stage keywords are case-insensitive. Examples in this RFC use lowercase because pipe-forward is intended as lightweight shorthand over existing dataset values.</li>
-<li>Parentheses may be used to make the pipe attachment explicit when needed.</li>
+<li>Projects that depend on IncQL <strong>must</strong> obtain <code>query</code> through library-driven vocabulary activation in the host compiler.</li>
+<li>A compilation unit with IncQL active <strong>must</strong> parse <code>query { ... }</code> as specified here. It <strong>may</strong> also accept
+  expression-position <code>query:</code> as an equivalent spelling.</li>
+<li>Aggregate helpers such as <code>count</code>, <code>sum</code>, <code>avg</code>, <code>min</code>, and <code>max</code> are library symbols, instead of ambient builtins. Examples in this RFC import them from the <code>pub::incql</code> facade; implementations <strong>must</strong> provide an equivalent importable surface for aggregate functions used in relational expressions.</li>
 </ul>
-<h3 id="relational-operation-keywords">Relational operation keywords</h3>
-<p>Pipe-forward stages use the same relational operations as <code>query {}</code> (InQL RFC 003). The keyword set for the initial implementation includes at least: <code>where</code>, <code>join</code>, <code>group_by</code>, <code>select</code>, <code>order_by</code>, <code>limit</code>, <code>explode</code>.</p>
-<h3 id="desugaring">Desugaring</h3>
-<p>A pipe-forward expression <strong>must</strong> desugar to the same relational plan as an equivalent <code>query {}</code> block or <code>DataSet[T]</code> method chain. Implementations <strong>may</strong> desugar to <code>query {}</code> AST nodes, to InQL RFC 001 trait method calls, or directly to Substrait — provided the resulting plan is semantically identical.</p>
-<h3 id="identifier-resolution">Identifier resolution</h3>
-<p>All naming rules from InQL RFC 000 §2–§4 apply identically:</p>
+<h3 id="from-and-relation-to-incql-rfc-001"><code>FROM</code> and relation to IncQL RFC 001</h3>
 <ul>
-<li><code>.column</code> resolves against the primary relation established by the input dataset expression.</li>
-<li><code>relation.column</code> resolves against named join relations.</li>
-<li>Bare identifiers resolve against the current pipeline schema first, then lexical Incan bindings.</li>
-<li><code>SELECT</code> alias boundaries apply: aliases introduced in a <code>SELECT</code> stage are visible in subsequent stages, not in sibling expressions.</li>
+<li><code>FROM &lt;expr&gt;</code> establishes the primary relation for <code>.column</code>. <code>&lt;expr&gt;</code> <strong>must</strong> typecheck as a type conforming to <code>DataSet[T]</code> per IncQL RFC 001 (<code>DataFrame[T]</code>, <code>LazyFrame[T]</code>, or <code>DataStream[T]</code>).</li>
+<li><code>T</code> <strong>must</strong> supply fields for <code>.name</code> lookup.</li>
 </ul>
-<h3 id="vocabulary-activation">Vocabulary activation</h3>
-<p>Pipe-forward stage keywords are activated through library-driven vocabulary, consistent with InQL RFC 003's <code>query</code> keyword activation. A compilation unit with InQL active <strong>must</strong> recognize pipe-forward stage keywords as soft keywords.</p>
-<h2 id="design-details">Design details</h2>
+<h3 id="primary-relation-and-joins">Primary relation and joins</h3>
+<ul>
+<li><code>JOIN</code> introduces named secondary relations. Joined columns <strong>must</strong> use <code>relation.column</code> unless bare names are unambiguous per grammar.</li>
+<li><code>.column</code> after <code>JOIN</code> <strong>must</strong> refer to the primary <code>FROM</code> relation only.</li>
+</ul>
+<h3 id="current-query-schema-and-bare-identifiers">Current query schema and bare identifiers</h3>
+<p>Naming forms, schema evolution, and resolution precedence — IncQL RFC 000. This subsection lists relational expression positions for this RFC only.</p>
+<p>Inside relational expression positions (<code>WHERE</code>, <code>JOIN ON</code>, <code>GROUP BY</code>, <code>ORDER BY</code>, <code>SELECT</code>, window specs):</p>
 <ol>
-<li>
-<p>Dependency on InQL RFC 000
-  Pipe-forward <strong>must not</strong> introduce a second resolution order for bare names or <code>.column</code>. Any deviation requires amending InQL RFC 000.</p>
-</li>
-<li>
-<p>Dependency on Incan RFC 040
-  This RFC is blocked on Incan RFC 040. The planned implementation path for <code>|&gt;</code> is the scoped DSL glyph mechanism defined there, not ambient global operator support in ordinary Incan expressions.</p>
-</li>
+<li><code>.column</code> → primary relation's <code>T</code> fields.</li>
+<li><code>relation.column</code> → named join relation.</li>
+<li>Bare identifier → current query schema first, then lexical Incan binding where permitted.</li>
 </ol>
+<h3 id="expression-operators">Expression operators</h3>
+<p>Relational expression bodies use ordinary Incan expression operators and lower them into IncQL's public helper surface. Implementations must treat <code>left == right</code>, <code>left != right</code>, <code>left &lt; right</code>, <code>left &lt;= right</code>, <code>left &gt; right</code>, and <code>left &gt;= right</code> as equivalent to <code>eq(left, right)</code>, <code>ne(left, right)</code>, <code>lt(left, right)</code>, <code>lte(left, right)</code>, <code>gt(left, right)</code>, and <code>gte(left, right)</code> respectively. Arithmetic operators lower through <code>add</code>, <code>sub</code>, <code>mul</code>, <code>div</code>, and <code>modulo</code>; boolean and unary operators lower through their helper equivalents such as <code>and_</code>, <code>or_</code>, <code>not_</code>, and <code>neg</code>.</p>
+<p>Inclusive comparison helpers are named <code>lte</code> and <code>gte</code>; <code>le</code> and <code>ge</code> are not part of the public helper surface. Single <code>=</code> is not a predicate equality operator in query expressions. Equality uses <code>==</code>; <code>=</code> remains reserved for assignment/binding positions such as named window declarations.</p>
+<h3 id="select-and-alias-publication"><code>SELECT</code> and alias publication</h3>
+<ul>
+<li><code>SELECT</code> defines a projection boundary; output columns become the schema for later clauses in the block.</li>
+<li><strong>Lateral column aliases</strong>: an alias defined in a <code>SELECT</code> list <strong>may</strong> be referenced by subsequent expressions in the same list, in order. An alias is visible to expressions that follow it in the list; it <strong>must not</strong> be visible to expressions that precede it. Implementations <strong>must</strong> rewrite dependent expressions (e.g. inline substitution) before lowering to Substrait, since Substrait projection nodes do not natively support lateral alias references.</li>
+</ul>
+<h3 id="aggregates">Aggregates</h3>
+<ul>
+<li>Under <code>GROUP BY</code>, <code>SELECT</code> references <strong>must</strong> be grouped or aggregated; illegal mixing <strong>must</strong> error.</li>
+<li>Aggregate function calls in relational expressions <strong>must</strong> resolve through imported library symbols (for example <code>from pub::incql import count, sum, avg</code>). The compiler <strong>must not</strong> treat <code>count</code>, <code>sum</code>, <code>avg</code>, <code>min</code>, or <code>max</code> as implicitly in scope ambient names.</li>
+<li>This RFC defines the minimum required aggregate-function surface and import model for <code>query {}</code>; it is not an exhaustive catalog of all IncQL functions. Additional functions require additive library evolution or follow-up RFCs that do not change the semantics of the required set defined here.</li>
+<li><code>SELECT DISTINCT</code> <strong>must</strong> be supported as a projection modifier in the minimum <code>query {}</code> surface. It removes duplicate rows from the projected schema and lowers using the distinct-row contract defined by IncQL RFC 002.</li>
+</ul>
+<h3 id="clause-inventory-minimum">Clause inventory (minimum)</h3>
+<p>This RFC <strong>must</strong> require at least:</p>
+<ul>
+<li><code>FROM</code>, <code>WHERE</code>, <code>SELECT</code>, <code>GROUP BY</code>, <code>ORDER BY</code>, <code>LIMIT</code></li>
+<li>inner <code>JOIN ... ON</code>, <code>LEFT JOIN ... ON</code></li>
+<li><code>EXPLODE &lt;expr&gt; as &lt;alias&gt;</code> for list-valued expressions</li>
+<li><code>WINDOW BY &lt;alias&gt; = &lt;window expression&gt;</code> for ranked/windowed forms in scope</li>
+</ul>
+<p>Post-<code>SELECT</code> filters on the projected schema use <code>WHERE</code> again (a <code>WHERE</code> clause ordered after <code>SELECT</code> in the block). <code>HAVING</code> is <strong>not</strong> IncQL syntax and <strong>must not</strong> be introduced.</p>
+<h3 id="emission">Emission</h3>
+<ul>
+<li><strong>Primary interchange:</strong> checked <code>query {}</code> <strong>must</strong> lower to Substrait for operators in scope; document limitations. The normative <code>Rel</code>-level mapping, extension rules, and read-root policy are IncQL RFC 002; this RFC <strong>must not</strong> contradict IncQL RFC 002.</li>
+<li><strong>Batch execution</strong> <strong>must</strong> be achievable through the execution context consuming Substrait (or a defined handoff).</li>
+<li>Dialect-specific textual renderings <strong>may</strong> exist for inspection or debugging, but they are non-normative and <strong>must not</strong> become the portable interchange or an alternate execution contract for <code>query {}</code>.</li>
+</ul>
+<h3 id="lowering-to-incql-rfc-001-operations-optional-path">Lowering to IncQL RFC 001 operations (optional path)</h3>
+<ul>
+<li>Implementations <strong>may</strong> lower <code>query {}</code> to IncQL RFC 001 trait/method calls on <code>DataSet[T]</code> for execution or optimization; semantics <strong>must</strong> match Substrait lowering.</li>
+</ul>
+<h2 id="design-details">Design details</h2>
+<h3 id="interaction-with-incan">Interaction with Incan</h3>
+<ul>
+<li>Consumes <code>model</code> definitions for <code>T</code>; does not redefine schema language.</li>
+</ul>
+<h3 id="compatibility">Compatibility</h3>
+<ul>
+<li>New clauses <strong>should</strong> be additive; breaking grammar changes need migration notes.</li>
+</ul>
 <h2 id="alternatives-considered">Alternatives considered</h2>
 <ul>
-<li><strong>Fold pipe-forward into InQL RFC 003</strong>: rejected. Keeps <code>query {}</code> RFC smaller and allows pipe syntax to ship on an independent timeline.</li>
+<li><strong>SQL strings only</strong> — rejected (lose static checking).</li>
+<li><strong>Macros-only query</strong> — rejected (Incan lacks sufficient macro support).</li>
 </ul>
 <h2 id="drawbacks">Drawbacks</h2>
 <ul>
-<li><strong>Three</strong> user-visible relational spellings (<code>query {}</code>, chains, pipes) increase documentation and pedagogical load; InQL RFC 000 mitigates by unifying semantics.</li>
+<li>Large compiler surface (parser, checker, Substrait mapping, LSP).</li>
+<li>Substrait coverage vs expressiveness tension.</li>
 </ul>
 <h2 id="layers-affected">Layers affected</h2>
 <ul>
-<li><strong>Parser / AST</strong> for pipe stages and <code>|&gt;</code> token.</li>
-<li><strong>Typechecker</strong>: same relation schema flow as <code>query {}</code> after desugar or shared analysis.</li>
-<li><strong>Lowering / IR</strong>: shared path with InQL RFC 003 where possible.</li>
-<li><strong>LSP</strong>: pipe-specific completions if syntax diverges from <code>query {}</code>.</li>
+<li><strong>Parser / AST</strong> for <code>query {}</code> and clauses.</li>
+<li><strong>Typechecker</strong> for relation registry, schema flow, aggregates.</li>
+<li><strong>IR / lowering</strong> to Substrait (conforming to IncQL RFC 002).</li>
+<li><strong>LSP</strong> inside <code>query {}</code>.</li>
+<li><strong>IncQL package</strong>: vocabulary registration for <code>query</code>.</li>
 </ul>
 <h2 id="design-decisions">Design Decisions</h2>
 <ul>
-<li><strong>Keyword casing</strong>: pipe-forward stage keywords are case-insensitive. Examples in this RFC use lowercase to emphasize pipe-forward as lightweight shorthand over existing values; uppercase spellings remain valid.</li>
-<li><strong>Entry shape (initial)</strong>: a pipe chain starts from an expression whose type conforms to <code>DataSet[T]</code>. There is no standalone <code>from &lt;expr&gt;</code> entry sugar in this surface.</li>
-<li><strong>Vocabulary activation</strong>: library-driven, sharing the activation mechanism with InQL RFC 003's <code>query</code> keyword. Pipe-forward stage keywords are soft keywords activated by the InQL library dependency.</li>
-<li><strong>Method chain interaction</strong>: mixing <code>|&gt;</code> stages and <code>.method()</code> calls in a single pipeline expression is not supported initially. Authors choose one surface per pipeline. Interoperability may be explored in a future amendment.</li>
-<li><strong>Aggregate-stage shape</strong>: this RFC does not yet standardize a dedicated <code>aggregate</code> stage matching BigQuery's <code>AGGREGATE</code> operator. That surface may be refined in a follow-up amendment, provided the resulting semantics remain aligned with InQL RFC 003.</li>
-<li><strong>Not in v0.1 scope</strong>: pipe-forward is deferred from InQL v0.1. It does not unlock new capability beyond what <code>query {}</code> and method chains already provide.</li>
+<li><strong>Lateral column aliases in <code>SELECT</code></strong>: an alias defined in a <code>SELECT</code> list is visible to subsequent expressions in the same list, in order (lateral column alias semantics). This follows the convention of DuckDB, Snowflake, and MySQL. Implementations must rewrite dependent expressions before Substrait lowering (inline substitution), since Substrait projection nodes are flat. An alias is not visible to expressions that precede it in the list.</li>
+<li><strong>Shadowing warning</strong>: when a bare name in a relational clause position resolves to a query column that shadows an outer Incan binding of the same name, the typechecker <strong>should</strong> emit a warning and suggest the <code>.column</code> form to make relational intent explicit. Writing <code>.column</code> explicitly suppresses the warning. The warning is informational — the resolution rule (column wins) still holds. Example message: <code>bare name \</code>customer_id` shadows outer binding; use `.customer_id` to make relational intent explicit`.</li>
+<li><strong>Return type inference</strong>: <code>query {}</code> infers the output schema from the <code>SELECT</code> list. The result preserves the collection kind of the <code>FROM</code> source: a <code>query {}</code> over a <code>DataStream</code> yields a <code>DataStream</code>; over a <code>LazyFrame</code> yields a <code>LazyFrame</code>; over a <code>DataFrame</code> yields a <code>DataFrame</code>. Explicit type annotation at the call site is optional but recommended for documentation.</li>
+<li><strong>Post-<code>SELECT</code> clause ordering</strong>: the canonical clause order is <code>FROM</code> → <code>JOIN</code> → <code>WHERE</code> → <code>GROUP BY</code> → <code>SELECT</code> → <code>WHERE</code> (post-<code>SELECT</code> filter) → <code>ORDER BY</code> → <code>LIMIT</code>. <code>HAVING</code> is not IncQL syntax (IncQL RFC 000). Exact diagnostic wording for ordering violations is an implementation detail.</li>
+<li><strong>Aggregate minimum set</strong>: the initial implementation requires at least <code>count</code>, <code>sum</code>, <code>avg</code>, <code>min</code>, <code>max</code>. Window functions (<code>WINDOW BY</code> and ranked expressions) are part of the clause inventory but their detailed builtin set evolves during implementation. <code>DataStream</code> source restrictions follow IncQL RFC 001's static capability gating: operations requiring unbounded state are statically rejected.</li>
+<li><strong>Aggregate function scope:</strong> the minimum aggregate set is exposed through an importable IncQL facade (examples use <code>pub::incql</code>). These names are ordinary imported symbols that gain aggregate meaning in aggregate-capable relational positions; they are not special ambient builtins.</li>
+<li><strong><code>IN</code> clause</strong>: not part of the RFC003 clause grammar. A separate RFC is required before introducing <code>IN</code> as a query-block clause operator, and its RHS contract must conform to <code>DataSet[T]</code> with a compatible schema.</li>
+<li><strong>Substrait version and mapping catalog</strong>: IncQL RFC 002 owns pinning policy, the north-star operator → <code>Rel</code> catalog, and extension URI requirements; the exact revision shipped with a toolchain is documented in release artifacts alongside the implementation.</li>
+<li><strong>Alternate surfaces</strong>: pipe-forward is IncQL RFC 005; method chains are IncQL RFC 001. This RFC does not mandate alternative surfaces in the initial implementation.</li>
+<li><strong>Minimum join surface:</strong> the required v0.1 clause inventory includes <code>JOIN ... ON</code> (inner join) and <code>LEFT JOIN ... ON</code>. <code>RIGHT</code> and <code>FULL OUTER</code> joins are not part of the required RFC003 minimum; adding them requires an additive extension that preserves the current join semantics.</li>
+<li><strong><code>SELECT DISTINCT</code>:</strong> <code>query {}</code> <strong>must</strong> support <code>SELECT DISTINCT</code> in the minimum clause surface. It is the canonical clause-level spelling for duplicate elimination in this surface; method-chain APIs may expose equivalent operations, but they do not replace the query-surface keyword.</li>
+<li><strong>Ordering syntax:</strong> the implemented v0.1 query surface uses ordering helpers such as <code>asc(.amount)</code> and
+  <code>desc(.amount)</code> rather than postfix SQL tokens such as <code>.amount DESC</code>.</li>
 </ul>
 
 

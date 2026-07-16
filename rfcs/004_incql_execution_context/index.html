@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://encero-systems.github.io/InQL/rfcs/001_inql_dataset/">
+        <link rel="canonical" href="https://encero-systems.github.io/IncQL/rfcs/004_incql_execution_context/">
       
       
-        <link rel="prev" href="../000_inql_syntax/">
+        <link rel="prev" href="../003_incql_query_blocks/">
       
       
-        <link rel="next" href="../002_apache_substrait_integration/">
+        <link rel="next" href="../005_incql_pipe_forward/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -24,7 +24,7 @@
     
     
       
-        <title>RFC 001 - Dataset types - InQL</title>
+        <title>RFC 004 - Execution context - IncQL</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#inql-rfc-001-dataset-types-and-carriers-datasett" class="md-skip">
+        <a href="#incql-rfc-004-execution-context-and-datafusion" class="md-skip">
           Skip to content
         </a>
       
@@ -88,9 +88,9 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="InQL" class="md-header__button md-logo" aria-label="InQL" data-md-component="logo">
+    <a href="../.." title="IncQL" class="md-header__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../shared/brand/inql-mark.png" alt="logo">
+  <img src="../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -101,13 +101,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            InQL
+            IncQL
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              RFC 001 - Dataset types
+              RFC 004 - Execution context
             
           </span>
         </div>
@@ -170,13 +170,13 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/encero-systems/IncQL" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
   </div>
   <div class="md-source__repository">
-    encero-systems/InQL
+    encero-systems/IncQL
   </div>
 </a>
       </div>
@@ -370,22 +370,22 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="InQL" class="md-nav__button md-logo" aria-label="InQL" data-md-component="logo">
+    <a href="../.." title="IncQL" class="md-nav__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../shared/brand/inql-mark.png" alt="logo">
+  <img src="../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
-    InQL
+    IncQL
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/encero-systems/IncQL" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
   </div>
   <div class="md-source__repository">
-    encero-systems/InQL
+    encero-systems/IncQL
   </div>
 </a>
     </div>
@@ -1849,11 +1849,74 @@
   
   
     <li class="md-nav__item">
-      <a href="../000_inql_syntax/" class="md-nav__link">
+      <a href="../000_incql_syntax/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
     RFC 000 - Language specification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../001_incql_dataset/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 001 - Dataset types
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../002_apache_substrait_integration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 002 - Apache Substrait integration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../003_incql_query_blocks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RFC 003 - Query blocks
   </span>
   
 
@@ -1883,7 +1946,7 @@
           
   
   <span class="md-ellipsis">
-    RFC 001 - Dataset types
+    RFC 004 - Execution context
   </span>
   
 
@@ -1894,7 +1957,7 @@
         
   
   <span class="md-ellipsis">
-    RFC 001 - Dataset types
+    RFC 004 - Execution context
   </span>
   
 
@@ -1971,9 +2034,54 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#type-signature-levels" class="md-nav__link">
+  <a href="#creating-a-session" class="md-nav__link">
     <span class="md-ellipsis">
-      Type signature levels
+      Creating a session
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reading data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transforming-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transforming data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#executing-and-collecting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Executing and collecting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#writing-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      Writing results
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#end-to-end-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      End-to-end example
     </span>
   </a>
   
@@ -1995,54 +2103,72 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#packaging" class="md-nav__link">
+  <a href="#session-object" class="md-nav__link">
     <span class="md-ellipsis">
-      Packaging
+      Session object
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#type-hierarchy" class="md-nav__link">
+  <a href="#read-operations" class="md-nav__link">
     <span class="md-ellipsis">
-      Type hierarchy
+      Read operations
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#static-capability-gating" class="md-nav__link">
+  <a href="#table-registration" class="md-nav__link">
     <span class="md-ellipsis">
-      Static capability gating
+      Table registration
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#operation-api-for-lowering-and-direct-use" class="md-nav__link">
+  <a href="#plan-execution" class="md-nav__link">
     <span class="md-ellipsis">
-      Operation API (for lowering and direct use)
+      Plan execution
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#execution-backend-boundary" class="md-nav__link">
+  <a href="#write-operations" class="md-nav__link">
     <span class="md-ellipsis">
-      Execution backend boundary
+      Write operations
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#interaction-with-incan" class="md-nav__link">
+  <a href="#datafusion-as-reference-backend" class="md-nav__link">
     <span class="md-ellipsis">
-      Interaction with Incan
+      DataFusion as reference backend
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backend-abstraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Backend abstraction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interaction-with-incql-rfc-001-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interaction with IncQL RFC 001 types
     </span>
   </a>
   
@@ -2064,27 +2190,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#unified-api-model" class="md-nav__link">
+  <a href="#interaction-with-incan" class="md-nav__link">
     <span class="md-ellipsis">
-      Unified API model
+      Interaction with Incan
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#trait-naming" class="md-nav__link">
+  <a href="#interaction-with-operational-layers" class="md-nav__link">
     <span class="md-ellipsis">
-      Trait naming
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#future-extensibility" class="md-nav__link">
-    <span class="md-ellipsis">
-      Future extensibility
+      Interaction with operational layers
     </span>
   </a>
   
@@ -2123,6 +2240,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#implementation-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation architecture
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#layers-affected" class="md-nav__link">
     <span class="md-ellipsis">
       Layers affected
@@ -2138,13 +2264,40 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Design Decisions">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-plan-and-checklist-non-normative" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation plan and checklist (non-normative)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation plan and checklist (non-normative)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#resolved" class="md-nav__link">
+  <a href="#plan" class="md-nav__link">
     <span class="md-ellipsis">
-      Resolved
+      Plan
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checklist
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exit-criteria-for-rfc-status-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exit criteria for RFC status change
     </span>
   </a>
   
@@ -2171,70 +2324,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../002_apache_substrait_integration/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    RFC 002 - Apache Substrait integration
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../003_inql_query_blocks/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    RFC 003 - Query blocks
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../004_inql_execution_context/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    RFC 004 - Execution context
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../005_inql_pipe_forward/" class="md-nav__link">
+      <a href="../005_incql_pipe_forward/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3295,11 +3385,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../whitepapers/inql_db/" class="md-nav__link">
+      <a href="../../whitepapers/incql_db/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    InQL DB
+    IncQL DB
   </span>
   
 
@@ -3493,9 +3583,54 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#type-signature-levels" class="md-nav__link">
+  <a href="#creating-a-session" class="md-nav__link">
     <span class="md-ellipsis">
-      Type signature levels
+      Creating a session
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reading data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transforming-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transforming data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#executing-and-collecting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Executing and collecting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#writing-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      Writing results
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#end-to-end-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      End-to-end example
     </span>
   </a>
   
@@ -3517,54 +3652,72 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#packaging" class="md-nav__link">
+  <a href="#session-object" class="md-nav__link">
     <span class="md-ellipsis">
-      Packaging
+      Session object
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#type-hierarchy" class="md-nav__link">
+  <a href="#read-operations" class="md-nav__link">
     <span class="md-ellipsis">
-      Type hierarchy
+      Read operations
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#static-capability-gating" class="md-nav__link">
+  <a href="#table-registration" class="md-nav__link">
     <span class="md-ellipsis">
-      Static capability gating
+      Table registration
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#operation-api-for-lowering-and-direct-use" class="md-nav__link">
+  <a href="#plan-execution" class="md-nav__link">
     <span class="md-ellipsis">
-      Operation API (for lowering and direct use)
+      Plan execution
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#execution-backend-boundary" class="md-nav__link">
+  <a href="#write-operations" class="md-nav__link">
     <span class="md-ellipsis">
-      Execution backend boundary
+      Write operations
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#interaction-with-incan" class="md-nav__link">
+  <a href="#datafusion-as-reference-backend" class="md-nav__link">
     <span class="md-ellipsis">
-      Interaction with Incan
+      DataFusion as reference backend
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backend-abstraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Backend abstraction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interaction-with-incql-rfc-001-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interaction with IncQL RFC 001 types
     </span>
   </a>
   
@@ -3586,27 +3739,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#unified-api-model" class="md-nav__link">
+  <a href="#interaction-with-incan" class="md-nav__link">
     <span class="md-ellipsis">
-      Unified API model
+      Interaction with Incan
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#trait-naming" class="md-nav__link">
+  <a href="#interaction-with-operational-layers" class="md-nav__link">
     <span class="md-ellipsis">
-      Trait naming
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#future-extensibility" class="md-nav__link">
-    <span class="md-ellipsis">
-      Future extensibility
+      Interaction with operational layers
     </span>
   </a>
   
@@ -3645,6 +3789,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#implementation-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation architecture
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#layers-affected" class="md-nav__link">
     <span class="md-ellipsis">
       Layers affected
@@ -3660,13 +3813,40 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Design Decisions">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-plan-and-checklist-non-normative" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation plan and checklist (non-normative)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation plan and checklist (non-normative)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#resolved" class="md-nav__link">
+  <a href="#plan" class="md-nav__link">
     <span class="md-ellipsis">
-      Resolved
+      Plan
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checklist
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exit-criteria-for-rfc-status-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exit criteria for RFC status change
     </span>
   </a>
   
@@ -3695,287 +3875,429 @@
   
 
 
-<h1 id="inql-rfc-001-dataset-types-and-carriers-datasett">InQL RFC 001: Dataset types and carriers (<code>DataSet[T]</code>)</h1>
+<h1 id="incql-rfc-004-execution-context-and-datafusion">IncQL RFC 004: Execution context and DataFusion</h1>
 <ul>
 <li><strong>Status:</strong> In Progress</li>
-<li><strong>Created:</strong> 2026-03-22</li>
+<li><strong>Created:</strong> 2026-03-24</li>
 <li><strong>Author(s):</strong> Danny Meijer</li>
 <li><strong>Related:</strong></li>
-<li>InQL RFC 000 (language specification — naming, schema shapes, layer boundaries)</li>
-<li>Incan compiler — static capability gating enforcement: <a href="https://github.com/encero-systems/incan/issues/187">incan#187</a></li>
-<li>InQL follow-up when enforcement lands: <a href="https://github.com/encero-systems/InQL/issues/10">InQL #10</a></li>
-<li>InQL aggregate helper semantics follow-up: <a href="https://github.com/encero-systems/InQL/issues/23">InQL #23</a></li>
-<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/InQL/issues/2">InQL #2</a></li>
+<li>IncQL RFC 000 (language specification — compilation model, layer boundaries)</li>
+<li>IncQL RFC 001 (dataset types — <code>DataSet[T]</code> carriers; <code>DataFrame[T]</code> as materialized result)</li>
+<li>IncQL RFC 002 (Apache Substrait — plan interchange; <code>ReadRel</code> and logical reads)</li>
+<li>IncQL RFC 003 (query DSL — <code>query {}</code> produces plans this RFC executes)</li>
+<li>IncQL RFC 007 (Prism logical planning and optimization engine)</li>
+<li>IncQL RFC 008 (optimizer boundary, statistics, cost-based optimization, and adaptive execution)</li>
+<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/IncQL/issues/5">IncQL #5</a></li>
 <li><strong>RFC PR:</strong> -</li>
 <li><strong>Written against:</strong> Incan v0.2</li>
 <li><strong>Shipped in:</strong> —</li>
 </ul>
 <h2 id="summary">Summary</h2>
-<p>This RFC specifies the <strong>dataset type hierarchy</strong> for InQL: the traits and concrete types that carry schema-parameterized tabular data through relational pipelines. The hierarchy is rooted in the <strong><code>DataSet[T]</code></strong> trait, split into <strong><code>BoundedDataSet[T]</code></strong> (finite extent) and <strong><code>UnboundedDataSet[T]</code></strong> (streaming/unbounded), with three concrete types: <strong><code>DataFrame[T]</code></strong> (materialized/eager), <strong><code>LazyFrame[T]</code></strong> (deferred plan), and <strong><code>DataStream[T]</code></strong> (streaming). The bounded/unbounded split enables <strong>static capability gating</strong>: operations that require unbounded state are rejected at compile time when the target is unbounded, without requiring a separate streaming API. This RFC also defines the <strong>relational operation API</strong> on <code>DataSet[T]</code> and the <strong>execution backend boundary</strong> so implementations can delegate without exposing engine internals as the author contract.</p>
+<p>This RFC specifies the <strong>execution context</strong>: the session object that bridges IncQL's <strong>typed logical plans</strong> and <strong>real execution</strong>. It defines how authors <strong>read data</strong> into <code>DataSet[T]</code> values, <strong>execute plans</strong> (lowered to Substrait per IncQL RFC 002), and <strong>write results</strong> back to storage. <strong>Apache DataFusion</strong> is the <strong>reference (and default) execution backend</strong> for plan optimization and execution: it consumes Substrait plans, applies query optimizations (predicate pushdown, projection pruning, join reordering, constant folding), and executes against registered data sources, returning <strong>Apache Arrow</strong> record batches that IncQL wraps in typed <code>DataFrame[T]</code> carriers. This RFC standardizes the explicit core <code>Session</code> contract; higher operational layers may compose, scope, or inject sessions and adapter conveniences on top, but they do not redefine IncQL execution semantics. With RFCs 000–004, IncQL is usable for read → transform → write workflows.</p>
 <h2 id="core-model">Core model</h2>
 <ol>
-<li><strong><code>DataSet[T]</code></strong> is the root trait — any schema-parameterized tabular data whose row shape is an Incan <code>model</code> <code>T</code>.</li>
-<li><strong><code>BoundedDataSet[T]</code></strong> extends <code>DataSet[T]</code> — data with a finite, known extent. All relational operations are allowed.</li>
-<li><strong><code>UnboundedDataSet[T]</code></strong> extends <code>DataSet[T]</code> — data from a streaming or unbounded source. Operations requiring unbounded state <strong>must</strong> be rejected at compile time.</li>
-<li><strong><code>DataFrame[T]</code></strong> implements <code>BoundedDataSet[T]</code> — materialized/eager result; always bounded.</li>
-<li><strong><code>LazyFrame[T]</code></strong> implements <code>BoundedDataSet[T]</code> — deferred plan over a bounded source; the workhorse for batch pipelines.</li>
-<li><strong><code>DataStream[T]</code></strong> implements <code>UnboundedDataSet[T]</code> — streaming specialization; unbounded.</li>
+<li>A <strong><code>Session</code></strong> (or <strong>execution context</strong>) is the entry point for IncQL programs that interact with data. It holds <strong>table registrations</strong>, <strong>configuration</strong>, and a <strong>reference to the execution backend</strong>.</li>
+<li><strong>Reading data</strong> creates <code>LazyFrame[T]</code> or <code>DataStream[T]</code> values from registered sources. The session resolves logical names to physical data; the plan carries only the logical identity (IncQL RFC 002).</li>
+<li><strong>Executing plans</strong> passes Substrait plans (or equivalent IR) through the backend's <strong>optimizer</strong> and <strong>executor</strong>, producing <strong>Arrow record batches</strong>.</li>
+<li><strong>Materializing results</strong> wraps Arrow output in typed <code>DataFrame[T]</code> carriers (IncQL RFC 001).</li>
+<li><strong>Writing results</strong> sends <code>DataSet[T]</code> values (or materialized <code>DataFrame[T]</code>) to registered output targets.</li>
 </ol>
 <h2 id="motivation">Motivation</h2>
-<p>Typed pipelines need a first-class carrier for columnar data indexed by <code>T</code>. Without <code>DataSet[T]</code>, relational authoring surfaces would lack a stable primary relation and schema flow for <code>FROM</code>-style entry points. The <strong>bounded/unbounded</strong> distinction — inspired by Spark Structured Streaming's principle that a stream is an unbounded table — must be expressed at the <strong>type level</strong> so the compiler can enforce streaming constraints statically rather than at runtime. An intermediate trait layer (<code>BoundedDataSet</code> / <code>UnboundedDataSet</code>) gives authors clean type signatures for consumers that accept "any batch data" or "any streaming data" without listing concrete types.</p>
+<p>IncQL RFCs 000–003 define a typed query language that produces portable logical plans. Without an execution context, those plans are inert: there is no way to read data in, execute the relational work, or write results out. The execution context completes the pipeline from authored intent to running workload.</p>
+<p>Choosing Apache DataFusion as the reference backend is a pragmatic decision: it is Rust-native, Substrait-aware, provides serious query optimization, and operates on Apache Arrow — the de facto columnar data interchange format in the modern data ecosystem. Naming it explicitly avoids the trap of an abstract "pluggable backend" with no concrete implementation.</p>
+<p>The <code>Session</code> surface should also feel familiar to users coming from established data runtimes such as Spark: one obvious entry point for reading data, registering logical names, executing plans, and writing results. That familiarity is an ergonomic goal, but not a semantic dependency. IncQL keeps its own typed <code>DataSet[T]</code> model, explicit execution boundary, and RFC-defined semantics rather than inheriting runtime-specific API details from other systems.</p>
 <h2 id="goals">Goals</h2>
 <ul>
-<li>Specify the <strong>trait hierarchy</strong>: <code>DataSet[T]</code> → <code>BoundedDataSet[T]</code> / <code>UnboundedDataSet[T]</code> → concrete types.</li>
-<li>Require <code>T</code> to be carried from Incan <code>model</code> definitions (or an equivalent fixed field bundle) for strongly typed mode.</li>
-<li>Define <strong><code>LazyFrame[T]</code></strong> as the universal deferred plan type for batch relational work.</li>
-<li>Define <strong><code>DataFrame[T]</code></strong> as the materialized/eager result — always bounded; the product of collecting or executing a <code>LazyFrame</code>.</li>
-<li>Define <strong><code>DataStream[T]</code></strong> as the streaming specialization: same operation API through <code>DataSet[T]</code>, but unbounded, enabling compile-time constraint enforcement.</li>
-<li>Define <strong>static capability gating</strong> through the trait hierarchy: <code>BoundedDataSet</code> → all operations; <code>UnboundedDataSet</code> → unbounded-state operations rejected; <code>DataSet</code> → most restrictive (because the concrete kind may be unknown).</li>
-<li>Specify the <strong>relational operation API</strong> on <code>DataSet[T]</code> as the programmatic relational surface (implementations <strong>may</strong> share a lowering path with other authoring surfaces; that is outside the scope of this RFC).</li>
-<li>Specify an <strong>execution backend boundary</strong>: materialize, run plan, or hand off Substrait / IR to a consumer — without mandating a single engine.</li>
+<li>Define <strong><code>Session</code></strong> as the execution context: what it holds, how authors create one, and what operations it exposes.</li>
+<li>Specify <strong>read operations</strong>: how named tables, files, and virtual data become <code>LazyFrame[T]</code> or <code>DataStream[T]</code> values through the session.</li>
+<li>Specify <strong>plan execution</strong>: how Substrait plans (IncQL RFC 002) flow through the backend optimizer and executor to produce results.</li>
+<li>Specify <strong>materialization</strong>: how execution output (Arrow record batches) becomes typed <code>DataFrame[T]</code> (IncQL RFC 001).</li>
+<li>Specify <strong>write operations</strong>: how <code>DataSet[T]</code> values are written to registered output targets.</li>
+<li>Name <strong>Apache DataFusion</strong> as the reference and default execution backend, with <strong>Apache Arrow</strong> as the in-memory data representation.</li>
+<li>Define the <strong>backend abstraction</strong> so alternative backends (Polars, DuckDB, remote engines) can be substituted without changing author code, with backend-specific configuration exposed through a dedicated <code>backends</code> namespace rather than the root API.</li>
+<li>Clarify the boundary between the execution backend and higher operational or adapter layers that may provide source/sink integrations or scoped session conveniences.</li>
+<li>Shape the <code>Session</code> surface as a familiar entry point for data work, taking ergonomic inspiration from established runtimes such as Spark while preserving IncQL's typed carrier model and explicit execution boundaries.</li>
 </ul>
 <h2 id="non-goals">Non-Goals</h2>
 <ul>
-<li>Normative naming rules (four naming forms, current query schema, resolution order) — InQL RFC 000.</li>
-<li>Apache Substrait <code>Rel</code>-level mapping and extension policy — InQL RFC 002.</li>
-<li>Clause-based relational grammar, aggregate rules, Substrait lowering from that surface — InQL RFC 003.</li>
-<li>Execution context, session, DataFusion — InQL RFC 004.</li>
-<li>Pipe-forward (<code>|&gt;</code>) grammar — InQL RFC 005 (not in v0.1 scope).</li>
-<li>Cluster-scale scheduling, shuffle, distributed fault tolerance — orchestration layer.</li>
-<li>Drop-in API compatibility with Apache Beam, Flink, or Spark SDKs.</li>
+<li>Normative naming rules — IncQL RFC 000.</li>
+<li>Dataset types and trait hierarchy — IncQL RFC 001.</li>
+<li>Substrait <code>Rel</code>-level mapping and extension policy — IncQL RFC 002.</li>
+<li><code>query {}</code> grammar and clause inventory — IncQL RFC 003.</li>
+<li>Orchestration, workflow scheduling, quality gates — execution and operational layers above IncQL.</li>
+<li>Distributed execution, cluster scheduling, shuffle — out of scope for IncQL; may be addressed by runners in the operational layer.</li>
+<li>Credential management, secret resolution, IAM — operational layer; the session receives resolved bindings, not raw secrets.</li>
+<li>Standardizing workflow-scoped session propagation, active-session lookup, or Reader/Writer convenience APIs — these may be provided by higher operational layers, but are not part of the core IncQL contract in this RFC.</li>
 </ul>
 <h2 id="guide-level-explanation">Guide-level explanation</h2>
-<p>Authors import dataset types from the InQL package and parameterize with a <code>model</code>:</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
+<h3 id="creating-a-session">Creating a session</h3>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">Session</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+</code></pre></div>
+<p>A session holds registered data sources and configuration. <code>Session.default()</code> creates a context with the default backend (DataFusion). Authors who need custom configuration use a builder; backend-specific configuration lives under <code>pub::incql.backends</code>. Higher operational layers may wrap this construction behind step- or pipeline-level runtime setup, but the core IncQL surface remains an explicit <code>Session</code>:</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">Session</span><span class="o">,</span><span class="w"> </span><span class="nn">backends</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">builder</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">with_backend</span><span class="p">(</span><span class="n">backends</span><span class="o">.</span><span class="nc">DataFusion</span><span class="p">())</span>
+    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="reading-data">Reading data</h3>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">Session</span><span class="o">,</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">csv_source</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">load_orders</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
-    <span class="o">...</span>
+<span class="n">session</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+
+<span class="c1"># Register a named table (logical name → physical source)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;orders&quot;</span><span class="p">,</span> <span class="n">csv_source</span><span class="p">(</span><span class="s2">&quot;s3://bucket/orders.csv&quot;</span><span class="p">))</span>
+
+<span class="c1"># Create a lazy plan from the registered table</span>
+<span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;orders&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p>They compose data using methods exposed through the <code>DataSet[T]</code> trait:</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
+<p><code>session.table("orders")</code> returns a <code>LazyFrame[Order]</code> — a deferred plan rooted in a <code>ReadRel</code> (IncQL RFC 002) that carries the logical name <code>"orders"</code>. No data moves until the plan is executed.</p>
+<p>For file-based sources:</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Event</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">high_value_orders</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
-    <span class="k">return</span> <span class="n">orders</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">events</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Event</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;events&quot;</span><span class="p">,</span> <span class="s2">&quot;s3://bucket/events/*.parquet&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p>Authors can derive computed columns through <code>with_column(...)</code>:</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">col</span><span class="o">,</span><span class="w"> </span><span class="nn">int_expr</span><span class="o">,</span><span class="w"> </span><span class="nn">mul</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">enrich_orders</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]:</span>
-    <span class="k">return</span> <span class="n">orders</span><span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;amount_x2&quot;</span><span class="p">,</span> <span class="n">mul</span><span class="p">(</span><span class="nb">col</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">),</span> <span class="n">int_expr</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
+<p>For inline data:</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="n">sample</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">from_values</span><span class="p">([</span>
+    <span class="nc">Order</span><span class="p">(</span><span class="n">order_id</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="n">customer_id</span><span class="o">=</span><span class="s2">&quot;c1&quot;</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mf">100.0</span><span class="p">),</span>
+    <span class="nc">Order</span><span class="p">(</span><span class="n">order_id</span><span class="o">=</span><span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="n">customer_id</span><span class="o">=</span><span class="s2">&quot;c2&quot;</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mf">250.0</span><span class="p">),</span>
+<span class="p">])</span>
 </code></pre></div>
-<p>Because <code>DataStream[T]</code> shares the same operation API, streaming code looks identical — only the type signature changes:</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">DataStream</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Event</span>
+<h3 id="transforming-data">Transforming data</h3>
+<p>Once you have a <code>LazyFrame[T]</code>, use <code>query {}</code> (IncQL RFC 003) or method chains (IncQL RFC 001):</p>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">count</span><span class="o">,</span><span class="w"> </span><span class="nn">sum</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">important_events</span><span class="p">(</span><span class="n">events</span><span class="p">:</span> <span class="nc">DataStream</span><span class="p">[</span><span class="nc">Event</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nc">DataStream</span><span class="p">[</span><span class="nc">Event</span><span class="p">]:</span>
-    <span class="k">return</span> <span class="n">events</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">.</span><span class="n">severity</span> <span class="o">==</span> <span class="s2">&quot;critical&quot;</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">WHERE</span> <span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">100</span>
+    <span class="k">GROUP</span> <span class="k">BY</span> <span class="o">.</span><span class="n">region</span>
+    <span class="k">SELECT</span>
+        <span class="n">region</span><span class="p">,</span>
+        <span class="nb">count</span><span class="p">()</span> <span class="k">as</span> <span class="n">order_count</span><span class="p">,</span>
+        <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_revenue</span><span class="p">,</span>
+    <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">total_revenue</span> <span class="k">DESC</span>
+<span class="p">}</span>
 </code></pre></div>
-<h3 id="type-signature-levels">Type signature levels</h3>
-<p>The trait hierarchy gives authors three levels of specificity:</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">DataSet</span><span class="o">,</span><span class="w"> </span><span class="nn">BoundedDataSet</span><span class="o">,</span><span class="w"> </span><span class="nn">UnboundedDataSet</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span><span class="p">,</span> <span class="nc">Event</span>
+<h3 id="executing-and-collecting">Executing and collecting</h3>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">DataFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">OrderSummary</span>
 
-<span class="c1"># Accepts any carrier — generic utilities</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">row_count</span><span class="p">[</span><span class="nc">T</span><span class="p">](</span><span class="n">data</span><span class="p">:</span> <span class="kt">DataSet</span><span class="p">[</span><span class="nc">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="o">...</span>
-
-<span class="c1"># Batch only — Parquet writers, batch sinks</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">write_parquet</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nc">BoundedDataSet</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="o">...</span>
-
-<span class="c1"># Streaming only — Kafka sinks, event processors</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">write_to_kafka</span><span class="p">(</span><span class="n">events</span><span class="p">:</span> <span class="nc">UnboundedDataSet</span><span class="p">[</span><span class="nc">Event</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="o">...</span>
+<span class="c1"># Execute the plan and materialize results</span>
+<span class="n">materialized</span><span class="p">:</span> <span class="kt">DataFrame</span><span class="p">[</span><span class="nc">OrderSummary</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </code></pre></div>
-<p>And two levels of concrete-type specificity:</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">inql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">DataFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">DataStream</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span><span class="p">,</span> <span class="nc">Summary</span><span class="p">,</span> <span class="nc">Event</span><span class="p">,</span> <span class="nc">Alert</span>
+<p><code>session.collect(result)</code> takes the <code>LazyFrame</code>, lowers to Substrait (IncQL RFC 002), passes the plan through DataFusion's optimizer, executes it, and wraps the resulting Arrow record batches in a typed <code>DataFrame[T]</code>.</p>
+<h3 id="writing-results">Writing results</h3>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">parquet_sink</span>
 
-<span class="c1"># Materialized data in hand</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">inspect</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="kt">DataFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="o">...</span>
+<span class="c1"># Write to a registered output target</span>
+<span class="n">session</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">materialized</span><span class="p">,</span> <span class="n">parquet_sink</span><span class="p">(</span><span class="s2">&quot;s3://bucket/summaries/&quot;</span><span class="p">))</span>
 
-<span class="c1"># Deferred plan — compose before execution</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">build_pipeline</span><span class="p">(</span><span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Summary</span><span class="p">]:</span>
-    <span class="o">...</span>
+<span class="c1"># Or write a deferred plan through a file-format convenience helper</span>
+<span class="n">session</span><span class="o">.</span><span class="n">write_parquet</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">&quot;s3://bucket/summaries/&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="end-to-end-example">End-to-end example</h3>
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">Session</span><span class="o">,</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">DataFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">csv_source</span><span class="o">,</span><span class="w"> </span><span class="nn">parquet_sink</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span><span class="o">.</span><span class="n">functions</span> <span class="kn">import</span><span class="w"> </span><span class="nn">count</span><span class="o">,</span><span class="w"> </span><span class="nn">sum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span><span class="p">,</span> <span class="nc">OrderSummary</span>
 
-<span class="c1"># Streaming specifically</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">process_stream</span><span class="p">(</span><span class="n">events</span><span class="p">:</span> <span class="nc">DataStream</span><span class="p">[</span><span class="nc">Event</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nc">DataStream</span><span class="p">[</span><span class="nc">Alert</span><span class="p">]:</span>
-    <span class="o">...</span>
+<span class="n">session</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+<span class="n">session</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;orders&quot;</span><span class="p">,</span> <span class="n">csv_source</span><span class="p">(</span><span class="s2">&quot;s3://bucket/orders.csv&quot;</span><span class="p">))</span>
+
+<span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;orders&quot;</span><span class="p">)</span>
+
+<span class="n">summary</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">OrderSummary</span><span class="p">]</span> <span class="o">=</span> <span class="k">query</span> <span class="p">{</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">WHERE</span> <span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;completed&quot;</span>
+    <span class="k">GROUP</span> <span class="k">BY</span> <span class="o">.</span><span class="n">region</span>
+    <span class="k">SELECT</span>
+        <span class="n">region</span><span class="p">,</span>
+        <span class="nb">count</span><span class="p">()</span> <span class="k">as</span> <span class="n">order_count</span><span class="p">,</span>
+        <span class="nb">sum</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_revenue</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">result</span><span class="p">:</span> <span class="kt">DataFrame</span><span class="p">[</span><span class="nc">OrderSummary</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">parquet_sink</span><span class="p">(</span><span class="s2">&quot;s3://bucket/summaries/&quot;</span><span class="p">))</span>
 </code></pre></div>
 <h2 id="reference-level-explanation">Reference-level explanation</h2>
-<h3 id="packaging">Packaging</h3>
+<h3 id="session-object"><code>Session</code> object</h3>
 <ul>
-<li>The dataset types and traits in this RFC <strong>must</strong> be exposed from a buildable Incan library package with public exports.</li>
-<li>This RFC <strong>may</strong> require vocabulary only for symbols strictly needed for the dataset API surface; vocabulary for other InQL authoring surfaces is a separate concern.</li>
+<li><strong><code>Session</code></strong> is the primary execution context. It <strong>must</strong> hold:</li>
+<li>A <strong>table registry</strong>: logical names mapped to data source definitions.</li>
+<li>A <strong>backend reference</strong>: the execution engine (DataFusion by default).</li>
+<li><strong>Configuration</strong>: optimizer settings, runtime parameters, and feature flags.</li>
+<li><code>Session.default()</code> <strong>must</strong> create a context with the DataFusion backend and default configuration.</li>
+<li><code>Session.builder()</code> <strong>must</strong> return a builder that allows backend selection and configuration before constructing the session.</li>
+<li>The <code>Session</code> API <strong>should</strong> present a small, discoverable entry-point surface for data work, broadly analogous to familiar runtime entry points in systems such as Spark.</li>
+<li>That ergonomic inspiration <strong>must not</strong> override IncQL's typed carrier model, explicit <code>Session.collect(...)</code> execution boundary, or the prohibition on raw SQL as a core execution path.</li>
 </ul>
-<h3 id="type-hierarchy">Type hierarchy</h3>
-<div class="language-text highlight"><pre><span></span><code>DataSet[T]                       (root trait — any tabular data)
-├── BoundedDataSet[T]            (trait — finite extent)
-│   ├── DataFrame[T]             (concrete — materialized/eager)
-│   └── LazyFrame[T]             (concrete — deferred plan, bounded source)
-└── UnboundedDataSet[T]          (trait — streaming/unbounded)
-    └── DataStream[T]            (concrete — streaming)
-</code></pre></div>
-<ul>
-<li><strong><code>DataSet[T]</code></strong> is the root trait. All relational operations are defined here. The compiler <strong>must</strong> apply the <strong>most restrictive</strong> constraint set when the concrete kind is unknown at a call site (because the argument might be unbounded).</li>
-<li><strong><code>BoundedDataSet[T]</code></strong> extends <code>DataSet[T]</code>. All relational operations are allowed without streaming constraints.</li>
-<li><strong><code>UnboundedDataSet[T]</code></strong> extends <code>DataSet[T]</code>. Operations requiring unbounded state <strong>must</strong> be rejected at compile time.</li>
-<li><strong><code>DataFrame[T]</code></strong> implements <code>BoundedDataSet[T]</code>. Always bounded. Conceptually the product of collecting or executing a <code>LazyFrame</code>. Concrete runtime representation is implementation-defined but <strong>must</strong> preserve <code>T</code> in the type system.</li>
-<li><strong><code>LazyFrame[T]</code></strong> implements <code>BoundedDataSet[T]</code>. Holds a logical plan (or equivalent) until an explicit execute, collect, or write boundary. Always bounded.</li>
-<li><strong><code>DataStream[T]</code></strong> implements <code>UnboundedDataSet[T]</code>. Shares the <code>DataSet[T]</code> operation API but signals that its source is unbounded. The compiler <strong>must</strong> apply static streaming constraints.</li>
-</ul>
-<p>The three concrete types <strong>must not</strong> imply three unrelated relational languages. All operations are defined on <code>DataSet[T]</code>; the bounded/unbounded distinction is a type-level property that enables or restricts specific operations statically.</p>
-<h3 id="static-capability-gating">Static capability gating</h3>
-<table>
-<thead>
-<tr>
-<th>Trait bound in signature</th>
-<th>Allowed operations</th>
-<th>Constraint level</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>DataSet[T]</code></td>
-<td>Intersection of bounded + unbounded capabilities</td>
-<td>Most restrictive (concrete kind unknown)</td>
-</tr>
-<tr>
-<td><code>BoundedDataSet[T]</code></td>
-<td>All relational operations</td>
-<td>Unrestricted</td>
-</tr>
-<tr>
-<td><code>UnboundedDataSet[T]</code></td>
-<td>Relational operations minus unbounded-state operations</td>
-<td>Streaming constraints enforced</td>
-</tr>
-</tbody>
-</table>
-<p>When a function accepts <code>DataSet[T]</code> (the root trait), the compiler <strong>must</strong> enforce streaming constraints because the input <strong>might</strong> be unbounded. Authors who want the full operation set <strong>must</strong> accept <code>BoundedDataSet[T]</code> or a concrete bounded type.</p>
-<p>For <code>UnboundedDataSet[T]</code>, the governing rule is semantic rather than ad hoc: operations that require end-of-input semantics or unbounded retained state are not valid unless a later RFC gives them bounded-state semantics. In v0.1, the obvious disallowed examples include global <code>order_by</code>, global <code>limit</code>, unwindowed <code>group_by</code> / <code>agg</code>, eager materialization to a finite <code>DataFrame[T]</code>, and finite file writes.</p>
-<h3 id="operation-api-for-lowering-and-direct-use">Operation API (for lowering and direct use)</h3>
-<p>The InQL library <strong>must</strong> expose the following instance methods on <code>DataSet[T]</code> (exact signatures may live in companion library docs; semantics <strong>must</strong> match this table and stay consistent with any normative lowering rules for the same logical operators elsewhere in InQL). Method names are illustrative; implementations <strong>may</strong> use equivalent spellings if the compiler maps them consistently.</p>
+<p>The intended core session surface for v0.1 is:</p>
 <table>
 <thead>
 <tr>
 <th>Method</th>
-<th>Role</th>
+<th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong><code>filter</code></strong></td>
-<td>Restrict rows by an explicit predicate builder in the current package slice (for example <code>eq(col("status"), str_lit("open"))</code>), with future sugar lowering to the same semantic target.</td>
+<td><code>Session.default()</code></td>
+<td>Create a session with the default execution backend and default configuration</td>
 </tr>
 <tr>
-<td><strong><code>join</code></strong></td>
-<td>Combine with another <code>DataSet[U]</code> on a join condition; named relations for <code>relation.column</code></td>
+<td><code>Session.builder()</code></td>
+<td>Create a builder for backend selection and configuration</td>
 </tr>
 <tr>
-<td><strong><code>select</code></strong></td>
-<td>Project columns and expressions; output row type becomes a new schema <code>U</code> the typechecker can track.</td>
+<td><code>session.register(name, source)</code></td>
+<td>Bind a logical relation name to a source definition</td>
 </tr>
 <tr>
-<td><strong><code>with_column</code></strong></td>
-<td>Add or replace one projected column by name using an explicit projection builder expression.</td>
+<td><code>session.table(name)</code></td>
+<td>Resolve a registered logical relation as <code>LazyFrame[T]</code></td>
 </tr>
 <tr>
-<td><strong><code>group_by</code></strong></td>
-<td>Define grouping keys for aggregation; keys are relational expressions.</td>
+<td><code>session.read_parquet(uri)</code></td>
+<td>Create a <code>LazyFrame[T]</code> from Parquet input</td>
 </tr>
 <tr>
-<td><strong><code>agg</code></strong></td>
-<td>Apply aggregate functions over groups (often chained after <code>group_by</code>); produces grouped/aggregated schema.</td>
+<td><code>session.read_csv(uri)</code></td>
+<td>Create a <code>LazyFrame[T]</code> from delimited text input</td>
 </tr>
 <tr>
-<td><strong><code>order_by</code></strong></td>
-<td>Define sort keys and directions.</td>
+<td><code>session.read_arrow(uri)</code></td>
+<td>Create a <code>LazyFrame[T]</code> from Arrow IPC input</td>
 </tr>
 <tr>
-<td><strong><code>limit</code></strong></td>
-<td>Cap the number of rows (after sort when both apply).</td>
+<td><code>session.from_values(rows)</code></td>
+<td>Create a <code>LazyFrame[T]</code> from inline typed values</td>
 </tr>
 <tr>
-<td><strong><code>explode</code></strong></td>
-<td>Expand a nested list column into rows (or equivalent).</td>
+<td><code>session.collect(data)</code></td>
+<td>Execute a deferred plan and materialize <code>DataFrame[T]</code></td>
+</tr>
+<tr>
+<td><code>session.write(data, target)</code></td>
+<td>Write bounded data to a typed sink target</td>
+</tr>
+<tr>
+<td><code>session.write_parquet(data, uri)</code></td>
+<td>Write bounded data to Parquet output</td>
+</tr>
+<tr>
+<td><code>session.write_csv(data, uri)</code></td>
+<td>Write bounded data to CSV output</td>
 </tr>
 </tbody>
 </table>
-<p>Additional requirements:</p>
+<p>This table defines the intended high-level API shape. The detailed normative rules for reading, registration, execution, and writing are specified in the sections below.</p>
+<h3 id="read-operations">Read operations</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Returns</th>
+<th>Substrait lowering (IncQL RFC 002)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session.table(name)</code></td>
+<td><code>LazyFrame[T]</code></td>
+<td><code>ReadRel</code> + <code>NamedTable</code></td>
+</tr>
+<tr>
+<td><code>session.read_parquet(uri)</code></td>
+<td><code>LazyFrame[T]</code></td>
+<td><code>ReadRel</code> + <code>LocalFiles</code> (Parquet format)</td>
+</tr>
+<tr>
+<td><code>session.read_csv(uri)</code></td>
+<td><code>LazyFrame[T]</code></td>
+<td><code>ReadRel</code> + <code>LocalFiles</code> (delimited text format)</td>
+</tr>
+<tr>
+<td><code>session.read_arrow(uri)</code></td>
+<td><code>LazyFrame[T]</code></td>
+<td><code>ReadRel</code> + <code>LocalFiles</code> (Arrow IPC format)</td>
+</tr>
+<tr>
+<td><code>session.from_values(rows)</code></td>
+<td><code>LazyFrame[T]</code></td>
+<td><code>ReadRel</code> + <code>VirtualTable</code></td>
+</tr>
+</tbody>
+</table>
 <ul>
-<li>Operations <strong>must</strong> preserve or update <code>T</code> (or output model <code>U</code>) in a way the typechecker can verify.</li>
-<li>Operations that are statically invalid on <code>UnboundedDataSet[T]</code> (e.g. unbounded-state operations) <strong>must</strong> produce compile-time errors, not runtime failures.</li>
-<li>Aggregate helpers used with <code>.agg(...)</code> are imported library symbols (from <code>pub::inql.functions</code>), not ambient builtins.</li>
-<li>The minimum required aggregate-helper surface for the current package slice is <code>col</code>, <code>sum</code>, and <code>count</code>.</li>
-<li>The current InQL-only implementation uses <code>col(...)</code> builders as the semantic target that later <code>.column</code> sugar and query-block lowering should compile to.</li>
-<li>The current InQL-only projection implementation uses <code>with_column(name, expr)</code> plus projection builders such as <code>add(...)</code>, <code>mul(...)</code>, and <code>int_expr(...)</code> as the semantic target that later projection sugar should compile to.</li>
-<li>This RFC defines the minimum required aggregate-function import model for <code>.agg(...)</code>; it is not an exhaustive catalog of all present or future InQL functions. Additional functions <strong>may</strong> be added later through additive library evolution or follow-up RFCs, provided they do not change the semantics of the required set defined by the InQL RFC suite.</li>
+<li>Read operations <strong>must</strong> return <code>LazyFrame[T]</code> — no data is fetched until the plan is executed.</li>
+<li>The schema parameter <code>T</code> <strong>must</strong> be inferred from the registered table definition, from the file schema, or from the literal values provided.</li>
+<li><code>session.table(name)</code> <strong>must</strong> resolve <code>name</code> through the session's table registry. If the name is not registered, it <strong>must</strong> produce a compile-time or registration-time error.</li>
 </ul>
-<h3 id="execution-backend-boundary">Execution backend boundary</h3>
+<h3 id="table-registration">Table registration</h3>
 <ul>
-<li>Implementations <strong>must</strong> separate the author-facing <code>DataSet</code> API from engine-specific code (Rust crates, Substrait consumers, etc.).</li>
-<li>Substrait consumption or emission at the collection/plan layer <strong>may</strong> be specified here as optional; the Substrait contract (InQL RFC 002) governs plan semantics. If more than one relational authoring surface emits Substrait, they <strong>must not</strong> produce contradictory plans for the same logical pipeline.</li>
-<li>The execution context owns the session, plan optimization, and concrete execution backend (DataFusion as reference implementation).</li>
-<li>Materialization helpers such as <code>collect(data)</code> or <code>display(data)</code> belong to the execution context and concrete implementation model, not to the <code>DataSet[T]</code> trait surface defined in this RFC.</li>
+<li><code>session.register(logical_name, source_identifier)</code> binds a logical name to a data source definition.</li>
+<li>The <code>source_identifier</code> is an opaque string or structured descriptor that the session resolves through its integration and execution layers to a concrete scan. IncQL does not define the format of source identifiers beyond requiring that the session can resolve them for the chosen execution backend.</li>
+<li>Registration <strong>may</strong> also accept explicit schema information (an Incan <code>model</code> type) for sources where the schema cannot be inferred.</li>
 </ul>
-<h3 id="interaction-with-incan">Interaction with Incan</h3>
+<h3 id="plan-execution">Plan execution</h3>
 <ul>
-<li>Models supply field names and types for <code>T</code>.</li>
-<li>Rust interop is expected for backends until stdlib covers execution.</li>
+<li><code>session.collect(lazy_frame)</code> <strong>must</strong>:</li>
+<li>Lower the <code>LazyFrame</code>'s logical plan to Substrait (conforming to IncQL RFC 002).</li>
+<li>Pass the Substrait plan to the backend for optimization and execution.</li>
+<li>Wrap the resulting data in a typed <code>DataFrame[T]</code> (IncQL RFC 001).</li>
+<li><code>Session.collect(...)</code> is the canonical execution entry point in the normative API. Implementations <strong>may</strong> additionally offer a convenience form on <code>LazyFrame</code>, but it <strong>must</strong> delegate to session-owned execution semantics rather than bypassing the session boundary.</li>
+<li>The backend <strong>should</strong> apply query optimizations (predicate pushdown, projection pruning, join reordering, constant folding, common-subexpression elimination) before execution.</li>
+<li>Execution and write methods <strong>must</strong> report typed failures that distinguish at least registration / binding errors, lowering or planning errors, backend optimization or execution errors, and I/O or sink errors.</li>
+</ul>
+<h3 id="write-operations">Write operations</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Input</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session.write(data, target)</code></td>
+<td><code>BoundedDataSet[T]</code></td>
+<td>Write to a typed sink target</td>
+</tr>
+<tr>
+<td><code>session.write_parquet(data, uri)</code></td>
+<td><code>LazyFrame[T]</code></td>
+<td>Convenience form for Parquet files</td>
+</tr>
+<tr>
+<td><code>session.write_csv(data, uri)</code></td>
+<td><code>LazyFrame[T]</code></td>
+<td>Convenience form for CSV files</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Write operations <strong>must</strong> execute the plan if the input is a <code>LazyFrame[T]</code> (deferred), then write the materialized data.</li>
+<li><code>session.write(data, target)</code> accepts a typed sink descriptor such as <code>csv_sink(uri)</code> or <code>parquet_sink(uri)</code>. It must not infer format from filename text alone.</li>
+<li>File-format convenience methods <strong>may</strong> accept only deferred bounded plans when the generic <code>session.write(data, target)</code> API covers the broader <code>BoundedDataSet[T]</code> surface.</li>
+<li>Write to streaming sinks (when supported) <strong>may</strong> accept <code>UnboundedDataSet[T]</code>.</li>
+</ul>
+<h3 id="datafusion-as-reference-backend">DataFusion as reference backend</h3>
+<p>Apache DataFusion is the <strong>reference and default</strong> execution backend for IncQL v0.1:</p>
+<ul>
+<li><strong>Plan consumption</strong>: DataFusion accepts Substrait plans through the <code>substrait</code> crate's consumer, converting them to DataFusion logical plans.</li>
+<li><strong>Optimization</strong>: DataFusion's optimizer applies rule-based and cost-based optimizations to the logical plan before execution.</li>
+<li><strong>Execution</strong>: DataFusion executes the optimized plan against registered table providers, producing Apache Arrow <code>RecordBatch</code> results.</li>
+<li><strong>Arrow as data plane</strong>: DataFusion operates natively on Arrow columnar data. IncQL's <code>DataFrame[T]</code> wraps Arrow record batches with the typed model <code>T</code> on top.</li>
+</ul>
+<p>The data flow:</p>
+<div class="language-text highlight"><pre><span></span><code>IncQL query / method chain
+  → Substrait Plan (protobuf, IncQL RFC 002)
+  → DataFusion LogicalPlan (via substrait consumer)
+  → DataFusion optimizer
+  → DataFusion physical execution
+  → Arrow RecordBatch[]
+  → DataFrame[T] (typed IncQL carrier, IncQL RFC 001)
+</code></pre></div>
+<h3 id="backend-abstraction">Backend abstraction</h3>
+<ul>
+<li>The <code>Session</code> <strong>must</strong> abstract over the execution backend so that alternative implementations (Polars, DuckDB, remote engines, future custom backends) can be substituted without changing author code.</li>
+<li>A single <code>Session</code> owns one execution backend for a given execution boundary.</li>
+<li>The backend interface <strong>must</strong> support at minimum: plan execution from Substrait, table provider registration, and result collection as Arrow record batches (or equivalent).</li>
+<li>DataFusion is the <strong>default</strong>; it is not the <strong>only</strong> permitted backend. Implementations <strong>may</strong> offer backend selection through <code>Session.builder()</code>.</li>
+<li><code>Session.builder()</code> <strong>must</strong> expose a stable portable configuration subset (at minimum backend selection plus core execution and optimizer settings). Backend-specific tuning <strong>may</strong> be surfaced through backend options, but this RFC does not standardize the full DataFusion configuration surface.</li>
+<li>Backend-specific configuration objects <strong>should</strong> be exposed from <code>pub::incql.backends</code> rather than from the root <code>pub::incql</code> namespace.</li>
+<li>The normative user-facing session type remains <code>Session</code>; this RFC does not define backend-named session types such as <code>DuckDbSession</code> or <code>PolarsSession</code>.</li>
+<li>External systems such as warehouses, databases, filesystems, or object stores are not necessarily execution backends. They <strong>may</strong> instead appear as sources or sinks resolved through the session's integration layer while plan execution remains owned by the session's selected backend.</li>
+<li>Higher operational layers <strong>may</strong> provide scoped session propagation or convenience APIs for adapters and workflow steps, but those conveniences <strong>must</strong> delegate to <code>Session</code> rather than replacing the core execution model defined here.</li>
+</ul>
+<h3 id="interaction-with-incql-rfc-001-types">Interaction with IncQL RFC 001 types</h3>
+<ul>
+<li><code>session.table(name)</code> returns <code>LazyFrame[T]</code> — a <code>BoundedDataSet[T]</code>.</li>
+<li><code>session.collect(plan)</code> returns <code>DataFrame[T]</code> — a materialized <code>BoundedDataSet[T]</code>.</li>
+<li>Streaming sources (when supported) return <code>DataStream[T]</code> — an <code>UnboundedDataSet[T]</code>.</li>
+<li>The session <strong>must</strong> preserve type parameter <code>T</code> through the full read → transform → collect → write cycle.</li>
 </ul>
 <h2 id="design-details">Design details</h2>
-<h3 id="unified-api-model">Unified API model</h3>
-<p>The design draws on Spark Structured Streaming's core insight: a stream is an unbounded table. Rather than defining separate operation APIs for batch and streaming, <code>DataSet[T]</code> provides one relational operation surface. The bounded/unbounded property is expressed through the type system (<code>BoundedDataSet</code> vs <code>UnboundedDataSet</code>), allowing the compiler to enforce streaming constraints statically — an improvement over Spark's runtime <code>AnalysisException</code> approach.</p>
-<h3 id="trait-naming">Trait naming</h3>
+<h3 id="interaction-with-incan">Interaction with Incan</h3>
 <ul>
-<li><strong><code>DataSet[T]</code></strong> is InQL's root trait for any schema-parameterized relational carrier. It is intentionally aligned with the Spark notion of a typed <code>Dataset</code>, but spelled <code>DataSet</code> for Incan style.</li>
-<li><strong><code>DataFrame[T]</code></strong> is a concrete eager kind, not Spark's untyped <code>DataFrame = Dataset[Row]</code> alias.</li>
-<li><strong><code>BoundedDataSet[T]</code></strong> and <strong><code>UnboundedDataSet[T]</code></strong> are intermediate traits that give clean type signatures for batch-only and streaming-only consumers respectively.</li>
+<li>The session is an Incan value — it can be passed, stored, and used in ordinary Incan code.</li>
+<li><code>model</code> definitions supply schema for <code>T</code> as in all other IncQL RFCs.</li>
 </ul>
-<h3 id="future-extensibility">Future extensibility</h3>
-<p><code>UnboundedDataSet[T]</code> currently has one concrete implementor (<code>DataStream[T]</code>). The intermediate trait is justified by: clean symmetry with <code>BoundedDataSet[T]</code> in type signatures, and future extensibility (e.g. a <code>ChangeStream[T]</code> for CDC, a <code>WindowedStream[T]</code>, or other streaming specializations).</p>
-<p>Future RFCs <strong>may</strong> add methods on <code>BoundedDataSet[T]</code> or <code>UnboundedDataSet[T]</code>, but only where the semantics are inherently boundedness-specific and remain backend-neutral. v0.1 does not require any additional core relational methods beyond the shared <code>DataSet[T]</code> surface.</p>
+<h3 id="interaction-with-operational-layers">Interaction with operational layers</h3>
+<ul>
+<li>Operational layers <strong>may</strong> construct, scope, and inject <code>Session</code> values for steps, jobs, or pipeline runs.</li>
+<li>Such layers <strong>may</strong> offer convenience APIs on readers, writers, or workflow steps that rely on a locally scoped session, but those APIs are layered sugar over the <code>Session</code> contract rather than alternate execution semantics.</li>
+<li>IncQL itself continues to define the session, backend selection, registration, execution, and write boundary.</li>
+</ul>
 <h3 id="compatibility">Compatibility</h3>
 <ul>
-<li>New dataset methods or kinds <strong>should</strong> remain backward compatible or go through a deprecation path.</li>
+<li>New read/write formats and backend options <strong>should</strong> be additive.</li>
+<li>The <code>Session</code> API surface is expected to grow; breaking changes <strong>must</strong> go through a deprecation path.</li>
 </ul>
 <h2 id="alternatives-considered">Alternatives considered</h2>
 <ul>
-<li><strong>Only a clause-based relational surface, no programmatic API</strong> — rejected; traits/methods give tests, lowering targets, and incremental adoption.</li>
-<li><strong>Flat hierarchy (no intermediate traits)</strong> — rejected; without <code>BoundedDataSet</code> and <code>UnboundedDataSet</code>, authors cannot write "any batch data" in a type signature without listing concrete types. The intermediate traits make capability gating clean and type-driven.</li>
-<li><strong>Three independent kinds with separate operation APIs</strong> — rejected; a unified API through <code>DataSet[T]</code> reduces surface area.</li>
-<li><strong><code>DataStream</code> as the sole foundational type</strong> (batch as bounded streams from the start) — deferred; batch-first validates the relational core with simpler semantics. The trait hierarchy ensures the model can evolve in this direction without breaking author code.</li>
+<li><strong>No session / implicit context in core IncQL</strong> (Polars-style) — rejected; an explicit session makes backend selection, table registration, and configuration visible rather than ambient. It also maps cleanly to DataFusion's <code>SessionContext</code>. Higher operational layers may still provide scoped convenience on top of that explicit core.</li>
+<li><strong>Session defined in the operational layer only</strong> — rejected; without a session in IncQL itself, there is no way to write self-contained IncQL programs that read, transform, and write data. The operational layer may compose sessions with workflow and adapter concerns, but the base concept belongs in IncQL.</li>
+<li><strong>Abstract backend only, no named reference</strong> — rejected; naming DataFusion as the reference avoids an abstract interface with no concrete implementation. The abstraction exists for extensibility; DataFusion is what ships.</li>
 </ul>
 <h2 id="drawbacks">Drawbacks</h2>
 <ul>
-<li>Five types/traits in the hierarchy is more surface area than a single <code>DataSet[T]</code> plus runtime flags.</li>
-<li>The static capability gating rule (root trait = most restrictive) may surprise authors who expected full operations on <code>DataSet[T]</code> without thinking about boundedness.</li>
+<li>Coupling to DataFusion (even as "reference") creates an implicit dependency on DataFusion's Substrait consumer maturity and feature coverage.</li>
+<li>The session concept adds API surface beyond pure query semantics.</li>
+<li>Arrow as the data plane is an implementation choice that leaks through <code>DataFrame[T]</code>'s runtime representation.</li>
 </ul>
+<h2 id="implementation-architecture">Implementation architecture</h2>
+<p>Non-normative: the reference implementation <strong>should</strong> use DataFusion's <code>SessionContext</code> as the underlying engine, with IncQL's <code>Session</code> wrapping it to provide typed APIs, table registration helpers, and Substrait plan submission. The Substrait-to-DataFusion path <strong>should</strong> use the community <code>substrait</code> crate (or equivalent).</p>
 <h2 id="layers-affected">Layers affected</h2>
 <ul>
-<li><strong>InQL library</strong> (primary): types, traits, Rust companion / interop.</li>
-<li><strong>Typechecker</strong>: generics for <code>DataFrame[T]</code> etc.; static streaming constraint checks for <code>UnboundedDataSet[T]</code>; capability gating based on trait bounds.</li>
-<li><strong>Parser</strong>: only if dataset API introduces new surface syntax beyond ordinary calls.</li>
+<li><strong>IncQL library</strong>: <code>Session</code> type, read/write methods, <code>backends</code> module, backend abstraction trait.</li>
+<li><strong>Rust interop / FFI</strong>: DataFusion integration, Arrow record batch handling.</li>
+<li><strong>Typechecker</strong>: ensuring <code>T</code> flows correctly through session methods.</li>
+<li><strong>Testing</strong>: end-to-end tests that read, transform, and write using the session.</li>
 </ul>
 <h2 id="design-decisions">Design Decisions</h2>
-<h3 id="resolved">Resolved</h3>
 <ul>
-<li>
-<p><strong><code>UnboundedDataSet[T]</code> restrictions:</strong> Operations requiring end-of-input semantics or unbounded retained state are not valid unless a later RFC gives them bounded-state semantics. In v0.1, disallowed examples include global <code>order_by</code>, global <code>limit</code>, unwindowed <code>group_by</code> / <code>agg</code>, eager materialization to a finite <code>DataFrame[T]</code>, and finite file writes.</p>
-</li>
-<li>
-<p><strong><code>collect</code> / <code>display</code>:</strong> Not part of the <code>DataSet[T]</code> trait surface. Helpers such as <code>collect(data)</code> or <code>display(data)</code> belong to the execution context and concrete implementation model defined in InQL RFC 004, not in this RFC.</p>
-</li>
-<li>
-<p><strong>Intermediate traits:</strong> <code>BoundedDataSet[T]</code> and <code>UnboundedDataSet[T]</code> do not add required core relational methods in v0.1. Future RFCs may add additional methods only where the semantics are inherently boundedness-specific and remain backend-neutral.</p>
-</li>
+<li><strong>Raw SQL escape hatch:</strong> raw SQL execution is not part of IncQL and is not permitted as a <code>Session</code> escape hatch. SQL belongs in dialect-specific surfaces outside this RFC; it must not be smuggled through the execution-context API as an alternate query path.</li>
+<li><strong>External catalogs:</strong> v0.1 standardizes logical registration and backend-resolved reads, not a portable catalog API. Integrations with systems such as Unity Catalog, Hive Metastore, or Iceberg REST <strong>may</strong> be supported by a backend or product layer, but their APIs and binding contracts are deferred from this RFC.</li>
+<li><strong>Collection API shape:</strong> <code>Session.collect(...)</code> is the required canonical API. A convenience form on <code>LazyFrame</code> <strong>may</strong> exist, but it is secondary and must route through the session.</li>
+<li><strong>Error model:</strong> execution-facing APIs <strong>must</strong> use typed errors that distinguish at least registration or binding failures, Substrait lowering or planning failures, backend optimization or runtime execution failures, and output or I/O failures. Exact type names are implementation details.</li>
+<li><strong>Builder configuration surface:</strong> <code>Session.builder()</code> exposes a small portable configuration surface in v0.1. It <strong>must not</strong> promise one-to-one access to every DataFusion knob. Backend-specific configuration may be carried through backend options without becoming part of the portable IncQL contract.</li>
+<li><strong>Backend namespace and session shape:</strong> backend-specific configuration belongs under <code>pub::incql.backends</code>, while <code>Session</code> remains the portable execution entry point. This RFC does not standardize backend-specific session types.</li>
+<li><strong>Execution backend vs source/sink integrations:</strong> the backend named in <code>Session</code> is the engine that optimizes and executes the plan. External systems used for reads or writes may be integrated through registration or adapter layers without becoming separate execution backends in the core model.</li>
+<li><strong>Scoped session conveniences:</strong> workflow or adapter layers may offer locally scoped session access as ergonomic sugar, but the normative IncQL contract remains the explicit <code>Session</code> API defined in this RFC.</li>
+<li><strong>Session API inspiration:</strong> the <code>Session</code> surface intentionally takes ergonomic inspiration from familiar data-runtime entry points such as Spark's session object, but IncQL keeps its own typed carrier semantics, backend abstraction, and explicit execution model. Familiarity is a usability goal, not a promise of Spark API or semantic compatibility.</li>
 </ul>
+<h2 id="implementation-plan-and-checklist-non-normative">Implementation plan and checklist (non-normative)</h2>
+<p>This section tracks the implementation path for this RFC. It is intentionally operational and does not change the normative semantics above.</p>
+<h3 id="plan">Plan</h3>
+<ol>
+<li>Land core <code>Session</code> surface and DataFusion-backed execution boundary.</li>
+<li>Land materialization boundary (<code>collect</code>) and typed <code>DataFrame[T]</code> payload contract.</li>
+<li>Land sink writes (<code>write_csv</code>, <code>write_parquet</code>) from deferred and materialized carriers.</li>
+<li>Keep backend abstraction portable while shipping only DataFusion as the implemented backend.</li>
+<li>Close remaining API gaps required by this RFC before marking status as <code>Implemented</code>.</li>
+</ol>
+<h3 id="checklist">Checklist</h3>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <code>Session.default()</code> and <code>Session.builder()</code> exist.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> DataFusion is wired as the reference/default backend.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Read paths exist for <code>table</code>, <code>read_csv</code>, <code>read_parquet</code>, and <code>read_arrow</code>.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <code>Session.execute(...)</code> exists as explicit execution checkpoint.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <code>Session.collect(...)</code> materializes <code>DataFrame[T]</code>.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <code>LazyFrame.collect()</code> convenience delegates through active-session/session-owned semantics.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <code>Session.write_csv(...)</code> and <code>Session.write_parquet(...)</code> exist.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Typed execution/write errors are surfaced across registration, planning, runtime, and sink failures.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Logical-name schema binding is formalized as an explicit catalog/snapshot model rather than an implicit global registry, with clear overwrite diagnostics for collisions.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Public dataset join typing is aligned with the intended DX for heterogeneous joins, including a real output-schema contract rather than a temporary <code>Self</code>-only surface.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <code>Session.from_values(...)</code> is implemented as part of the core <code>Session</code> API surface described in this RFC.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Generic <code>Session.write(data, target)</code> API is implemented for the current typed sink descriptors (beyond file-specific sink methods).</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Multi-backend implementation beyond DataFusion is shipped through the backend abstraction.</li>
+</ul>
+<h3 id="exit-criteria-for-rfc-status-change">Exit criteria for RFC status change</h3>
+<p>RFC 004 can move from <code>In Progress</code> to <code>Implemented</code> when all checklist items above are complete and the IncQL CI gate is green on the target release branch.</p>
 
 
 

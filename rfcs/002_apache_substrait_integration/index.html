@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://encero-systems.github.io/InQL/rfcs/002_apache_substrait_integration/">
+        <link rel="canonical" href="https://encero-systems.github.io/IncQL/rfcs/002_apache_substrait_integration/">
       
       
-        <link rel="prev" href="../001_inql_dataset/">
+        <link rel="prev" href="../001_incql_dataset/">
       
       
-        <link rel="next" href="../003_inql_query_blocks/">
+        <link rel="next" href="../003_incql_query_blocks/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -24,7 +24,7 @@
     
     
       
-        <title>RFC 002 - Apache Substrait integration - InQL</title>
+        <title>RFC 002 - Apache Substrait integration - IncQL</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#inql-rfc-002-apache-substrait-integration" class="md-skip">
+        <a href="#incql-rfc-002-apache-substrait-integration" class="md-skip">
           Skip to content
         </a>
       
@@ -88,9 +88,9 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="InQL" class="md-header__button md-logo" aria-label="InQL" data-md-component="logo">
+    <a href="../.." title="IncQL" class="md-header__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../shared/brand/inql-mark.png" alt="logo">
+  <img src="../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -101,7 +101,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            InQL
+            IncQL
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -170,13 +170,13 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/encero-systems/IncQL" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
   </div>
   <div class="md-source__repository">
-    encero-systems/InQL
+    encero-systems/IncQL
   </div>
 </a>
       </div>
@@ -370,22 +370,22 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="InQL" class="md-nav__button md-logo" aria-label="InQL" data-md-component="logo">
+    <a href="../.." title="IncQL" class="md-nav__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../shared/brand/inql-mark.png" alt="logo">
+  <img src="../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
-    InQL
+    IncQL
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/encero-systems/InQL" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/encero-systems/IncQL" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
   </div>
   <div class="md-source__repository">
-    encero-systems/InQL
+    encero-systems/IncQL
   </div>
 </a>
     </div>
@@ -1849,7 +1849,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../000_inql_syntax/" class="md-nav__link">
+      <a href="../000_incql_syntax/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1870,7 +1870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../001_inql_dataset/" class="md-nav__link">
+      <a href="../001_incql_dataset/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1982,13 +1982,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#current-implementation-profile-inql-package-path" class="md-nav__link">
+  <a href="#current-implementation-profile-incql-package-path" class="md-nav__link">
     <span class="md-ellipsis">
-      Current implementation profile (InQL package path)
+      Current implementation profile (IncQL package path)
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Current implementation profile (InQL package path)">
+    <nav class="md-nav" aria-label="Current implementation profile (IncQL package path)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2315,7 +2315,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../003_inql_query_blocks/" class="md-nav__link">
+      <a href="../003_incql_query_blocks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2336,7 +2336,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../004_inql_execution_context/" class="md-nav__link">
+      <a href="../004_incql_execution_context/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2357,7 +2357,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../005_inql_pipe_forward/" class="md-nav__link">
+      <a href="../005_incql_pipe_forward/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3418,11 +3418,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../whitepapers/inql_db/" class="md-nav__link">
+      <a href="../../whitepapers/incql_db/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    InQL DB
+    IncQL DB
   </span>
   
 
@@ -3606,13 +3606,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#current-implementation-profile-inql-package-path" class="md-nav__link">
+  <a href="#current-implementation-profile-incql-package-path" class="md-nav__link">
     <span class="md-ellipsis">
-      Current implementation profile (InQL package path)
+      Current implementation profile (IncQL package path)
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Current implementation profile (InQL package path)">
+    <nav class="md-nav" aria-label="Current implementation profile (IncQL package path)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3941,49 +3941,49 @@
   
 
 
-<h1 id="inql-rfc-002-apache-substrait-integration">InQL RFC 002: Apache Substrait integration</h1>
+<h1 id="incql-rfc-002-apache-substrait-integration">IncQL RFC 002: Apache Substrait integration</h1>
 <ul>
 <li><strong>Status:</strong> In Progress</li>
 <li><strong>Created:</strong> 2026-03-23</li>
 <li><strong>Author(s):</strong> Danny Meijer</li>
 <li><strong>Related:</strong></li>
-<li>InQL RFC 000 (language specification — naming, schema shapes, compilation model)</li>
-<li>InQL RFC 001 (dataset types — <code>DataSet[T]</code> carriers and schema parameter)</li>
-<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/InQL/issues/3">InQL #3</a></li>
+<li>IncQL RFC 000 (language specification — naming, schema shapes, compilation model)</li>
+<li>IncQL RFC 001 (dataset types — <code>DataSet[T]</code> carriers and schema parameter)</li>
+<li><strong>Issue:</strong> <a href="https://github.com/encero-systems/IncQL/issues/3">IncQL #3</a></li>
 <li><strong>RFC PR:</strong> -</li>
 <li><strong>Written against:</strong> Incan v0.2</li>
 <li><strong>Shipped in:</strong> —</li>
 </ul>
 <h2 id="summary">Summary</h2>
-<p>This RFC defines <strong>Apache Substrait</strong> as the <strong>normative logical interchange</strong> for InQL relational plans: which <strong><code>Rel</code> and expression</strong> shapes implementations produce, how <strong>read roots</strong> remain <strong>backend-agnostic</strong> while <strong>environment binding</strong> (adapters, credentials, runner choice) stays <strong>outside</strong> InQL, and how <strong>extensions</strong> cover capabilities that lack a stable logical <code>Rel</code> in core Substrait. The <code>query {}</code> surface requires lowering to Substrait; this RFC owns the <strong>cross-surface contract</strong> so method-chain APIs (InQL RFC 001), <code>query {}</code> blocks, and optional pipe-forward do not diverge at emission time.</p>
+<p>This RFC defines <strong>Apache Substrait</strong> as the <strong>normative logical interchange</strong> for IncQL relational plans: which <strong><code>Rel</code> and expression</strong> shapes implementations produce, how <strong>read roots</strong> remain <strong>backend-agnostic</strong> while <strong>environment binding</strong> (adapters, credentials, runner choice) stays <strong>outside</strong> IncQL, and how <strong>extensions</strong> cover capabilities that lack a stable logical <code>Rel</code> in core Substrait. The <code>query {}</code> surface requires lowering to Substrait; this RFC owns the <strong>cross-surface contract</strong> so method-chain APIs (IncQL RFC 001), <code>query {}</code> blocks, and optional pipe-forward do not diverge at emission time.</p>
 <h2 id="core-model">Core model</h2>
 <ol>
-<li>A <strong>checked</strong> InQL relational tree <strong>must</strong> be expressible as a Substrait <strong><code>Plan</code></strong> whose executable root is a <strong><code>Rel</code></strong> tree, optionally a <strong>DAG</strong> via <strong><code>ReferenceRel</code></strong> when subplans are shared.</li>
+<li>A <strong>checked</strong> IncQL relational tree <strong>must</strong> be expressible as a Substrait <strong><code>Plan</code></strong> whose executable root is a <strong><code>Rel</code></strong> tree, optionally a <strong>DAG</strong> via <strong><code>ReferenceRel</code></strong> when subplans are shared.</li>
 <li><strong>Logical reads</strong> are <strong><code>ReadRel</code></strong> (or extension leaf relations) carrying <strong>names, virtual rows, or extension payloads</strong> instead of host-specific connection strings or secrets in the normative interchange.</li>
 <li><strong>Scalar and aggregate</strong> computation uses Substrait <strong>expressions</strong> and <strong>aggregate functions</strong>; functions outside the pinned core set <strong>must</strong> use <strong>registered extension URIs</strong> documented with the compiler.</li>
-<li><strong>North-star operator catalog</strong>: InQL capabilities map to logical <code>Rel</code> kinds as specified in the <a href="../../language/reference/substrait/operator_catalog/">Substrait operator catalog reference</a>; implementation subsets are delivery choices but <strong>must not</strong> contradict this RFC for operators they expose.</li>
+<li><strong>North-star operator catalog</strong>: IncQL capabilities map to logical <code>Rel</code> kinds as specified in the <a href="../../language/reference/substrait/operator_catalog/">Substrait operator catalog reference</a>; implementation subsets are delivery choices but <strong>must not</strong> contradict this RFC for operators they expose.</li>
 </ol>
 <h2 id="motivation">Motivation</h2>
-<p>Without a dedicated specification, Substrait lowering risks drifting between front-ends (<code>query {}</code>, APIs on <code>DataSet[T]</code>) and emitters, and risks smuggling execution concerns (storage URIs, credentials, engine choice) into the query IR. Substrait is the ecosystem's portable relational algebra serialization; InQL needs a single <code>Rel</code>-level contract, version pinning rules, and an explicit boundary between plan semantics and operational binding.</p>
+<p>Without a dedicated specification, Substrait lowering risks drifting between front-ends (<code>query {}</code>, APIs on <code>DataSet[T]</code>) and emitters, and risks smuggling execution concerns (storage URIs, credentials, engine choice) into the query IR. Substrait is the ecosystem's portable relational algebra serialization; IncQL needs a single <code>Rel</code>-level contract, version pinning rules, and an explicit boundary between plan semantics and operational binding.</p>
 <h2 id="goals">Goals</h2>
 <ul>
 <li>Require that conforming implementations <strong>emit Substrait</strong> for relational features they claim to support, using logical <code>Rel</code> nodes unless a documented extension applies.</li>
-<li>Publish a <strong>versioned mapping catalog</strong> from InQL plan concepts to Substrait logical relations and expression patterns, marking <strong>core spec</strong>, <strong>extension</strong>, or <strong>documented expansion / gap</strong>.</li>
-<li>Specify <strong>read roots</strong>: logical <code>ReadRel</code> shapes <strong>in</strong> InQL vs <strong>adapter resolution</strong> in the host execution environment.</li>
+<li>Publish a <strong>versioned mapping catalog</strong> from IncQL plan concepts to Substrait logical relations and expression patterns, marking <strong>core spec</strong>, <strong>extension</strong>, or <strong>documented expansion / gap</strong>.</li>
+<li>Specify <strong>read roots</strong>: logical <code>ReadRel</code> shapes <strong>in</strong> IncQL vs <strong>adapter resolution</strong> in the host execution environment.</li>
 <li>Require <strong>documented pinning</strong> of Substrait revision and of any bundled extension function sets shipped with the toolchain.</li>
-<li>List <strong>known gaps</strong> (unnest, pivot, advanced joins, streaming-specific semantics) without blocking InQL RFC 003.</li>
+<li>List <strong>known gaps</strong> (unnest, pivot, advanced joins, streaming-specific semantics) without blocking IncQL RFC 003.</li>
 </ul>
 <h2 id="non-goals">Non-Goals</h2>
 <ul>
-<li>Defining orchestration, workflow, or adapter authoring syntax — out of scope; only binding boundaries relative to InQL plans are stated here.</li>
-<li>Mandating a default Substrait consumer (specific engine or library) — implementation detail; InQL RFC 004 names the reference backend.</li>
-<li>Physical Substrait relations as a normative InQL output — consumers <strong>may</strong> use them; InQL <strong>may</strong> emit them when documented as a non-portable or target-specific mode.</li>
+<li>Defining orchestration, workflow, or adapter authoring syntax — out of scope; only binding boundaries relative to IncQL plans are stated here.</li>
+<li>Mandating a default Substrait consumer (specific engine or library) — implementation detail; IncQL RFC 004 names the reference backend.</li>
+<li>Physical Substrait relations as a normative IncQL output — consumers <strong>may</strong> use them; IncQL <strong>may</strong> emit them when documented as a non-portable or target-specific mode.</li>
 <li>ANSI SQL completeness — mapping is capability-based, not a SQL compliance checklist.</li>
 </ul>
-<h2 id="current-implementation-profile-inql-package-path">Current implementation profile (InQL package path)</h2>
-<p>The current implementation profile for this RFC is explicitly scoped to InQL package code (<code>.incn</code>) and is the contract for current delivery tracking.</p>
+<h2 id="current-implementation-profile-incql-package-path">Current implementation profile (IncQL package path)</h2>
+<p>The current implementation profile for this RFC is explicitly scoped to IncQL package code (<code>.incn</code>) and is the contract for current delivery tracking.</p>
 <ul>
-<li>Core read/query <code>Rel</code> coverage is implemented through a thin proto-backed Substrait boundary in InQL package code.</li>
+<li>Core read/query <code>Rel</code> coverage is implemented through a thin proto-backed Substrait boundary in IncQL package code.</li>
 <li>Optional mutation relations remain modeled but are not required to be executable in the current read/query analytical core.</li>
 <li>Gap and extension semantics are represented as typed contracts in package code and conformance scenarios, rather than ad hoc string payloads.</li>
 <li>Richer planning semantics remain outside this profile when they logically belong to future <code>query {}</code> lowering or Prism.</li>
@@ -4037,19 +4037,19 @@
 </tbody>
 </table>
 <h2 id="guide-level-explanation">Guide-level explanation</h2>
-<p>Authors build <code>DataSet[T]</code> values (InQL RFC 001) using <code>query {}</code> or relational method chains. After typechecking, the relational work becomes a <strong>Substrait plan</strong>: mostly <code>FilterRel</code>, <code>ProjectRel</code>, <code>JoinRel</code>, <code>AggregateRel</code>, and so on, rooted in a <code>ReadRel</code> when new data enters the plan.</p>
-<p>When a plan says "read this named relation" or "read this logical asset id," the plan carries the <strong>logical</strong> identity. The <strong>execution context</strong> resolves that identity to concrete storage, applies policy, and supplies credentials. That split keeps InQL portable and keeps governance-sensitive details out of the serialized plan's normative story.</p>
+<p>Authors build <code>DataSet[T]</code> values (IncQL RFC 001) using <code>query {}</code> or relational method chains. After typechecking, the relational work becomes a <strong>Substrait plan</strong>: mostly <code>FilterRel</code>, <code>ProjectRel</code>, <code>JoinRel</code>, <code>AggregateRel</code>, and so on, rooted in a <code>ReadRel</code> when new data enters the plan.</p>
+<p>When a plan says "read this named relation" or "read this logical asset id," the plan carries the <strong>logical</strong> identity. The <strong>execution context</strong> resolves that identity to concrete storage, applies policy, and supplies credentials. That split keeps IncQL portable and keeps governance-sensitive details out of the serialized plan's normative story.</p>
 <h2 id="reference-level-explanation">Reference-level explanation</h2>
 <h3 id="normative-interchange">Normative interchange</h3>
 <ul>
 <li>Implementations <strong>must</strong> be able to produce a Substrait <code>Plan</code> for every relational operator they expose that is claimed portable in documentation.</li>
 <li>Lowering semantics <strong>must</strong> be identical whether the surface is <code>query {}</code>, trait methods, or desugared pipe-forward, for the same checked tree.</li>
-<li>Implementations <strong>may</strong> additionally lower to InQL RFC 001 operations for execution; if both paths exist, they <strong>must</strong> match the Substrait semantics for those operators.</li>
+<li>Implementations <strong>may</strong> additionally lower to IncQL RFC 001 operations for execution; if both paths exist, they <strong>must</strong> match the Substrait semantics for those operators.</li>
 </ul>
 <p>For the full capability → <code>Rel</code> mapping, profile classifications, and gap encoding requirements, see the <a href="../../language/reference/substrait/operator_catalog/">Substrait operator catalog reference</a>.</p>
-<p>Conformance scenarios <strong>should</strong> use stable scenario IDs and typed InQL model contracts as defined by the <a href="../../language/reference/substrait/conformance/">Substrait conformance corpus reference</a>, so implementation and CI reporting can track portability status consistently across toolchains.</p>
+<p>Conformance scenarios <strong>should</strong> use stable scenario IDs and typed IncQL model contracts as defined by the <a href="../../language/reference/substrait/conformance/">Substrait conformance corpus reference</a>, so implementation and CI reporting can track portability status consistently across toolchains.</p>
 <h3 id="logical-rel-alphabet">Logical <code>Rel</code> alphabet</h3>
-<p>The following are the primary logical relations InQL targets. Exact protobuf message paths follow the pinned Substrait version selected by the toolchain for a given release.</p>
+<p>The following are the primary logical relations IncQL targets. Exact protobuf message paths follow the pinned Substrait version selected by the toolchain for a given release.</p>
 <table>
 <thead>
 <tr>
@@ -4117,13 +4117,13 @@
 </tbody>
 </table>
 <h3 id="north-star-catalog">North-star catalog</h3>
-<p>InQL defines a north-star operator catalog that maps every InQL plan capability to a Substrait <code>Rel</code> or expression pattern, and classifies each capability as one of: <strong>core</strong> (maps to a standard logical <code>Rel</code> in the pinned revision), <strong>extension</strong> (requires a registered extension URI), <strong>gap</strong> (no stable logical <code>Rel</code> in core Substrait; encoding must be documented), or <strong>optional-mutation</strong> (not required for read/query analytical core).</p>
+<p>IncQL defines a north-star operator catalog that maps every IncQL plan capability to a Substrait <code>Rel</code> or expression pattern, and classifies each capability as one of: <strong>core</strong> (maps to a standard logical <code>Rel</code> in the pinned revision), <strong>extension</strong> (requires a registered extension URI), <strong>gap</strong> (no stable logical <code>Rel</code> in core Substrait; encoding must be documented), or <strong>optional-mutation</strong> (not required for read/query analytical core).</p>
 <p>The full, versioned catalog — including all profile tags, gap encoding requirements, and mutation-profile operators — lives in the <a href="../../language/reference/substrait/operator_catalog/">Substrait operator catalog reference</a>. Conforming implementations <strong>must</strong> follow the mappings listed there for any capability they claim portable.</p>
 <h3 id="read-roots-vs-binding">Read roots vs binding</h3>
 <ul>
-<li>InQL <strong>must</strong> express new data entering a plan as logical reads: names, virtual values, or opaque extension table types that still serialize as Substrait <code>ReadRel</code> (or an extension leaf) <strong>without</strong> normative dependence on secret material in the plan text.</li>
+<li>IncQL <strong>must</strong> express new data entering a plan as logical reads: names, virtual values, or opaque extension table types that still serialize as Substrait <code>ReadRel</code> (or an extension leaf) <strong>without</strong> normative dependence on secret material in the plan text.</li>
 <li>The execution context <strong>must</strong> resolve logical reads to physical resources through its adapter and execution layer; that layer <strong>must not</strong> redefine relational semantics of the plan.</li>
-<li>Product SDKs <strong>may</strong> present a unified import surface; adapter-specific "open connection" APIs <strong>should not</strong> be specified as core InQL — they remain thin wrappers at most.</li>
+<li>Product SDKs <strong>may</strong> present a unified import surface; adapter-specific "open connection" APIs <strong>should not</strong> be specified as core IncQL — they remain thin wrappers at most.</li>
 </ul>
 <p>For the full <code>ReadRel</code> variant reference, the detailed execution context obligations, and the adapter boundary contract, see the <a href="../../language/reference/substrait/read_root_binding_contract/">read-root and binding contract reference</a>.</p>
 <h3 id="extensions-and-function-uris">Extensions and function URIs</h3>
@@ -4134,7 +4134,7 @@
 <p>For revision pin requirements, URI registration policy, bundle naming, compatibility conventions, and the release-note checklist for pin bumps, see the <a href="../../language/reference/substrait/revision_and_extension_policy/">revision and extension policy reference</a>.</p>
 <h3 id="optional-mutation-profile-progress">Optional mutation profile progress</h3>
 <ul>
-<li>InQL <strong>may</strong> expose <code>WriteRel</code>, <code>DdlRel</code>, or <code>UpdateRel</code> for warehouse-style mutation. Absence of these in a given distribution <strong>does not</strong> make InQL incomplete for read-only analytical use.</li>
+<li>IncQL <strong>may</strong> expose <code>WriteRel</code>, <code>DdlRel</code>, or <code>UpdateRel</code> for warehouse-style mutation. Absence of these in a given distribution <strong>does not</strong> make IncQL incomplete for read-only analytical use.</li>
 </ul>
 <p>The optional mutation profile operators, per-operator portability notes, and support expectations are listed in the <a href="../../language/reference/substrait/operator_catalog/">Substrait operator catalog reference</a>.</p>
 <h3 id="reference-documents">Reference documents</h3>
@@ -4149,7 +4149,7 @@
 <tbody>
 <tr>
 <td><a href="../../language/reference/substrait/operator_catalog/">Substrait operator catalog</a></td>
-<td>Full InQL capability → <code>Rel</code> mapping; profile tags; gap encoding rules; mutation profile operators</td>
+<td>Full IncQL capability → <code>Rel</code> mapping; profile tags; gap encoding rules; mutation profile operators</td>
 </tr>
 <tr>
 <td><a href="../../language/reference/substrait/revision_and_extension_policy/">Substrait revision and extension policy</a></td>
@@ -4168,7 +4168,7 @@
 <h2 id="design-details">Design details</h2>
 <h3 id="interaction-with-incan">Interaction with Incan</h3>
 <ul>
-<li>Field references and types <strong>must</strong> align with <code>model</code>-backed schemas (InQL RFC 001) and lower to Substrait types and field indices consistent with the emitted <code>NamedStruct</code>.</li>
+<li>Field references and types <strong>must</strong> align with <code>model</code>-backed schemas (IncQL RFC 001) and lower to Substrait types and field indices consistent with the emitted <code>NamedStruct</code>.</li>
 </ul>
 <h3 id="compatibility">Compatibility</h3>
 <ul>
@@ -4183,7 +4183,7 @@
 <h2 id="drawbacks">Drawbacks</h2>
 <ul>
 <li>Substrait lags some front-end expressiveness; extensions and rewrites add maintenance.</li>
-<li>Dual lowering (InQL RFC 001 APIs + Substrait) increases test surface unless one path is canonical in practice.</li>
+<li>Dual lowering (IncQL RFC 001 APIs + Substrait) increases test surface unless one path is canonical in practice.</li>
 <li>Producer / consumer version skew requires disciplined pinning and clear compatibility statements.</li>
 </ul>
 <h2 id="implementation-architecture">Implementation architecture</h2>
@@ -4198,7 +4198,7 @@
 <h3 id="phase-1-spec-and-operator-catalog">Phase 1: Spec and operator catalog</h3>
 <ul>
 <li>Lock down the versioned Substrait revision pinning policy in compiler documentation and release artifacts.</li>
-<li>Publish the normative operator catalog mapping InQL capabilities to Substrait <code>Rel</code> kinds, including gap annotations for unnest, pivot, and streaming semantics.</li>
+<li>Publish the normative operator catalog mapping IncQL capabilities to Substrait <code>Rel</code> kinds, including gap annotations for unnest, pivot, and streaming semantics.</li>
 <li>Document extension URI registration conventions in the public toolchain catalog.</li>
 </ul>
 <h3 id="phase-2-ir-lowering-core-boundary">Phase 2: IR lowering — core boundary</h3>
@@ -4272,10 +4272,10 @@
 </ul>
 <h2 id="design-decisions">Design Decisions</h2>
 <ul>
-<li><strong>Substrait revision pinning:</strong> this RFC defines the pinning policy, not one timeless revision number. Each conforming InQL toolchain release <strong>must</strong> publish the exact Substrait revision it targets and any bundled extension sets in public release artifacts and compiler documentation.</li>
-<li><strong>Canonical unnest / explode encoding:</strong> until core Substrait standardizes a portable unnest relation that InQL adopts, <code>EXPLODE</code>-style behavior <strong>must</strong> lower through a documented extension relation or another documented non-core encoding listed in the toolchain's public operator catalog. Implementations <strong>must not</strong> present ad hoc or undocumented encodings as portable core behavior.</li>
-<li><strong>Mutation relations:</strong> <code>WriteRel</code>, <code>DdlRel</code>, and <code>UpdateRel</code> remain an optional mutation profile. They are not part of the minimum read/query analytical core required for InQL v0.1, and implementations <strong>may</strong> expose them only when the execution context and backend support them.</li>
-<li><strong>Correlated subqueries:</strong> InQL v0.1 does not standardize a single correlated-subquery desugaring because correlated subquery surface syntax is not part of the minimum relational grammar. If a future RFC adds correlated subqueries, that RFC <strong>must</strong> define the lowering contract explicitly rather than relying on implicit emitter policy.</li>
+<li><strong>Substrait revision pinning:</strong> this RFC defines the pinning policy, not one timeless revision number. Each conforming IncQL toolchain release <strong>must</strong> publish the exact Substrait revision it targets and any bundled extension sets in public release artifacts and compiler documentation.</li>
+<li><strong>Canonical unnest / explode encoding:</strong> until core Substrait standardizes a portable unnest relation that IncQL adopts, <code>EXPLODE</code>-style behavior <strong>must</strong> lower through a documented extension relation or another documented non-core encoding listed in the toolchain's public operator catalog. Implementations <strong>must not</strong> present ad hoc or undocumented encodings as portable core behavior.</li>
+<li><strong>Mutation relations:</strong> <code>WriteRel</code>, <code>DdlRel</code>, and <code>UpdateRel</code> remain an optional mutation profile. They are not part of the minimum read/query analytical core required for IncQL v0.1, and implementations <strong>may</strong> expose them only when the execution context and backend support them.</li>
+<li><strong>Correlated subqueries:</strong> IncQL v0.1 does not standardize a single correlated-subquery desugaring because correlated subquery surface syntax is not part of the minimum relational grammar. If a future RFC adds correlated subqueries, that RFC <strong>must</strong> define the lowering contract explicitly rather than relying on implicit emitter policy.</li>
 </ul>
 <!-- References -->
 
