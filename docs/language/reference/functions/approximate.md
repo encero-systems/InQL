@@ -4,10 +4,10 @@ Approximate helpers are explicit opt-in functions. IncQL does not silently repla
 
 The portable RFC 023 aggregate surface is:
 
-| Function | Meaning |
-| --- | --- |
-| `approx_count_distinct(expr)` | Estimate the number of distinct non-null values produced by one expression. |
-| `approx_percentile(expr, percentile, accuracy=10000)` | Estimate one percentile over numeric non-null values. |
+| Function                                              | Meaning                                                                     |
+| ----------------------------------------------------- | --------------------------------------------------------------------------- |
+| `approx_count_distinct(expr)`                         | Estimate the number of distinct non-null values produced by one expression. |
+| `approx_percentile(expr, percentile, accuracy=10000)` | Estimate one percentile over numeric non-null values.                       |
 
 `approx_count_distinct` is registered as an approximate aggregate with HyperLogLog-family metadata. The portable author contract is an approximate non-null distinct-count estimate. It does not expose a user-tunable relative-error parameter because the registered IncQL Substrait extension mapping for this function is unary. Backend adapters must keep this approximation visible in capability/error handling rather than redefining exact `count_distinct` semantics.
 

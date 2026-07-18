@@ -14,7 +14,7 @@ The execution context **must** resolve logical reads to physical resources throu
 
 ## `ReadRel` variant reference
 
-| Variant        | Substrait field                            | Typical IncQL use                                                 | Portability                                                                            |
+| Variant        | Substrait field                            | Typical IncQL use                                                | Portability                                                                            |
 | -------------- | ------------------------------------------ | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | `NamedTable`   | `named_table` (list of name parts)         | Registered logical table name; resolved by session registry      | Portable across conforming consumers that have registered the same logical name        |
 | `LocalFiles`   | `local_files` (file list + format options) | Parquet, CSV, Arrow IPC scan from a URI                          | Portable if consumers can resolve the URI; URI format is not standardized by Substrait |
@@ -57,8 +57,8 @@ Adapter-specific "open connection" or "bind source" APIs **should not** be speci
 
 The following table summarizes how each `Session` read method maps to a `ReadRel` variant and the resulting IncQL carrier type.
 
-| `Session` method                     | Returns        | `ReadRel` variant                                 |
-| ------------------------------------ | -------------- | ------------------------------------------------- |
+| `Session` method                  | Returns        | `ReadRel` variant                                 |
+| --------------------------------- | -------------- | ------------------------------------------------- |
 | `session.table(name)`             | `LazyFrame[T]` | `NamedTable`                                      |
 | `session.read_csv(name, uri)`     | `LazyFrame[T]` | `NamedTable` (via Session registration + binding) |
 | `session.read_parquet(name, uri)` | `LazyFrame[T]` | `NamedTable` (via Session registration + binding) |

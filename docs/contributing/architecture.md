@@ -4,39 +4,39 @@ This page is the source-level companion to the [conceptual architecture][archite
 
 ## Responsibility map
 
-| Layer | Owns | Does not own |
-| --- | --- | --- |
-| Incan compiler | Generic vocabulary hosting, parsing and typechecking generated Incan, language lowering, Rust emission, language tooling, and the test runner | IncQL vocabulary semantics, package contracts, or backend execution policy |
-| IncQL package | `query:` and `quality:` vocabulary registration and desugaring, author-facing carriers, relational semantics, inspection, evidence contracts, and normative RFCs | Generic compiler semantics, workflow orchestration, credentials, or engine-specific semantics |
-| Prism | IncQL's immutable internal logical plan state, schema facts, canonical rewrites, lineage, and authored-origin mappings | Public authoring syntax, portable interchange, binding, or execution |
-| Substrait | The portable logical `Plan` / `Rel` boundary | Credentials, backend selection, or IncQL's complete local evidence model |
-| Session | Source registration, logical-name binding, adapter selection, execute/collect/write, runtime observations, and adapter coverage | Redefining authored relational meaning |
-| Backend adapter | Backend-specific planning, lowering, pushdown, execution, and runtime behavior | Becoming the semantic owner of the plan |
+| Layer           | Owns                                                                                                                                                             | Does not own                                                                                  |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Incan compiler  | Generic vocabulary hosting, parsing and typechecking generated Incan, language lowering, Rust emission, language tooling, and the test runner                    | IncQL vocabulary semantics, package contracts, or backend execution policy                    |
+| IncQL package   | `query:` and `quality:` vocabulary registration and desugaring, author-facing carriers, relational semantics, inspection, evidence contracts, and normative RFCs | Generic compiler semantics, workflow orchestration, credentials, or engine-specific semantics |
+| Prism           | IncQL's immutable internal logical plan state, schema facts, canonical rewrites, lineage, and authored-origin mappings                                           | Public authoring syntax, portable interchange, binding, or execution                          |
+| Substrait       | The portable logical `Plan` / `Rel` boundary                                                                                                                     | Credentials, backend selection, or IncQL's complete local evidence model                      |
+| Session         | Source registration, logical-name binding, adapter selection, execute/collect/write, runtime observations, and adapter coverage                                  | Redefining authored relational meaning                                                        |
+| Backend adapter | Backend-specific planning, lowering, pushdown, execution, and runtime behavior                                                                                   | Becoming the semantic owner of the plan                                                       |
 
 Prism is an internal IncQL component rather than a public authoring surface. `LazyFrame[T]` carries a Prism-native `PrismCursor[T]`; the cursor is not backend-native and Prism is not represented by the IncQL brand mark.
 
 ## Package implementation map
 
-| Path | Responsibility |
-| --- | --- |
-| `vocab_companion/src/lib.rs` | IncQL-specific `query:` and `quality:` vocabulary registration and desugaring |
-| `src/lib.incn` | Public package exports |
-| `src/dataset/mod.incn` | `DataSet`, `DataFrame`, `LazyFrame`, and `DataStream` carrier types |
-| `src/dataset/ops.incn` | Canonical relational operator methods |
-| `src/prism/types.incn` | Internal authored-node, rewritten-view, and rewrite evidence models |
-| `src/prism/store.incn` | Append-only Prism store and structural sharing |
-| `src/prism/rewrite.incn` | Narrow semantics-preserving canonical rewrites and origin mappings |
-| `src/prism/lower.incn` | Lowering a Prism view toward the Substrait boundary |
-| `src/substrait/` | Schema and expression lowering, relation construction, plan assembly, extensions, and conformance |
-| `src/session/types.incn` | Public Session and SessionBuilder API plus execution and observation flow |
-| `src/session/backend_dispatch.incn` | Portable adapter dispatch |
-| `src/session/datafusion_backend.incn` | Reference DataFusion adapter implementation |
-| `src/inspect.incn` | Structured plan inspection, schema flow, lineage, requirements, and artifact summaries |
-| `src/evidence.incn` | Semantic targets, lineage, requirements, observations, and evidence records |
-| `src/governance.incn` | Governed attributes and policy checkpoint evidence |
-| `src/quality.incn` | Typed quality assertions and observations |
-| `src/functions/` | Declared scalar, aggregate, generator, and window function surface |
-| `tests/` | Package tests run through `incan test` |
+| Path                                  | Responsibility                                                                                    |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `vocab_companion/src/lib.rs`          | IncQL-specific `query:` and `quality:` vocabulary registration and desugaring                     |
+| `src/lib.incn`                        | Public package exports                                                                            |
+| `src/dataset/mod.incn`                | `DataSet`, `DataFrame`, `LazyFrame`, and `DataStream` carrier types                               |
+| `src/dataset/ops.incn`                | Canonical relational operator methods                                                             |
+| `src/prism/types.incn`                | Internal authored-node, rewritten-view, and rewrite evidence models                               |
+| `src/prism/store.incn`                | Append-only Prism store and structural sharing                                                    |
+| `src/prism/rewrite.incn`              | Narrow semantics-preserving canonical rewrites and origin mappings                                |
+| `src/prism/lower.incn`                | Lowering a Prism view toward the Substrait boundary                                               |
+| `src/substrait/`                      | Schema and expression lowering, relation construction, plan assembly, extensions, and conformance |
+| `src/session/types.incn`              | Public Session and SessionBuilder API plus execution and observation flow                         |
+| `src/session/backend_dispatch.incn`   | Portable adapter dispatch                                                                         |
+| `src/session/datafusion_backend.incn` | Reference DataFusion adapter implementation                                                       |
+| `src/inspect.incn`                    | Structured plan inspection, schema flow, lineage, requirements, and artifact summaries            |
+| `src/evidence.incn`                   | Semantic targets, lineage, requirements, observations, and evidence records                       |
+| `src/governance.incn`                 | Governed attributes and policy checkpoint evidence                                                |
+| `src/quality.incn`                    | Typed quality assertions and observations                                                         |
+| `src/functions/`                      | Declared scalar, aggregate, generator, and window function surface                                |
+| `tests/`                              | Package tests run through `incan test`                                                            |
 
 ## End-to-end execution path
 
