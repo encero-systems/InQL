@@ -226,6 +226,6 @@ DataFusion is the implemented execution backend. `Session` stores a backend kind
 - For quality assertion and observation design, see [RFC 034][rfc-034]
 
 [rfc-004]: ../../rfcs/004_incql_execution_context.md
-[rfc-032]: ../../rfcs/032_execution_observations.md
-[rfc-033]: ../../rfcs/033_adapter_requirements_coverage.md
-[rfc-034]: ../../rfcs/034_quality_assertions_observations.md
+[rfc-032]: ../../rfcs/closed/implemented/032_execution_observations.md
+[rfc-033]: ../../rfcs/closed/implemented/033_adapter_requirements_coverage.md
+[rfc-034]: ../../rfcs/closed/implemented/034_quality_assertions_observations.md

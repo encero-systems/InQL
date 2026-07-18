@@ -54,19 +54,17 @@ Purely internal Incan compiler refactors with **no** IncQL-visible meaning usual
 
 ## After acceptance
 
-- **Implemented:** Set **Shipped in** to the first IncQL **package** release that contains the change. When you adopt a `closed/implemented/` layout (optional), move the file there and keep the index accurate.
+- **Implemented:** Set **Shipped in** to the first IncQL **package** release that contains the change, move the RFC to `docs/rfcs/closed/implemented/`, and keep the index accurate.
 - **Deferred:** Update **Status** to `Deferred` and record why.
 
-## Closed RFCs (optional layout)
+## Lifecycle layout
 
-If you introduce subfolders under `docs/rfcs/`, a common pattern is:
-
-- `docs/rfcs/` — active RFCs (Draft, Planned, In Progress, …)
+- `docs/rfcs/` — active RFCs (Draft, Planned, In Progress, Blocked, or Deferred)
 - `docs/rfcs/closed/implemented/` — shipped
 - `docs/rfcs/closed/superseded/` — replaced by a newer IncQL RFC
 - `docs/rfcs/closed/rejected/` — withdrawn or rejected
 
-When superseding or rejecting, update the status line (for example `Superseded by IncQL RFC NNN`) and move the file if you use `closed/`.
+When implementing, superseding, or rejecting an RFC, update its status and release or replacement metadata, move it to the matching lifecycle folder, and repair the index and incoming links in the same change. Keep the filename and RFC number unchanged.
 
 ## Tips for a good RFC
 

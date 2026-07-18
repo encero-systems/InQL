@@ -114,4 +114,4 @@ Quality status is predicate outcome evidence. It does not claim verification ass
 
 <!-- References -->
 
-[rfc-034]: ../../rfcs/034_quality_assertions_observations.md
+[rfc-034]: ../../rfcs/closed/implemented/034_quality_assertions_observations.md

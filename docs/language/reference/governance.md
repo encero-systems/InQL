@@ -67,4 +67,4 @@ IncQL carries governed evidence. It does not decide legal obligations, own an or
 
 <!-- References -->
 
-[rfc-035]: ../../rfcs/035_governed_attributes_policy_checkpoints.md
+[rfc-035]: ../../rfcs/closed/implemented/035_governed_attributes_policy_checkpoints.md
