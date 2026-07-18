@@ -337,14 +337,14 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
 }
 
 .pp-rfc-reader-host {
-  --rfc-reader-accent: #315df0;
-  --rfc-reader-accent-secondary: #7b5cff;
-  --rfc-reader-accent-cyan: #0aaee8;
+  --rfc-reader-accent: var(--pp-docs-accent, #315df0);
+  --rfc-reader-accent-secondary: var(--pp-docs-accent-secondary, #7b5cff);
+  --rfc-reader-accent-cyan: var(--pp-docs-accent-cyan, #0aaee8);
   --rfc-reader-ink: var(--pp-docs-ink, var(--incql-page-ink, #071534));
   --rfc-reader-copy: var(--pp-docs-copy, var(--incql-page-copy, #344461));
   --rfc-reader-muted: var(--pp-docs-muted, #5c6c87);
   --rfc-reader-line: var(--pp-docs-line, rgba(96, 126, 186, 0.2));
-  --rfc-reader-line-strong: rgba(49, 93, 240, 0.34);
+  --rfc-reader-line-strong: var(--pp-docs-line-strong, rgba(49, 93, 240, 0.34));
   --rfc-reader-surface: var(--pp-docs-surface, rgba(255, 255, 255, 0.74));
   --rfc-reader-surface-strong: var(--pp-docs-surface-strong, rgba(255, 255, 255, 0.94));
   margin: 1.55rem 0 0;

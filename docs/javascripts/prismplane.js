@@ -633,11 +633,12 @@
     const handleGlobalKeydown = (event) => {
       const target = event.target;
       const isEditable = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement || target?.isContentEditable;
+      const targetInReader = target instanceof Node && reader.contains(target);
       if (event.key === "/" && !isEditable && !event.metaKey && !event.ctrlKey && !event.altKey) {
         event.preventDefault();
         event.stopImmediatePropagation();
         searchInput.focus();
-      } else if (event.key === "Escape" && !event.metaKey && !event.ctrlKey && !event.altKey) {
+      } else if (event.key === "Escape" && targetInReader && !event.metaKey && !event.ctrlKey && !event.altKey) {
         const hasActiveState = state.query || state.scope !== "all" || state.status || state.topic || state.selectedExplicitly;
         if (!hasActiveState) {
           return;
