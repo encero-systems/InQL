@@ -372,9 +372,9 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
 .pp-rfc-reader__toolbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 0.8rem 1rem;
+  gap: 0.65rem;
   align-items: center;
-  padding: 1rem 1.1rem;
+  padding: 0.85rem 1rem 0.8rem;
   background: transparent;
 }
 
@@ -386,15 +386,15 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
 
 .pp-rfc-reader__search input {
   width: 100%;
-  min-height: 2.55rem;
-  padding: 0.62rem 3rem 0.62rem 0.8rem;
+  min-height: 2.35rem;
+  padding: 0.54rem 2.65rem 0.54rem 0.72rem;
   border: 1px solid var(--rfc-reader-line);
   border-radius: 11px;
   outline: 0;
   background: rgba(255, 255, 255, 0.82);
   color: var(--rfc-reader-ink);
   font: inherit;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
@@ -411,29 +411,29 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
 .pp-rfc-reader__search kbd {
   position: absolute;
   top: 50%;
-  right: 0.65rem;
-  min-width: 1.7rem;
-  padding: 0.22rem 0.4rem;
+  right: 0.58rem;
+  min-width: 1.55rem;
+  padding: 0.18rem 0.34rem;
   border: 1px solid var(--rfc-reader-line);
   border-radius: 6px;
   background: rgba(247, 250, 255, 0.96);
   color: var(--rfc-reader-muted);
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   text-align: center;
   transform: translateY(-50%);
 }
 
 .pp-rfc-reader__facets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem 0.5rem;
   align-items: center;
-  justify-content: flex-end;
   min-width: 0;
 }
 
 .pp-rfc-segments {
   display: flex;
+  grid-column: 1 / -1;
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -453,14 +453,14 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
 
 .pp-rfc-segments label {
   display: inline-flex;
-  min-height: 2.2rem;
+  min-height: 1.9rem;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.45rem 0.55rem;
+  gap: 0.3rem;
+  padding: 0.34rem 0.46rem;
   border-bottom: 2px solid transparent;
   color: var(--rfc-reader-muted);
   cursor: pointer;
-  font-size: 0.69rem;
+  font-size: 0.63rem;
   font-weight: 670;
   white-space: nowrap;
 }
@@ -482,15 +482,17 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
 }
 
 .pp-rfc-reader__select {
-  min-height: 2.2rem;
-  padding: 0.45rem 1.7rem 0.45rem 0.6rem;
+  width: 100%;
+  min-width: 0;
+  min-height: 2.05rem;
+  padding: 0.38rem 1.55rem 0.38rem 0.55rem;
   border: 1px solid var(--rfc-reader-line);
   border-radius: 9px;
   outline: 0;
   background-color: rgba(255, 255, 255, 0.82);
   color: var(--rfc-reader-copy);
   font: inherit;
-  font-size: 0.68rem;
+  font-size: 0.63rem;
   font-weight: 650;
 }
 
@@ -522,14 +524,14 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
   gap: 0.8rem;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1.1rem 0.8rem;
+  padding: 0.1rem 1rem 0.7rem;
 }
 
 .pp-rfc-reader__count,
 .pp-rfc-reader__hint {
   margin: 0;
   color: var(--rfc-reader-muted);
-  font-size: 0.64rem;
+  font-size: 0.61rem;
   line-height: 1.4;
 }
 
@@ -552,17 +554,17 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
 .pp-rfc-reader__list-header,
 .pp-rfc-row__label {
   display: grid;
-  grid-template-columns: 3rem 4.6rem minmax(7rem, 1fr) minmax(6rem, 0.78fr);
-  gap: 0.6rem;
+  grid-template-columns: 2.8rem 4.25rem minmax(6.8rem, 1fr) minmax(5.5rem, 0.72fr);
+  gap: 0.5rem;
   align-items: center;
 }
 
 .pp-rfc-reader__list-header {
-  min-height: 2.7rem;
-  padding: 0 0.9rem;
+  min-height: 2.45rem;
+  padding: 0 0.78rem;
   border-bottom: 1px solid var(--rfc-reader-line);
   color: var(--rfc-reader-muted);
-  font-size: 0.56rem;
+  font-size: 0.53rem;
   font-weight: 760;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -594,12 +596,12 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
 }
 
 .pp-rfc-row__label {
-  min-height: 3.5rem;
-  padding: 0.65rem 0.9rem;
+  min-height: 3.25rem;
+  padding: 0.55rem 0.78rem;
   color: var(--rfc-reader-copy);
   cursor: pointer;
-  font-size: 0.63rem;
-  line-height: 1.38;
+  font-size: 0.6rem;
+  line-height: 1.35;
   transition: background-color 150ms ease, box-shadow 150ms ease;
 }
 
@@ -609,7 +611,7 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
 
 .pp-rfc-row__number {
   color: var(--rfc-reader-accent);
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-variant-numeric: tabular-nums;
   font-weight: 740;
 }
@@ -670,7 +672,7 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
 .md-typeset .pp-rfc-reader__detail h2 {
   margin: 0.55rem 0 0;
   color: var(--rfc-reader-ink);
-  font-size: clamp(1.55rem, 2.6vw, 2.35rem);
+  font-size: clamp(1.5rem, 2.45vw, 2.05rem);
   line-height: 1.12;
 }
 
@@ -791,13 +793,9 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
     grid-template-columns: minmax(19rem, 21rem) minmax(0, 1fr);
   }
 
-  .pp-rfc-reader__facets {
-    justify-content: flex-start;
-  }
-
   .pp-rfc-reader__list-header,
   .pp-rfc-row__label {
-    grid-template-columns: 3.2rem 5.2rem minmax(8rem, 1fr);
+    grid-template-columns: 2.8rem 4.6rem minmax(7.5rem, 1fr);
   }
 
   .pp-rfc-reader__list-header > :last-child,
@@ -832,7 +830,7 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
   }
 
   .pp-rfc-reader__statusbar {
-    padding: 0 1.1rem 0.8rem;
+    padding: 0.1rem 1rem 0.7rem;
   }
 
   .pp-rfc-reader__index {
@@ -864,17 +862,12 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
   }
 
   .pp-rfc-reader__facets {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem 0.45rem;
   }
 
   .pp-rfc-segments {
     grid-column: 1 / -1;
     overflow-x: auto;
-  }
-
-  .pp-rfc-reader__select {
-    width: 100%;
   }
 
   .pp-rfc-reader__reset {
