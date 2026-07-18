@@ -75,11 +75,112 @@
     });
   };
 
-  initializeSurfaceTabs();
+  let disposeArchitectureNav = () => {};
+
+  const initializeArchitectureNav = (root = document) => {
+    disposeArchitectureNav();
+    disposeArchitectureNav = () => {};
+
+    const nav = root.querySelector(".incql-architecture-rail");
+    if (!nav) {
+      return;
+    }
+
+    const links = [...nav.querySelectorAll("[data-architecture-link]")];
+    const sections = [...root.querySelectorAll("[data-architecture-section]")];
+    if (links.length === 0 || sections.length === 0) {
+      return;
+    }
+
+    const setActive = (sectionId) => {
+      links.forEach((link) => {
+        const isActive = link.dataset.architectureLink === sectionId;
+        link.classList.toggle("is-active", isActive);
+        if (isActive) {
+          link.setAttribute("aria-current", "location");
+        } else {
+          link.removeAttribute("aria-current");
+        }
+      });
+
+      const activeLink = links.find((link) => link.dataset.architectureLink === sectionId);
+      if (activeLink && nav.scrollWidth > nav.clientWidth) {
+        const maximumLeft = nav.scrollWidth - nav.clientWidth;
+        const centeredLeft = activeLink.offsetLeft - (nav.clientWidth - activeLink.offsetWidth) / 2;
+        nav.scrollTo({ left: Math.max(0, Math.min(centeredLeft, maximumLeft)), behavior: "auto" });
+      }
+    };
+
+    const linkHandlers = links.map((link) => {
+      const handleClick = (event) => {
+        const sectionId = link.dataset.architectureLink;
+        const section = root.getElementById(sectionId);
+        if (!section) {
+          return;
+        }
+
+        event.preventDefault();
+        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        section.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+        window.history.replaceState(null, "", `#${sectionId}`);
+        setActive(sectionId);
+      };
+      link.addEventListener("click", handleClick);
+      return { link, handleClick };
+    });
+
+    let scrollFrame = null;
+    const updateActiveFromScroll = () => {
+      scrollFrame = null;
+      const readingLine = window.innerHeight * 0.28;
+      const currentSection = sections.find((section) => {
+        const bounds = section.getBoundingClientRect();
+        return bounds.top <= readingLine && bounds.bottom > readingLine;
+      });
+
+      if (currentSection) {
+        setActive(currentSection.id);
+        return;
+      }
+
+      const nearestSection = sections
+        .map((section) => ({ section, distance: Math.abs(section.getBoundingClientRect().top - readingLine) }))
+        .sort((left, right) => left.distance - right.distance)[0]?.section;
+      if (nearestSection) {
+        setActive(nearestSection.id);
+      }
+    };
+
+    const scheduleActiveUpdate = () => {
+      if (scrollFrame === null) {
+        scrollFrame = window.requestAnimationFrame(updateActiveFromScroll);
+      }
+    };
+
+    window.addEventListener("scroll", scheduleActiveUpdate, { passive: true });
+    window.addEventListener("resize", scheduleActiveUpdate);
+    updateActiveFromScroll();
+    disposeArchitectureNav = () => {
+      linkHandlers.forEach(({ link, handleClick }) => link.removeEventListener("click", handleClick));
+      window.removeEventListener("scroll", scheduleActiveUpdate);
+      window.removeEventListener("resize", scheduleActiveUpdate);
+      if (scrollFrame !== null) {
+        window.cancelAnimationFrame(scrollFrame);
+      }
+    };
+    nav.dataset.architectureNavReady = "true";
+  };
+
+  const initializePage = () => {
+    initializeSurfaceTabs();
+    initializeArchitectureNav();
+  };
 
   if (window.document$?.subscribe) {
-    window.document$.subscribe(() => initializeSurfaceTabs());
+    window.document$.subscribe(initializePage);
+  } else if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializePage, { once: true });
   } else {
-    document.addEventListener("DOMContentLoaded", () => initializeSurfaceTabs(), { once: true });
+    initializePage();
   }
 })();

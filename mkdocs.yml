@@ -49,35 +49,35 @@ markdown_extensions:
       custom_checkbox: true
 
 extra_css:
-  - stylesheets/prismplane.css?v=20260716-annotation-pass-5
+  - stylesheets/prismplane.css?v=20260717-master-diagram-1
 
 extra_javascript:
-  - javascripts/prismplane.js?v=20260716-annotation-pass-5
+  - javascripts/prismplane.js?v=20260717-master-diagram-1
 
 nav:
   - Home: index.md
-  - Docs map: docs_map.md
-  - Architecture: architecture.md
-  - Language:
+  - Learn:
       - Overview: language/README.md
-      - Explanation:
+      - Concepts:
           - Dataset carriers: language/explanation/dataset_carriers.md
           - Execution context: language/explanation/execution_context.md
-      - How-to guides:
-          - Overview: language/how-to/README.md
-          - Dataset transformations: language/how-to/dataset_transformations.md
-          - Normalize semi-structured fields: language/how-to/normalize_semistructured_fields.md
-          - Nested row values: language/how-to/nested_row_values.md
-          - Generator rows: language/how-to/generator_rows.md
-          - Window columns: language/how-to/window_columns.md
-          - Approximate metrics: language/how-to/approximate_metrics.md
-          - Typed HLL sketches: language/how-to/typed_hll_sketches.md
-          - Variant payloads: language/how-to/variant_payloads.md
-          - Execution observations: language/how-to/execution_observations.md
-          - Quality observations: language/how-to/quality_observations.md
-          - Governed evidence: language/how-to/governed_evidence.md
-          - Inspect plan lineage: language/how-to/inspect_plan_lineage.md
-      - Reference:
+  - Guides:
+      - Overview: language/how-to/README.md
+      - Dataset transformations: language/how-to/dataset_transformations.md
+      - Normalize semi-structured fields: language/how-to/normalize_semistructured_fields.md
+      - Nested row values: language/how-to/nested_row_values.md
+      - Generator rows: language/how-to/generator_rows.md
+      - Window columns: language/how-to/window_columns.md
+      - Approximate metrics: language/how-to/approximate_metrics.md
+      - Typed HLL sketches: language/how-to/typed_hll_sketches.md
+      - Variant payloads: language/how-to/variant_payloads.md
+      - Execution observations: language/how-to/execution_observations.md
+      - Quality observations: language/how-to/quality_observations.md
+      - Governed evidence: language/how-to/governed_evidence.md
+      - Inspect plan lineage: language/how-to/inspect_plan_lineage.md
+  - Reference:
+      - Overview: language/reference/README.md
+      - Core:
           - Dataset carriers: language/reference/dataset_carriers.md
           - Dataset methods: language/reference/dataset_methods.md
           - Query blocks: language/reference/query_blocks.md
@@ -85,81 +85,93 @@ nav:
           - Inspection: language/reference/inspection.md
           - Quality: language/reference/quality.md
           - Governance: language/reference/governance.md
-          - Builders:
-              - Filters: language/reference/builders/filters.md
-              - Projections: language/reference/builders/projections.md
-              - Aggregates: language/reference/builders/aggregates.md
-          - Functions:
-              - Index: language/reference/functions/index.md
-              - Approximate: language/reference/functions/approximate.md
-              - Format: language/reference/functions/format.md
-              - Generators: language/reference/functions/generators.md
-              - Nested: language/reference/functions/nested.md
-              - Sketches: language/reference/functions/sketches.md
-              - Variants: language/reference/functions/variants.md
-              - Windows: language/reference/functions/windows.md
-          - Substrait:
-              - Conformance: language/reference/substrait/conformance.md
-              - Operator catalog: language/reference/substrait/operator_catalog.md
-              - Read root binding contract: language/reference/substrait/read_root_binding_contract.md
-              - Revision and extension policy: language/reference/substrait/revision_and_extension_policy.md
-  - RFCs:
-      - Index: rfcs/README.md
-      - Template: rfcs/TEMPLATE.md
-      - RFC 000 - Language specification: rfcs/000_incql_syntax.md
-      - RFC 001 - Dataset types: rfcs/001_incql_dataset.md
-      - RFC 002 - Apache Substrait integration: rfcs/002_apache_substrait_integration.md
-      - RFC 003 - Query blocks: rfcs/003_incql_query_blocks.md
-      - RFC 004 - Execution context: rfcs/004_incql_execution_context.md
-      - RFC 005 - Pipe-forward syntax: rfcs/005_incql_pipe_forward.md
-      - RFC 006 - Unnest core Substrait: rfcs/006_unnest_core_substrait.md
-      - RFC 007 - Prism planning engine: rfcs/007_prism_planning_engine.md
-      - RFC 008 - Optimizer boundary: rfcs/008_optimizer_boundary_stats_cbo_aqe.md
-      - RFC 009 - Session format handler registry: rfcs/009_session_format_handler_registry.md
-      - RFC 010 - CSV ingestion contract: rfcs/010_csv_ingestion_contract.md
-      - RFC 011 - Source discovery contract: rfcs/011_source_discovery_contract.md
-      - RFC 012 - Unified scalar expression surface: rfcs/012_unified_scalar_expression_surface.md
-      - RFC 013 - Function catalog program: rfcs/013_function_catalog_program.md
-      - RFC 014 - Function registry: rfcs/014_function_registry.md
-      - RFC 015 - Core scalar functions: rfcs/015_core_scalar_functions.md
-      - RFC 016 - Core aggregate functions: rfcs/016_core_aggregate_functions.md
-      - RFC 017 - Aggregate modifiers: rfcs/017_aggregate_modifiers.md
-      - RFC 018 - Common scalar function catalog: rfcs/018_common_scalar_function_catalog.md
-      - RFC 019 - Window functions: rfcs/019_window_functions.md
-      - RFC 020 - Nested data functions: rfcs/020_nested_data_functions.md
-      - RFC 021 - Generator table functions: rfcs/021_generator_table_functions.md
-      - RFC 022 - Semi-structured and format functions: rfcs/022_semi_structured_format_functions.md
-      - RFC 023 - Approximate sketch functions: rfcs/023_approximate_sketch_functions.md
-      - RFC 024 - Function extension policy: rfcs/024_function_extension_policy.md
-      - RFC 025 - Typed sketch logical values: rfcs/025_typed_sketch_logical_values.md
-      - RFC 026 - Semi-structured variant values: rfcs/026_semi_structured_variant_values.md
-      - RFC 027 - Relational evidence program: rfcs/027_relational_evidence_program.md
-      - RFC 028 - Semantic identity and target model: rfcs/028_semantic_identity_targets.md
-      - RFC 029 - Metadata attachments: rfcs/029_metadata_attachments.md
-      - RFC 030 - Prism lineage graph: rfcs/030_prism_lineage_graph.md
-      - RFC 031 - Inspection artifacts: rfcs/031_inspection_artifacts.md
-      - RFC 032 - Execution observations: rfcs/032_execution_observations.md
-      - RFC 033 - Adapter requirements and coverage: rfcs/033_adapter_requirements_coverage.md
-      - RFC 034 - Quality assertions and observations: rfcs/034_quality_assertions_observations.md
-      - RFC 035 - Governed attributes and policy checkpoints: rfcs/035_governed_attributes_policy_checkpoints.md
-      - RFC 036 - Governed plan bundle: rfcs/036_governed_plan_bundle.md
-      - RFC 037 - Plan diff and blast-radius inputs: rfcs/037_plan_diff_blast_radius_inputs.md
-      - RFC 038 - Evidence exchange bridges: rfcs/038_evidence_exchange_bridges.md
-      - RFC 039 - Pandas-familiar exploration API: rfcs/039_pandas_familiar_exploration_api.md
-      - RFC 040 - Interoperability semantic profiles: rfcs/040_interoperability_semantic_profiles.md
-      - RFC 041 - Prism plan ingress and external client frontends: rfcs/041_prism_plan_ingress_frontends.md
-      - RFC 042 - Async verification evidence: rfcs/042_async_verification_evidence.md
-      - RFC 043 - Canonical equality and digest profiles: rfcs/043_canonical_equality_digest_profiles.md
-      - RFC 044 - Verifier statements and proof artifacts: rfcs/044_verifier_statements_proof_artifacts.md
-      - RFC 045 - Constraint evidence and verification-aware planning: rfcs/045_constraint_evidence_verification_planning.md
-      - RFC 046 - Data contract ingress and product topology: rfcs/046_data_contract_ingress.md
-      - RFC 047 - Semantic evidence graph and agent query surface: rfcs/047_semantic_evidence_graph_agent_surface.md
-      - RFC 048 - Cluster execution backend mode: rfcs/048_cluster_execution_backend_mode.md
-  - Release notes:
-      - v0.1: release_notes/v0_1.md
-  - Whitepapers:
-      - Overview: whitepapers/README.md
-      - IncQL DB: whitepapers/incql_db.md
-  - Contributing:
-      - Writing RFCs: contributing/writing_rfcs.md
-      - Prismplane docs theme: contributing/prismplane_docs_theme.md
+      - Builders:
+          - Filters: language/reference/builders/filters.md
+          - Projections: language/reference/builders/projections.md
+          - Aggregates: language/reference/builders/aggregates.md
+      - Functions:
+          - Index: language/reference/functions/index.md
+          - Approximate: language/reference/functions/approximate.md
+          - Format: language/reference/functions/format.md
+          - Generators: language/reference/functions/generators.md
+          - Nested: language/reference/functions/nested.md
+          - Sketches: language/reference/functions/sketches.md
+          - Variants: language/reference/functions/variants.md
+          - Windows: language/reference/functions/windows.md
+      - Substrait:
+          - Conformance: language/reference/substrait/conformance.md
+          - Operator catalog: language/reference/substrait/operator_catalog.md
+          - Read root binding contract: language/reference/substrait/read_root_binding_contract.md
+          - Revision and extension policy: language/reference/substrait/revision_and_extension_policy.md
+  - Architecture: architecture.md
+  - Design records:
+      - Overview: design_records.md
+      - RFCs:
+          - Index: rfcs/README.md
+          - Foundations:
+              - RFC 000 - Language specification: rfcs/000_incql_syntax.md
+              - RFC 001 - Dataset types: rfcs/001_incql_dataset.md
+              - RFC 002 - Apache Substrait integration: rfcs/002_apache_substrait_integration.md
+              - RFC 003 - Query blocks: rfcs/003_incql_query_blocks.md
+              - RFC 004 - Execution context: rfcs/004_incql_execution_context.md
+              - RFC 005 - Pipe-forward syntax: rfcs/005_incql_pipe_forward.md
+              - RFC 006 - Unnest core Substrait: rfcs/006_unnest_core_substrait.md
+              - RFC 007 - Prism planning engine: rfcs/007_prism_planning_engine.md
+              - RFC 008 - Optimizer boundary: rfcs/008_optimizer_boundary_stats_cbo_aqe.md
+              - RFC 009 - Session format handler registry: rfcs/009_session_format_handler_registry.md
+              - RFC 010 - CSV ingestion contract: rfcs/010_csv_ingestion_contract.md
+              - RFC 011 - Source discovery contract: rfcs/011_source_discovery_contract.md
+              - RFC 012 - Unified scalar expression surface: rfcs/012_unified_scalar_expression_surface.md
+              - RFC 013 - Function catalog program: rfcs/013_function_catalog_program.md
+              - RFC 014 - Function registry: rfcs/014_function_registry.md
+          - Functions and values:
+              - RFC 015 - Core scalar functions: rfcs/015_core_scalar_functions.md
+              - RFC 016 - Core aggregate functions: rfcs/016_core_aggregate_functions.md
+              - RFC 017 - Aggregate modifiers: rfcs/017_aggregate_modifiers.md
+              - RFC 018 - Common scalar function catalog: rfcs/018_common_scalar_function_catalog.md
+              - RFC 019 - Window functions: rfcs/019_window_functions.md
+              - RFC 020 - Nested data functions: rfcs/020_nested_data_functions.md
+              - RFC 021 - Generator table functions: rfcs/021_generator_table_functions.md
+              - RFC 022 - Semi-structured and format functions: rfcs/022_semi_structured_format_functions.md
+              - RFC 023 - Approximate sketch functions: rfcs/023_approximate_sketch_functions.md
+              - RFC 024 - Function extension policy: rfcs/024_function_extension_policy.md
+              - RFC 025 - Typed sketch logical values: rfcs/025_typed_sketch_logical_values.md
+              - RFC 026 - Semi-structured variant values: rfcs/026_semi_structured_variant_values.md
+          - Evidence and governance:
+              - RFC 027 - Relational evidence program: rfcs/027_relational_evidence_program.md
+              - RFC 028 - Semantic identity and target model: rfcs/028_semantic_identity_targets.md
+              - RFC 029 - Metadata attachments: rfcs/029_metadata_attachments.md
+              - RFC 030 - Prism lineage graph: rfcs/030_prism_lineage_graph.md
+              - RFC 031 - Inspection artifacts: rfcs/031_inspection_artifacts.md
+              - RFC 032 - Execution observations: rfcs/032_execution_observations.md
+              - RFC 033 - Adapter requirements and coverage: rfcs/033_adapter_requirements_coverage.md
+              - RFC 034 - Quality assertions and observations: rfcs/034_quality_assertions_observations.md
+              - RFC 035 - Governed attributes and policy checkpoints: rfcs/035_governed_attributes_policy_checkpoints.md
+              - RFC 036 - Governed plan bundle: rfcs/036_governed_plan_bundle.md
+              - RFC 037 - Plan diff and blast-radius inputs: rfcs/037_plan_diff_blast_radius_inputs.md
+              - RFC 038 - Evidence exchange bridges: rfcs/038_evidence_exchange_bridges.md
+              - RFC 039 - Pandas-familiar exploration API: rfcs/039_pandas_familiar_exploration_api.md
+              - RFC 040 - Interoperability semantic profiles: rfcs/040_interoperability_semantic_profiles.md
+              - RFC 041 - Prism plan ingress and external client frontends: rfcs/041_prism_plan_ingress_frontends.md
+              - RFC 042 - Async verification evidence: rfcs/042_async_verification_evidence.md
+              - RFC 043 - Canonical equality and digest profiles: rfcs/043_canonical_equality_digest_profiles.md
+              - RFC 044 - Verifier statements and proof artifacts: rfcs/044_verifier_statements_proof_artifacts.md
+              - RFC 045 - Constraint evidence and verification-aware planning: rfcs/045_constraint_evidence_verification_planning.md
+              - RFC 046 - Data contract ingress and product topology: rfcs/046_data_contract_ingress.md
+              - RFC 047 - Semantic evidence graph and agent query surface: rfcs/047_semantic_evidence_graph_agent_surface.md
+          - Runtime and extensions:
+              - RFC 048 - Cluster execution backend mode: rfcs/048_cluster_execution_backend_mode.md
+              - RFC 050 - Add-on component registry: rfcs/050_addon_component_registry.md
+      - Whitepapers:
+          - Overview: whitepapers/README.md
+          - IncQL-DB: whitepapers/incql_db.md
+  - Project:
+      - Overview: project.md
+      - Docs map: docs_map.md
+      - Release notes:
+          - v0.1: release_notes/v0_1.md
+      - Contributing:
+          - Contributor architecture: contributing/architecture.md
+          - Writing RFCs: contributing/writing_rfcs.md
+          - RFC template: rfcs/TEMPLATE.md
+          - Prismplane docs theme: contributing/prismplane_docs_theme.md
