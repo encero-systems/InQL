@@ -42,7 +42,7 @@
       
     
     
-      <link rel="stylesheet" href="../../stylesheets/prismplane.css?v=20260718-rfc-reader-10">
+      <link rel="stylesheet" href="../../stylesheets/prismplane.css?v=20260718-rfc-reader-11">
     
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -2351,8 +2351,21 @@
 <li>JavaScript enhances that data with search, filters, keyboard behavior, and URL state</li>
 <li>component CSS uses local <code>--pp-*</code> tokens, so another product can substitute its brand layer without rewriting behavior</li>
 </ul>
-<p>The RFC Context Reader is the first component built to this contract. Its filtering and master-detail behavior are product-neutral; IncQL supplies the RFC metadata schema, topic assignments, and Prismplane appearance.</p>
-<p>For a second site, start by supplying its project label, intentional RFC-number gaps, topic mapping, and <code>--pp-docs-*</code> color tokens. Keep the generated-data shape and reader interaction contract unchanged first. Only extract shared files after that port demonstrates which configuration points are real rather than IncQL-specific assumptions.</p>
+<p>The RFC Context Reader is the first component built to this contract. Its filtering and master-detail behavior are product-neutral; IncQL supplies the RFC metadata schema, controlled tag vocabulary, assignments, and Prismplane appearance.</p>
+<p>For a second site, start by supplying its project label, intentional RFC-number gaps, controlled tag configuration, and <code>--pp-docs-*</code> color tokens. Keep the generated-data shape and reader interaction contract unchanged first. Only extract shared files after that port demonstrates which configuration points are real rather than IncQL-specific assumptions.</p>
+<p>The source tag catalog has a deliberately small, portable schema:</p>
+<div class="language-json highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;definitions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;planning&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Planning&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;evidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Evidence&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;records&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;030&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;planning&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;evidence&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The generator resolves those keys into each reader record as <code>"tags": [{"key": "planning", "label": "Planning"}]</code>. Keys are stable URL and data identifiers; labels are presentation text. A record must have one to three tags, with four reserved for genuinely cross-cutting program or platform RFCs.</p>
+<p>The reader treats multiple tags as an intersection: selecting Planning and Evidence shows records that carry both. URL state uses one sorted, repeated parameter per selection (<code>?tag=evidence&amp;tag=planning</code>), so filtering can be bookmarked, shared, and restored through browser history. Clicking a tag in the detail pane toggles that same filter; clearing tags removes every <code>tag</code> parameter. Keep this data and interaction contract stable when porting the component even if the vocabulary, typography, and colors change.</p>
 <h2 id="user-experience-target">User experience target</h2>
 <p>The docs should answer a new user's first questions quickly:</p>
 <ol>
@@ -2413,7 +2426,7 @@
     
       <script src="../../assets/javascripts/bundle.88dd0f4e.min.js"></script>
       
-        <script src="../../javascripts/prismplane.js?v=20260718-rfc-reader-10"></script>
+        <script src="../../javascripts/prismplane.js?v=20260718-rfc-reader-11"></script>
       
     
   </body>

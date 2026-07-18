@@ -44,7 +44,7 @@
       
     
     
-      <link rel="stylesheet" href="../../stylesheets/prismplane.css?v=20260718-rfc-reader-10">
+      <link rel="stylesheet" href="../../stylesheets/prismplane.css?v=20260718-rfc-reader-11">
     
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -2432,7 +2432,7 @@
 <li>Add <code>docs/rfcs/NNN_short_slug.md</code> (example: <code>006_window_semantics.md</code>).  </li>
 <li>Pick the next <code>NNN</code> from the <a href="../../rfcs/">RFC index</a> and open issues, avoiding collisions.</li>
 <li>
-<p>Assign the RFC to one reader topic in <code>docs/rfcs/catalog.json</code>.</p>
+<p>Assign the RFC one to three controlled tags in <code>docs/rfcs/catalog.json</code>. Use only keys declared under <code>definitions</code>; add a new definition only when the existing vocabulary cannot describe a recurring concern. Four tags are reserved for genuinely cross-cutting program or platform RFCs.</p>
 </li>
 <li>
 <p><strong>Fill in the RFC</strong><br />
@@ -2457,7 +2457,7 @@
 </li>
 <li>
 <p><strong>Regenerate the catalog</strong>
-   Run <code>make rfc-index</code>, review the generated reader data and fallback table, then run <code>make docs-build</code>. The docs build validates the RFC number sequence, required metadata, related RFCs, lifecycle folder, topic assignment, and generated index before rendering the site.</p>
+   Run <code>make rfc-index</code>, review the generated reader data and fallback table, then run <code>make docs-build</code>. The docs build validates the RFC number sequence, required metadata, related RFCs, lifecycle folder, controlled tag assignments, and generated index before rendering the site.</p>
 </li>
 </ol>
 <h2 id="after-acceptance">After acceptance</h2>
@@ -2540,7 +2540,7 @@
     
       <script src="../../assets/javascripts/bundle.88dd0f4e.min.js"></script>
       
-        <script src="../../javascripts/prismplane.js?v=20260718-rfc-reader-10"></script>
+        <script src="../../javascripts/prismplane.js?v=20260718-rfc-reader-11"></script>
       
     
   </body>
