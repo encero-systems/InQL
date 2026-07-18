@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - "docs/**"
+      - "tests/docs/**"
+      - "utils/**"
+      - "Makefile"
+      - "mkdocs_hooks.py"
       - "mkdocs.yml"
       - "requirements-docs.txt"
       - ".github/workflows/docs.yml"
@@ -12,6 +16,10 @@ on:
     branches: [main]
     paths:
       - "docs/**"
+      - "tests/docs/**"
+      - "utils/**"
+      - "Makefile"
+      - "mkdocs_hooks.py"
       - "mkdocs.yml"
       - "requirements-docs.txt"
       - ".github/workflows/docs.yml"
@@ -44,7 +52,7 @@ jobs:
         run: python -m pip install -r requirements-docs.txt
 
       - name: Build docs
-        run: mkdocs build --strict
+        run: make docs-build
 
   deploy-pages:
     name: Deploy docs to GitHub Pages

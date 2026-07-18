@@ -67,6 +67,26 @@ test-locked: ## Run tests with `--locked`
 	@$(INCAN) test $(INCQL_TEST_DIR) --locked
 
 # =============================================================================
+# Documentation
+# =============================================================================
+
+.PHONY: rfc-index
+rfc-index: ## Validate RFC metadata and regenerate the RFC catalog
+	@python3 utils/rfc_catalog.py --topics docs/rfcs/catalog.json --write
+
+.PHONY: rfc-index-check
+rfc-index-check: ## Validate RFC metadata and fail when the catalog is stale
+	@python3 utils/rfc_catalog.py --topics docs/rfcs/catalog.json --check
+
+.PHONY: docs-test
+docs-test: ## Run documentation tooling unit tests
+	@python3 -m unittest discover -s tests/docs -p 'test_*.py'
+
+.PHONY: docs-build
+docs-build: rfc-index-check docs-test ## Validate and build the documentation site strictly
+	@mkdocs build --strict
+
+# =============================================================================
 # Formatting (Incan source)
 # =============================================================================
 #
