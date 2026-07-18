@@ -32,9 +32,27 @@ Interactive documentation components follow the same split:
 - JavaScript enhances that data with search, filters, keyboard behavior, and URL state
 - component CSS uses local `--pp-*` tokens, so another product can substitute its brand layer without rewriting behavior
 
-The RFC Context Reader is the first component built to this contract. Its filtering and master-detail behavior are product-neutral; IncQL supplies the RFC metadata schema, topic assignments, and Prismplane appearance.
+The RFC Context Reader is the first component built to this contract. Its filtering and master-detail behavior are product-neutral; IncQL supplies the RFC metadata schema, controlled tag vocabulary, assignments, and Prismplane appearance.
 
-For a second site, start by supplying its project label, intentional RFC-number gaps, topic mapping, and `--pp-docs-*` color tokens. Keep the generated-data shape and reader interaction contract unchanged first. Only extract shared files after that port demonstrates which configuration points are real rather than IncQL-specific assumptions.
+For a second site, start by supplying its project label, intentional RFC-number gaps, controlled tag configuration, and `--pp-docs-*` color tokens. Keep the generated-data shape and reader interaction contract unchanged first. Only extract shared files after that port demonstrates which configuration points are real rather than IncQL-specific assumptions.
+
+The source tag catalog has a deliberately small, portable schema:
+
+```json
+{
+  "definitions": {
+    "planning": "Planning",
+    "evidence": "Evidence"
+  },
+  "records": {
+    "030": ["planning", "evidence"]
+  }
+}
+```
+
+The generator resolves those keys into each reader record as `"tags": [{"key": "planning", "label": "Planning"}]`. Keys are stable URL and data identifiers; labels are presentation text. A record must have one to three tags, with four reserved for genuinely cross-cutting program or platform RFCs.
+
+The reader treats multiple tags as an intersection: selecting Planning and Evidence shows records that carry both. URL state uses one sorted, repeated parameter per selection (`?tag=evidence&tag=planning`), so filtering can be bookmarked, shared, and restored through browser history. Clicking a tag in the detail pane toggles that same filter; clearing tags removes every `tag` parameter. Keep this data and interaction contract stable when porting the component even if the vocabulary, typography, and colors change.
 
 ## User experience target
 

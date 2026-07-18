@@ -38,6 +38,7 @@ ACTIVE_STATUSES = frozenset({"Draft", "Planned", "In Progress", "Blocked", "Defe
 TERMINAL_STATUSES = frozenset({"Implemented", "Superseded", "Rejected", "Withdrawn"})
 DEFAULT_PROJECT_LABEL = "IncQL"
 ALLOWED_GAPS = frozenset({49})
+MAX_TAGS_PER_RECORD = 4
 
 _RFC_FILENAME_RE = re.compile(r"^(?P<id>\d{3})_(?P<slug>[a-z0-9][a-z0-9_]*)\.md$")
 _METADATA_RE = re.compile(r"^-\s+\*\*(?P<name>[^*]+?):\*\*\s*(?P<value>.*)$")
@@ -47,6 +48,7 @@ _MARKDOWN_REFERENCE_LINK_RE = re.compile(r"\[([^]]+)\]\[[^]]*\]")
 _METADATA_LINK_RE = re.compile(r"\[([^]]+)\]\((https?://[^\s)]+)\)")
 _BARE_URL_RE = re.compile(r"https?://\S+")
 _RELATED_RFC_RE = re.compile(r"(?:IncQL\s+)?RFC\s+(\d{3})", flags=re.IGNORECASE)
+_TAG_KEY_RE = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
 
 
 class CatalogError(ValueError):
@@ -59,6 +61,19 @@ class CatalogLink:
 
     label: str
     url: str
+
+
+@dataclass(frozen=True, slots=True, order=True)
+class CatalogTag:
+    """One stable tag key and its repository-defined display label.
+
+    RFC records store tags as a sorted tuple of these frozen values.  This
+    keeps the Python representation immutable and makes serialized output
+    independent of JSON object ordering.
+    """
+
+    key: str
+    label: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,7 +103,7 @@ class RfcRecord:
     motivation: str
     source_path: str
     href: str
-    topic: str | None = None
+    tags: tuple[CatalogTag, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-compatible representation with stable field names."""
@@ -98,6 +113,7 @@ class RfcRecord:
         result["related_ids"] = list(self.related_ids)
         result["issue_links"] = [asdict(link) for link in self.issue_links]
         result["rfc_pr_links"] = [asdict(link) for link in self.rfc_pr_links]
+        result["tags"] = [asdict(tag) for tag in self.tags]
         return result
 
 
@@ -393,12 +409,14 @@ def _normalise_rfc_id(value: object, context: str) -> str:
     return f"{int(text):03d}"
 
 
-def load_topic_mapping(source: Mapping[object, object] | Path | str) -> dict[str, str]:
-    """Load topics from either ``{id: topic}`` or ``{topic: [ids...]}``.
+def load_tag_mapping(
+    source: Mapping[object, object] | Path | str,
+) -> dict[str, tuple[CatalogTag, ...]]:
+    """Load a controlled many-to-many RFC tag catalog.
 
-    A path is interpreted as a UTF-8 JSON file.  Supporting both mapping shapes
-    keeps the catalog portable while allowing a repository to choose whether
-    its configuration is record-oriented or topic-oriented.
+    The configuration shape is ``{"definitions": {key: label}, "records":
+    {rfc_id: [key, ...]}}``.  A path is interpreted as a UTF-8 JSON file.
+    Returned record tags are frozen tuples sorted by stable key.
     """
 
     raw: object
@@ -409,45 +427,85 @@ def load_topic_mapping(source: Mapping[object, object] | Path | str) -> dict[str
         try:
             raw = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as error:
-            raise CatalogError(f"could not load topic mapping {path}: {error}") from error
+            raise CatalogError(f"could not load tag catalog {path}: {error}") from error
 
     if not isinstance(raw, Mapping):
-        raise CatalogError("topic mapping must be a JSON object or a mapping")
-    if not raw:
-        return {}
+        raise CatalogError("tag catalog must be a JSON object or a mapping")
 
-    values = list(raw.values())
-    id_to_topic: dict[str, str] = {}
-    if all(isinstance(value, str) for value in values):
-        for raw_id, raw_topic in raw.items():
-            rfc_id = _normalise_rfc_id(raw_id, "topic mapping")
-            topic = str(raw_topic).strip()
-            if not topic:
-                raise CatalogError(f"topic mapping: RFC {rfc_id} has an empty topic")
-            if rfc_id in id_to_topic:
-                raise CatalogError(f"topic mapping assigns RFC {rfc_id} more than once")
-            id_to_topic[rfc_id] = topic
-        return id_to_topic
+    expected_sections = {"definitions", "records"}
+    section_names = set(raw)
+    missing_sections = sorted(expected_sections - section_names)
+    unknown_sections = sorted(str(name) for name in section_names - expected_sections)
+    if missing_sections or unknown_sections:
+        problems: list[str] = []
+        if missing_sections:
+            problems.append("missing section(s): " + ", ".join(missing_sections))
+        if unknown_sections:
+            problems.append("unknown section(s): " + ", ".join(unknown_sections))
+        raise CatalogError("tag catalog has " + "; ".join(problems))
 
-    if all(
-        isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray))
-        for value in values
-    ):
-        for raw_topic, raw_ids in raw.items():
-            topic = str(raw_topic).strip()
-            if not topic:
-                raise CatalogError("topic mapping contains an empty topic name")
-            for raw_id in raw_ids:  # type: ignore[union-attr]
-                rfc_id = _normalise_rfc_id(raw_id, f"topic {topic!r}")
-                if rfc_id in id_to_topic:
-                    raise CatalogError(f"topic mapping assigns RFC {rfc_id} more than once")
-                id_to_topic[rfc_id] = topic
-        return id_to_topic
+    raw_definitions = raw["definitions"]
+    raw_records = raw["records"]
+    if not isinstance(raw_definitions, Mapping):
+        raise CatalogError("tag catalog definitions must be a JSON object or a mapping")
+    if not isinstance(raw_records, Mapping):
+        raise CatalogError("tag catalog records must be a JSON object or a mapping")
 
-    raise CatalogError(
-        "topic mapping must consistently use either {rfc_id: topic} "
-        "or {topic: [rfc_ids]}"
-    )
+    definitions: dict[str, CatalogTag] = {}
+    label_to_key: dict[str, str] = {}
+    for raw_key, raw_label in raw_definitions.items():
+        if not isinstance(raw_key, str) or not _TAG_KEY_RE.fullmatch(raw_key):
+            raise CatalogError(
+                "tag key must use lowercase kebab-case and start with a letter, "
+                f"got {raw_key!r}"
+            )
+        if not isinstance(raw_label, str) or not raw_label.strip():
+            raise CatalogError(f"tag definition {raw_key!r} must have a non-empty label")
+        label = " ".join(raw_label.split())
+        normalised_label = label.casefold()
+        if normalised_label in label_to_key:
+            other_key = label_to_key[normalised_label]
+            raise CatalogError(
+                f"tag definitions {other_key!r} and {raw_key!r} have duplicate label {label!r}"
+            )
+        label_to_key[normalised_label] = raw_key
+        definitions[raw_key] = CatalogTag(raw_key, label)
+
+    id_to_tags: dict[str, tuple[CatalogTag, ...]] = {}
+    for raw_id, raw_tag_keys in raw_records.items():
+        rfc_id = _normalise_rfc_id(raw_id, "tag catalog records")
+        if rfc_id in id_to_tags:
+            raise CatalogError(f"tag catalog defines RFC {rfc_id} more than once")
+        if not isinstance(raw_tag_keys, Sequence) or isinstance(
+            raw_tag_keys, (str, bytes, bytearray)
+        ):
+            raise CatalogError(f"tag catalog: RFC {rfc_id} tags must be an array")
+        if not raw_tag_keys:
+            raise CatalogError(f"tag catalog: RFC {rfc_id} must have at least one tag")
+        if len(raw_tag_keys) > MAX_TAGS_PER_RECORD:
+            raise CatalogError(
+                f"tag catalog: RFC {rfc_id} has more than {MAX_TAGS_PER_RECORD} tags"
+            )
+
+        seen_keys: set[str] = set()
+        record_tags: list[CatalogTag] = []
+        for raw_key in raw_tag_keys:
+            if not isinstance(raw_key, str):
+                raise CatalogError(f"tag catalog: RFC {rfc_id} has a non-string tag key")
+            if raw_key in seen_keys:
+                raise CatalogError(
+                    f"tag catalog: RFC {rfc_id} contains duplicate tag {raw_key!r}"
+                )
+            seen_keys.add(raw_key)
+            try:
+                record_tags.append(definitions[raw_key])
+            except KeyError as error:
+                raise CatalogError(
+                    f"tag catalog: RFC {rfc_id} references unknown tag {raw_key!r}"
+                ) from error
+        id_to_tags[rfc_id] = tuple(sorted(record_tags))
+
+    return dict(sorted(id_to_tags.items()))
 
 
 def _validate_sequence(records: list[RfcRecord], allowed_gaps: frozenset[int]) -> None:
@@ -463,7 +521,7 @@ def _validate_sequence(records: list[RfcRecord], allowed_gaps: frozenset[int]) -
 def build_catalog(
     rfc_dir: Path | str,
     *,
-    topics: Mapping[object, object] | Path | str | None = None,
+    tags: Mapping[object, object] | Path | str | None = None,
     allowed_gaps: frozenset[int] = ALLOWED_GAPS,
     project_label: str = DEFAULT_PROJECT_LABEL,
 ) -> list[RfcRecord]:
@@ -495,10 +553,10 @@ def build_catalog(
                 f"{record.source_path}: Related references unknown RFC id(s): {formatted}"
             )
 
-    if topics is not None:
-        topic_mapping = load_topic_mapping(topics)
+    if tags is not None:
+        tag_mapping = load_tag_mapping(tags)
         discovered = discovered_ids
-        assigned = set(topic_mapping)
+        assigned = set(tag_mapping)
         missing = sorted(discovered - assigned)
         unknown = sorted(assigned - discovered)
         problems: list[str] = []
@@ -509,9 +567,9 @@ def build_catalog(
         if problems:
             details = "; ".join(problems)
             raise CatalogError(
-                f"topic mapping must assign every discovered RFC exactly once ({details})"
+                f"tag catalog must assign at least one tag to every discovered RFC ({details})"
             )
-        records = [replace(record, topic=topic_mapping[record.id]) for record in records]
+        records = [replace(record, tags=tag_mapping[record.id]) for record in records]
 
     return records
 
@@ -533,7 +591,7 @@ def render_index_block(records: Sequence[RfcRecord]) -> str:
     payload = json.dumps(catalog_data(ordered), ensure_ascii=False, indent=2, sort_keys=True)
     # Source prose containing an HTML end tag must not be able to close the script.
     payload = payload.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
-    with_topics = any(record.topic is not None for record in ordered)
+    with_tags = any(record.tags for record in ordered)
 
     lines = [
         BEGIN_MARKER,
@@ -544,8 +602,8 @@ def render_index_block(records: Sequence[RfcRecord]) -> str:
         '<div class="pp-rfc-fallback" data-rfc-fallback markdown="1">',
         "",
     ]
-    if with_topics:
-        lines.extend(("| RFC | Status | Topic | Title |", "| ---: | --- | --- | --- |"))
+    if with_tags:
+        lines.extend(("| RFC | Status | Tags | Title |", "| ---: | --- | --- | --- |"))
     else:
         lines.extend(("| RFC | Status | Title |", "| ---: | --- | --- |"))
 
@@ -553,9 +611,9 @@ def render_index_block(records: Sequence[RfcRecord]) -> str:
         rfc_link = f"[{record.id}]({record.source_path})"
         status = _escape_table_cell(record.status)
         title = _escape_table_cell(record.title)
-        if with_topics:
-            topic = _escape_table_cell(record.topic or "")
-            lines.append(f"| {rfc_link} | {status} | {topic} | {title} |")
+        if with_tags:
+            tag_labels = _escape_table_cell(", ".join(tag.label for tag in record.tags))
+            lines.append(f"| {rfc_link} | {status} | {tag_labels} | {title} |")
         else:
             lines.append(f"| {rfc_link} | {status} | {title} |")
 
@@ -589,9 +647,9 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--rfc-dir", type=Path, help="RFC directory (defaults to docs/rfcs)")
     parser.add_argument("--readme", type=Path, help="README containing generated markers")
     parser.add_argument(
-        "--topics",
+        "--tags",
         type=Path,
-        help="JSON topic mapping (defaults to catalog.json beside the RFC README when present)",
+        help="JSON tag catalog (defaults to catalog.json beside the RFC README when present)",
     )
     parser.add_argument(
         "--project-label",
@@ -631,13 +689,13 @@ def _write_remediation(
     *,
     rfc_dir: Path,
     readme: Path,
-    topics: Path | None,
+    tags: Path | None,
     allowed_gaps: frozenset[int],
 ) -> str:
     uses_repository_defaults = (
         args.rfc_dir is None
         and args.readme is None
-        and args.topics is None
+        and args.tags is None
         and args.project_label == DEFAULT_PROJECT_LABEL
         and args.allowed_gaps is None
         and not args.no_allowed_gaps
@@ -653,8 +711,8 @@ def _write_remediation(
         "--readme",
         str(readme),
     ]
-    if topics is not None:
-        command.extend(("--topics", str(topics)))
+    if tags is not None:
+        command.extend(("--tags", str(tags)))
     if args.project_label != DEFAULT_PROJECT_LABEL:
         command.extend(("--project-label", args.project_label))
     if allowed_gaps != ALLOWED_GAPS:
@@ -674,10 +732,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     repository_root = Path(__file__).resolve().parents[1]
     rfc_dir = args.rfc_dir or repository_root / "docs" / "rfcs"
     readme = args.readme or rfc_dir / "README.md"
-    topics = args.topics
-    default_topics = rfc_dir / "catalog.json"
-    if topics is None and default_topics.is_file():
-        topics = default_topics
+    tags = args.tags
+    default_tags = rfc_dir / "catalog.json"
+    if tags is None and default_tags.is_file():
+        tags = default_tags
     if args.no_allowed_gaps:
         allowed_gaps = frozenset()
     elif args.allowed_gaps is not None:
@@ -687,7 +745,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         records = build_catalog(
             rfc_dir,
-            topics=topics,
+            tags=tags,
             allowed_gaps=allowed_gaps,
             project_label=args.project_label,
         )
@@ -704,7 +762,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args,
                 rfc_dir=rfc_dir,
                 readme=readme,
-                topics=topics,
+                tags=tags,
                 allowed_gaps=allowed_gaps,
             )
             print(

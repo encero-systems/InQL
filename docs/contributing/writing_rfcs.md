@@ -36,7 +36,7 @@ Purely internal Incan compiler refactors with **no** IncQL-visible meaning usual
    - Copy [TEMPLATE.md](../rfcs/TEMPLATE.md).  
    - Add `docs/rfcs/NNN_short_slug.md` (example: `006_window_semantics.md`).  
    - Pick the next `NNN` from the [RFC index](../rfcs/README.md) and open issues, avoiding collisions.
-   - Assign the RFC to one reader topic in `docs/rfcs/catalog.json`.
+   - Assign the RFC one to three controlled tags in `docs/rfcs/catalog.json`. Use only keys declared under `definitions`; add a new definition only when the existing vocabulary cannot describe a recurring concern. Four tags are reserved for genuinely cross-cutting program or platform RFCs.
 
 3. **Fill in the RFC**  
    One coherent proposal per RFC. Cover at least:
@@ -54,7 +54,7 @@ Purely internal Incan compiler refactors with **no** IncQL-visible meaning usual
    Use the PR (and the linked issue, if any) to converge.
 
 6. **Regenerate the catalog**
-   Run `make rfc-index`, review the generated reader data and fallback table, then run `make docs-build`. The docs build validates the RFC number sequence, required metadata, related RFCs, lifecycle folder, topic assignment, and generated index before rendering the site.
+   Run `make rfc-index`, review the generated reader data and fallback table, then run `make docs-build`. The docs build validates the RFC number sequence, required metadata, related RFCs, lifecycle folder, controlled tag assignments, and generated index before rendering the site.
 
 ## After acceptance
 

@@ -1,60 +1,248 @@
 {
-  "Foundations": [
-    "000",
-    "001",
-    "002",
-    "003",
-    "004",
-    "005",
-    "006",
-    "007",
-    "008",
-    "009",
-    "010",
-    "011"
-  ],
-  "Functions and values": [
-    "012",
-    "013",
-    "014",
-    "015",
-    "016",
-    "017",
-    "018",
-    "019",
-    "020",
-    "021",
-    "022",
-    "023",
-    "024",
-    "025",
-    "026"
-  ],
-  "Evidence and governance": [
-    "027",
-    "028",
-    "029",
-    "030",
-    "031",
-    "032",
-    "033",
-    "034",
-    "035",
-    "036",
-    "037",
-    "038",
-    "039",
-    "040",
-    "041",
-    "042",
-    "043",
-    "044",
-    "045",
-    "046",
-    "047"
-  ],
-  "Runtime and extensions": [
-    "048",
-    "050"
-  ]
+  "definitions": {
+    "authoring": "Authoring",
+    "types": "Types",
+    "functions": "Functions",
+    "planning": "Planning",
+    "execution": "Execution",
+    "data-access": "Data access",
+    "interoperability": "Interoperability",
+    "evidence": "Evidence",
+    "governance": "Governance",
+    "verification": "Verification",
+    "extensibility": "Extensibility"
+  },
+  "records": {
+    "000": [
+      "authoring",
+      "planning",
+      "interoperability"
+    ],
+    "001": [
+      "authoring",
+      "types",
+      "planning"
+    ],
+    "002": [
+      "planning",
+      "interoperability",
+      "extensibility"
+    ],
+    "003": [
+      "authoring",
+      "planning",
+      "interoperability"
+    ],
+    "004": [
+      "execution",
+      "data-access",
+      "interoperability"
+    ],
+    "005": [
+      "authoring",
+      "planning"
+    ],
+    "006": [
+      "planning",
+      "interoperability"
+    ],
+    "007": [
+      "planning",
+      "evidence"
+    ],
+    "008": [
+      "planning",
+      "execution",
+      "evidence"
+    ],
+    "009": [
+      "data-access",
+      "extensibility"
+    ],
+    "010": [
+      "data-access",
+      "interoperability"
+    ],
+    "011": [
+      "data-access",
+      "interoperability"
+    ],
+    "012": [
+      "authoring",
+      "types",
+      "planning"
+    ],
+    "013": [
+      "authoring",
+      "functions",
+      "extensibility"
+    ],
+    "014": [
+      "functions",
+      "extensibility",
+      "interoperability"
+    ],
+    "015": [
+      "authoring",
+      "functions",
+      "interoperability"
+    ],
+    "016": [
+      "authoring",
+      "functions",
+      "interoperability"
+    ],
+    "017": [
+      "authoring",
+      "functions",
+      "interoperability"
+    ],
+    "018": [
+      "authoring",
+      "functions",
+      "interoperability"
+    ],
+    "019": [
+      "authoring",
+      "functions",
+      "planning"
+    ],
+    "020": [
+      "authoring",
+      "functions",
+      "planning"
+    ],
+    "021": [
+      "authoring",
+      "functions",
+      "planning"
+    ],
+    "022": [
+      "authoring",
+      "functions",
+      "interoperability"
+    ],
+    "023": [
+      "authoring",
+      "functions",
+      "interoperability"
+    ],
+    "024": [
+      "functions",
+      "extensibility",
+      "interoperability"
+    ],
+    "025": [
+      "types",
+      "interoperability"
+    ],
+    "026": [
+      "types",
+      "interoperability"
+    ],
+    "027": [
+      "interoperability",
+      "evidence",
+      "governance",
+      "verification"
+    ],
+    "028": [
+      "evidence"
+    ],
+    "029": [
+      "evidence",
+      "extensibility"
+    ],
+    "030": [
+      "planning",
+      "evidence"
+    ],
+    "031": [
+      "interoperability",
+      "evidence"
+    ],
+    "032": [
+      "execution",
+      "evidence"
+    ],
+    "033": [
+      "execution",
+      "interoperability",
+      "evidence"
+    ],
+    "034": [
+      "authoring",
+      "execution",
+      "evidence"
+    ],
+    "035": [
+      "planning",
+      "evidence",
+      "governance"
+    ],
+    "036": [
+      "interoperability",
+      "evidence",
+      "governance"
+    ],
+    "037": [
+      "planning",
+      "evidence"
+    ],
+    "038": [
+      "interoperability",
+      "evidence",
+      "extensibility"
+    ],
+    "039": [
+      "authoring"
+    ],
+    "040": [
+      "interoperability",
+      "evidence"
+    ],
+    "041": [
+      "authoring",
+      "planning",
+      "interoperability"
+    ],
+    "042": [
+      "evidence",
+      "verification"
+    ],
+    "043": [
+      "interoperability",
+      "evidence",
+      "verification"
+    ],
+    "044": [
+      "evidence",
+      "verification"
+    ],
+    "045": [
+      "planning",
+      "evidence",
+      "verification"
+    ],
+    "046": [
+      "interoperability",
+      "evidence",
+      "governance"
+    ],
+    "047": [
+      "interoperability",
+      "evidence"
+    ],
+    "048": [
+      "execution",
+      "interoperability",
+      "evidence"
+    ],
+    "050": [
+      "execution",
+      "data-access",
+      "interoperability",
+      "extensibility"
+    ]
+  }
 }

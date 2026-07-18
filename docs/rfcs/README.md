@@ -36,8 +36,21 @@
     "status": "Planned",
     "status_key": "planned",
     "summary": "IncQL is the typed data logic plane for the Incan ecosystem: relational queries, schema-parameterized DataFrame transformations, and backend-neutral logical planning. This RFC is the foundational specification for IncQL v0.1. It defines what IncQL is and what it owns, the core semantic model, naming forms and resolution rules, schema shapes, the compilation model, and layer boundaries. Companion RFCs address dataset types, plan interchange, query grammar, execution context, and pipe-forward syntax.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      }
+    ],
     "title": "Language Specification",
-    "topic": "Foundations",
     "written_against": "Incan v0.2"
   },
   {
@@ -74,8 +87,21 @@
     "status": "In Progress",
     "status_key": "in-progress",
     "summary": "This RFC specifies the dataset type hierarchy for IncQL: the traits and concrete types that carry schema-parameterized tabular data through relational pipelines. The hierarchy is rooted in the DataSet[T] trait, split into BoundedDataSet[T] (finite extent) and UnboundedDataSet[T] (streaming/unbounded), with three concrete types: DataFrame[T] (materialized/eager), LazyFrame[T] (deferred plan), and DataStream[T] (streaming). The bounded/unbounded split enables static capability gating: operations that require unbounded state are rejected at compile time when the target is unbounded, without requiring a separate streaming API. This RFC also defines the relational operation API on DataSet[T] and the execution backend boundary so implementations can delegate without exposing engine internals as the author contract.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      },
+      {
+        "key": "types",
+        "label": "Types"
+      }
+    ],
     "title": "Dataset types and carriers (DataSet[T])",
-    "topic": "Foundations",
     "written_against": "Incan v0.2"
   },
   {
@@ -111,8 +137,21 @@
     "status": "In Progress",
     "status_key": "in-progress",
     "summary": "This RFC defines Apache Substrait as the normative logical interchange for IncQL relational plans: which Rel and expression shapes implementations produce, how read roots remain backend-agnostic while environment binding (adapters, credentials, runner choice) stays outside IncQL, and how extensions cover capabilities that lack a stable logical Rel in core Substrait. The query {} surface requires lowering to Substrait; this RFC owns the cross-surface contract so method-chain APIs (IncQL RFC 001), query {} blocks, and optional pipe-forward do not diverge at emission time.",
+    "tags": [
+      {
+        "key": "extensibility",
+        "label": "Extensibility"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      }
+    ],
     "title": "Apache Substrait integration",
-    "topic": "Foundations",
     "written_against": "Incan v0.2"
   },
   {
@@ -155,8 +194,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC specifies the query { ... } expression: grammar, typechecking (including clause-level use of .column, relation.column, bare identifiers, and aggregate rules), vocabulary activation for the query keyword (IncQL package as dependency), and lowering to Apache Substrait. IncQL also accepts the expression-position colon spelling query: for consistency with Incan vocabulary declarations. Naming-form semantics and current query schema are defined in IncQL RFC 000; this RFC must remain consistent with that document. It depends on IncQL RFC 001: FROM sources must conform to IncQL RFC 001's DataSet[T] trait (DataFrame[T], LazyFrame[T], or DataStream[T]) so that T supplies fields for resolution. IncQL RFC 002 owns the Substrait Rel and expression contract, mapping catalog, and read vs binding boundaries; this RFC must conform to IncQL RFC 002 for serialized plan semantics. SELECT DISTINCT is part of the minimum clause surface defined here.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      }
+    ],
     "title": "query {} blocks — syntax, typing, Substrait",
-    "topic": "Foundations",
     "written_against": "Incan v0.3"
   },
   {
@@ -200,8 +252,21 @@
     "status": "In Progress",
     "status_key": "in-progress",
     "summary": "This RFC specifies the execution context: the session object that bridges IncQL's typed logical plans and real execution. It defines how authors read data into DataSet[T] values, execute plans (lowered to Substrait per IncQL RFC 002), and write results back to storage. Apache DataFusion is the reference (and default) execution backend for plan optimization and execution: it consumes Substrait plans, applies query optimizations (predicate pushdown, projection pruning, join reordering, constant folding), and executes against registered data sources, returning Apache Arrow record batches that IncQL wraps in typed DataFrame[T] carriers. This RFC standardizes the explicit core Session contract; higher operational layers may compose, scope, or inject sessions and adapter conveniences on top, but they do not redefine IncQL execution semantics. With RFCs 000–004, IncQL is usable for read → transform → write workflows.",
+    "tags": [
+      {
+        "key": "data-access",
+        "label": "Data access"
+      },
+      {
+        "key": "execution",
+        "label": "Execution"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Execution context and DataFusion",
-    "topic": "Foundations",
     "written_against": "Incan v0.2"
   },
   {
@@ -241,8 +306,17 @@
     "status": "Blocked",
     "status_key": "blocked",
     "summary": "This RFC specifies an optional pipe-forward surface for IncQL relational pipelines: |\u003e-chained stages applied to an existing DataSet[T] expression, with grammar, precedence, and desugaring to the same relational semantics as query {} and collection method chains. Identifier resolution and current query schema behavior must match IncQL RFC 000 §§2–4; this RFC does not redefine naming rules.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      }
+    ],
     "title": "Pipe-forward relational syntax (|\u003e)",
-    "topic": "Foundations",
     "written_against": "Incan v0.2"
   },
   {
@@ -280,8 +354,17 @@
     "status": "Blocked",
     "status_key": "blocked",
     "summary": "IncQL RFC 002 classifies EXPLODE/unnest as a gap capability: no stable logical Rel exists in core Substrait, so implementations must lower through a registered extension relation with a declared URI. This RFC records the intent to promote that capability from gap to core — updating the operator catalog, retiring the extension encoding requirement, and updating Incan compiler lowering — once upstream Substrait ships a portable unnest Rel that IncQL can adopt.",
+    "tags": [
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      }
+    ],
     "title": "Promote unnest/explode to core Substrait lowering",
-    "topic": "Foundations",
     "written_against": "Incan v0.2"
   },
   {
@@ -323,8 +406,17 @@
     "status": "In Progress",
     "status_key": "in-progress",
     "summary": "This RFC defines Prism as IncQL's immutable internal logical planning and optimization engine. Prism owns persistent plan storage, cheap branching through structural sharing, lineage-preserving rewrites, and logical optimization prior to Substrait emission or session execution. Prism is an internal planning substrate, not the normative interchange contract: Apache Substrait remains the boundary format per IncQL RFC 002. LazyFrame, DataFrame, and DataStream are carrier experiences over Prism-managed plan state; Session and SessionContext bind and execute those plans per IncQL RFC 004.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      }
+    ],
     "title": "Prism logical planning and optimization engine",
-    "topic": "Foundations",
     "written_against": "Incan v0.2"
   },
   {
@@ -360,8 +452,21 @@
     "status": "Planned",
     "status_key": "planned",
     "summary": "This RFC defines the optimizer boundary between Prism and Session as IncQL grows beyond the first Prism adoption slice. Prism remains the owner of analyzed logical planning, semantic rewrites, canonicalization, schema-preserving logical optimization, and any static planning facts that do not depend on runtime feedback. Session remains the owner of backend capabilities, physical planning, backend pushdown policy, runtime statistics, execution metrics, and adaptive re-planning during execution. This RFC does not replace RFC 007's role in establishing Prism as the internal planning substrate; it settles the ownership boundary needed for RFC 004 and defers deeper statistics, CBO, and AQE mechanics until the execution side is better grounded.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "execution",
+        "label": "Execution"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      }
+    ],
     "title": "Optimizer boundary, statistics, cost-based optimization, and adaptive execution",
-    "topic": "Foundations",
     "written_against": "Incan v0.2"
   },
   {
@@ -391,8 +496,17 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC introduces a Session-owned format handler registry so IncQL can support built-in and third-party source formats through one stable contract, instead of hardcoding format-specific branches in Session and backend integration code.",
+    "tags": [
+      {
+        "key": "data-access",
+        "label": "Data access"
+      },
+      {
+        "key": "extensibility",
+        "label": "Extensibility"
+      }
+    ],
     "title": "Session Format Handler Registry",
-    "topic": "Foundations",
     "written_against": "Incan v0.2-rc1"
   },
   {
@@ -425,8 +539,17 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines IncQL's north-star CSV dialect and interpretation contract. It standardizes how authors describe CSV dialect, header policy, malformed-row behavior, and schema or type inference so that the csv format behaves predictably across execution backends and future format-handler implementations. The core claim is that CSV parsing semantics must be expressed as stable structured IncQL configuration and validated as part of the IncQL contract, rather than being left to whatever parser quirks a specific backend happens to expose.",
+    "tags": [
+      {
+        "key": "data-access",
+        "label": "Data access"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "CSV dialect and interpretation contract",
-    "topic": "Foundations",
     "written_against": "Incan v0.2-rc5"
   },
   {
@@ -459,8 +582,17 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines IncQL's north-star source-discovery contract for file-backed reads. It standardizes how a logical input target becomes one or more parse units before any format-specific handler such as csv, parquet, or arrow interprets those units. The core claim is that input discovery must be its own contract layer, separate from format dialect or schema inference, so that IncQL can describe single-file reads, directory or prefix expansion, and future container-aware discovery without mixing storage semantics into format semantics.",
+    "tags": [
+      {
+        "key": "data-access",
+        "label": "Data access"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Source discovery and parse-unit expansion",
-    "topic": "Foundations",
     "written_against": "Incan v0.2-rc5"
   },
   {
@@ -510,8 +642,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines a single canonical scalar expression model for row-level relational meaning in IncQL. Filter predicates, computed projection values, grouping keys, and aggregate arguments must all be expressed through the same scalar expression surface, while aggregate outputs remain a distinct aggregate-measure layer. The goal is to replace split mini-DSLs for predicates, literals, and projection expressions with one coherent authoring and lowering contract that all IncQL surfaces share.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      },
+      {
+        "key": "types",
+        "label": "Types"
+      }
+    ],
     "title": "Unified scalar expression surface",
-    "topic": "Functions and values",
     "written_against": "Incan v0.3.0"
   },
   {
@@ -576,8 +721,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC is the umbrella tracking RFC for IncQL's function catalog expansion. It defines the target shape and acceptance boundary for the related child RFCs that turn IncQL from a small builder-first function surface into a typed, registry-backed dataframe and query function catalog. This RFC is complete only when the child RFCs needed for the catalog program are implemented or deliberately rejected.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "extensibility",
+        "label": "Extensibility"
+      },
+      {
+        "key": "functions",
+        "label": "Functions"
+      }
+    ],
     "title": "Function catalog program",
-    "topic": "Functions and values",
     "written_against": "Incan v0.2"
   },
   {
@@ -636,8 +794,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines the IncQL function registry: the single source of truth for scalar, aggregate, window, generator, and extension functions across query blocks, dataframe method chains, planning, diagnostics, generated documentation, and Substrait interchange. The registry records canonical names, compatibility aliases, arity, type rules, null and error behavior, determinism, function class, boundedness restrictions, documentation metadata, lifecycle metadata, and Substrait mapping strategy so that future function expansion is coherent rather than a pile of ad hoc helpers.",
+    "tags": [
+      {
+        "key": "extensibility",
+        "label": "Extensibility"
+      },
+      {
+        "key": "functions",
+        "label": "Functions"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Function registry and catalog governance",
-    "topic": "Functions and values",
     "written_against": "Incan v0.2"
   },
   {
@@ -682,8 +853,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines the first required scalar function and operator slice for IncQL: column references, literals, casts, comparisons, boolean logic, null checks, basic arithmetic, conditionals, membership predicates, range predicates, and ordering expressions. These functions are the minimum scalar vocabulary needed for credible typed dataframe and query-block authoring before broader math, string, and date/time catalogs are added.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "functions",
+        "label": "Functions"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Core scalar functions and operators",
-    "topic": "Functions and values",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -730,8 +914,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines IncQL's core aggregate function set: count, sum, avg, min, and max, including argument forms, input type rules, null behavior, empty-input behavior, result type rules, aliases, and required diagnostics. These aggregates form the minimum portable aggregate surface for dataframe and query-block work.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "functions",
+        "label": "Functions"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Core aggregate functions",
-    "topic": "Functions and values",
     "written_against": "Incan v0.2"
   },
   {
@@ -778,8 +975,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines aggregate modifiers for IncQL: DISTINCT, aggregate-local FILTER, ordered aggregate input, and compatibility helpers such as count_if. These are modeled as modifiers on aggregate measures rather than as a separate function for every combination, so IncQL can support SQL-style aggregate semantics without multiplying the catalog unnecessarily.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "functions",
+        "label": "Functions"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Aggregate modifiers",
-    "topic": "Functions and values",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -828,8 +1038,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines the common scalar function catalog beyond the core scalar slice: practical math, string, encoding, regex, and date/time functions that authors expect in a dataframe system. The catalog is standards-led where possible, preserves compatibility aliases where semantics match, and leaves specialist or format-specific families to their owning RFCs.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "functions",
+        "label": "Functions"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Common scalar function catalog",
-    "topic": "Functions and values",
     "written_against": "Incan v0.2"
   },
   {
@@ -876,8 +1099,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines IncQL window functions and window specifications: partitioning, ordering, frames, ranking functions, offset functions, and value functions. Window functions are explicitly not ordinary aggregates; they produce one value per input row while seeing a related set of rows defined by the window specification.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "functions",
+        "label": "Functions"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      }
+    ],
     "title": "Window functions",
-    "topic": "Functions and values",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -924,8 +1160,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines IncQL functions for nested scalar values: arrays, maps, and structs. It covers construction, element access, cardinality, containment, overlap checks, sorting, set-like array operations, scalar array flattening, map entry access, and higher-order collection functions as a later extension point. Nested functions remain scalar when they produce one value per input row; cardinality-changing operations such as explode belong to a separate generator RFC.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "functions",
+        "label": "Functions"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      }
+    ],
     "title": "Nested data functions",
-    "topic": "Functions and values",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -974,8 +1223,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines generator and table-valued functions for IncQL, including explode, explode_outer, posexplode, posexplode_outer, inline, inline_outer, flatten, stack, and selected tuple-producing extraction helpers. These functions change relation shape or cardinality and therefore must be modeled as relation operations, not scalar expressions.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "functions",
+        "label": "Functions"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      }
+    ],
     "title": "Generator and table-valued functions",
-    "topic": "Functions and values",
     "written_against": "Incan v0.2"
   },
   {
@@ -1026,8 +1288,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines IncQL's semi-structured and format-oriented function families: JSON value functions, CSV value functions, schema inference helpers, URL helpers, and hashing functions. These functions are practical data-engineering tools, but they should live in explicit format families rather than the core scalar catalog. Semi-structured variant values and their type predicates are defined separately by IncQL RFC 026.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "functions",
+        "label": "Functions"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Semi-structured and format functions",
-    "topic": "Functions and values",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -1076,8 +1351,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines the portable approximate aggregate boundary for IncQL and records the sketch-state policy decision. IncQL exposes explicit approximate aggregates for distinct counts and percentiles. It delegates sketch-state construction, merge, estimate, serialization, and deserialization helpers to IncQL RFC 025 because those helpers require typed sketch logical values rather than ordinary string or binary payloads.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "functions",
+        "label": "Functions"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Approximate and sketch functions",
-    "topic": "Functions and values",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -1124,8 +1412,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines how IncQL handles functions that should not live in the portable core catalog: geospatial functions, cryptographic functions, engine-specific physical metadata, UDF and UDTF hooks, JVM/reflection-style escape hatches, partition transforms, and dialect-specific compatibility families. It establishes extension registration, namespacing, capability reporting, and rejection rules.",
+    "tags": [
+      {
+        "key": "extensibility",
+        "label": "Extensibility"
+      },
+      {
+        "key": "functions",
+        "label": "Functions"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Function extension policy",
-    "topic": "Functions and values",
     "written_against": "Incan v0.2"
   },
   {
@@ -1172,8 +1473,17 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines typed sketch logical values for IncQL. Sketch helpers must not be modeled as ordinary strings or binary blobs; they must produce and consume logical sketch values that record sketch family, input value domain, parameterization, merge compatibility, and serialization format identity.",
+    "tags": [
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      },
+      {
+        "key": "types",
+        "label": "Types"
+      }
+    ],
     "title": "Typed sketch logical values",
-    "topic": "Functions and values",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -1220,8 +1530,17 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines semi-structured variant logical values for IncQL. A variant value is distinct from ordinary str and bytes payloads: it carries a logical kind such as null, boolean, integer, floating point, string, timestamp, array, or object, and IncQL predicates inspect that logical value rather than reparsing arbitrary JSON text.",
+    "tags": [
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      },
+      {
+        "key": "types",
+        "label": "Types"
+      }
+    ],
     "title": "Semi-structured variant logical values",
-    "topic": "Functions and values",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -1312,8 +1631,25 @@
     "status": "In Progress",
     "status_key": "in-progress",
     "summary": "This RFC is the umbrella tracking RFC for IncQL's relational evidence program. The program defines the local, open semantic evidence contracts that make typed relational computation inspectable before execution and reviewable after execution: stable semantic targets, metadata attachments, Prism lineage, inspection artifacts, execution observations, adapter coverage, quality observations, governed attributes, plan bundles, plan diffs, evidence exchange bridges, interoperability semantic profiles, Prism plan ingress, async verification evidence, canonical equality profiles, verifier statements, proof artifacts, constraint evidence, verification-aware planning, data contract ingress, product topology, semantic evidence graph projections, and agent query surfaces. This RFC is complete only when the child RFCs are implemented, rejected, or explicitly superseded by design decision.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "governance",
+        "label": "Governance"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      },
+      {
+        "key": "verification",
+        "label": "Verification"
+      }
+    ],
     "title": "Relational evidence program",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -1360,8 +1696,13 @@
     "status": "In Progress",
     "status_key": "in-progress",
     "summary": "This RFC defines the semantic identity and target model required by IncQL's relational evidence program. It establishes stable, typed targets for plans, Prism nodes, plan ingress requests, client sessions, relation outputs, fields, scalar expressions, aggregate measures, window expressions, generator outputs, read roots, quality assertions, policy decisions, adapter requirements, coverage records, and execution attempts.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      }
+    ],
     "title": "Semantic identity and target model",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -1404,8 +1745,17 @@
     "status": "In Progress",
     "status_key": "in-progress",
     "summary": "This RFC defines typed metadata attachments for IncQL semantic targets. Attachments provide a common way to associate lifecycle, source, visibility, typed payloads, provenance, and evidence references with plans, fields, expressions, requirements, observations, and other semantic targets without hardcoding every evidence family into one model.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "extensibility",
+        "label": "Extensibility"
+      }
+    ],
     "title": "Typed metadata attachments",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -1462,8 +1812,17 @@
     "status": "In Progress",
     "status_key": "in-progress",
     "summary": "This RFC defines the Prism lineage graph for IncQL. The graph records relation-level, field-level, and expression-level dependencies over authored and rewritten Prism plans, including reads, projections, filters, joins, aggregates, windows, generators, ordering, limits, nested data access, and semi-structured or format parsing.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      }
+    ],
     "title": "Prism lineage graph",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -1514,8 +1873,17 @@
     "status": "In Progress",
     "status_key": "in-progress",
     "summary": "This RFC defines local inspection APIs and deterministic evidence artifacts for IncQL plans. The APIs expose plan structure, schema flow, lineage, metadata attachments, semantic profile evidence, ingress evidence, and diagnostics as typed records, while artifacts provide versioned serialized views suitable for CI, IDEs, agents, documentation, and downstream integrations.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Local inspection APIs and artifacts",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -1570,8 +1938,17 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines execution observations for IncQL sessions. Execution observations correlate runtime attempts with semantic plan targets and record backend, adapter, semantic profile context, status, timing, diagnostics, row counts, and optional trace identifiers without making runtime logs the source of relational semantics.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "execution",
+        "label": "Execution"
+      }
+    ],
     "title": "Execution observations",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -1644,8 +2021,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines adapter requirements and coverage states for IncQL. Requirements describe backend capabilities needed by a plan or evidence contract, while coverage states report whether a specific adapter can satisfy those requirements under the relevant binding and semantic profile. Unknown coverage is not enforcement.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "execution",
+        "label": "Execution"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Adapter requirements and coverage",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -1708,8 +2098,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines IncQL quality assertions, quality assertion syntax, and quality observations. Quality assertions are typed relational checks over datasets, fields, groups, or explicit multi-relation inputs. Quality observations are runtime results produced by executing those assertions. A quality assertion is not an ordinary filter unless the author explicitly asks to filter rows.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "execution",
+        "label": "Execution"
+      }
+    ],
     "title": "Quality assertions and observations",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -1762,8 +2165,21 @@
     "status": "Implemented",
     "status_key": "implemented",
     "summary": "This RFC defines how IncQL carries governed attributes and records policy checkpoints as local relational evidence. Governed attributes are typed facts attached to semantic targets with provenance, confidence, authority, and lifetime. Policy checkpoints are decision records attached at authoring, planning, binding, or execution boundaries. IncQL carries and propagates evidence; it does not define an organization-wide policy engine.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "governance",
+        "label": "Governance"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      }
+    ],
     "title": "Governed attributes and policy checkpoints",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -1836,8 +2252,21 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines the governed plan bundle as the local IncQL artifact that keeps relational computation and evidence together. A bundle contains a plan reference, schemas, lineage, governed attributes, policy checkpoints, quality assertions, verification evidence, canonical equality profiles, verifier statements, proof artifacts, constraint evidence, data contract evidence, product topology, semantic evidence graph projections, semantic profiles, ingress evidence, client session context, adapter requirements, coverage records, evidence references, and version metadata for the IncQL-owned parts of governed relational computation.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "governance",
+        "label": "Governance"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Governed plan bundle",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -1888,8 +2317,17 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines local IncQL plan diffs and blast-radius input artifacts. A plan diff compares two IncQL evidence artifacts and classifies changes in output schema, field identity, lineage, joins, filters, aggregates, windows, generators, quality assertions, semantic profiles, adapter requirements, and coverage. The result is a local input to downstream impact analysis, not an organization-wide blast-radius service.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      }
+    ],
     "title": "Plan diff and blast-radius inputs",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -1958,8 +2396,21 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines evidence exchange bridges between IncQL's internal evidence model and external or adjacent formats. Exchange bridges map IncQL plan, lineage, schema-flow, execution, quality, verification, canonical equality, proof artifact, constraint, contract, product topology, evidence graph, coverage, semantic profile, and bundle records into downstream views such as OpenLineage events, telemetry signals, semantic inspection fragments, transformation-project artifacts, data-contract artifacts, product-topology artifacts, graph projections, and catalog/governance integration artifacts. They may also ingest external evidence artifacts such as transformation manifests, source catalogs, schema catalogs, run results, verification results, proof results, constraint metadata, contract artifacts, product artifacts, runtime lineage events, and orchestration metadata. Representative artifact families include dbt manifests and run results, Open Data Contract Standard artifacts, Open Data Product Standard artifacts, legacy Data Contract Specification artifacts, Glue Data Catalog or Hive Metastore snapshots, Airflow or MWAA DAG metadata, Dagster assets, Prefect deployment metadata, OpenLineage events, DataHub or OpenMetadata catalog records, and Great Expectations-style quality results. Inbound artifacts and outbound projections are evidence exchange records, not the internal source of truth.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "extensibility",
+        "label": "Extensibility"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Evidence exchange bridges",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -2006,8 +2457,13 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines a pandas-familiar exploration API for IncQL dataset carriers. The API provides dictionary-like column access through data[\"column\"], projection through data[[\"a\", \"b\"]], boolean filtering through data[predicate], and a small set of familiar method aliases such as where, assign, groupby, sort_values, and head. These forms are ergonomic aliases over IncQL's existing typed relational model; they must not introduce pandas row-indexing, mutable frame, eager execution, or index-alignment semantics.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      }
+    ],
     "title": "Pandas-familiar exploration API",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -2080,8 +2536,17 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines interoperability semantic profiles for IncQL evidence. A profile describes the semantic environment a plan is being received from, compared with, targeted at, or observed under: an IncQL baseline, client protocol, plan ingress frontend, execution engine, adapter binding, SQL dialect, catalog/schema system, transformation project, interchange consumer, or conformance baseline. Profiles give ingress coverage records, adapter requirements, coverage records, execution observations, plan diffs, bundles, and exchanges a shared context without making any external system the owner of IncQL relational meaning.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Interoperability semantic profiles",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -2142,8 +2607,21 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines Prism plan ingress and external client frontends for IncQL. A frontend receives an external authoring or client protocol such as Spark Connect, SQL, or another unresolved relational plan surface, decodes it into a Prism-owned unresolved ingress plan, and asks Prism to analyze that plan into ordinary IncQL relational semantics. The frontend may preserve client-origin evidence, client-session evidence, protocol diagnostics, and ingress coverage records, but it must not make the external protocol, Spark, Substrait, DataFusion, or any backend adapter the semantic owner of the plan.",
+    "tags": [
+      {
+        "key": "authoring",
+        "label": "Authoring"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      }
+    ],
     "title": "Prism plan ingress and external client frontends",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -2206,8 +2684,17 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines async verification evidence for IncQL. Verification assertions are stable semantic targets, verification runs emit append-only observations over time, and current verification state is a projection over those observations rather than a mutable field. The model separates lifecycle, outcome, assurance, scope, and commitment context so tools can distinguish deterministic verification, external attestations, sampled checks, accepted waivers, unknown evidence, and proof-backed verification without pretending that all checks carry the same trust.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "verification",
+        "label": "Verification"
+      }
+    ],
     "title": "Async verification evidence",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -2260,8 +2747,21 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines canonical equality and digest profiles for IncQL verification evidence. A profile records how rows, fields, relations, partitions, and result tables are normalized, ordered, compared, and hashed so deterministic verification can claim verified assurance without relying on hidden engine-specific equality rules.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      },
+      {
+        "key": "verification",
+        "label": "Verification"
+      }
+    ],
     "title": "Canonical equality and digest profiles",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -2314,8 +2814,17 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines verifier statements and proof artifact records for IncQL evidence. A verifier statement binds a semantic plan target, profile context, source commitments, result references, canonical equality rules, and verifier profile into a stable statement that deterministic checks and cryptographic proof systems can verify without relying on SQL text or backend-specific plan fragments as the source of meaning.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "verification",
+        "label": "Verification"
+      }
+    ],
     "title": "Verifier statements and proof artifacts",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -2372,8 +2881,21 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines constraint evidence and verification-aware planning for IncQL. Constraints such as uniqueness, primary-key shape, foreign-key relationships, non-nullness, sortedness, partition coverage, and row-count bounds must be represented as evidence with assurance, and verification planners may use those constraints only when their preconditions are recorded and strong enough for the requested assurance.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "planning",
+        "label": "Planning"
+      },
+      {
+        "key": "verification",
+        "label": "Verification"
+      }
+    ],
     "title": "Constraint evidence and verification-aware planning",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -2434,8 +2956,21 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines data contract ingress and product topology evidence for IncQL. Existing contract and product formats such as Open Data Contract Standard, Open Data Product Standard, and legacy Data Contract Specification artifacts are imported as evidence, normalized onto IncQL semantic targets, and lowered into metadata attachments, quality assertions, constraint evidence, source bindings, product-port dependencies, and governed bundle records without making any external contract format the internal source of IncQL semantics.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "governance",
+        "label": "Governance"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Data contract ingress and product topology",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -2506,8 +3041,17 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines a semantic evidence graph and deterministic agent query surface for IncQL. The graph is a projection over IncQL evidence records, not a new source of truth: declared contracts, Prism semantic lineage, imported catalog evidence, runtime observations, adapter coverage, verification observations, proof artifacts, waivers, product topology, and governed bundle records can be queried together through stable node and edge families with provenance, assurance, coverage, time, snapshot, and diagnostic context preserved.",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Semantic evidence graph and agent query surface",
-    "topic": "Evidence and governance",
     "written_against": "Incan v0.3-era IncQL"
   },
   {
@@ -2550,8 +3094,21 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines cluster execution as a backend mode of IncQL's existing Session execution boundary. Cluster mode must not create a second IncQL semantic model: authors still produce typed IncQL logical plans, Prism and Substrait remain the logical boundary, and backend adapters remain responsible for planning, scheduling, execution, runtime observations, and capability diagnostics. DataFusion remains the default local backend; a DataFusion-compatible cluster backend such as Ballista is the first concrete proof target because it can accept Substrait logical plans while adding scheduler, worker, shuffle, and distributed-observability concerns. Streaming uses the same backend-mode framing, but adds long-running lifecycle, checkpoint, watermark, offset, and sink-commit requirements for DataStream[T].",
+    "tags": [
+      {
+        "key": "evidence",
+        "label": "Evidence"
+      },
+      {
+        "key": "execution",
+        "label": "Execution"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Cluster execution backend mode",
-    "topic": "Runtime and extensions",
     "written_against": "Incan 0.4.0-rc3 and IncQL's v0.3-era package migration context"
   },
   {
@@ -2610,8 +3167,25 @@
     "status": "Draft",
     "status_key": "draft",
     "summary": "This RFC defines the package and registry contract through which ordinary Incan packages can extend IncQL with data connectors, compute runtimes, plan-ingress frontends, and evidence providers. An addon package may provide several components, but each component must be registered, identified, selected, inspected, and versioned independently. IncQL must keep pure component descriptors separate from executable hooks, use open namespaced component identifiers instead of backend or source enums, freeze a registry snapshot at an execution or frontend boundary, and keep read/write components separate from the runtime that computes a plan. DataFusion remains the built-in default runtime and first registry-shaped implementation; DuckDB is the first external proof target rather than a privileged core backend.",
+    "tags": [
+      {
+        "key": "data-access",
+        "label": "Data access"
+      },
+      {
+        "key": "execution",
+        "label": "Execution"
+      },
+      {
+        "key": "extensibility",
+        "label": "Extensibility"
+      },
+      {
+        "key": "interoperability",
+        "label": "Interoperability"
+      }
+    ],
     "title": "Addon component registry and package contract",
-    "topic": "Runtime and extensions",
     "written_against": "Incan 0.4.0 and IncQL 0.1.0"
   }
 ]
@@ -2619,58 +3193,58 @@
 
 <div class="pp-rfc-fallback" data-rfc-fallback markdown="1">
 
-| RFC | Status | Topic | Title |
+| RFC | Status | Tags | Title |
 | ---: | --- | --- | --- |
-| [000](000_incql_syntax.md) | Planned | Foundations | Language Specification |
-| [001](001_incql_dataset.md) | In Progress | Foundations | Dataset types and carriers (DataSet[T]) |
-| [002](002_apache_substrait_integration.md) | In Progress | Foundations | Apache Substrait integration |
-| [003](closed/implemented/003_incql_query_blocks.md) | Implemented | Foundations | query {} blocks — syntax, typing, Substrait |
-| [004](004_incql_execution_context.md) | In Progress | Foundations | Execution context and DataFusion |
-| [005](005_incql_pipe_forward.md) | Blocked | Foundations | Pipe-forward relational syntax (\|>) |
-| [006](006_unnest_core_substrait.md) | Blocked | Foundations | Promote unnest/explode to core Substrait lowering |
-| [007](007_prism_planning_engine.md) | In Progress | Foundations | Prism logical planning and optimization engine |
-| [008](008_optimizer_boundary_stats_cbo_aqe.md) | Planned | Foundations | Optimizer boundary, statistics, cost-based optimization, and adaptive execution |
-| [009](009_session_format_handler_registry.md) | Draft | Foundations | Session Format Handler Registry |
-| [010](010_csv_ingestion_contract.md) | Draft | Foundations | CSV dialect and interpretation contract |
-| [011](011_source_discovery_contract.md) | Draft | Foundations | Source discovery and parse-unit expansion |
-| [012](closed/implemented/012_unified_scalar_expression_surface.md) | Implemented | Functions and values | Unified scalar expression surface |
-| [013](closed/implemented/013_function_catalog_program.md) | Implemented | Functions and values | Function catalog program |
-| [014](closed/implemented/014_function_registry.md) | Implemented | Functions and values | Function registry and catalog governance |
-| [015](closed/implemented/015_core_scalar_functions.md) | Implemented | Functions and values | Core scalar functions and operators |
-| [016](closed/implemented/016_core_aggregate_functions.md) | Implemented | Functions and values | Core aggregate functions |
-| [017](closed/implemented/017_aggregate_modifiers.md) | Implemented | Functions and values | Aggregate modifiers |
-| [018](closed/implemented/018_common_scalar_function_catalog.md) | Implemented | Functions and values | Common scalar function catalog |
-| [019](closed/implemented/019_window_functions.md) | Implemented | Functions and values | Window functions |
-| [020](closed/implemented/020_nested_data_functions.md) | Implemented | Functions and values | Nested data functions |
-| [021](closed/implemented/021_generator_table_functions.md) | Implemented | Functions and values | Generator and table-valued functions |
-| [022](closed/implemented/022_semi_structured_format_functions.md) | Implemented | Functions and values | Semi-structured and format functions |
-| [023](closed/implemented/023_approximate_sketch_functions.md) | Implemented | Functions and values | Approximate and sketch functions |
-| [024](closed/implemented/024_function_extension_policy.md) | Implemented | Functions and values | Function extension policy |
-| [025](closed/implemented/025_typed_sketch_logical_values.md) | Implemented | Functions and values | Typed sketch logical values |
-| [026](closed/implemented/026_semi_structured_variant_values.md) | Implemented | Functions and values | Semi-structured variant logical values |
-| [027](027_relational_evidence_program.md) | In Progress | Evidence and governance | Relational evidence program |
-| [028](028_semantic_identity_targets.md) | In Progress | Evidence and governance | Semantic identity and target model |
-| [029](029_metadata_attachments.md) | In Progress | Evidence and governance | Typed metadata attachments |
-| [030](030_prism_lineage_graph.md) | In Progress | Evidence and governance | Prism lineage graph |
-| [031](031_inspection_artifacts.md) | In Progress | Evidence and governance | Local inspection APIs and artifacts |
-| [032](closed/implemented/032_execution_observations.md) | Implemented | Evidence and governance | Execution observations |
-| [033](closed/implemented/033_adapter_requirements_coverage.md) | Implemented | Evidence and governance | Adapter requirements and coverage |
-| [034](closed/implemented/034_quality_assertions_observations.md) | Implemented | Evidence and governance | Quality assertions and observations |
-| [035](closed/implemented/035_governed_attributes_policy_checkpoints.md) | Implemented | Evidence and governance | Governed attributes and policy checkpoints |
-| [036](036_governed_plan_bundle.md) | Draft | Evidence and governance | Governed plan bundle |
-| [037](037_plan_diff_blast_radius_inputs.md) | Draft | Evidence and governance | Plan diff and blast-radius inputs |
-| [038](038_evidence_exchange_bridges.md) | Draft | Evidence and governance | Evidence exchange bridges |
-| [039](039_pandas_familiar_exploration_api.md) | Draft | Evidence and governance | Pandas-familiar exploration API |
-| [040](040_interoperability_semantic_profiles.md) | Draft | Evidence and governance | Interoperability semantic profiles |
-| [041](041_prism_plan_ingress_frontends.md) | Draft | Evidence and governance | Prism plan ingress and external client frontends |
-| [042](042_async_verification_evidence.md) | Draft | Evidence and governance | Async verification evidence |
-| [043](043_canonical_equality_digest_profiles.md) | Draft | Evidence and governance | Canonical equality and digest profiles |
-| [044](044_verifier_statements_proof_artifacts.md) | Draft | Evidence and governance | Verifier statements and proof artifacts |
-| [045](045_constraint_evidence_verification_planning.md) | Draft | Evidence and governance | Constraint evidence and verification-aware planning |
-| [046](046_data_contract_ingress.md) | Draft | Evidence and governance | Data contract ingress and product topology |
-| [047](047_semantic_evidence_graph_agent_surface.md) | Draft | Evidence and governance | Semantic evidence graph and agent query surface |
-| [048](048_cluster_execution_backend_mode.md) | Draft | Runtime and extensions | Cluster execution backend mode |
-| [050](050_addon_component_registry.md) | Draft | Runtime and extensions | Addon component registry and package contract |
+| [000](000_incql_syntax.md) | Planned | Authoring, Interoperability, Planning | Language Specification |
+| [001](001_incql_dataset.md) | In Progress | Authoring, Planning, Types | Dataset types and carriers (DataSet[T]) |
+| [002](002_apache_substrait_integration.md) | In Progress | Extensibility, Interoperability, Planning | Apache Substrait integration |
+| [003](closed/implemented/003_incql_query_blocks.md) | Implemented | Authoring, Interoperability, Planning | query {} blocks — syntax, typing, Substrait |
+| [004](004_incql_execution_context.md) | In Progress | Data access, Execution, Interoperability | Execution context and DataFusion |
+| [005](005_incql_pipe_forward.md) | Blocked | Authoring, Planning | Pipe-forward relational syntax (\|>) |
+| [006](006_unnest_core_substrait.md) | Blocked | Interoperability, Planning | Promote unnest/explode to core Substrait lowering |
+| [007](007_prism_planning_engine.md) | In Progress | Evidence, Planning | Prism logical planning and optimization engine |
+| [008](008_optimizer_boundary_stats_cbo_aqe.md) | Planned | Evidence, Execution, Planning | Optimizer boundary, statistics, cost-based optimization, and adaptive execution |
+| [009](009_session_format_handler_registry.md) | Draft | Data access, Extensibility | Session Format Handler Registry |
+| [010](010_csv_ingestion_contract.md) | Draft | Data access, Interoperability | CSV dialect and interpretation contract |
+| [011](011_source_discovery_contract.md) | Draft | Data access, Interoperability | Source discovery and parse-unit expansion |
+| [012](closed/implemented/012_unified_scalar_expression_surface.md) | Implemented | Authoring, Planning, Types | Unified scalar expression surface |
+| [013](closed/implemented/013_function_catalog_program.md) | Implemented | Authoring, Extensibility, Functions | Function catalog program |
+| [014](closed/implemented/014_function_registry.md) | Implemented | Extensibility, Functions, Interoperability | Function registry and catalog governance |
+| [015](closed/implemented/015_core_scalar_functions.md) | Implemented | Authoring, Functions, Interoperability | Core scalar functions and operators |
+| [016](closed/implemented/016_core_aggregate_functions.md) | Implemented | Authoring, Functions, Interoperability | Core aggregate functions |
+| [017](closed/implemented/017_aggregate_modifiers.md) | Implemented | Authoring, Functions, Interoperability | Aggregate modifiers |
+| [018](closed/implemented/018_common_scalar_function_catalog.md) | Implemented | Authoring, Functions, Interoperability | Common scalar function catalog |
+| [019](closed/implemented/019_window_functions.md) | Implemented | Authoring, Functions, Planning | Window functions |
+| [020](closed/implemented/020_nested_data_functions.md) | Implemented | Authoring, Functions, Planning | Nested data functions |
+| [021](closed/implemented/021_generator_table_functions.md) | Implemented | Authoring, Functions, Planning | Generator and table-valued functions |
+| [022](closed/implemented/022_semi_structured_format_functions.md) | Implemented | Authoring, Functions, Interoperability | Semi-structured and format functions |
+| [023](closed/implemented/023_approximate_sketch_functions.md) | Implemented | Authoring, Functions, Interoperability | Approximate and sketch functions |
+| [024](closed/implemented/024_function_extension_policy.md) | Implemented | Extensibility, Functions, Interoperability | Function extension policy |
+| [025](closed/implemented/025_typed_sketch_logical_values.md) | Implemented | Interoperability, Types | Typed sketch logical values |
+| [026](closed/implemented/026_semi_structured_variant_values.md) | Implemented | Interoperability, Types | Semi-structured variant logical values |
+| [027](027_relational_evidence_program.md) | In Progress | Evidence, Governance, Interoperability, Verification | Relational evidence program |
+| [028](028_semantic_identity_targets.md) | In Progress | Evidence | Semantic identity and target model |
+| [029](029_metadata_attachments.md) | In Progress | Evidence, Extensibility | Typed metadata attachments |
+| [030](030_prism_lineage_graph.md) | In Progress | Evidence, Planning | Prism lineage graph |
+| [031](031_inspection_artifacts.md) | In Progress | Evidence, Interoperability | Local inspection APIs and artifacts |
+| [032](closed/implemented/032_execution_observations.md) | Implemented | Evidence, Execution | Execution observations |
+| [033](closed/implemented/033_adapter_requirements_coverage.md) | Implemented | Evidence, Execution, Interoperability | Adapter requirements and coverage |
+| [034](closed/implemented/034_quality_assertions_observations.md) | Implemented | Authoring, Evidence, Execution | Quality assertions and observations |
+| [035](closed/implemented/035_governed_attributes_policy_checkpoints.md) | Implemented | Evidence, Governance, Planning | Governed attributes and policy checkpoints |
+| [036](036_governed_plan_bundle.md) | Draft | Evidence, Governance, Interoperability | Governed plan bundle |
+| [037](037_plan_diff_blast_radius_inputs.md) | Draft | Evidence, Planning | Plan diff and blast-radius inputs |
+| [038](038_evidence_exchange_bridges.md) | Draft | Evidence, Extensibility, Interoperability | Evidence exchange bridges |
+| [039](039_pandas_familiar_exploration_api.md) | Draft | Authoring | Pandas-familiar exploration API |
+| [040](040_interoperability_semantic_profiles.md) | Draft | Evidence, Interoperability | Interoperability semantic profiles |
+| [041](041_prism_plan_ingress_frontends.md) | Draft | Authoring, Interoperability, Planning | Prism plan ingress and external client frontends |
+| [042](042_async_verification_evidence.md) | Draft | Evidence, Verification | Async verification evidence |
+| [043](043_canonical_equality_digest_profiles.md) | Draft | Evidence, Interoperability, Verification | Canonical equality and digest profiles |
+| [044](044_verifier_statements_proof_artifacts.md) | Draft | Evidence, Verification | Verifier statements and proof artifacts |
+| [045](045_constraint_evidence_verification_planning.md) | Draft | Evidence, Planning, Verification | Constraint evidence and verification-aware planning |
+| [046](046_data_contract_ingress.md) | Draft | Evidence, Governance, Interoperability | Data contract ingress and product topology |
+| [047](047_semantic_evidence_graph_agent_surface.md) | Draft | Evidence, Interoperability | Semantic evidence graph and agent query surface |
+| [048](048_cluster_execution_backend_mode.md) | Draft | Evidence, Execution, Interoperability | Cluster execution backend mode |
+| [050](050_addon_component_registry.md) | Draft | Data access, Execution, Extensibility, Interoperability | Addon component registry and package contract |
 
 </div>
 <!-- END GENERATED RFC CATALOG -->
@@ -2683,7 +3257,7 @@ Active RFCs remain in `docs/rfcs/` while the design is Draft, Planned, In Progre
 - `docs/rfcs/closed/superseded/` contains RFCs replaced by a newer design record.
 - `docs/rfcs/closed/rejected/` contains rejected or withdrawn RFCs.
 
-The generated catalog treats each RFC's heading, metadata, summary, and lifecycle path as source data. The docs build fails when the index, topic assignment, or lifecycle placement drifts from those records.
+The generated catalog treats each RFC's heading, metadata, summary, and lifecycle path as source data. The docs build fails when the index, controlled tag assignments, or lifecycle placement drifts from those records.
 
 **v0.1 tracking:** RFCs 000–004 plus RFC 007 remain the foundation that defines when IncQL v0.1 is complete: authors can read data, write typed queries, lower through Prism to Substrait, execute through DataFusion, and write results. The catalog also includes v0.1-shipped slices that landed before the whole foundation is closed, including the function catalog and evidence/observation work.
 

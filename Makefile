@@ -72,15 +72,16 @@ test-locked: ## Run tests with `--locked`
 
 .PHONY: rfc-index
 rfc-index: ## Validate RFC metadata and regenerate the RFC catalog
-	@python3 utils/rfc_catalog.py --topics docs/rfcs/catalog.json --write
+	@python3 utils/rfc_catalog.py --tags docs/rfcs/catalog.json --write
 
 .PHONY: rfc-index-check
 rfc-index-check: ## Validate RFC metadata and fail when the catalog is stale
-	@python3 utils/rfc_catalog.py --topics docs/rfcs/catalog.json --check
+	@python3 utils/rfc_catalog.py --tags docs/rfcs/catalog.json --check
 
 .PHONY: docs-test
 docs-test: ## Run documentation tooling unit tests
 	@python3 -m unittest discover -s tests/docs -p 'test_*.py'
+	@node --test tests/docs/test_rfc_reader.cjs
 
 .PHONY: docs-build
 docs-build: rfc-index-check docs-test ## Validate and build the documentation site strictly

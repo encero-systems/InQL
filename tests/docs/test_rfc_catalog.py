@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import redirect_stderr, redirect_stdout
+from dataclasses import FrozenInstanceError
 from io import StringIO
 import json
 from pathlib import Path
@@ -10,11 +11,12 @@ import unittest
 from utils.rfc_catalog import (
     BEGIN_MARKER,
     END_MARKER,
+    CatalogTag,
     CatalogError,
     build_catalog,
     catalog_data,
     discover_rfc_files,
-    load_topic_mapping,
+    load_tag_mapping,
     main,
     parse_rfc,
     render_index_block,
@@ -254,41 +256,137 @@ class RfcCatalogTests(unittest.TestCase):
         with self.assertRaisesRegex(CatalogError, r"Related references unknown RFC id\(s\): 001"):
             build_catalog(self.rfc_dir)
 
-    def test_topic_mapping_supports_both_portable_shapes_and_json_files(self) -> None:
+    def tag_catalog(
+        self,
+        records: dict[object, list[object]],
+        *,
+        definitions: dict[object, object] | None = None,
+    ) -> dict[str, object]:
+        return {
+            "definitions": definitions
+            or {
+                "authoring": "Authoring",
+                "planning": "Planning",
+                "runtime": "Runtime",
+            },
+            "records": records,
+        }
+
+    def test_tag_catalog_supports_many_to_many_assignments_and_json_files(self) -> None:
         self.write_rfc(0)
         self.write_rfc(1, slug="second")
 
-        by_id = build_catalog(self.rfc_dir, topics={"000": "Language", 1: "Runtime"})
-        self.assertEqual([record.topic for record in by_id], ["Language", "Runtime"])
+        tags = build_catalog(
+            self.rfc_dir,
+            tags=self.tag_catalog(
+                {
+                    "000": ["planning", "authoring"],
+                    1: ["runtime"],
+                }
+            ),
+        )
+        self.assertEqual(
+            tags[0].tags,
+            (
+                CatalogTag(key="authoring", label="Authoring"),
+                CatalogTag(key="planning", label="Planning"),
+            ),
+        )
+        self.assertEqual(tags[1].tags, (CatalogTag(key="runtime", label="Runtime"),))
+        self.assertIsInstance(tags[0].tags, tuple)
+        with self.assertRaises(FrozenInstanceError):
+            tags[0].tags[0].label = "Changed"  # type: ignore[misc]
 
-        topic_file = self.rfc_dir.parent / "topics.json"
-        topic_file.write_text(
-            json.dumps({"Foundations": ["000", "001"]}),
+        tag_file = self.rfc_dir.parent / "tags.json"
+        tag_file.write_text(
+            json.dumps(self.tag_catalog({"000": ["authoring"], "001": ["runtime"]})),
             encoding="utf-8",
         )
-        by_topic = build_catalog(self.rfc_dir, topics=topic_file)
-        self.assertEqual([record.topic for record in by_topic], ["Foundations", "Foundations"])
+        from_file = build_catalog(self.rfc_dir, tags=tag_file)
+        self.assertEqual(
+            [[tag.key for tag in record.tags] for record in from_file],
+            [["authoring"], ["runtime"]],
+        )
 
-    def test_topic_mapping_requires_exactly_one_assignment_per_rfc(self) -> None:
+    def test_tag_catalog_requires_every_discovered_rfc_and_rejects_unknown_rfcs(self) -> None:
         self.write_rfc(0)
         self.write_rfc(1, slug="second")
 
         with self.assertRaisesRegex(CatalogError, "missing RFCs: 001"):
-            build_catalog(self.rfc_dir, topics={"000": "Language"})
+            build_catalog(self.rfc_dir, tags=self.tag_catalog({"000": ["planning"]}))
         with self.assertRaisesRegex(CatalogError, "unknown RFCs: 002"):
             build_catalog(
                 self.rfc_dir,
-                topics={"000": "Language", "001": "Runtime", "002": "Other"},
+                tags=self.tag_catalog(
+                    {
+                        "000": ["planning"],
+                        "001": ["runtime"],
+                        "002": ["authoring"],
+                    }
+                ),
             )
-        with self.assertRaisesRegex(CatalogError, "assigns RFC 000 more than once"):
-            load_topic_mapping({"Language": ["000"], "Runtime": [0]})
+
+    def test_tag_catalog_validates_sections_definitions_and_stable_keys(self) -> None:
+        with self.assertRaisesRegex(CatalogError, "missing section.*records"):
+            load_tag_mapping({"definitions": {"planning": "Planning"}})
+        with self.assertRaisesRegex(CatalogError, "unknown section.*topics"):
+            load_tag_mapping(
+                {"definitions": {}, "records": {}, "topics": {}}  # type: ignore[dict-item]
+            )
+        with self.assertRaisesRegex(CatalogError, "definitions must be a JSON object"):
+            load_tag_mapping({"definitions": [], "records": {}})
+        with self.assertRaisesRegex(CatalogError, "records must be a JSON object"):
+            load_tag_mapping({"definitions": {}, "records": []})
+        with self.assertRaisesRegex(CatalogError, "lowercase kebab-case"):
+            load_tag_mapping(self.tag_catalog({}, definitions={"Data Access": "Data access"}))
+        with self.assertRaisesRegex(CatalogError, "non-empty label"):
+            load_tag_mapping(self.tag_catalog({}, definitions={"planning": "  "}))
+        with self.assertRaisesRegex(CatalogError, "duplicate label 'planning'"):
+            load_tag_mapping(
+                self.tag_catalog(
+                    {},
+                    definitions={"planning": "Planning", "plan": "  planning  "},
+                )
+            )
+
+    def test_tag_catalog_rejects_invalid_record_tag_sets(self) -> None:
+        with self.assertRaisesRegex(CatalogError, "must have at least one tag"):
+            load_tag_mapping(self.tag_catalog({"000": []}))
+        with self.assertRaisesRegex(CatalogError, "tags must be an array"):
+            load_tag_mapping(self.tag_catalog({"000": "planning"}))  # type: ignore[dict-item]
+        with self.assertRaisesRegex(CatalogError, "non-string tag key"):
+            load_tag_mapping(self.tag_catalog({"000": [1]}))
+        with self.assertRaisesRegex(CatalogError, "duplicate tag 'planning'"):
+            load_tag_mapping(self.tag_catalog({"000": ["planning", "planning"]}))
+        with self.assertRaisesRegex(CatalogError, "more than 4 tags"):
+            load_tag_mapping(
+                self.tag_catalog(
+                    {"000": ["one", "two", "three", "four", "five"]},
+                    definitions={
+                        "one": "One",
+                        "two": "Two",
+                        "three": "Three",
+                        "four": "Four",
+                        "five": "Five",
+                    },
+                )
+            )
+        with self.assertRaisesRegex(CatalogError, "unknown tag 'unknown'"):
+            load_tag_mapping(self.tag_catalog({"000": ["unknown"]}))
+        with self.assertRaisesRegex(CatalogError, "defines RFC 000 more than once"):
+            load_tag_mapping(self.tag_catalog({"0": ["planning"], "000": ["runtime"]}))
 
     def test_catalog_data_and_rendered_block_are_deterministic_and_safe(self) -> None:
         self.write_rfc(0, summary="Avoid </script> termination & preserve safety.")
         self.write_rfc(1, slug="second")
         records = build_catalog(
             self.rfc_dir,
-            topics={"000": "Language", "001": "Runtime"},
+            tags=self.tag_catalog(
+                {
+                    "000": ["planning", "authoring"],
+                    "001": ["runtime"],
+                }
+            ),
         )
 
         data = catalog_data(reversed(records))
@@ -301,6 +399,13 @@ class RfcCatalogTests(unittest.TestCase):
             data[0]["issue_links"],
             [{"label": "IncQL #1", "url": "https://example.test/issues/1"}],
         )
+        self.assertEqual(
+            data[0]["tags"],
+            [
+                {"key": "authoring", "label": "Authoring"},
+                {"key": "planning", "label": "Planning"},
+            ],
+        )
         self.assertTrue(block.startswith(BEGIN_MARKER))
         self.assertTrue(block.endswith(END_MARKER))
         self.assertIn('type="application/json" data-rfc-catalog', block)
@@ -308,7 +413,10 @@ class RfcCatalogTests(unittest.TestCase):
         self.assertNotIn("<noscript", block)
         self.assertNotIn("</script> termination", block)
         self.assertIn(r"\u003c/script\u003e termination \u0026 preserve safety", block)
-        self.assertIn("| [000](000_test_rfc.md) | Draft | Language | A test RFC |", block)
+        self.assertIn(
+            "| [000](000_test_rfc.md) | Draft | Authoring, Planning | A test RFC |",
+            block,
+        )
 
     def test_replaces_exactly_one_generated_marker_pair(self) -> None:
         original = f"Before\n\n{BEGIN_MARKER}\nold\n{END_MARKER}\n\nAfter\n"
@@ -325,8 +433,11 @@ class RfcCatalogTests(unittest.TestCase):
 
     def test_cli_write_and_check_share_the_same_generated_output(self) -> None:
         self.write_rfc(0)
-        topics = self.rfc_dir / "catalog.json"
-        topics.write_text(json.dumps({"Foundations": ["000"]}), encoding="utf-8")
+        tags = self.rfc_dir / "catalog.json"
+        tags.write_text(
+            json.dumps(self.tag_catalog({"000": ["planning", "authoring"]})),
+            encoding="utf-8",
+        )
         readme = self.rfc_dir / "README.md"
         readme.write_text(
             f"# RFCs\n\n{BEGIN_MARKER}\nstale\n{END_MARKER}\n",
@@ -339,14 +450,14 @@ class RfcCatalogTests(unittest.TestCase):
             self.assertEqual(main([*arguments, "--check"]), 0)
 
         current = readme.read_text(encoding="utf-8")
-        self.assertIn("| RFC | Status | Topic | Title |", current)
-        self.assertIn("| Draft | Foundations | A test RFC |", current)
+        self.assertIn("| RFC | Status | Tags | Title |", current)
+        self.assertIn("| Draft | Authoring, Planning | A test RFC |", current)
         readme.write_text(current.replace("A test RFC", "A stale RFC", 1), encoding="utf-8")
         errors = StringIO()
         with redirect_stdout(StringIO()), redirect_stderr(errors):
             self.assertEqual(main([*arguments, "--check"]), 1)
         self.assertIn("is out of date", errors.getvalue())
-        self.assertIn(f"--topics {topics}", errors.getvalue())
+        self.assertIn(f"--tags {tags}", errors.getvalue())
         self.assertIn("--write", errors.getvalue())
         self.assertNotIn("python utils/rfc_catalog.py --write", errors.getvalue())
 
@@ -377,12 +488,16 @@ class RfcCatalogTests(unittest.TestCase):
 
     def test_current_incql_corpus_satisfies_the_catalog_contract(self) -> None:
         repository_root = Path(__file__).resolve().parents[2]
-        records = build_catalog(repository_root / "docs" / "rfcs")
+        records = build_catalog(
+            repository_root / "docs" / "rfcs",
+            tags=repository_root / "docs" / "rfcs" / "catalog.json",
+        )
 
         self.assertEqual(len(records), 50)
         self.assertEqual(records[0].id, "000")
         self.assertEqual(records[-1].id, "050")
         self.assertNotIn("049", {record.id for record in records})
+        self.assertTrue(all(1 <= len(record.tags) <= 4 for record in records))
 
 
 if __name__ == "__main__":

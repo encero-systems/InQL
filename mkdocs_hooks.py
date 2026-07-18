@@ -17,10 +17,10 @@ def _validate_rfc_catalog(root: Path) -> None:
 
     rfc_dir = root / "docs" / "rfcs"
     readme = rfc_dir / "README.md"
-    topics = rfc_dir / "catalog.json"
+    tags = rfc_dir / "catalog.json"
     try:
         current = readme.read_text(encoding="utf-8")
-        records = build_catalog(rfc_dir, topics=topics)
+        records = build_catalog(rfc_dir, tags=tags)
         expected = replace_generated_block(current, render_index_block(records))
     except (CatalogError, OSError) as error:
         raise ConfigurationError(f"RFC catalog validation failed: {error}") from error
