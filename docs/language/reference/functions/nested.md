@@ -6,36 +6,36 @@ Generator or table-valued operations such as row-expanding `explode(...)` are se
 
 ## Arrays
 
-| Function | Meaning |
-| --- | --- |
-| `array(values)` | Build an array expression from one or more scalar expressions. |
-| `cardinality(value)` | Return the size of an array or map. |
-| `array_contains(array_expr, value)` | Return whether an array contains a value. |
-| `arrays_overlap(left, right)` | Return whether two arrays have any elements in common. |
-| `array_position(array_expr, value)` | Return the one-based position of a value. |
-| `element_at(array_expr, index)` | Return an array element by one-based index. |
-| `array_sort(array_expr)` | Sort one array value. |
-| `array_distinct(array_expr)` | Remove duplicate elements from one array value. |
-| `array_except(left, right)` | Return elements from `left` that are not in `right`. |
-| `array_intersect(left, right)` | Return elements shared by both arrays. |
-| `array_union(left, right)` | Return the union of both arrays. |
-| `array_join(array_expr, delimiter)` | Join a string array into one string. |
-| `array_range(start, stop)` | Build a row-level integer array from `start` inclusive to `stop` exclusive. |
-| `array_slice(array_expr, start, stop)` | Return a one-based array slice using the backend adapter's slice contract. |
-| `array_reverse(array_expr)` | Reverse one array value. |
-| `array_flatten(array_expr)` | Flatten an array-of-arrays into one row-level array value. |
+| Function                               | Meaning                                                                     |
+| -------------------------------------- | --------------------------------------------------------------------------- |
+| `array(values)`                        | Build an array expression from one or more scalar expressions.              |
+| `cardinality(value)`                   | Return the size of an array or map.                                         |
+| `array_contains(array_expr, value)`    | Return whether an array contains a value.                                   |
+| `arrays_overlap(left, right)`          | Return whether two arrays have any elements in common.                      |
+| `array_position(array_expr, value)`    | Return the one-based position of a value.                                   |
+| `element_at(array_expr, index)`        | Return an array element by one-based index.                                 |
+| `array_sort(array_expr)`               | Sort one array value.                                                       |
+| `array_distinct(array_expr)`           | Remove duplicate elements from one array value.                             |
+| `array_except(left, right)`            | Return elements from `left` that are not in `right`.                        |
+| `array_intersect(left, right)`         | Return elements shared by both arrays.                                      |
+| `array_union(left, right)`             | Return the union of both arrays.                                            |
+| `array_join(array_expr, delimiter)`    | Join a string array into one string.                                        |
+| `array_range(start, stop)`             | Build a row-level integer array from `start` inclusive to `stop` exclusive. |
+| `array_slice(array_expr, start, stop)` | Return a one-based array slice using the backend adapter's slice contract.  |
+| `array_reverse(array_expr)`            | Reverse one array value.                                                    |
+| `array_flatten(array_expr)`            | Flatten an array-of-arrays into one row-level array value.                  |
 
 ## Maps And Structs
 
-| Function | Meaning |
-| --- | --- |
-| `map_from_arrays(keys, values)` | Build a map from key and value arrays. |
-| `map_extract(map_expr, key)` | Return the values associated with a key. |
-| `map_contains_key(map_expr, key)` | Return whether `map_extract(...)` finds at least one value for the key. |
-| `map_keys(map_expr)` | Return the map's keys as an array. |
-| `map_values(map_expr)` | Return the map's values as an array. |
-| `map_entries(map_expr)` | Return map entries. |
-| `named_struct(field_names, values)` | Build a struct expression with explicit field names. |
+| Function                            | Meaning                                                                 |
+| ----------------------------------- | ----------------------------------------------------------------------- |
+| `map_from_arrays(keys, values)`     | Build a map from key and value arrays.                                  |
+| `map_extract(map_expr, key)`        | Return the values associated with a key.                                |
+| `map_contains_key(map_expr, key)`   | Return whether `map_extract(...)` finds at least one value for the key. |
+| `map_keys(map_expr)`                | Return the map's keys as an array.                                      |
+| `map_values(map_expr)`              | Return the map's values as an array.                                    |
+| `map_entries(map_expr)`             | Return map entries.                                                     |
+| `named_struct(field_names, values)` | Build a struct expression with explicit field names.                    |
 
 ## Semantics
 

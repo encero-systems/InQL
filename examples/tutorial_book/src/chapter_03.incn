@@ -1,0 +1,24 @@
+"""Chapter 3: inspect the Prism plan and lineage before execution."""
+
+from domain import Order
+from pub::incql import LazyFrame, Session, SessionError, inspect_lineage, inspect_plan, report_session_error
+
+
+def inspect_orders(mut session: Session) -> Result[None, SessionError]:
+    """Build and inspect the tutorial plan without collecting rows."""
+    orders: LazyFrame[Order] = session.read_csv("tutorial_orders", "orders.csv")?
+    plan = orders.limit(3)
+    inspection = inspect_plan(plan.clone())
+    lineage = inspect_lineage(plan)
+
+    println(f"plan id: {inspection.plan_id}")
+    println(f"authored nodes: {inspection.authored_node_count}")
+    println(f"lineage edges: {len(lineage.edges)}")
+    return Ok(None)
+
+
+def main() -> None:
+    mut session = Session.default()
+    match inspect_orders(session):
+        Ok(_) => println("Chapter 3: inspection completed without executing the plan")
+        Err(error) => report_session_error("tutorial.chapter_03", error)

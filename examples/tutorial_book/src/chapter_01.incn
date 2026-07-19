@@ -1,0 +1,17 @@
+"""Chapter 1: bind a typed row contract to a CSV-backed lazy carrier."""
+
+from domain import Order
+from pub::incql import LazyFrame, Session, SessionError, report_session_error
+
+
+def read_orders(mut session: Session) -> Result[LazyFrame[Order], SessionError]:
+    """Register the CSV source and return its typed lazy carrier."""
+    orders: LazyFrame[Order] = session.read_csv("tutorial_orders", "orders.csv")?
+    return Ok(orders)
+
+
+def main() -> None:
+    mut session = Session.default()
+    match read_orders(session):
+        Ok(_) => println("Chapter 1: created a LazyFrame[Order] without executing it")
+        Err(error) => report_session_error("tutorial.chapter_01", error)

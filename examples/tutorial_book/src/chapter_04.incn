@@ -1,0 +1,34 @@
+"""Chapter 4: collect through DataFusion and preserve execution evidence."""
+
+from domain import Order
+from pub::incql import LazyFrame, Session, SessionError, inspect_lineage, inspect_plan, report_session_error
+
+
+def collect_orders(mut session: Session) -> Result[None, SessionError]:
+    """Inspect, execute, and print the structured materialization surface."""
+    orders: LazyFrame[Order] = session.read_csv("tutorial_orders", "orders.csv")?
+    plan = orders.limit(3)
+    inspection = inspect_plan(plan.clone())
+    lineage = inspect_lineage(plan.clone())
+    observed = session.collect_observed(plan)
+
+    println(f"plan id: {inspection.plan_id}")
+    println(f"lineage edges: {len(lineage.edges)}")
+    println(f"backend: {observed.observation.backend_name}")
+    match observed.data:
+        Some(frame) =>
+            println(f"columns: {frame.resolved_columns():?}")
+            println(f"rows: {frame.row_count()}")
+            println(frame.preview_text())
+        None =>
+            match observed.error:
+                Some(error) => return Err(error)
+                None => println("collect_observed returned no data and no typed error")
+    return Ok(None)
+
+
+def main() -> None:
+    mut session = Session.default()
+    match collect_orders(session):
+        Ok(_) => println("Chapter 4: DataFusion collection completed")
+        Err(error) => report_session_error("tutorial.chapter_04", error)

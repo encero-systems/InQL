@@ -14,6 +14,7 @@ Thank you for your interest in IncQL — the typed relational layer for [Incan][
 | [Incan `CONTRIBUTING.md`][incan-contributing] | Compiler, tooling, and Rust workspace workflow |
 | [Incan docs-site contributor loop][incan-docsite-loop] | Divio layout, snippets, checklist for Incan’s MkDocs site — mirror these patterns when shaping IncQL `docs/` |
 | [Incan AGENTS — Docs-site workflow][incan-agents-docs-workflow] | Prose **without hard wrapping**, `mkdocs build --strict`, Material-friendly Markdown |
+| [Prismplane docs theme][prismplane-theme] | IncQL-specific docs visual rules adapted from the local Prismplane prototype |
 
 **Compiler and language implementation** (lexer, parser, typechecker, lowering, codegen for `query {}` and related surfaces) lives in the **Incan** repository. Use that project’s docs and gates when you change the toolchain. Use **this** repo for the IncQL **library source** (`.incn`) and **IncQL RFCs** that specify the relational surface.
 
@@ -48,6 +49,21 @@ Thank you for your interest in IncQL — the typed relational layer for [Incan][
 
    With `incan` on your `PATH` you can call `incan build --lib` and `incan test tests` directly (use the `tests/` path so a sibling Incan checkout under `./incan/` is not collected). Override the binary with `make build INCAN=/path/to/incan` if needed.
 
+4. **Build the documentation site**
+
+   Install the pinned docs dependencies and run a strict build before opening documentation-heavy PRs:
+
+   ```bash
+   python -m pip install -r requirements-docs.txt
+   mkdocs build --strict
+   ```
+
+   Use `mkdocs serve` for local preview while editing. The GitHub Actions docs workflow runs the same strict build for changes under `docs/`, `mkdocs.yml`, `requirements-docs.txt`, or the workflow itself.
+
+5. **Preview or publish the documentation site**
+
+   The public documentation site is published at [encero-systems.github.io/IncQL/][docs-site]. The docs workflow publishes to the `gh-pages` branch after a successful strict build on `main` or manual dispatch. Repository Pages settings should use **Deploy from a branch**, branch `gh-pages`, folder `/ (root)`.
+
 ## Project structure
 
 See [docs/architecture.md][architecture] for a concise map. In short:
@@ -56,6 +72,8 @@ See [docs/architecture.md][architecture] for a concise map. In short:
 - `src/*.incn` — library modules; `lib.incn` re-exports the public surface
 - `tests/` — Incan tests for the package
 - `docs/rfcs/` — design specifications (numbered separately from Incan’s RFC index)
+- `mkdocs.yml` — documentation site navigation and strict-build configuration
+- `requirements-docs.txt` — pinned Python dependencies for local and CI docs builds
 
 ## Changing behavior
 
@@ -163,3 +181,5 @@ Open an issue on this repository for IncQL-specific design or package questions;
 [issue-templates]: .github/ISSUE_TEMPLATE/
 [incan-docsite-loop]: https://github.com/encero-systems/incan/blob/main/workspaces/docs-site/docs/contributing/tutorials/book/08_docsite_contributor_loop.md
 [incan-agents-docs-workflow]: https://github.com/encero-systems/incan/blob/main/AGENTS.md#docs-site-workflow-mkdocs-material
+[prismplane-theme]: docs/contributing/prismplane_docs_theme.md
+[docs-site]: https://encero-systems.github.io/IncQL/

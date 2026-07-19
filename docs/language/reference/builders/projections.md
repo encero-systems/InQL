@@ -4,18 +4,18 @@ Projection builders are the current semantic target for scalar expressions in co
 
 ## Functions
 
-| Builder      | Signature                                                                | Meaning                     |
-| ------------ | ------------------------------------------------------------------------ | --------------------------- |
-| `col`        | `def col(name: str) -> ColumnRefExpr`                                    | Named column reference.     |
-| `lit`        | `def lit(value: int \| float \| str \| bool) -> ColumnExpr`              | Canonical scalar literal.   |
-| `int_expr`   | `def int_expr(value: int) -> IntLiteralExpr`                             | Integer literal expression. |
-| `float_expr` | `def float_expr(value: float) -> FloatLiteralExpr`                       | Float literal expression.   |
-| `str_expr`   | `def str_expr(value: str) -> StringLiteralExpr`                          | String literal expression.  |
-| `bool_expr`  | `def bool_expr(value: bool) -> BoolLiteralExpr`                          | Boolean literal expression. |
-| `add`        | `def add(left: NumberValueOrColumn, right: NumberValueOrColumn) -> NumberColumnExpr` | Binary addition. |
-| `mul`        | `def mul(left: NumberValueOrColumn, right: NumberValueOrColumn) -> NumberColumnExpr` | Binary multiplication. |
-| `eq`         | `def eq(left: ScalarValueOrColumn, right: ScalarValueOrColumn) -> BoolColumnExpr` | Equality predicate. |
-| `gt`         | `def gt(left: ScalarValueOrColumn, right: ScalarValueOrColumn) -> BoolColumnExpr` | Greater-than predicate. |
+| Builder      | Signature                                                                            | Meaning                     |
+| ------------ | ------------------------------------------------------------------------------------ | --------------------------- |
+| `col`        | `def col(name: str) -> ColumnRefExpr`                                                | Named column reference.     |
+| `lit`        | `def lit(value: int \| float \| str \| bool) -> ColumnExpr`                          | Canonical scalar literal.   |
+| `int_expr`   | `def int_expr(value: int) -> IntLiteralExpr`                                         | Integer literal expression. |
+| `float_expr` | `def float_expr(value: float) -> FloatLiteralExpr`                                   | Float literal expression.   |
+| `str_expr`   | `def str_expr(value: str) -> StringLiteralExpr`                                      | String literal expression.  |
+| `bool_expr`  | `def bool_expr(value: bool) -> BoolLiteralExpr`                                      | Boolean literal expression. |
+| `add`        | `def add(left: NumberValueOrColumn, right: NumberValueOrColumn) -> NumberColumnExpr` | Binary addition.            |
+| `mul`        | `def mul(left: NumberValueOrColumn, right: NumberValueOrColumn) -> NumberColumnExpr` | Binary multiplication.      |
+| `eq`         | `def eq(left: ScalarValueOrColumn, right: ScalarValueOrColumn) -> BoolColumnExpr`    | Equality predicate.         |
+| `gt`         | `def gt(left: ScalarValueOrColumn, right: ScalarValueOrColumn) -> BoolColumnExpr`    | Greater-than predicate.     |
 
 ## Dataset entrypoint
 

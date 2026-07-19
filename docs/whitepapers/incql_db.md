@@ -19,7 +19,7 @@ The product shape is closer to SQLite-style local ownership plus DuckDB-style an
 IncQL-DB should be opened directly by an application:
 
 ```incan
-let db = IncQLDB.open("./agent_memory.incqldb")
+db = IncQLDB.open("./agent_memory.incqldb")
 ```
 
 and inspected with the IncQL CLI:

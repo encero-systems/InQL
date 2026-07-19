@@ -19,7 +19,7 @@ The same status taxonomy is used in the [Substrait conformance corpus][ref-confo
 
 The following table maps IncQL plan capabilities to Substrait logical relations and expression patterns for the read/query analytical core — the minimum required for IncQL v0.1.
 
-| IncQL capability (conceptual)                                  | Substrait                                                                                                                                 | Profile |
+| IncQL capability (conceptual)                                 | Substrait                                                                                                                                 | Profile |
 | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | Logical table / registered name                               | `ReadRel` + `NamedTable`                                                                                                                  | core    |
 | File or object scan as plan input                             | `ReadRel` + `LocalFiles` (format options in the pinned spec)                                                                              | core    |
@@ -39,16 +39,16 @@ The following table maps IncQL plan capabilities to Substrait logical relations 
 | Limit / offset                                                | `FetchRel`                                                                                                                                | core    |
 | Union, intersect, except                                      | `SetRel` with the appropriate set operation enum                                                                                          | core    |
 | Reuse of an identical subplan                                 | `Plan` + `ReferenceRel`                                                                                                                   | core    |
-| Unnest / explode                                              | Extension rel or documented expansion — **must** be pinned per implementation (see [Unnest / explode](#unnest--explode))                  | gap     |
-| Pivot / unpivot                                               | `ExtensionSingleRel` or documented rewrite to join + aggregate + project (see [Pivot / unpivot](#pivot--unpivot))                         | gap     |
-| Asof / interval join                                          | Gap or non-equi join expression only where consumer contract explicitly allows (see [Asof / interval joins](#asof--interval-joins))       | gap     |
+| Unnest / explode                                              | Extension rel or documented expansion — **must** be pinned per implementation (see [Unnest / explode](#unnest-explode))                   | gap     |
+| Pivot / unpivot                                               | `ExtensionSingleRel` or documented rewrite to join + aggregate + project (see [Pivot / unpivot](#pivot-unpivot))                          | gap     |
+| Asof / interval join                                          | Gap or non-equi join expression only where consumer contract explicitly allows (see [Asof / interval joins](#asof-interval-joins))        | gap     |
 | Streaming time semantics (watermarks, session windows, state) | Outside core Substrait unless via named extensions or a separate execution IR (see [Streaming time semantics](#streaming-time-semantics)) | gap     |
 
 ## Optional mutation profile
 
 The following capabilities are part of the optional mutation profile. They are **not** required for IncQL read/query analytical core (v0.1). An implementation that exposes any mutation-profile capability **must** document which relations are supported for its target backend and what portability guarantees (if any) apply.
 
-| IncQL capability                               | Substrait   | Profile           |
+| IncQL capability                              | Substrait   | Profile           |
 | --------------------------------------------- | ----------- | ----------------- |
 | Write to a table / CTAS                       | `WriteRel`  | optional-mutation |
 | Table update without a full child `Rel` input | `UpdateRel` | optional-mutation |
@@ -111,5 +111,5 @@ Watermarks, session windows, and stateful streaming operations are outside the s
 
 <!-- References -->
 
-[rfc-002]: ../../rfcs/002_apache_substrait_integration.md
+[rfc-002]: ../../../rfcs/002_apache_substrait_integration.md
 [ref-conformance-corpus]: ./conformance.md

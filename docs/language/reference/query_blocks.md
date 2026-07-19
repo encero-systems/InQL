@@ -1,8 +1,12 @@
 # Query blocks (Reference)
 
-Query blocks are dependency-activated IncQL expressions. Import `pub::incql` to make the vocabulary and helper surface available in a downstream Incan package.
+Query blocks are dependency-activated IncQL expressions. Use `import pub::incql` to activate the `query` vocabulary in a downstream Incan package, then import the carrier and helper names used by the block.
+
+If you are learning the surface rather than looking up its exact contract, start with [Part IV of the IncQL Book](../tutorials/book/08_first_query_block.md).
 
 ```incan
+import pub::incql
+
 from pub::incql import DataFrame, count, desc, sum
 from models import Order, OrderSummary
 
@@ -53,14 +57,14 @@ The implemented v0.1 query-block surface supports:
 
 Query-block expressions use Incan expression operators and desugar to the same IncQL helper calls available in ordinary method-chain code:
 
-| Query expression | Helper equivalent |
-| ---------------- | ----------------- |
+| Query expression    | Helper equivalent     |
+| ------------------- | --------------------- |
 | `.status == "paid"` | `eq(.status, "paid")` |
 | `.status != "paid"` | `ne(.status, "paid")` |
-| `.amount < 100` | `lt(.amount, 100)` |
-| `.amount <= 100` | `lte(.amount, 100)` |
-| `.amount > 100` | `gt(.amount, 100)` |
-| `.amount >= 100` | `gte(.amount, 100)` |
+| `.amount < 100`     | `lt(.amount, 100)`    |
+| `.amount <= 100`    | `lte(.amount, 100)`   |
+| `.amount > 100`     | `gt(.amount, 100)`    |
+| `.amount >= 100`    | `gte(.amount, 100)`   |
 
 The comparison helper names use `lte` and `gte` for inclusive bounds; `le` and `ge` are not public helper names. Arithmetic operators lower the same way: `+` to `add`, `-` to `sub`, `*` to `mul`, `/` to `div`, and `%` to `modulo`. Boolean and unary operators lower to their helper forms as well, such as `and_`, `or_`, `not_`, and `neg`. Use `==` for equality; a single `=` remains assignment/binding syntax, not a query predicate.
 

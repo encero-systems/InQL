@@ -1,0 +1,62 @@
+"""Chapter 6: observe quality and leave the handling decision with the caller."""
+
+from domain import Order
+from pub::incql import (
+    LazyFrame,
+    QualityObservation,
+    QualityObservationStatus,
+    Session,
+    SessionError,
+    inspect_lineage,
+    inspect_plan,
+    report_session_error,
+    row_count,
+)
+
+
+def caller_accepts(observations: list[QualityObservation]) -> bool:
+    """Apply this tutorial caller's policy without changing IncQL evidence."""
+    for observation in observations:
+        if observation.status != QualityObservationStatus.Passed:
+            return false
+    return true
+
+
+def evaluate_orders(mut session: Session) -> Result[None, SessionError]:
+    """Collect, check coverage, and demonstrate passing and failing quality evidence."""
+    orders: LazyFrame[Order] = session.read_csv("tutorial_orders", "orders.csv")?
+    plan = orders.limit(3)
+    inspection = inspect_plan(plan.clone())
+    lineage = inspect_lineage(plan.clone())
+    observed = session.collect_observed(plan.clone())
+
+    println(f"plan id: {inspection.plan_id}")
+    println(f"lineage edges: {len(lineage.edges)}")
+    println(f"backend: {observed.observation.backend_name}")
+    match observed.data:
+        Some(frame) =>
+            println(f"columns: {frame.resolved_columns():?}")
+            println(f"rows: {frame.row_count()}")
+            println(frame.preview_text())
+        None =>
+            match observed.error:
+                Some(error) => return Err(error)
+                None => println("collect_observed returned no data and no typed error")
+
+    coverage = session.check_plan_coverage(plan.clone())
+    println(f"coverage records: {len(coverage)}")
+
+    passing = session.observe_quality(plan.clone(), [row_count(min_count=Some(1), max_count=Some(3))])
+    failing = session.observe_quality(plan, [row_count(min_count=Some(4))])
+    println(f"passing observation: {passing[0].status.value()}")
+    println(f"deliberate failing observation: {failing[0].status.value()}")
+    println(f"caller accepts passing policy: {caller_accepts(passing)}")
+    println(f"caller accepts failing policy: {caller_accepts(failing)}")
+    return Ok(None)
+
+
+def main() -> None:
+    mut session = Session.default()
+    match evaluate_orders(session):
+        Ok(_) => println("Chapter 6: quality produced evidence; the caller made the decision")
+        Err(error) => report_session_error("tutorial.chapter_06", error)

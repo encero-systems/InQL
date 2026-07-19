@@ -1,0 +1,17 @@
+"""Chapter 2: add a relational step while keeping execution deferred."""
+
+from domain import Order
+from pub::incql import LazyFrame, Session, SessionError, report_session_error
+
+
+def plan_orders(mut session: Session) -> Result[LazyFrame[Order], SessionError]:
+    """Return a bounded three-row plan over the typed CSV source."""
+    orders: LazyFrame[Order] = session.read_csv("tutorial_orders", "orders.csv")?
+    return Ok(orders.limit(3))
+
+
+def main() -> None:
+    mut session = Session.default()
+    match plan_orders(session):
+        Ok(_) => println("Chapter 2: planned ReadNamedTable -> Limit; execution is still deferred")
+        Err(error) => report_session_error("tutorial.chapter_02", error)

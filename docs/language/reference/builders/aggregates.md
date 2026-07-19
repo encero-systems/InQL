@@ -4,31 +4,31 @@ Current aggregate authoring is explicit and scalar-expression-based.
 
 ## Functions
 
-| Builder | Signature                                                   | Meaning                                                                |
-| ------- | ----------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `col`   | `def col(name: str) -> ColumnExpr`                          | Column reference builder used by aggregates, filters, and projections. |
-| `lit`   | `def lit(value: int \| float \| str \| bool) -> ColumnExpr` | Canonical scalar literal helper.                                       |
-| `sum`   | `def sum(expr: ColumnExpr) -> AggregateMeasure`             | Sum one scalar expression.                                             |
-| `count` | `def count() -> AggregateMeasure`; `def count(expr: ColumnExpr) -> AggregateMeasure` | Count rows with no argument, or count non-null expression values with one argument. |
-| `count_expr` | `def count_expr(expr: ColumnExpr) -> AggregateMeasure` | Compatibility spelling for `count(expr)`. |
-| `count_distinct` | `def count_distinct(expr: ColumnExpr) -> AggregateMeasure` | Count distinct non-null expression values. |
-| `count_if` | `def count_if(predicate: ColumnExpr) -> AggregateMeasure` | Count rows where the predicate is true. |
-| `avg`   | `def avg(expr: ColumnExpr) -> AggregateMeasure`             | Average one numeric scalar expression.                                 |
-| `min`   | `def min(expr: ColumnExpr) -> AggregateMeasure`             | Return the minimum non-null value for one orderable scalar expression.  |
-| `max`   | `def max(expr: ColumnExpr) -> AggregateMeasure`             | Return the maximum non-null value for one orderable scalar expression.  |
-| `approx_count_distinct` | `def approx_count_distinct(expr: ColumnExpr) -> AggregateMeasure` | Estimate distinct non-null expression values. |
-| `approx_percentile` | `def approx_percentile(expr: ColumnExpr, percentile: float, accuracy: int = 10000) -> AggregateMeasure` | Estimate one percentile over numeric non-null values. |
-| `hll_sketch` | `def hll_sketch(expr: ColumnExpr, value_domain: SketchValueDomain = SketchValueDomain.StringIdentifier, precision: int = 14) -> AggregateMeasure` | Aggregate source values into typed HyperLogLog sketch state. |
-| `hll_merge` | `def hll_merge(sketch: SketchExpr) -> AggregateMeasure` | Merge compatible typed HyperLogLog sketch values. |
+| Builder                 | Signature                                                                                                                                         | Meaning                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `col`                   | `def col(name: str) -> ColumnExpr`                                                                                                                | Column reference builder used by aggregates, filters, and projections.              |
+| `lit`                   | `def lit(value: int \| float \| str \| bool) -> ColumnExpr`                                                                                       | Canonical scalar literal helper.                                                    |
+| `sum`                   | `def sum(expr: ColumnExpr) -> AggregateMeasure`                                                                                                   | Sum one scalar expression.                                                          |
+| `count`                 | `def count() -> AggregateMeasure`; `def count(expr: ColumnExpr) -> AggregateMeasure`                                                              | Count rows with no argument, or count non-null expression values with one argument. |
+| `count_expr`            | `def count_expr(expr: ColumnExpr) -> AggregateMeasure`                                                                                            | Compatibility spelling for `count(expr)`.                                           |
+| `count_distinct`        | `def count_distinct(expr: ColumnExpr) -> AggregateMeasure`                                                                                        | Count distinct non-null expression values.                                          |
+| `count_if`              | `def count_if(predicate: ColumnExpr) -> AggregateMeasure`                                                                                         | Count rows where the predicate is true.                                             |
+| `avg`                   | `def avg(expr: ColumnExpr) -> AggregateMeasure`                                                                                                   | Average one numeric scalar expression.                                              |
+| `min`                   | `def min(expr: ColumnExpr) -> AggregateMeasure`                                                                                                   | Return the minimum non-null value for one orderable scalar expression.              |
+| `max`                   | `def max(expr: ColumnExpr) -> AggregateMeasure`                                                                                                   | Return the maximum non-null value for one orderable scalar expression.              |
+| `approx_count_distinct` | `def approx_count_distinct(expr: ColumnExpr) -> AggregateMeasure`                                                                                 | Estimate distinct non-null expression values.                                       |
+| `approx_percentile`     | `def approx_percentile(expr: ColumnExpr, percentile: float, accuracy: int = 10000) -> AggregateMeasure`                                           | Estimate one percentile over numeric non-null values.                               |
+| `hll_sketch`            | `def hll_sketch(expr: ColumnExpr, value_domain: SketchValueDomain = SketchValueDomain.StringIdentifier, precision: int = 14) -> AggregateMeasure` | Aggregate source values into typed HyperLogLog sketch state.                        |
+| `hll_merge`             | `def hll_merge(sketch: SketchExpr) -> AggregateMeasure`                                                                                           | Merge compatible typed HyperLogLog sketch values.                                   |
 
 ## Modifiers
 
 Aggregate measures support method-style modifiers:
 
-| Modifier | Signature | Meaning |
-| --- | --- | --- |
-| `distinct` | `measure.distinct() -> AggregateMeasure` | Apply SQL-style `DISTINCT` to aggregate input values. |
-| `filter` | `measure.filter(predicate: ColumnExpr) -> AggregateMeasure` | Apply an aggregate-local boolean predicate before aggregation. |
+| Modifier   | Signature                                                          | Meaning                                                                                                        |
+| ---------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `distinct` | `measure.distinct() -> AggregateMeasure`                           | Apply SQL-style `DISTINCT` to aggregate input values.                                                          |
+| `filter`   | `measure.filter(predicate: ColumnExpr) -> AggregateMeasure`        | Apply an aggregate-local boolean predicate before aggregation.                                                 |
 | `order_by` | `measure.order_by(ordering: list[ColumnExpr]) -> AggregateMeasure` | Record ordered aggregate input. Core aggregates reject ordered input until an order-sensitive aggregate lands. |
 
 ## Notes

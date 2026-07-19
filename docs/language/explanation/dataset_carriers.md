@@ -193,7 +193,7 @@ def summarize_orders(orders: LazyFrame[Order]) -> LazyFrame[Order]:
 
 ### Runnable Session example
 
-The runnable example at [session_grouped_aggregate_csv.incn](../../../examples/session_grouped_aggregate_csv.incn) uses the real fixture in `tests/fixtures/aggregate_orders.csv`:
+The runnable example at [`examples/session_grouped_aggregate_csv.incn`][session-grouped-aggregate-csv] uses the real fixture in `tests/fixtures/aggregate_orders.csv`:
 
 ```text
 customer_id,amount
@@ -218,6 +218,10 @@ Run it from the repository root:
 ```bash
 incan run examples/session_grouped_aggregate_csv.incn
 ```
+
+<!-- References -->
+
+[session-grouped-aggregate-csv]: https://github.com/encero-systems/IncQL/blob/main/examples/session_grouped_aggregate_csv.incn
 
 It will:
 

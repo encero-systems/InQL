@@ -17,19 +17,19 @@ lineage = inspect_lineage(summary)
 
 The inspection surface consumes shared evidence record families and adds the local `PlanInspection` wrapper around them:
 
-| Record | Purpose |
-| ------ | ------- |
-| `SemanticTarget` | Stable local anchor for a plan, Prism node, relation output, field, read root, or future evidence family. |
-| `PlanInspection` | Top-level inspection result with schema version, IncQL version, plan target, output schema, output fields, Prism nodes, lineage, artifacts, diagnostics, and unsupported-evidence markers. |
-| `InspectionNodeKind` | Typed public node-kind vocabulary for authored and rewritten Prism node inspection records. |
-| `LineageGraph` | Plan-local lineage graph with a rule version and typed lineage edges. |
-| `LineageEdge` | Source-to-destination edge with relationship kind, transformation kind, confidence, expression reference, and evidence references. |
-| `MetadataAttachment` | Typed attachment record for schema-versioned metadata payloads. The first inspection slice emits public version attachments and concrete output-field primitive-kind attachments when known. |
-| `GovernedAttribute` | Governed fact attached to a semantic target with provenance, confidence, status, authority, lifetime, and evidence references. Inspection currently emits conservative schema primitive-kind attributes for known output fields. |
-| `PolicyCheckpoint` | Policy decision or observation record attached to a semantic target. Inspection records local planning observation checkpoints without enforcing policy. |
-| `AdapterRequirement` | Capability requirement inferred from plan evidence, such as row filtering, ordered execution, extension functions, variant semantics, baseline null semantics, or lineage-preservation evidence. |
-| `InspectionArtifact` | Deterministic summary for artifact families such as plan graph, lineage graph, schema flow, metadata attachments, diagnostics, and unsupported evidence. |
-| `UnsupportedEvidence` | Explicit marker for evidence families that are not computed by this inspection path. |
+| Record                | Purpose                                                                                                                                                                                                                          |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SemanticTarget`      | Stable local anchor for a plan, Prism node, relation output, field, read root, or future evidence family.                                                                                                                        |
+| `PlanInspection`      | Top-level inspection result with schema version, IncQL version, plan target, output schema, output fields, Prism nodes, lineage, artifacts, diagnostics, and unsupported-evidence markers.                                       |
+| `InspectionNodeKind`  | Typed public node-kind vocabulary for authored and rewritten Prism node inspection records.                                                                                                                                      |
+| `LineageGraph`        | Plan-local lineage graph with a rule version and typed lineage edges.                                                                                                                                                            |
+| `LineageEdge`         | Source-to-destination edge with relationship kind, transformation kind, confidence, expression reference, and evidence references.                                                                                               |
+| `MetadataAttachment`  | Typed attachment record for schema-versioned metadata payloads. The first inspection slice emits public version attachments and concrete output-field primitive-kind attachments when known.                                     |
+| `GovernedAttribute`   | Governed fact attached to a semantic target with provenance, confidence, status, authority, lifetime, and evidence references. Inspection currently emits conservative schema primitive-kind attributes for known output fields. |
+| `PolicyCheckpoint`    | Policy decision or observation record attached to a semantic target. Inspection records local planning observation checkpoints without enforcing policy.                                                                         |
+| `AdapterRequirement`  | Capability requirement inferred from plan evidence, such as row filtering, ordered execution, extension functions, variant semantics, baseline null semantics, or lineage-preservation evidence.                                 |
+| `InspectionArtifact`  | Deterministic summary for artifact families such as plan graph, lineage graph, schema flow, metadata attachments, diagnostics, and unsupported evidence.                                                                         |
+| `UnsupportedEvidence` | Explicit marker for evidence families that are not computed by this inspection path.                                                                                                                                             |
 
 ## Target identity
 

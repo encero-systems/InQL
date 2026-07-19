@@ -1,0 +1,141 @@
+site_name: IncQL
+site_description: Typed relational logic for governed data systems
+site_url: https://encero-systems.github.io/IncQL/
+repo_url: https://github.com/encero-systems/IncQL
+repo_name: encero-systems/IncQL
+docs_dir: docs
+site_dir: site
+strict: true
+
+theme:
+  name: material
+  logo: shared/brand/incql-mark.png
+  font: false
+  highlightjs: false
+  pygments_style: default
+  palette:
+    - scheme: default
+      primary: black
+      accent: cyan
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
+    - content.code.annotate
+    - content.code.copy
+
+plugins:
+  - search
+
+hooks:
+  - mkdocs_hooks.py
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.highlight:
+      use_pygments: true
+      pygments_lang_class: true
+      extend_pygments_lang:
+        - name: incan
+          lang: incan
+  - pymdownx.snippets:
+      base_path:
+        - .
+      check_paths: true
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+extra_css:
+  - stylesheets/prismplane.css?v=20260719-query-block-part-34
+
+extra_javascript:
+  - javascripts/prismplane.js?v=20260719-book-parts-24
+
+nav:
+  - Home: index.md
+  - Learn:
+      - Overview: language/README.md
+      - The IncQL Book:
+          - Book overview: language/tutorials/book/index.md
+          - Part I · Model the work:
+              - 1. Read a typed relation: language/tutorials/book/01_typed_relation.md
+              - 2. Build deferred work: language/tutorials/book/02_deferred_plan.md
+          - Part II · Explain and execute it:
+              - 3. Inspect the plan: language/tutorials/book/03_inspect_plan.md
+              - 4. Collect an observed result: language/tutorials/book/04_collect_observed.md
+              - 5. Check adapter coverage: language/tutorials/book/05_adapter_coverage.md
+          - Part III · Decide what happens next:
+              - 6. Observe data quality: language/tutorials/book/06_quality_observations.md
+              - 7. Make the write decision: language/tutorials/book/07_governed_write.md
+          - Part IV · Query blocks:
+              - 8. Write your first query: language/tutorials/book/08_first_query_block.md
+              - 9. Summarize and order results: language/tutorials/book/09_summarize_query.md
+      - Concepts:
+          - Dataset carriers: language/explanation/dataset_carriers.md
+          - Execution context: language/explanation/execution_context.md
+  - Guides:
+      - Overview: language/how-to/README.md
+      - Dataset transformations: language/how-to/dataset_transformations.md
+      - Normalize semi-structured fields: language/how-to/normalize_semistructured_fields.md
+      - Nested row values: language/how-to/nested_row_values.md
+      - Generator rows: language/how-to/generator_rows.md
+      - Window columns: language/how-to/window_columns.md
+      - Approximate metrics: language/how-to/approximate_metrics.md
+      - Typed HLL sketches: language/how-to/typed_hll_sketches.md
+      - Variant payloads: language/how-to/variant_payloads.md
+      - Execution observations: language/how-to/execution_observations.md
+      - Quality observations: language/how-to/quality_observations.md
+      - Governed evidence: language/how-to/governed_evidence.md
+      - Inspect plan lineage: language/how-to/inspect_plan_lineage.md
+  - Reference:
+      - Overview: language/reference/README.md
+      - Core:
+          - Dataset carriers: language/reference/dataset_carriers.md
+          - Dataset methods: language/reference/dataset_methods.md
+          - Query blocks: language/reference/query_blocks.md
+          - Execution context: language/reference/execution_context.md
+          - Inspection: language/reference/inspection.md
+          - Quality: language/reference/quality.md
+          - Governance: language/reference/governance.md
+      - Builders:
+          - Filters: language/reference/builders/filters.md
+          - Projections: language/reference/builders/projections.md
+          - Aggregates: language/reference/builders/aggregates.md
+      - Functions:
+          - Index: language/reference/functions/index.md
+          - Approximate: language/reference/functions/approximate.md
+          - Format: language/reference/functions/format.md
+          - Generators: language/reference/functions/generators.md
+          - Nested: language/reference/functions/nested.md
+          - Sketches: language/reference/functions/sketches.md
+          - Variants: language/reference/functions/variants.md
+          - Windows: language/reference/functions/windows.md
+      - Substrait:
+          - Conformance: language/reference/substrait/conformance.md
+          - Operator catalog: language/reference/substrait/operator_catalog.md
+          - Read root binding contract: language/reference/substrait/read_root_binding_contract.md
+          - Revision and extension policy: language/reference/substrait/revision_and_extension_policy.md
+  - Architecture: architecture.md
+  - Design records:
+      - Overview: design_records.md
+      - RFCs: rfcs/README.md
+      - Whitepapers:
+          - Overview: whitepapers/README.md
+          - IncQL-DB: whitepapers/incql_db.md
+  - Project:
+      - Overview: project.md
+      - Docs map: docs_map.md
+      - Release notes:
+          - v0.1: release_notes/v0_1.md
+      - Contributing:
+          - Contributor architecture: contributing/architecture.md
+          - Writing RFCs: contributing/writing_rfcs.md
+          - RFC template: rfcs/TEMPLATE.md
+          - Prismplane docs theme: contributing/prismplane_docs_theme.md

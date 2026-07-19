@@ -36,6 +36,7 @@ Purely internal Incan compiler refactors with **no** IncQL-visible meaning usual
    - Copy [TEMPLATE.md](../rfcs/TEMPLATE.md).  
    - Add `docs/rfcs/NNN_short_slug.md` (example: `006_window_semantics.md`).  
    - Pick the next `NNN` from the [RFC index](../rfcs/README.md) and open issues, avoiding collisions.
+   - Assign the RFC one to three controlled tags in `docs/rfcs/catalog.json`. Use only keys declared under `definitions`; add a new definition only when the existing vocabulary cannot describe a recurring concern. Four tags are reserved for genuinely cross-cutting program or platform RFCs.
 
 3. **Fill in the RFC**  
    One coherent proposal per RFC. Cover at least:
@@ -52,21 +53,22 @@ Purely internal Incan compiler refactors with **no** IncQL-visible meaning usual
 5. **Discuss**  
    Use the PR (and the linked issue, if any) to converge.
 
+6. **Regenerate the catalog**
+   Run `make rfc-index`, review the generated reader data and fallback table, then run `make docs-build`. The docs build validates the RFC number sequence, required metadata, related RFCs, lifecycle folder, controlled tag assignments, and generated index before rendering the site.
+
 ## After acceptance
 
-- **Implemented:** Set **Shipped in** to the first IncQL **package** release that contains the change. When you adopt a `closed/implemented/` layout (optional), move the file there and keep the index accurate.
+- **Implemented:** Set **Shipped in** to the first IncQL **package** release that contains the change, move the RFC to `docs/rfcs/closed/implemented/`, and keep the index accurate.
 - **Deferred:** Update **Status** to `Deferred` and record why.
 
-## Closed RFCs (optional layout)
+## Lifecycle layout
 
-If you introduce subfolders under `docs/rfcs/`, a common pattern is:
-
-- `docs/rfcs/` — active RFCs (Draft, Planned, In Progress, …)
+- `docs/rfcs/` — active RFCs (Draft, Planned, In Progress, Blocked, or Deferred)
 - `docs/rfcs/closed/implemented/` — shipped
 - `docs/rfcs/closed/superseded/` — replaced by a newer IncQL RFC
 - `docs/rfcs/closed/rejected/` — withdrawn or rejected
 
-When superseding or rejecting, update the status line (for example `Superseded by IncQL RFC NNN`) and move the file if you use `closed/`.
+When implementing, superseding, or rejecting an RFC, update its status and release or replacement metadata, move it to the matching lifecycle folder, and repair incoming links in the same change. Keep the filename and RFC number unchanged, then run `make rfc-index` so the searchable catalog follows the source records.
 
 ## Tips for a good RFC
 

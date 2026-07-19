@@ -1,0 +1,34 @@
+"""Chapter 8: filter and shape typed data with IncQL query clauses."""
+
+import pub::incql
+
+from domain import Order, PaidOrderReview
+from pub::incql import LazyFrame, Session, SessionError, desc, report_session_error
+
+
+def query_paid_orders(mut session: Session) -> Result[None, SessionError]:
+    """Run a SQL-familiar query block without using relational method chains."""
+    orders: LazyFrame[Order] = session.read_csv("tutorial_orders_query", "orders.csv")?
+    paid_orders: LazyFrame[PaidOrderReview] = query {
+        FROM orders
+        WHERE .status == "paid"
+        SELECT
+            .order_id as order_id,
+            .customer_id as customer_id,
+            .amount as amount,
+        ORDER BY desc(.amount)
+        LIMIT 10
+    }
+
+    result = session.collect(paid_orders)?
+    println(f"columns: {result.resolved_columns():?}")
+    println(f"rows: {result.row_count()}")
+    println(result.preview_text())
+    return Ok(None)
+
+
+def main() -> None:
+    mut session = Session.default()
+    match query_paid_orders(session):
+        Ok(_) => println("Chapter 8: query block completed")
+        Err(error) => report_session_error("tutorial.chapter_08", error)

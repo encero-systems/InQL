@@ -1,0 +1,94 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "examples/tutorial_book/**"
+      - "tests/docs/**"
+      - "utils/**"
+      - "Makefile"
+      - "mkdocs_hooks.py"
+      - "mkdocs.yml"
+      - "requirements-docs.txt"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "examples/tutorial_book/**"
+      - "tests/docs/**"
+      - "utils/**"
+      - "Makefile"
+      - "mkdocs_hooks.py"
+      - "mkdocs.yml"
+      - "requirements-docs.txt"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: docs-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  mkdocs:
+    name: MkDocs strict build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out IncQL
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-docs.txt
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install docs dependencies
+        run: python -m pip install -r requirements-docs.txt
+
+      - name: Build docs
+        run: make docs-build
+
+  deploy-pages:
+    name: Deploy docs to GitHub Pages
+    needs: mkdocs
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out IncQL
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-docs.txt
+
+      - name: Install docs dependencies
+        run: python -m pip install -r requirements-docs.txt
+
+      - name: Configure deploy identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Publish docs
+        run: mkdocs gh-deploy --force --strict --remote-branch gh-pages --message "chore - deploy docs site"

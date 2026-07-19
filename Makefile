@@ -9,6 +9,23 @@
 INCAN ?= incan
 export INCAN_NO_BANNER ?= 1
 
+TUTORIAL_BOOK_DIR := examples/tutorial_book
+TUTORIAL_BOOK_CHAPTERS := \
+	src/chapter_01.incn \
+	src/chapter_02.incn \
+	src/chapter_03.incn \
+	src/chapter_04.incn \
+	src/chapter_05.incn \
+	src/chapter_06.incn \
+	src/chapter_07.incn \
+	src/chapter_08.incn \
+	src/chapter_09.incn
+
+TUTORIAL_BOOK_RUNNABLES := \
+	src/main.incn \
+	src/chapter_08.incn \
+	src/chapter_09.incn
+
 .DEFAULT_GOAL := help
 
 .PHONY: help
@@ -67,6 +84,42 @@ test-locked: ## Run tests with `--locked`
 	@$(INCAN) test $(INCQL_TEST_DIR) --locked
 
 # =============================================================================
+# Documentation
+# =============================================================================
+
+.PHONY: rfc-index
+rfc-index: ## Validate RFC metadata and regenerate the RFC catalog
+	@python3 utils/rfc_catalog.py --tags docs/rfcs/catalog.json --write
+
+.PHONY: rfc-index-check
+rfc-index-check: ## Validate RFC metadata and fail when the catalog is stale
+	@python3 utils/rfc_catalog.py --tags docs/rfcs/catalog.json --check
+
+.PHONY: docs-test
+docs-test: ## Run documentation tooling unit tests
+	@python3 -m unittest discover -s tests/docs -p 'test_*.py'
+	@node --test tests/docs/test_rfc_reader.cjs
+
+.PHONY: docs-build
+docs-build: rfc-index-check docs-test ## Validate and build the documentation site strictly
+	@mkdocs build --strict
+
+.PHONY: tutorial-book
+tutorial-book: ## Type-check every tutorial chapter and run each complete learning path
+	@echo "\033[1mChecking IncQL tutorial-book chapters...\033[0m"
+	@cd $(TUTORIAL_BOOK_DIR) && $(INCAN) lock >/dev/null
+	@for script in $(TUTORIAL_BOOK_CHAPTERS); do \
+		echo "\033[1m  -> $$script\033[0m"; \
+		cd $(TUTORIAL_BOOK_DIR) && $(INCAN) --check "$$script" || exit $$?; \
+		cd ../..; \
+	done
+	@for script in $(TUTORIAL_BOOK_RUNNABLES); do \
+		echo "\033[1m  -> run $$script\033[0m"; \
+		cd $(TUTORIAL_BOOK_DIR) && $(INCAN) run "$$script" --locked || exit $$?; \
+		cd ../..; \
+	done
+
+# =============================================================================
 # Formatting (Incan source)
 # =============================================================================
 #
@@ -76,7 +129,7 @@ test-locked: ## Run tests with `--locked`
 # packages are listed by source directory so generated `target/` output stays
 # outside the formatting walk.
 
-INCQL_FMT_DIRS := src tests examples/advanced_retail_query_blocks/src
+INCQL_FMT_DIRS := src tests examples/advanced_retail_query_blocks/src examples/tutorial_book/src
 INCQL_FMT_FILES := examples/*.incn
 
 .PHONY: fmt

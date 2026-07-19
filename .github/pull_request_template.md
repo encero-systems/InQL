@@ -9,7 +9,7 @@ What does this PR change, and why?
 - [ ] Refactor / maintenance
 - [ ] Documentation
 - [ ] CI / tooling
-- [ ] RFC (adds/updates `docs/rfcs/*`)
+- [ ] RFC (adds/updates `docs/rfcs/**`)
 
 ## Area(s)
 

@@ -69,7 +69,7 @@ Normative behavior is defined in **`docs/rfcs/`**. If package code and an RFC di
 ## General workflow
 
 1. **Branch from `main`**: Prefer `<type>/<issue>-<slug>` (e.g. `feature/8-rfc-table-automation`, `docs/9-mkdocs-ci`), matching team practice.
-2. **Follow RFCs**: Behavior changes should be reflected in the right `docs/rfcs/*.md` (or a new RFC) before or alongside code in the appropriate repository.
+2. **Follow RFCs**: Behavior changes should be reflected in the right RFC under `docs/rfcs/` (or a new RFC) before or alongside code in the appropriate repository.
 3. **Run the local gate**: `make ci` (or at least `make fmt-check`, `make build`, `make test`) before considering work done for **this** repo.
 4. **Version sync**: If you bump the package version, update **both** [incan.toml][incan-toml] (`[project] version`) and [src/metadata.incn][metadata-incn] (`incql_version()`) in the same commit (see [CONTRIBUTING.md][contributing]).
 5. **Documentation**: User-facing or spec changes should update `README.md`, relevant `docs/*`, or RFCs as appropriate. Keep prose markdown **without hard wrapping** (natural paragraphs).

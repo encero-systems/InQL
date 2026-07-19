@@ -1,0 +1,5 @@
+order_id,customer_id,status,amount
+1001,C-001,paid,120.50
+1002,C-002,pending,64.00
+1003,C-001,paid,89.25
+1004,C-003,cancelled,42.75

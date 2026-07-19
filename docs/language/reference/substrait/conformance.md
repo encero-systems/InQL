@@ -44,8 +44,8 @@ The numeric suffix is immutable after publication. If requirements change incomp
 
 Core scenarios currently implemented in `src/substrait/conformance_catalog.incn`:
 
-| Scenario ID                                            | Selector                                                   | Primary core `Rel` coverage |
-| ------------------------------------------------------ | ---------------------------------------------------------- | --------------------------- |
+| Scenario ID                                             | Selector                                                   | Primary core `Rel` coverage |
+| ------------------------------------------------------- | ---------------------------------------------------------- | --------------------------- |
 | `incql.substrait.core.read_named_table.001`             | `core_scenario(CoreScenarioKey.ReadNamedTable)`            | `ReadRel` (`NamedTable`)    |
 | `incql.substrait.core.read_local_files.001`             | `core_scenario(CoreScenarioKey.ReadLocalFiles)`            | `ReadRel` (`LocalFiles`)    |
 | `incql.substrait.core.read_virtual_table.001`           | `core_scenario(CoreScenarioKey.ReadVirtualTable)`          | `ReadRel` (`VirtualTable`)  |
@@ -79,5 +79,5 @@ Historical design context is captured in [IncQL RFC 002][rfc-002], but this page
 
 <!-- References -->
 
-[rfc-002]: ../../rfcs/002_apache_substrait_integration.md
+[rfc-002]: ../../../rfcs/002_apache_substrait_integration.md
 [ref-operator-catalog]: ./operator_catalog.md
