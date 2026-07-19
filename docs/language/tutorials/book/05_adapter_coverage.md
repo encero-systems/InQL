@@ -45,6 +45,7 @@ Chapter 4 showed that one plan attempt ran. `check_plan_coverage(...)` answers a
   <ol class="pp-book-trace__stages">
     <li class="pp-book-trace__stage pp-book-trace__stage--source">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/code-braces-box.svg" alt="">
         <span class="pp-book-trace__number">01</span>
         <div><strong>Concrete attempt</strong><small>Execute the review plan once</small></div>
       </header>
@@ -64,6 +65,7 @@ observed = session.collect_observed(plan.clone())
 
     <li class="pp-book-trace__stage pp-book-trace__stage--session">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/link-variant.svg" alt="">
         <span class="pp-book-trace__number">02</span>
         <div><strong>Explicit coverage check</strong><small>Classify requirements inferred from the plan</small></div>
       </header>
@@ -85,6 +87,7 @@ for record in coverage:
 
     <li class="pp-book-trace__stage pp-book-trace__stage--runtime">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/database-cog-outline.svg" alt="">
         <span class="pp-book-trace__number">03</span>
         <div><strong>Conservative result</strong><small>Read every state literally</small></div>
       </header>

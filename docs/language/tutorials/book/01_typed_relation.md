@@ -88,6 +88,7 @@ The included data is small enough to keep every later result understandable:
   <ol class="pp-book-trace__stages">
     <li class="pp-book-trace__stage pp-book-trace__stage--source">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/code-braces-box.svg" alt="">
         <span class="pp-book-trace__number">01</span>
         <div><strong>Intended row shape</strong><small>State the carrier contract in checked Incan</small></div>
       </header>
@@ -111,6 +112,7 @@ pub model Order:
 
     <li class="pp-book-trace__stage pp-book-trace__stage--session">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/link-variant.svg" alt="">
         <span class="pp-book-trace__number">02</span>
         <div><strong>CSV registration</strong><small>Bind a logical name and establish a planned source schema</small></div>
       </header>
@@ -130,6 +132,7 @@ orders: LazyFrame[Order] = session.read_csv("tutorial_orders", "orders.csv")?
 
     <li class="pp-book-trace__stage pp-book-trace__stage--runtime">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/database-cog-outline.svg" alt="">
         <span class="pp-book-trace__number">03</span>
         <div><strong>Deferred carrier</strong><small>Return intent without materialising rows</small></div>
       </header>

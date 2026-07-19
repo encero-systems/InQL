@@ -53,7 +53,7 @@ markdown_extensions:
       custom_checkbox: true
 
 extra_css:
-  - stylesheets/prismplane.css?v=20260719-book-parts-25
+  - stylesheets/prismplane.css?v=20260719-book-contrast-31
 
 extra_javascript:
   - javascripts/prismplane.js?v=20260719-book-parts-24

@@ -51,6 +51,7 @@ None of those records silently defines your organization's acceptance rule. This
   <ol class="pp-book-trace__stages">
     <li class="pp-book-trace__stage pp-book-trace__stage--source">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/code-braces-box.svg" alt="">
         <span class="pp-book-trace__number">01</span>
         <div><strong>Quality inputs</strong><small>Produce the required check and an explanatory strict probe</small></div>
       </header>
@@ -74,6 +75,7 @@ deliberate_probe = session.observe_quality(plan.clone(), [row_count(min_count=So
 
     <li class="pp-book-trace__stage pp-book-trace__stage--session">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/link-variant.svg" alt="">
         <span class="pp-book-trace__number">02</span>
         <div><strong>Caller gate</strong><small>Use only the required quality list</small></div>
       </header>
@@ -95,6 +97,7 @@ if not caller_accepts(required_quality):
 
     <li class="pp-book-trace__stage pp-book-trace__stage--runtime">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/database-cog-outline.svg" alt="">
         <span class="pp-book-trace__number">03</span>
         <div><strong>Observed write</strong><small>Execute the accepted plan again and attempt the sink side effect</small></div>
       </header>

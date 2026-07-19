@@ -44,6 +44,7 @@ A quality assertion records the condition a caller wants evaluated. `session.obs
   <ol class="pp-book-trace__stages">
     <li class="pp-book-trace__stage pp-book-trace__stage--source">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/code-braces-box.svg" alt="">
         <span class="pp-book-trace__number">01</span>
         <div><strong>Passing observation</strong><small>Evaluate the accepted range in a fresh collection</small></div>
       </header>
@@ -63,6 +64,7 @@ passing = session.observe_quality(plan.clone(), [row_count(min_count=Some(1), ma
 
     <li class="pp-book-trace__stage pp-book-trace__stage--session">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/link-variant.svg" alt="">
         <span class="pp-book-trace__number">02</span>
         <div><strong>Deliberate failing observation</strong><small>Evaluate a stricter assertion in another collection</small></div>
       </header>
@@ -82,6 +84,7 @@ failing = session.observe_quality(plan, [row_count(min_count=Some(4))])
 
     <li class="pp-book-trace__stage pp-book-trace__stage--runtime">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/database-cog-outline.svg" alt="">
         <span class="pp-book-trace__number">03</span>
         <div><strong>Tutorial policy</strong><small>Interpret the evidence in caller-owned code</small></div>
       </header>

@@ -46,6 +46,7 @@ IncQL also has filter, ordering, projection, aggregation, and query-block surfac
   <ol class="pp-book-trace__stages">
     <li class="pp-book-trace__stage pp-book-trace__stage--source">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/code-braces-box.svg" alt="">
         <span class="pp-book-trace__number">01</span>
         <div><strong>Registered source</strong><small>Start from the named-table carrier</small></div>
       </header>
@@ -65,6 +66,7 @@ orders: LazyFrame[Order] = session.read_csv("tutorial_orders", "orders.csv")?
 
     <li class="pp-book-trace__stage pp-book-trace__stage--session">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/link-variant.svg" alt="">
         <span class="pp-book-trace__number">02</span>
         <div><strong>Append bounded intent</strong><small>Add one Prism plan node without collecting</small></div>
       </header>
@@ -84,6 +86,7 @@ return Ok(orders.limit(3))
 
     <li class="pp-book-trace__stage pp-book-trace__stage--runtime">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/database-cog-outline.svg" alt="">
         <span class="pp-book-trace__number">03</span>
         <div><strong>Deferred plan state</strong><small>Keep backend work behind the Session boundary</small></div>
       </header>

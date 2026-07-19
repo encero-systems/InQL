@@ -47,6 +47,7 @@ Inspection is read-only. It does not bind a physical backend, inspect a DataFusi
   <ol class="pp-book-trace__stages">
     <li class="pp-book-trace__stage pp-book-trace__stage--source">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/code-braces-box.svg" alt="">
         <span class="pp-book-trace__number">01</span>
         <div><strong>Deferred review plan</strong><small>Describe a named read followed by a limit</small></div>
       </header>
@@ -67,6 +68,7 @@ plan = orders.limit(3)
 
     <li class="pp-book-trace__stage pp-book-trace__stage--session">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/link-variant.svg" alt="">
         <span class="pp-book-trace__number">02</span>
         <div><strong>Prism inspection</strong><small>Read structure and lineage from local plan state</small></div>
       </header>
@@ -87,6 +89,7 @@ lineage = inspect_lineage(plan)
 
     <li class="pp-book-trace__stage pp-book-trace__stage--runtime">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/database-cog-outline.svg" alt="">
         <span class="pp-book-trace__number">03</span>
         <div><strong>Local evidence return</strong><small>Report plan facts without materialising rows</small></div>
       </header>

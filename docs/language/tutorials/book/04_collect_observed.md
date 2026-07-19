@@ -41,6 +41,7 @@ Materialize the review as a `DataFrame[Order]` and inspect the accompanying `Exe
   <ol class="pp-book-trace__stages">
     <li class="pp-book-trace__stage pp-book-trace__stage--source">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/code-braces-box.svg" alt="">
         <span class="pp-book-trace__number">01</span>
         <div><strong>Chapter change</strong><small>Describe and inspect the deferred work</small></div>
       </header>
@@ -62,6 +63,7 @@ lineage = inspect_lineage(plan.clone())
 
     <li class="pp-book-trace__stage pp-book-trace__stage--session">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/link-variant.svg" alt="">
         <span class="pp-book-trace__number">02</span>
         <div><strong>Session dispatch</strong><small>Lower, bind, and submit one attempt</small></div>
       </header>
@@ -81,6 +83,7 @@ observed = session.collect_observed(plan)
 
     <li class="pp-book-trace__stage pp-book-trace__stage--runtime">
       <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/database-cog-outline.svg" alt="">
         <span class="pp-book-trace__number">03</span>
         <div><strong>DataFusion attempt</strong><small>Execute and return materialisation evidence</small></div>
       </header>
