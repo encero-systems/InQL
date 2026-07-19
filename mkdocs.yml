@@ -49,10 +49,10 @@ markdown_extensions:
       custom_checkbox: true
 
 extra_css:
-  - stylesheets/prismplane.css?v=20260718-rfc-reader-11
+  - stylesheets/prismplane.css?v=20260719-rfc-reader-12
 
 extra_javascript:
-  - javascripts/prismplane.js?v=20260718-rfc-reader-11
+  - javascripts/prismplane.js?v=20260719-rfc-reader-12
 
 nav:
   - Home: index.md

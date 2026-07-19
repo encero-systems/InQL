@@ -18,6 +18,16 @@ const known = {
   records: new Set(["000", "030"]),
 };
 
+test("adjacent RFC selection skips hidden records and stops at the boundaries", () => {
+  const records = [{ id: "007" }, { id: "030" }, { id: "045" }];
+
+  assert.equal(rfcReaderContract.adjacentRecordId(records, "007", 1), "030");
+  assert.equal(rfcReaderContract.adjacentRecordId(records, "030", -1), "007");
+  assert.equal(rfcReaderContract.adjacentRecordId(records, "007", -1), "007");
+  assert.equal(rfcReaderContract.adjacentRecordId(records, "045", 1), "045");
+  assert.equal(rfcReaderContract.adjacentRecordId([], "007", 1), "");
+});
+
 test("tag selections are unique, sorted, and toggleable", () => {
   let tags = rfcReaderContract.setTag([], "planning", true);
   tags = rfcReaderContract.setTag(tags, "evidence", true);
