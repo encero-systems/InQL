@@ -358,6 +358,7 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
 .pp-rfc-reader {
   display: grid;
   grid-template-columns: minmax(21rem, 25rem) minmax(0, 1fr);
+  overflow-anchor: none;
   border-top: 1px solid var(--rfc-reader-line);
   border-bottom: 1px solid var(--rfc-reader-line);
   background: rgba(255, 255, 255, 0.24);
@@ -1096,6 +1097,10 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
   .pp-rfc-reader__back {
     display: inline-flex;
   }
+
+  .pp-rfc-reader__hint {
+    display: none;
+  }
 }
 
 @media screen and (max-width: 38em) {
@@ -1115,10 +1120,6 @@ body:has(.pp-rfc-reader-host) .md-typeset > h1 {
   .pp-rfc-reader__reset {
     grid-column: 1 / -1;
     justify-self: start;
-  }
-
-  .pp-rfc-reader__hint {
-    display: none;
   }
 
   .pp-rfc-reader__list-header,

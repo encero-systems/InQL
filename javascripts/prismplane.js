@@ -1,5 +1,14 @@
 (() => {
   const rfcReaderContract = {
+    adjacentRecordId(records, currentId, offset) {
+      if (records.length === 0) {
+        return "";
+      }
+      const currentIndex = Math.max(0, records.findIndex((record) => record.id === currentId));
+      const nextIndex = Math.max(0, Math.min(records.length - 1, currentIndex + offset));
+      return records[nextIndex].id;
+    },
+
     setTag(tags, key, selected) {
       const next = selected
         ? [...new Set([...tags, key])]
@@ -419,7 +428,7 @@
     resultCount.setAttribute("role", "status");
     resultCount.setAttribute("aria-live", "polite");
     resultCount.setAttribute("aria-atomic", "true");
-    const keyboardHint = createElement("p", "pp-rfc-reader__hint", "↑↓ move · Enter open · Esc clear");
+    const keyboardHint = createElement("p", "pp-rfc-reader__hint", "/ search · ↓ enter list · ↑↓ select · Enter open · Esc clear");
     statusbar.append(resultCount, resetButton);
 
     const index = createElement("div", "pp-rfc-reader__index");
@@ -722,7 +731,7 @@
     searchInput.addEventListener("keydown", (event) => {
       if (event.key === "ArrowDown" && visibleRecords.length > 0) {
         event.preventDefault();
-        inputById.get(state.selectedId)?.focus();
+        focusRecord(state.selectedId);
       }
     }, { signal });
     searchForm.addEventListener("submit", (event) => event.preventDefault(), { signal });
@@ -736,6 +745,40 @@
       searchInput.focus();
     }, { signal });
 
+    const focusRecord = (targetId) => {
+      const target = inputById.get(targetId);
+      const row = rowById.get(targetId);
+      if (!target || !row) {
+        return;
+      }
+
+      if (media.matches) {
+        target.focus();
+        if (!target.checked) {
+          target.click();
+        }
+        return;
+      }
+
+      const pageX = window.scrollX;
+      const pageY = window.scrollY;
+      target.focus({ preventScroll: true });
+      if (!target.checked) {
+        target.click();
+      }
+
+      const listRect = list.getBoundingClientRect();
+      const rowRect = row.getBoundingClientRect();
+      if (rowRect.top < listRect.top) {
+        list.scrollTop -= listRect.top - rowRect.top;
+      } else if (rowRect.bottom > listRect.bottom) {
+        list.scrollTop += rowRect.bottom - listRect.bottom;
+      }
+
+      window.scrollTo(pageX, pageY);
+      window.requestAnimationFrame(() => window.scrollTo(pageX, pageY));
+    };
+
     inputById.forEach((input, id) => {
       input.addEventListener("change", () => {
         if (!input.checked) {
@@ -747,6 +790,8 @@
         renderDetail(recordById.get(id), media.matches);
         if (media.matches) {
           reader.dataset.mobileView = "detail";
+        } else {
+          input.focus({ preventScroll: true });
         }
         writeUrl(media.matches ? "push" : "replace");
       }, { signal });
@@ -754,11 +799,15 @@
         if (event.key === "Enter") {
           event.preventDefault();
           window.location.assign(recordById.get(id).href);
+        } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+          event.preventDefault();
+          const offset = event.key === "ArrowDown" ? 1 : -1;
+          const targetId = rfcReaderContract.adjacentRecordId(visibleRecords, id, offset);
+          focusRecord(targetId);
         } else if (event.key === "Home" || event.key === "End") {
           event.preventDefault();
           const target = event.key === "Home" ? visibleRecords[0] : visibleRecords.at(-1);
-          inputById.get(target?.id)?.focus();
-          inputById.get(target?.id)?.click();
+          focusRecord(target?.id);
         }
       }, { signal });
     });
