@@ -25,6 +25,18 @@
       return next.sort();
     },
 
+    sortRecords(records, sort) {
+      const direction = sort === "status-desc" ? -1 : 1;
+      const byId = (left, right) => left.id.localeCompare(right.id, undefined, { numeric: true });
+      if (!sort) {
+        return [...records].sort(byId);
+      }
+      return [...records].sort((left, right) => {
+        const byStatus = left.status.localeCompare(right.status, undefined, { sensitivity: "base" });
+        return byStatus === 0 ? byId(left, right) : byStatus * direction;
+      });
+    },
+
     matches(record, state, normalizeSearch) {
       const queryTokens = normalizeSearch(state.query).split(/\s+/).filter(Boolean);
       const recordTags = new Set(record.tags.map((tag) => tag.key));
@@ -41,6 +53,12 @@
         ? params.get("scope")
         : "all";
       next.status = known.statuses.has(params.get("status")) ? params.get("status") : "";
+      next.sort = ["status-asc", "status-desc"].includes(params.get("sort"))
+        ? params.get("sort")
+        : "";
+      if (next.status) {
+        next.scope = "all";
+      }
       next.tags = [...new Set(params.getAll("tag").filter((tag) => known.tags.has(tag)))].sort();
       const selected = params.get("rfc");
       if (selected && known.records.has(selected)) {
@@ -61,6 +79,7 @@
       setOrDelete("q", state.query.trim());
       setOrDelete("scope", state.scope === "all" ? "" : state.scope);
       setOrDelete("status", state.status);
+      setOrDelete("sort", state.sort);
       params.delete("topic");
       params.delete("tag");
       [...state.tags].sort().forEach((tag) => params.append("tag", tag));
@@ -150,6 +169,47 @@
       activateTab(selectedTab);
       group.dataset.tabsReady = "true";
     });
+  };
+
+  let disposeBookParts = () => {};
+
+  const initializeBookParts = (root = document) => {
+    disposeBookParts();
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    root.querySelectorAll("[data-book-parts]").forEach((book) => {
+      const parts = [...book.querySelectorAll(".pp-book-part")];
+      if (parts.length === 0) {
+        return;
+      }
+
+      const openPart = (target) => {
+        parts.forEach((part) => {
+          if (part !== target && part.open) {
+            part.open = false;
+          }
+        });
+      };
+
+      parts.forEach((part) => {
+        part.addEventListener("toggle", () => {
+          if (part.open) {
+            openPart(part);
+          }
+        }, { signal });
+      });
+
+      const requestedPart = parts.find((part) => `#${part.id}` === window.location.hash);
+      if (requestedPart) {
+        requestedPart.open = true;
+        openPart(requestedPart);
+      } else if (!parts.some((part) => part.open)) {
+        parts[0].open = true;
+      }
+    });
+
+    disposeBookParts = () => controller.abort();
   };
 
   let disposeArchitectureNav = () => {};
@@ -248,6 +308,78 @@
     nav.dataset.architectureNavReady = "true";
   };
 
+  let disposePrimaryNavCollapse = () => {};
+
+  const initializePrimaryNavCollapse = (root = document) => {
+    disposePrimaryNavCollapse();
+    disposePrimaryNavCollapse = () => {};
+
+    const sidebar = root.querySelector(".md-sidebar--primary");
+    if (!sidebar) {
+      return;
+    }
+
+    const desktop = window.matchMedia("(min-width: 76.25em)");
+    const storageKey = "incql-docs-primary-nav-collapsed";
+    const navRegion = sidebar.querySelector(".md-sidebar__scrollwrap");
+    if (navRegion && !navRegion.id) {
+      navRegion.id = "pp-primary-navigation";
+    }
+    let toggle = sidebar.querySelector(".pp-primary-nav-toggle");
+    if (!toggle) {
+      toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "pp-primary-nav-toggle md-icon";
+      const icon = root.querySelector(".md-search__icon svg:nth-of-type(2)")
+        ?? root.querySelector('.md-header__button[for="__drawer"] svg');
+      if (icon) {
+        const clonedIcon = icon.cloneNode(true);
+        clonedIcon.setAttribute("aria-hidden", "true");
+        toggle.append(clonedIcon);
+      }
+      sidebar.prepend(toggle);
+    }
+    if (navRegion) {
+      toggle.setAttribute("aria-controls", navRegion.id);
+    }
+
+    let collapsed = false;
+    try {
+      collapsed = window.localStorage.getItem(storageKey) === "true";
+    } catch {
+      collapsed = false;
+    }
+
+    const apply = () => {
+      const isCollapsed = desktop.matches && collapsed;
+      document.body.classList.toggle("pp-primary-nav-collapsed", isCollapsed);
+      toggle.hidden = !desktop.matches;
+      toggle.setAttribute("aria-expanded", String(!isCollapsed));
+      toggle.setAttribute("aria-label", isCollapsed ? "Expand navigation" : "Collapse navigation");
+      toggle.title = isCollapsed ? "Expand navigation" : "Collapse navigation";
+      navRegion?.setAttribute("aria-hidden", String(isCollapsed));
+    };
+
+    const handleToggle = () => {
+      collapsed = !collapsed;
+      try {
+        window.localStorage.setItem(storageKey, String(collapsed));
+      } catch {
+        // The control still works for the current page when storage is unavailable.
+      }
+      apply();
+    };
+    const handleMediaChange = () => apply();
+    toggle.addEventListener("click", handleToggle);
+    desktop.addEventListener("change", handleMediaChange);
+    apply();
+
+    disposePrimaryNavCollapse = () => {
+      toggle.removeEventListener("click", handleToggle);
+      desktop.removeEventListener("change", handleMediaChange);
+    };
+  };
+
   let disposeRfcReader = () => {};
 
   const initializeRfcReader = (root = document) => {
@@ -315,10 +447,12 @@
     const sortedTags = [...tagsByKey].sort((left, right) => left[1].localeCompare(right[1]));
     const statusByKey = new Map(records.map((record) => [record.status_key, record.status]));
     const media = window.matchMedia("(max-width: 56em)");
+    const compactMedia = window.matchMedia("(max-width: 38em)");
     const defaultState = () => ({
       query: "",
       scope: "all",
       status: "",
+      sort: "",
       tags: [],
       selectedId: records[0].id,
       selectedExplicitly: false,
@@ -349,15 +483,27 @@
     const searchLabel = createElement("label", "pp-sr-only", "Search RFCs");
     const searchId = "pp-rfc-search";
     searchLabel.htmlFor = searchId;
+    const searchShell = createElement("div", "pp-rfc-reader__search-shell");
+    const activeTags = createElement("div", "pp-rfc-reader__active-tags");
+    activeTags.hidden = true;
     const searchInput = createElement("input");
     searchInput.id = searchId;
     searchInput.type = "search";
     searchInput.autocomplete = "off";
-    searchInput.placeholder = "Search RFCs, tags, or concepts";
+    searchInput.placeholder = "Search RFCs or choose tags";
     searchInput.setAttribute("aria-controls", "pp-rfc-records");
+    searchInput.setAttribute("aria-expanded", "false");
+    const tagMenuButton = createElement("button", "pp-rfc-reader__tag-menu-button");
+    tagMenuButton.type = "button";
+    tagMenuButton.setAttribute("aria-label", "Choose tag filters");
+    tagMenuButton.setAttribute("aria-expanded", "false");
+    const tagMenuLabel = createElement("span", "", "Tags");
+    const tagMenuCount = createElement("span", "pp-rfc-reader__tag-menu-count");
+    tagMenuCount.hidden = true;
+    tagMenuButton.append(tagMenuLabel, tagMenuCount);
     const shortcut = createElement("kbd", "", "/");
     shortcut.setAttribute("aria-hidden", "true");
-    searchForm.append(searchLabel, searchInput, shortcut);
+    searchShell.append(activeTags, searchInput, tagMenuButton, shortcut);
 
     const facets = createElement("div", "pp-rfc-reader__facets");
     const scopeFieldset = createElement("fieldset", "pp-rfc-segments");
@@ -384,17 +530,10 @@
       scopeInputs.set(value, input);
     });
 
-    const statusLabel = createElement("label", "pp-sr-only", "Filter by status");
-    const statusSelect = createElement("select", "pp-rfc-reader__select");
-    statusSelect.id = "pp-rfc-status";
-    statusLabel.htmlFor = statusSelect.id;
-    statusSelect.append(new Option("Status", ""));
-    statusByKey.forEach((label, value) => statusSelect.append(new Option(label, value)));
-
     const tagInputs = new Map();
-    const tagFilter = createElement("details", "pp-rfc-reader__tag-filter");
-    const tagSummary = createElement("summary", "", "Tags");
     const tagPanel = createElement("div", "pp-rfc-reader__tag-panel");
+    tagPanel.id = "pp-rfc-tag-panel";
+    tagPanel.hidden = true;
     const tagFieldset = createElement("fieldset");
     const tagLegend = createElement("legend", "", "Filter by tags");
     tagFieldset.append(tagLegend);
@@ -414,22 +553,14 @@
     const clearTagsButton = createElement("button", "pp-rfc-reader__clear-tags", "Clear tags");
     clearTagsButton.type = "button";
     tagPanel.append(tagFieldset, clearTagsButton);
-    tagFilter.append(tagSummary, tagPanel);
-
-    const activeTags = createElement("div", "pp-rfc-reader__active-tags");
-    activeTags.hidden = true;
-    const clearActiveTagsButton = createElement("button", "pp-rfc-reader__clear-active-tags", "Clear tags");
-    clearActiveTagsButton.type = "button";
+    searchInput.setAttribute("aria-controls", `${searchInput.getAttribute("aria-controls")} ${tagPanel.id}`);
+    tagMenuButton.setAttribute("aria-controls", tagPanel.id);
+    searchForm.append(searchLabel, searchShell, tagPanel);
 
     const resetButton = createElement("button", "pp-rfc-reader__reset", "Reset filters");
     resetButton.type = "button";
     resetButton.hidden = true;
-    facets.append(scopeFieldset, statusLabel, statusSelect);
-    if (sortedTags.length > 0) {
-      facets.append(tagFilter, activeTags);
-    } else {
-      facets.classList.add("pp-rfc-reader__facets--status-only");
-    }
+    facets.append(scopeFieldset);
     toolbar.append(searchForm, facets);
 
     const statusbar = createElement("div", "pp-rfc-reader__statusbar");
@@ -446,7 +577,60 @@
     master.setAttribute("aria-label", "RFC results");
     const listHeader = createElement("div", "pp-rfc-reader__list-header");
     listHeader.id = "pp-rfc-list-label";
-    ["RFC", "Status", "Title"].forEach((label) => listHeader.append(createElement("span", "", label)));
+    const statusSlot = createElement("span", "pp-rfc-reader__status-slot");
+    const statusFilter = createElement("details", "pp-rfc-reader__status-filter");
+    const statusSummary = createElement("summary");
+    statusSummary.setAttribute("role", "button");
+    statusSummary.setAttribute("aria-expanded", "false");
+    const statusSummaryLabel = createElement("span", "", "Status");
+    const statusSummaryState = createElement("span", "pp-rfc-reader__status-summary-state");
+    statusSummaryState.hidden = true;
+    statusSummary.append(statusSummaryLabel, statusSummaryState);
+    const statusPanel = createElement("div", "pp-rfc-reader__status-panel");
+    statusPanel.id = "pp-rfc-status-panel";
+    statusSummary.setAttribute("aria-controls", statusPanel.id);
+
+    const statusInputs = new Map();
+    const statusFieldset = createElement("fieldset");
+    statusFieldset.append(createElement("legend", "", "Filter"));
+    [["", "All statuses"], ...[...statusByKey].sort((left, right) => left[1].localeCompare(right[1]))]
+      .forEach(([value, label]) => {
+        const option = createElement("label", "pp-rfc-reader__status-option");
+        const input = createElement("input");
+        input.type = "radio";
+        input.name = "pp-rfc-status";
+        input.value = value;
+        option.append(input, createElement("span", "", label));
+        statusFieldset.append(option);
+        statusInputs.set(value, input);
+      });
+
+    const sortInputs = new Map();
+    const sortFieldset = createElement("fieldset");
+    sortFieldset.append(createElement("legend", "", "Sort"));
+    [
+      ["", "RFC number"],
+      ["status-asc", "Status A–Z"],
+      ["status-desc", "Status Z–A"],
+    ].forEach(([value, label]) => {
+      const option = createElement("label", "pp-rfc-reader__status-option");
+      const input = createElement("input");
+      input.type = "radio";
+      input.name = "pp-rfc-sort";
+      input.value = value;
+      option.append(input, createElement("span", "", label));
+      sortFieldset.append(option);
+      sortInputs.set(value, input);
+    });
+
+    statusPanel.append(statusFieldset, sortFieldset);
+    statusFilter.append(statusSummary, statusPanel);
+    statusSlot.append(statusFilter);
+    listHeader.append(
+      createElement("span", "", "RFC"),
+      statusSlot,
+      createElement("span", "", "Title"),
+    );
     const list = createElement("div", "pp-rfc-reader__records");
     list.id = "pp-rfc-records";
     list.tabIndex = 0;
@@ -477,6 +661,37 @@
     master.append(listHeader, list, emptyMessage);
     index.append(toolbar, statusbar, master);
     reader.append(index, detail);
+
+    const placeStatusFilter = () => {
+      if (compactMedia.matches) {
+        facets.append(statusFilter);
+      } else {
+        statusSlot.append(statusFilter);
+      }
+    };
+
+    let suppressTagPanelFocus = false;
+    const setTagPanelOpen = (open, { restoreFocus = false } = {}) => {
+      if (sortedTags.length === 0) {
+        return;
+      }
+      tagPanel.hidden = !open;
+      searchForm.dataset.tagsOpen = String(open);
+      searchInput.setAttribute("aria-expanded", String(open));
+      tagMenuButton.setAttribute("aria-expanded", String(open));
+      if (open) {
+        statusFilter.open = false;
+      } else if (restoreFocus) {
+        suppressTagPanelFocus = true;
+        searchInput.focus();
+        suppressTagPanelFocus = false;
+      }
+    };
+
+    if (sortedTags.length === 0) {
+      tagMenuButton.hidden = true;
+    }
+    placeStatusFilter();
 
     const appendMetadata = (listNode, label, value) => {
       if (!value) {
@@ -568,6 +783,7 @@
         record.tags.forEach((tag) => {
           const tagButton = createElement("button", "pp-rfc-reader__tag-chip", tag.label);
           tagButton.type = "button";
+          tagButton.dataset.tagKey = tag.key;
           const isActive = state.tags.includes(tag.key);
           tagButton.setAttribute("aria-pressed", String(isActive));
           tagButton.setAttribute("aria-label", `${isActive ? "Remove" : "Add"} ${tag.label} tag filter`);
@@ -577,6 +793,9 @@
             applyControls();
             applyFilters();
             writeUrl("push");
+            window.requestAnimationFrame(() => {
+              detail.querySelector(`[data-tag-key="${tag.key}"]`)?.focus({ preventScroll: true });
+            });
           }, { signal });
           tags.append(tagButton);
         });
@@ -644,12 +863,14 @@
 
     const applyFilters = ({ focusDetail = false } = {}) => {
       const previousSelectedId = state.selectedId;
-      visibleRecords = records.filter(matchesRecord);
+      const orderedRecords = rfcReaderContract.sortRecords(records, state.sort);
+      visibleRecords = orderedRecords.filter(matchesRecord);
       const visibleIds = new Set(visibleRecords.map((record) => record.id));
-      records.forEach((record) => {
+      orderedRecords.forEach((record) => {
         const row = rowById.get(record.id);
         const visible = visibleIds.has(record.id);
         row.hidden = !visible;
+        list.append(row);
       });
 
       if (!visibleIds.has(state.selectedId)) {
@@ -664,10 +885,21 @@
       list.hidden = count === 0;
       list.tabIndex = count === 0 ? -1 : 0;
       listHeader.hidden = count === 0;
-      resetButton.hidden = !state.query && state.scope === "all" && !state.status && state.tags.length === 0;
+      resetButton.hidden = !state.query
+        && state.scope === "all"
+        && !state.status
+        && !state.sort
+        && state.tags.length === 0;
       renderDetail(recordById.get(state.selectedId), {
         focusHeading: focusDetail,
         resetScroll: previousSelectedId !== state.selectedId,
+      });
+      const selectedId = state.selectedId;
+      ensureRowVisible(selectedId);
+      window.requestAnimationFrame(() => {
+        if (state.selectedId === selectedId) {
+          ensureRowVisible(selectedId);
+        }
       });
     };
 
@@ -681,14 +913,33 @@
     const applyControls = () => {
       searchInput.value = state.query;
       (scopeInputs.get(state.scope) ?? scopeInputs.get("all")).checked = true;
-      statusSelect.value = statusByKey.has(state.status) ? state.status : "";
+      (statusInputs.get(state.status) ?? statusInputs.get("")).checked = true;
+      (sortInputs.get(state.sort) ?? sortInputs.get("")).checked = true;
       tagInputs.forEach((input, key) => {
         input.checked = state.tags.includes(key);
       });
-      tagSummary.textContent = state.tags.length > 0 ? `Tags · ${state.tags.length}` : "Tags";
+      const fullStatusLabel = state.status ? statusByKey.get(state.status) : "";
+      const compactStatusLabel = state.sort
+        ? ({ Implemented: "Impl.", "In Progress": "In prog." }[fullStatusLabel] ?? fullStatusLabel)
+        : fullStatusLabel;
+      const summaryState = [
+        compactStatusLabel,
+        state.sort ? (state.sort === "status-asc" ? "A–Z" : "Z–A") : "",
+      ].filter(Boolean).join(" · ");
+      statusSummaryLabel.hidden = Boolean(summaryState);
+      statusSummaryState.textContent = summaryState;
+      statusSummaryState.hidden = !summaryState;
+      statusFilter.dataset.filtered = String(Boolean(state.status));
+      statusSummary.setAttribute("aria-label", [
+        "Status options",
+        state.status ? `filter ${statusByKey.get(state.status)}` : "all statuses",
+        state.sort === "status-asc"
+          ? "sorted A to Z"
+          : state.sort === "status-desc" ? "sorted Z to A" : "sorted by RFC number",
+      ].join(", "));
       clearTagsButton.hidden = state.tags.length === 0;
       activeTags.replaceChildren();
-      state.tags.forEach((key) => {
+      state.tags.slice(0, 1).forEach((key) => {
         const chip = createElement("button", "pp-rfc-reader__active-tag", `${tagsByKey.get(key)} ×`);
         chip.type = "button";
         chip.setAttribute("aria-label", `Remove ${tagsByKey.get(key)} tag filter`);
@@ -697,17 +948,28 @@
           applyControls();
           applyFilters();
           writeUrl("push");
+          tagMenuButton.focus({ preventScroll: true });
         }, { signal });
         activeTags.append(chip);
       });
-      if (state.tags.length > 0) {
-        activeTags.append(clearActiveTagsButton);
+      if (state.tags.length > 1) {
+        const overflow = createElement("button", "pp-rfc-reader__active-tag", `+${state.tags.length - 1}`);
+        overflow.type = "button";
+        overflow.setAttribute("aria-label", `Show all ${state.tags.length} selected tag filters`);
+        overflow.addEventListener("click", () => {
+          setTagPanelOpen(true);
+          tagMenuButton.focus({ preventScroll: true });
+        }, { signal });
+        activeTags.append(overflow);
       }
       activeTags.hidden = state.tags.length === 0;
+      tagMenuCount.textContent = String(state.tags.length);
+      tagMenuCount.hidden = state.tags.length === 0;
     };
 
     const readUrl = ({ preserveSelectedId = "" } = {}) => {
       const params = new URLSearchParams(window.location.search);
+      const hadRedundantScope = Boolean(params.get("status") && params.get("scope"));
       state = rfcReaderContract.readParams(params, defaultState(), {
         statuses: new Set(statusByKey.keys()),
         tags: new Set(tagsByKey.keys()),
@@ -722,9 +984,9 @@
       applyFilters();
       lastFocusedId = state.selectedId;
       reader.dataset.mobileView = media.matches && state.selectedExplicitly ? "detail" : "results";
-      if (requestedExplicitSelection && (
+      if (hadRedundantScope || (requestedExplicitSelection && (
         !state.selectedExplicitly || state.selectedId !== requestedSelectedId
-      )) {
+      ))) {
         writeUrl("replace");
       }
     };
@@ -735,16 +997,47 @@
           return;
         }
         state.scope = value;
+        if (value !== "all") {
+          state.status = "";
+        }
         prepareFilterChange();
+        applyControls();
         applyFilters();
         writeUrl("push");
       }, { signal });
     });
-    statusSelect.addEventListener("change", () => {
-      state.status = statusSelect.value;
-      prepareFilterChange();
-      applyFilters();
-      writeUrl("push");
+    statusInputs.forEach((input, value) => {
+      input.addEventListener("change", () => {
+        if (!input.checked) {
+          return;
+        }
+        state.status = value;
+        if (value) {
+          state.scope = "all";
+        }
+        prepareFilterChange();
+        applyControls();
+        applyFilters();
+        writeUrl("push");
+      }, { signal });
+    });
+    sortInputs.forEach((input, value) => {
+      input.addEventListener("change", () => {
+        if (!input.checked) {
+          return;
+        }
+        state.sort = value;
+        prepareFilterChange();
+        applyControls();
+        applyFilters();
+        writeUrl("push");
+      }, { signal });
+    });
+    statusFilter.addEventListener("toggle", () => {
+      statusSummary.setAttribute("aria-expanded", String(statusFilter.open));
+      if (statusFilter.open) {
+        setTagPanelOpen(false);
+      }
     }, { signal });
     tagInputs.forEach((input, key) => {
       input.addEventListener("change", () => {
@@ -761,13 +1054,7 @@
       applyControls();
       applyFilters();
       writeUrl("push");
-    }, { signal });
-    clearActiveTagsButton.addEventListener("click", () => {
-      state.tags = [];
-      prepareFilterChange();
-      applyControls();
-      applyFilters();
-      writeUrl("push");
+      searchInput.focus({ preventScroll: true });
     }, { signal });
     searchInput.addEventListener("input", () => {
       state.query = searchInput.value;
@@ -778,9 +1065,26 @@
       }
       urlTimer = window.setTimeout(() => writeUrl("replace"), 150);
     }, { signal });
+    searchInput.addEventListener("focus", () => {
+      if (!suppressTagPanelFocus) {
+        setTagPanelOpen(true);
+      }
+    }, { signal });
+    tagMenuButton.addEventListener("click", () => {
+      setTagPanelOpen(tagPanel.hidden);
+      if (!tagPanel.hidden) {
+        searchInput.focus({ preventScroll: true });
+      }
+    }, { signal });
+    searchShell.addEventListener("click", (event) => {
+      if (event.target === searchShell) {
+        searchInput.focus();
+      }
+    }, { signal });
     searchInput.addEventListener("keydown", (event) => {
       if (event.key === "ArrowDown" && visibleRecords.length > 0) {
         event.preventDefault();
+        setTagPanelOpen(false);
         focusList(state.selectedId);
       }
     }, { signal });
@@ -792,7 +1096,9 @@
       reader.dataset.mobileView = "results";
       applyFilters();
       writeUrl("push");
+      suppressTagPanelFocus = true;
       searchInput.focus();
+      suppressTagPanelFocus = false;
     }, { signal });
 
     const ensureRowVisible = (targetId) => {
@@ -804,9 +1110,9 @@
       const listRect = list.getBoundingClientRect();
       const rowRect = row.getBoundingClientRect();
       if (rowRect.top < listRect.top) {
-        list.scrollTop -= listRect.top - rowRect.top;
+        list.scrollTop -= Math.ceil(listRect.top - rowRect.top);
       } else if (rowRect.bottom > listRect.bottom) {
-        list.scrollTop += rowRect.bottom - listRect.bottom;
+        list.scrollTop += Math.ceil(rowRect.bottom - listRect.bottom);
       }
     };
 
@@ -889,14 +1195,32 @@
         event.preventDefault();
         event.stopImmediatePropagation();
         searchInput.focus();
-      } else if (event.key === "Escape" && tagFilter.open && target instanceof Node && tagFilter.contains(target)) {
+      } else if (event.key === "Escape" && !tagPanel.hidden && target instanceof Node && searchForm.contains(target)) {
         event.preventDefault();
-        tagFilter.open = false;
-        tagSummary.focus();
+        setTagPanelOpen(false, { restoreFocus: true });
+      } else if (event.key === "Escape" && statusFilter.open && target instanceof Node && statusFilter.contains(target)) {
+        event.preventDefault();
+        statusFilter.open = false;
+        statusSummary.focus();
+      }
+    };
+    const handleDocumentPointerDown = (event) => {
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
+      if (!searchForm.contains(target)) {
+        setTagPanelOpen(false);
+      }
+      if (!statusFilter.contains(target)) {
+        statusFilter.open = false;
       }
     };
     window.addEventListener("keydown", handleGlobalKeydown, { signal, capture: true });
+    document.addEventListener("pointerdown", handleDocumentPointerDown, { signal });
     window.addEventListener("popstate", () => {
+      setTagPanelOpen(false);
+      statusFilter.open = false;
       const selectedBeforeNavigation = state.selectedId;
       const wasMobileDetail = media.matches && reader.dataset.mobileView === "detail";
       readUrl({ preserveSelectedId: wasMobileDetail ? selectedBeforeNavigation : "" });
@@ -913,6 +1237,7 @@
     media.addEventListener("change", () => {
       reader.dataset.mobileView = media.matches && state.selectedExplicitly ? "detail" : "results";
     }, { signal });
+    compactMedia.addEventListener("change", placeStatusFilter, { signal });
 
     readUrl();
     host.replaceChildren(reader);
@@ -929,7 +1254,9 @@
 
   const initializePage = () => {
     initializeSurfaceTabs();
+    initializeBookParts();
     initializeArchitectureNav();
+    initializePrimaryNavCollapse();
     initializeRfcReader();
   };
 
