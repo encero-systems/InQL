@@ -108,7 +108,7 @@ lineage = inspect_lineage(plan)
     <header><span>Inspection boundary</span><strong>Plan evidence, not runtime evidence</strong></header>
     <dl>
       <div><dt>Established</dt><dd>Local structure, output schema, Prism nodes, and lineage</dd></div>
-      <div><dt>Not established</dt><dd>Physical source availability or backend binding</dd></div>
+      <div><dt>Not established</dt><dd>Backend-time source availability or physical backend binding</dd></div>
       <div><dt>Not produced</dt><dd>A DataFusion physical plan or execution telemetry</dd></div>
       <div><dt>Portable boundary</dt><dd>The inspection record is not serialized into Substrait</dd></div>
     </dl>
