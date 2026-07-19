@@ -35,6 +35,8 @@ IncQL is the library and public data-logic surface. Prism is its internal logica
 
 Inspection is read-only. It does not bind a physical backend, inspect a DataFusion physical plan, or turn local evidence into a Substrait payload.
 
+With this example, you are reading the same `ReadNamedTable → Limit` plan at two levels of detail. `inspect_plan(plan.clone())` produces the full `PlanInspection`, while `inspect_lineage(plan)` returns only its lineage graph; cloning preserves a carrier for the second call. Both functions read the Prism store and current tip locally, so their node and edge counts explain authored intent rather than backend execution.
+
 <section class="pp-book-trace" aria-labelledby="inspect-trace-title">
   <header class="pp-book-trace__header">
     <div>
@@ -51,12 +53,19 @@ Inspection is read-only. It does not bind a physical backend, inspect a DataFusi
         <span class="pp-book-trace__number">01</span>
         <div><strong>Deferred review plan</strong><small>Describe a named read followed by a limit</small></div>
       </header>
-      <div class="pp-book-trace__body" markdown="1">
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
 
 ```incan
-orders: LazyFrame[Order] = session.read_csv("tutorial_orders", "orders.csv")?
-plan = orders.limit(3)
+orders: LazyFrame[Order] = session.read_csv(
+    "tutorial_orders",
+    "orders.csv",
+)?
+plan = orders.limit(3) # (1)!
 ```
+
+<ol>
+  <li><p><strong>Inspection target.</strong> <code>limit(3)</code> returns the deferred <code>LazyFrame</code> whose current Prism tip is the new <code>Limit</code> node. Assigning it to <code>plan</code> gives both inspection functions the same <code>ReadNamedTable → Limit</code> target; no backend work occurs here.</p></li>
+</ol>
 
       </div>
       <dl class="pp-book-trace__facts">
@@ -72,12 +81,17 @@ plan = orders.limit(3)
         <span class="pp-book-trace__number">02</span>
         <div><strong>Prism inspection</strong><small>Read structure and lineage from local plan state</small></div>
       </header>
-      <div class="pp-book-trace__body" markdown="1">
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
 
 ```incan
-inspection = inspect_plan(plan.clone())
-lineage = inspect_lineage(plan)
+inspection = inspect_plan(plan.clone()) # (1)!
+lineage = inspect_lineage(plan) # (2)!
 ```
+
+<ol>
+  <li><p><strong>Full inspection.</strong> <code>inspect_plan(...)</code> consumes a <code>LazyFrame</code> value and returns the complete <code>PlanInspection</code>: plan targets, schemas, authored and rewritten nodes, lineage, requirements, artifacts, diagnostics, and unsupported-evidence markers. Passing <code>plan.clone()</code> preserves another carrier value for the next call.</p></li>
+  <li><p><strong>Lineage-only view.</strong> <code>inspect_lineage(...)</code> consumes the remaining carrier and returns its <code>LineageGraph</code> directly. Use this narrower function when callers need relationships rather than the complete inspection record. Like <code>inspect_plan(...)</code>, it reads local Prism state without executing the plan.</p></li>
+</ol>
 
       </div>
       <dl class="pp-book-trace__facts">

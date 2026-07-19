@@ -76,6 +76,8 @@ The included data is small enough to keep every later result understandable:
 
 `Session` owns source registration, backend selection, execution, materialization, and writes. `read_csv(...)` registers a logical relation name and returns deferred work; it does not hand you materialized rows.
 
+With this example, you are asking the Session to register the URI `orders.csv` under the logical name `tutorial_orders`. The assignment keeps the authored carrier contract as `LazyFrame[Order]`, while `?` propagates a registration failure instead of pretending that a carrier exists. The trace separates that Incan type, the Session registration, and the resulting named-table carrier so you can see which layer owns each fact.
+
 <section class="pp-book-trace" aria-labelledby="typed-relation-trace-title">
   <header class="pp-book-trace__header">
     <div>
@@ -116,11 +118,21 @@ pub model Order:
         <span class="pp-book-trace__number">02</span>
         <div><strong>CSV registration</strong><small>Bind a logical name and establish a planned source schema</small></div>
       </header>
-      <div class="pp-book-trace__body" markdown="1">
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
 
 ```incan
-orders: LazyFrame[Order] = session.read_csv("tutorial_orders", "orders.csv")?
+orders: LazyFrame[Order] = session.read_csv( # (1)!
+    "tutorial_orders", # (2)!
+    "orders.csv", # (3)!
+)? # (4)!
 ```
+
+<ol>
+  <li><p><strong>Carrier contract.</strong> <code>LazyFrame[Order]</code> is the declared result type: it carries the intended <code>Order</code> row shape with deferred relational work. It is not a materialized <code>DataFrame[Order]</code>.</p></li>
+  <li><p><strong>Logical name.</strong> <code>tutorial_orders</code> becomes the Session-local name used by the <code>ReadNamedTable</code> plan root. The name must be non-empty and not already registered in this Session; changing it does not rename the CSV file.</p></li>
+  <li><p><strong>Source URI.</strong> <code>orders.csv</code> identifies the physical CSV source. Here it is a non-empty path relative to the tutorial project; the current <code>read_csv(...)</code> surface takes the logical name and URI as its two positional arguments.</p></li>
+  <li><p><strong>Failure propagation.</strong> <code>read_csv(...)</code> returns a <code>Result</code>. The trailing <code>?</code> returns its <code>SessionError</code> from the caller when registration or source-schema discovery fails, instead of producing a carrier that cannot be used safely.</p></li>
+</ol>
 
       </div>
       <dl class="pp-book-trace__facts">

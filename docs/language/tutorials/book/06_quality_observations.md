@@ -30,7 +30,9 @@ Evaluate one row-count assertion that passes and another that deliberately fails
 
 ## Assertions describe; Session observes
 
-A quality assertion records the condition a caller wants evaluated. `session.observe_quality(...)` executes the work needed to evaluate it and returns a `QualityObservation` for each assertion.
+A quality assertion records the condition a caller wants evaluated. Here, `row_count(min_count=Some(1), max_count=Some(3))` describes an inclusive range that the three-row result satisfies, while `row_count(min_count=Some(4))` deliberately asks for more rows than the same plan produces. `session.observe_quality(...)` executes the work needed to evaluate each condition and returns one `QualityObservation` per assertion.
+
+With this example, you are performing three collections: the baseline `collect_observed(...)` call, one fresh collection for the passing quality check, and another for the failing check. `caller_accepts(...)` is local tutorial policy that interprets those records; it is not IncQL enforcement. The helper surface is broader than this row-count example: `null_rate(...)`, `unique(...)`, and `group_row_count(...)` use the single-relation API, while cross-relation checks use `observe_quality_pair(...)`.
 
 <section class="pp-book-trace" aria-labelledby="quality-trace-title">
   <header class="pp-book-trace__header">
@@ -48,11 +50,19 @@ A quality assertion records the condition a caller wants evaluated. `session.obs
         <span class="pp-book-trace__number">01</span>
         <div><strong>Passing observation</strong><small>Evaluate the accepted range in a fresh collection</small></div>
       </header>
-      <div class="pp-book-trace__body" markdown="1">
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
 
 ```incan
-passing = session.observe_quality(plan.clone(), [row_count(min_count=Some(1), max_count=Some(3))])
+passing = session.observe_quality(
+    plan.clone(), # (1)!
+    [row_count(min_count=Some(1), max_count=Some(3))], # (2)!
+)
 ```
+
+<ol>
+  <li><p><strong>Evaluate this deferred carrier.</strong> The first argument is the <code>LazyFrame[Order]</code> whose rows the assertion observes. The clone leaves the original plan available for the deliberately failing check below; it does not reuse previously materialized rows.</p></li>
+  <li><p><strong>Supply an assertion list with explicit optional bounds.</strong> <code>observe_quality(...)</code> returns one <code>QualityObservation</code> for each item in this list. <code>Some(1)</code> and <code>Some(3)</code> set inclusive minimum and maximum row counts; use <code>None</code> for a bound you do not want to constrain.</p></li>
+</ol>
 
       </div>
       <dl class="pp-book-trace__facts">
@@ -68,11 +78,18 @@ passing = session.observe_quality(plan.clone(), [row_count(min_count=Some(1), ma
         <span class="pp-book-trace__number">02</span>
         <div><strong>Deliberate failing observation</strong><small>Evaluate a stricter assertion in another collection</small></div>
       </header>
-      <div class="pp-book-trace__body" markdown="1">
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
 
 ```incan
-failing = session.observe_quality(plan, [row_count(min_count=Some(4))])
+failing = session.observe_quality( # (1)!
+    plan,
+    [row_count(min_count=Some(4))],
+)
 ```
+
+<ol>
+  <li><p><strong>Start another collection.</strong> This call does not inspect the baseline result or the earlier passing observation. <code>Session</code> collects the plan again, evaluates a minimum of four with no maximum bound, and records <code>Failed</code> because the fresh result has three rows.</p></li>
+</ol>
 
       </div>
       <dl class="pp-book-trace__facts">

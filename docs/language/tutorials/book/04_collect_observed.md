@@ -29,6 +29,10 @@ Materialize the review as a `DataFrame[Order]` and inspect the accompanying `Exe
 
 </section>
 
+This chapter keeps inspection and execution visibly separate. `inspect_plan(plan.clone())` and `inspect_lineage(plan.clone())` receive clones so the original deferred `plan` remains available; neither call materializes its rows. Passing that plan to `collect_observed(...)` crosses the execution boundary: the `Session` validates and runs the plan through the selected backend, then materializes the result locally.
+
+With this example, you are collecting at most three orders through DataFusion while retaining evidence about that specific attempt. The returned `ObservedDataFrame[Order]` always carries an `observation`; its `data` is `Some(DataFrame[Order])` only when materialization succeeds, and its optional `error` carries the typed failure otherwise. The trace keeps those artifacts separate so a runtime record never has to pretend that row data exists.
+
 <section class="pp-book-trace" aria-labelledby="collect-trace-title">
   <header class="pp-book-trace__header">
     <div>
@@ -45,13 +49,17 @@ Materialize the review as a `DataFrame[Order]` and inspect the accompanying `Exe
         <span class="pp-book-trace__number">01</span>
         <div><strong>Chapter change</strong><small>Describe and inspect the deferred work</small></div>
       </header>
-      <div class="pp-book-trace__body" markdown="1">
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
 
 ```incan
 plan = orders.limit(3)
-inspection = inspect_plan(plan.clone())
+inspection = inspect_plan(plan.clone()) # (1)!
 lineage = inspect_lineage(plan.clone())
 ```
+
+<ol>
+  <li><p><strong>Inspect without consuming the plan.</strong> <code>clone()</code> gives the local inspection functions the same deferred work while leaving <code>plan</code> available for the later execution call. Both <code>inspect_plan(...)</code> and <code>inspect_lineage(...)</code> describe local plan evidence; neither materializes rows.</p></li>
+</ol>
 
       </div>
       <dl class="pp-book-trace__facts">
@@ -67,11 +75,15 @@ lineage = inspect_lineage(plan.clone())
         <span class="pp-book-trace__number">02</span>
         <div><strong>Session dispatch</strong><small>Lower, bind, and submit one attempt</small></div>
       </header>
-      <div class="pp-book-trace__body" markdown="1">
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
 
 ```incan
-observed = session.collect_observed(plan)
+observed = session.collect_observed(plan) # (1)!
 ```
+
+<ol>
+  <li><p><strong>Cross the execution boundary and keep its receipt.</strong> <code>Session</code> validates, lowers, binds, and submits this plan as a concrete collection attempt. The return value is an <code>ObservedDataFrame[Order]</code>: it always carries the attempt's <code>observation</code>, while <code>data</code> and <code>error</code> distinguish successful materialization from a typed failure.</p></li>
+</ol>
 
       </div>
       <dl class="pp-book-trace__facts">

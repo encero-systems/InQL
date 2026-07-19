@@ -34,6 +34,8 @@ IncQL method calls append relational intent to the lazy carrier. This tutorial d
 
 IncQL also has filter, ordering, projection, aggregation, and query-block surfaces. They remain available in [Guides](../../how-to/README.md) and [Reference](../../reference/README.md). The book keeps this first plan deliberately small so the relationship between one authored operation, its Prism representation, and the later execution evidence stays easy to inspect.
 
+With this example, you are turning the source-rooted carrier into a new `LazyFrame[Order]` whose Prism tip is a `Limit` node with a count of three. The function returns that carrier directly and never calls `collect(...)` or a Session execution method, so the runnable checkpoint demonstrates that the plan changed while the data remained unmaterialized. The trace below follows that boundary from named source, through the appended node, to the still-deferred result.
+
 <section class="pp-book-trace" aria-labelledby="deferred-plan-trace-title">
   <header class="pp-book-trace__header">
     <div>
@@ -50,11 +52,19 @@ IncQL also has filter, ordering, projection, aggregation, and query-block surfac
         <span class="pp-book-trace__number">01</span>
         <div><strong>Registered source</strong><small>Start from the named-table carrier</small></div>
       </header>
-      <div class="pp-book-trace__body" markdown="1">
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
 
 ```incan
-orders: LazyFrame[Order] = session.read_csv("tutorial_orders", "orders.csv")?
+orders: LazyFrame[Order] = session.read_csv(
+    "tutorial_orders", # (1)!
+    "orders.csv", # (2)!
+)?
 ```
+
+<ol>
+  <li><p><strong>Logical plan name.</strong> <code>tutorial_orders</code> is the non-empty, Session-local identity that the Prism plan records in its <code>ReadNamedTable</code> root. It must be unique among this Session's registrations.</p></li>
+  <li><p><strong>CSV location.</strong> <code>orders.csv</code> is the non-empty source URI registered under that logical name. In the tutorial it resolves relative to the project directory; changing this argument changes the physical source, not the plan's logical identity.</p></li>
+</ol>
 
       </div>
       <dl class="pp-book-trace__facts">
@@ -70,11 +80,15 @@ orders: LazyFrame[Order] = session.read_csv("tutorial_orders", "orders.csv")?
         <span class="pp-book-trace__number">02</span>
         <div><strong>Append bounded intent</strong><small>Add one Prism plan node without collecting</small></div>
       </header>
-      <div class="pp-book-trace__body" markdown="1">
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
 
 ```incan
-return Ok(orders.limit(3))
+return Ok(orders.limit(3)) # (1)!
 ```
+
+<ol>
+  <li><p><strong>Receiver and row cap.</strong> <code>orders</code> is the deferred carrier, and <code>limit(3)</code> returns a new carrier with a <code>Limit</code> node whose count must be non-negative. It caps the eventual result at three rows; it neither defines which three rows come first nor executes or materializes them. Use <code>order_by(...)</code> before <code>limit(...)</code> when row order matters.</p></li>
+</ol>
 
       </div>
       <dl class="pp-book-trace__facts">

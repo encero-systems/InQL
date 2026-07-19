@@ -37,7 +37,9 @@ IncQL exposes distinct facts:
 - Quality observations report whether explicit data checks passed.
 - Execution observations report what happened during a concrete attempt.
 
-None of those records silently defines your organization's acceptance rule. This checkpoint makes the rule visible in a normal function, so readers can see exactly which evidence permits or prevents the write.
+None of those records silently defines your organization's acceptance rule. This checkpoint makes the rule visible in a normal function, so readers can see exactly which evidence permits or prevents the write. Its `required_quality` list contains the inclusive one-to-three-row check; the deliberately failing `deliberate_probe` is printed for comparison but is not passed into the gate.
+
+With this example, a rejected `required_quality` list returns `Ok(None)` deliberately: the application completed without asking for a write, rather than suffering an execution failure. On the accepted path, `csv_sink(output_uri)` constructs the typed sink descriptor and `write_observed(...)` starts a new execution of the plan for that sink attempt. The returned `ObservedWrite` retains an execution observation and an optional error, but it does not currently bundle the sink URI, row count, quality observations, or coverage records.
 
 <section class="pp-book-trace" aria-labelledby="write-trace-title">
   <header class="pp-book-trace__header">
@@ -55,15 +57,22 @@ None of those records silently defines your organization's acceptance rule. This
         <span class="pp-book-trace__number">01</span>
         <div><strong>Quality inputs</strong><small>Produce the required check and an explanatory strict probe</small></div>
       </header>
-      <div class="pp-book-trace__body" markdown="1">
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
 
 ```incan
-required_quality = session.observe_quality(
+required_quality = session.observe_quality( # (1)!
     plan.clone(),
     [row_count(min_count=Some(1), max_count=Some(3))],
 )
-deliberate_probe = session.observe_quality(plan.clone(), [row_count(min_count=Some(4))])
+deliberate_probe = session.observe_quality(
+    plan.clone(),
+    [row_count(min_count=Some(4))],
+)
 ```
+
+<ol>
+  <li><p><strong>Separate required evidence from an explanatory probe.</strong> <code>required_quality</code> contains the check this tutorial will pass to its gate. <code>deliberate_probe</code> performs another observation with a stricter minimum so you can compare a failed record, but the checkpoint only prints it; that list does not decide whether writing is allowed.</p></li>
+</ol>
 
       </div>
       <dl class="pp-book-trace__facts">
@@ -79,13 +88,17 @@ deliberate_probe = session.observe_quality(plan.clone(), [row_count(min_count=So
         <span class="pp-book-trace__number">02</span>
         <div><strong>Caller gate</strong><small>Use only the required quality list</small></div>
       </header>
-      <div class="pp-book-trace__body" markdown="1">
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
 
 ```incan
-if not caller_accepts(required_quality):
+if not caller_accepts(required_quality): # (1)!
     println("Caller decision: do not write")
     return Ok(None)
 ```
+
+<ol>
+  <li><p><strong>Make policy ordinary and explicit.</strong> <code>caller_accepts(...)</code> is tutorial application code, not an IncQL enforcement hook. A rejected list returns <code>Ok(None)</code> because the application deliberately chose not to request a write; that outcome is distinct from an execution error.</p></li>
+</ol>
 
       </div>
       <dl class="pp-book-trace__facts">
@@ -101,17 +114,25 @@ if not caller_accepts(required_quality):
         <span class="pp-book-trace__number">03</span>
         <div><strong>Observed write</strong><small>Execute the accepted plan again and attempt the sink side effect</small></div>
       </header>
-      <div class="pp-book-trace__body" markdown="1">
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
 
 ```incan
 output_uri = "target/tutorial-orders.csv"
-written = session.write_observed(plan, csv_sink(output_uri))
-match written.error:
+written = session.write_observed(
+    plan,
+    csv_sink(output_uri),
+) # (1)!
+match written.error: # (2)!
     Some(error) => return Err(error)
     None =>
         println("Caller decision: write the plan accepted by the required policy")
         println(f"wrote: {output_uri}")
 ```
+
+<ol>
+  <li><p><strong>Describe the sink, then start a new attempt.</strong> <code>csv_sink(output_uri)</code> builds a typed CSV <code>SinkTarget</code>; <code>parquet_sink(uri)</code> is the corresponding Parquet alternative. <code>write_observed(...)</code> executes the deferred plan again for this sink attempt and returns an <code>ObservedWrite</code> alongside the file side effect.</p></li>
+  <li><p><strong>Handle the optional typed failure.</strong> <code>written.error</code> is <code>Some(SessionError)</code> when the write attempt fails and <code>None</code> when it succeeds. The receipt also retains an execution observation, but it does not currently bundle the URI, row count, quality records, or coverage records.</p></li>
+</ol>
 
       </div>
       <div class="pp-book-trace__result">

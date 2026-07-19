@@ -31,7 +31,9 @@ Evaluate the adapter requirements inferred from the review plan and interpret ev
 
 ## Execution success is not capability evidence
 
-Chapter 4 showed that one plan attempt ran. `check_plan_coverage(...)` answers a different question: for requirements visible in the inspected plan, what does IncQL know about the selected adapter's capability or guarantee?
+Chapter 4 showed that one concrete plan attempt ran. `check_plan_coverage(...)` answers an independent question: for requirements visible in the inspected plan, what does IncQL know about the selected adapter's capability or guarantee? In this checkpoint, DataFusion reports `null_semantics` as `covered` and `lineage_preservation` as `uncovered` even though the three-row collection succeeded.
+
+With this example, you are reading `record.requirement.capability.value()` and `record.state.value()` only to display the two enum values; calling `.value()` does not change or enforce either classification. `check_plan_coverage(plan)` is the convenient inspect-and-check form. Use `check_inspection_coverage(inspection)` when you already retain a `PlanInspection`, or `check_coverage(requirements)` when the caller supplies explicit requirements that plan inspection cannot infer.
 
 <section class="pp-book-trace" aria-labelledby="coverage-trace-title">
   <header class="pp-book-trace__header">
@@ -49,11 +51,15 @@ Chapter 4 showed that one plan attempt ran. `check_plan_coverage(...)` answers a
         <span class="pp-book-trace__number">01</span>
         <div><strong>Concrete attempt</strong><small>Execute the review plan once</small></div>
       </header>
-      <div class="pp-book-trace__body" markdown="1">
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
 
 ```incan
-observed = session.collect_observed(plan.clone())
+observed = session.collect_observed(plan.clone()) # (1)!
 ```
+
+<ol>
+  <li><p><strong>Preserve the plan for a second question.</strong> This clone is the input to one concrete collection attempt. The original <code>plan</code> remains available because the next stage asks about adapter coverage, which is evidence about known capability rather than proof inferred from execution success.</p></li>
+</ol>
 
       </div>
       <dl class="pp-book-trace__facts">
@@ -69,13 +75,20 @@ observed = session.collect_observed(plan.clone())
         <span class="pp-book-trace__number">02</span>
         <div><strong>Explicit coverage check</strong><small>Classify requirements inferred from the plan</small></div>
       </header>
-      <div class="pp-book-trace__body" markdown="1">
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
 
 ```incan
-coverage = session.check_plan_coverage(plan)
+coverage = session.check_plan_coverage(plan) # (1)!
 for record in coverage:
-    println(f"- {record.requirement.capability.value()}: {record.state.value()}")
+    capability = record.requirement.capability.value()
+    state = record.state.value()
+    println(f"- {capability}: {state}") # (2)!
 ```
+
+<ol>
+  <li><p><strong>Inspect, then classify the inferred requirements.</strong> <code>check_plan_coverage(plan)</code> is the convenient form when you still have the <code>LazyFrame</code>. If you already retain a <code>PlanInspection</code>, use <code>check_inspection_coverage(inspection)</code>; use <code>check_coverage(requirements)</code> when the caller supplies explicit requirements.</p></li>
+  <li><p><strong>Read names, not an enforcement result.</strong> <code>capability.value()</code> names the requirement family and <code>state.value()</code> names the adapter's conservative classification. These accessors only render enum values; <code>uncovered</code> and <code>unknown</code> do not become acceptable merely because this example's collection succeeded.</p></li>
+</ol>
 
       </div>
       <dl class="pp-book-trace__facts">
