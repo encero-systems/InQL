@@ -171,6 +171,47 @@
     });
   };
 
+  let disposeBookParts = () => {};
+
+  const initializeBookParts = (root = document) => {
+    disposeBookParts();
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    root.querySelectorAll("[data-book-parts]").forEach((book) => {
+      const parts = [...book.querySelectorAll(".pp-book-part")];
+      if (parts.length === 0) {
+        return;
+      }
+
+      const openPart = (target) => {
+        parts.forEach((part) => {
+          if (part !== target && part.open) {
+            part.open = false;
+          }
+        });
+      };
+
+      parts.forEach((part) => {
+        part.addEventListener("toggle", () => {
+          if (part.open) {
+            openPart(part);
+          }
+        }, { signal });
+      });
+
+      const requestedPart = parts.find((part) => `#${part.id}` === window.location.hash);
+      if (requestedPart) {
+        requestedPart.open = true;
+        openPart(requestedPart);
+      } else if (!parts.some((part) => part.open)) {
+        parts[0].open = true;
+      }
+    });
+
+    disposeBookParts = () => controller.abort();
+  };
+
   let disposeArchitectureNav = () => {};
 
   const initializeArchitectureNav = (root = document) => {
@@ -1213,6 +1254,7 @@
 
   const initializePage = () => {
     initializeSurfaceTabs();
+    initializeBookParts();
     initializeArchitectureNav();
     initializePrimaryNavCollapse();
     initializeRfcReader();

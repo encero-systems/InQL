@@ -6,10 +6,19 @@
 Evaluate explicit assertions and keep a failed observation separate from execution errors and policy enforcement.
 </header>
 
-<div class="pp-book-progress" aria-label="Chapter 6 of 7">
-  <div><strong>Chapter 6 of 7</strong><span>Quality evidence</span></div>
-  <div class="pp-book-progress__meter" role="progressbar" aria-label="Book progress" aria-valuemin="0" aria-valuemax="7" aria-valuenow="6"><span style="--pp-book-progress: 85.7%"></span></div>
-</div>
+<section class="pp-book-part-context" aria-label="Part III: Decide what happens next">
+  <header class="pp-book-part-context__summary">
+    <p class="pp-book-part-context__label">Part III</p>
+    <p class="pp-book-part-context__title"><strong>Decide what happens next</strong></p>
+    <p class="pp-book-part-context__position">Chapter 1 of 2</p>
+  </header>
+  <nav class="pp-book-part-journey" aria-label="Part III chapter journey">
+    <ol class="pp-book-part-journey__list">
+      <li class="pp-book-part-journey__item"><a class="pp-book-part-journey__link" href="../06_quality_observations/" aria-current="page"><span class="pp-book-part-journey__number">1</span><span class="pp-book-part-journey__title">Observe data quality</span></a></li>
+      <li class="pp-book-part-journey__item"><a class="pp-book-part-journey__link" href="../07_governed_write/"><span class="pp-book-part-journey__number">2</span><span class="pp-book-part-journey__title">Make the write decision</span></a></li>
+    </ol>
+  </nav>
+</section>
 
 <section class="pp-book-step" markdown="1">
 
@@ -23,17 +32,98 @@ Evaluate one row-count assertion that passes and another that deliberately fails
 
 A quality assertion records the condition a caller wants evaluated. `session.observe_quality(...)` executes the work needed to evaluate it and returns a `QualityObservation` for each assertion.
 
-The assertion mode can express intended handling, but IncQL does not silently quarantine rows, stop a pipeline, or approve an output. A `Failed` observation means the predicate was evaluated and returned false. `Errored` means the relational work needed by the check could not be executed.
+<section class="pp-book-trace" aria-labelledby="quality-trace-title">
+  <header class="pp-book-trace__header">
+    <div>
+      <p class="pp-book-eyebrow">Three collections · two quality answers</p>
+      <h2 id="quality-trace-title">Make every observation attempt visible</h2>
+    </div>
+    <p>The checkpoint has already called <code>collect_observed(...)</code> once. Each <code>observe_quality(...)</code> call executes and collects the plan again to evaluate its own assertion.</p>
+  </header>
 
-<div class="pp-book-workbench" markdown="1">
+  <ol class="pp-book-trace__stages">
+    <li class="pp-book-trace__stage pp-book-trace__stage--source">
+      <header>
+        <span class="pp-book-trace__number">01</span>
+        <div><strong>Passing observation</strong><small>Evaluate the accepted range in a fresh collection</small></div>
+      </header>
+      <div class="pp-book-trace__body" markdown="1">
 
-**Chapter checkpoint**
+```incan
+passing = session.observe_quality(plan.clone(), [row_count(min_count=Some(1), max_count=Some(3))])
+```
+
+      </div>
+      <dl class="pp-book-trace__facts">
+        <div><dt>Owner</dt><dd><code>Session</code> quality evaluation</dd></div>
+        <div><dt>Artifact</dt><dd>One <code>QualityObservation</code> and its execution references</dd></div>
+        <div><dt>Knowable now</dt><dd>The freshly collected row count satisfies the inclusive range</dd></div>
+      </dl>
+    </li>
+
+    <li class="pp-book-trace__stage pp-book-trace__stage--session">
+      <header>
+        <span class="pp-book-trace__number">02</span>
+        <div><strong>Deliberate failing observation</strong><small>Evaluate a stricter assertion in another collection</small></div>
+      </header>
+      <div class="pp-book-trace__body" markdown="1">
+
+```incan
+failing = session.observe_quality(plan, [row_count(min_count=Some(4))])
+```
+
+      </div>
+      <dl class="pp-book-trace__facts">
+        <div><dt>Owner</dt><dd><code>Session</code> quality evaluation</dd></div>
+        <div><dt>Artifact</dt><dd>A separate <code>QualityObservation</code> and execution attempt</dd></div>
+        <div><dt>Knowable now</dt><dd>Three rows do not satisfy a minimum of four, so the status is <code>Failed</code></dd></div>
+      </dl>
+    </li>
+
+    <li class="pp-book-trace__stage pp-book-trace__stage--runtime">
+      <header>
+        <span class="pp-book-trace__number">03</span>
+        <div><strong>Tutorial policy</strong><small>Interpret the evidence in caller-owned code</small></div>
+      </header>
+      <div class="pp-book-trace__result">
+        <dl>
+          <div><dt>Owner</dt><dd><code>caller_accepts(...)</code></dd></div>
+          <div><dt>Passing list</dt><dd><code>true</code></dd></div>
+          <div><dt>Failing list</dt><dd><code>false</code></dd></div>
+        </dl>
+        <div class="pp-book-trace__artifacts">
+          <span><img src="../../../../shared/icons/table-check.svg" alt="">QualityObservation × 2</span>
+          <span><img src="../../../../shared/icons/shield-check-outline.svg" alt="">Tutorial policy result</span>
+        </div>
+      </div>
+    </li>
+  </ol>
+
+  <aside class="pp-book-receipt" aria-label="Quality observation receipt">
+    <header><span>Quality receipt</span><strong>Evidence is produced; enforcement is not</strong></header>
+    <dl>
+      <div><dt>Baseline attempt</dt><dd>The earlier <code>collect_observed(...)</code> collected once</dd></div>
+      <div><dt>Passing check</dt><dd><code>observe_quality(...)</code> collected the plan again</dd></div>
+      <div><dt>Failing check</dt><dd>The second quality call performed another collection</dd></div>
+      <div><dt>Decision owner</dt><dd><code>caller_accepts(...)</code> is tutorial policy, not IncQL enforcement</dd></div>
+    </dl>
+  </aside>
+</section>
+
+<div class="pp-book-chapter-clear" aria-hidden="true"></div>
+
+The assertion mode can express intended handling, but IncQL does not silently quarantine rows, stop a pipeline, or approve an output. A `Failed` observation means the predicate was evaluated and returned false; it is evidence, not an exception or automatic gate. `Errored` means the relational work needed by the check could not be executed.
+
+<details class="pp-book-source">
+  <summary>Open the complete Chapter 6 checkpoint</summary>
+  <div markdown="1">
 
 ```incan
 --8<-- "examples/tutorial_book/src/chapter_06.incn"
 ```
 
-</div>
+  </div>
+</details>
 
 Run it:
 
@@ -41,15 +131,7 @@ Run it:
 incan run src/chapter_06.incn
 ```
 
-Using a deliberate failure makes the boundary visible: the observation records the failed expectation, while the checkpoint continues far enough to print and inspect that evidence.
-
-<div class="pp-book-output" markdown="1">
-
-**Expected evidence**
-
-The same three-row review produces two row-count observations. The inclusive range from one through three reports `passed`; the deliberately impossible minimum of four reports `failed`. The checkpoint then shows that `caller_accepts(...)` returns `true` for the passing observation list and `false` for the failing one.
-
-</div>
+The run reports `passed` for the inclusive range, `failed` for the deliberate minimum of four, and the corresponding `true` and `false` results from the tutorial's `caller_accepts(...)` function.
 
 For the assertion helpers, status vocabulary, and cross-relation path, see [Quality](../../reference/quality.md).
 
