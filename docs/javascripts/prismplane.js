@@ -752,6 +752,14 @@
         return;
       }
 
+      if (media.matches) {
+        target.focus();
+        if (!target.checked) {
+          target.click();
+        }
+        return;
+      }
+
       const pageX = window.scrollX;
       const pageY = window.scrollY;
       target.focus({ preventScroll: true });
