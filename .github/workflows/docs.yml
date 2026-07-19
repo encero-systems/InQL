@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "docs/**"
+      - "examples/tutorial_book/**"
       - "tests/docs/**"
       - "utils/**"
       - "Makefile"
@@ -16,6 +17,7 @@ on:
     branches: [main]
     paths:
       - "docs/**"
+      - "examples/tutorial_book/**"
       - "tests/docs/**"
       - "utils/**"
       - "Makefile"

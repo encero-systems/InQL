@@ -17,7 +17,14 @@ TUTORIAL_BOOK_CHAPTERS := \
 	src/chapter_04.incn \
 	src/chapter_05.incn \
 	src/chapter_06.incn \
-	src/chapter_07.incn
+	src/chapter_07.incn \
+	src/chapter_08.incn \
+	src/chapter_09.incn
+
+TUTORIAL_BOOK_RUNNABLES := \
+	src/main.incn \
+	src/chapter_08.incn \
+	src/chapter_09.incn
 
 .DEFAULT_GOAL := help
 
@@ -98,7 +105,7 @@ docs-build: rfc-index-check docs-test ## Validate and build the documentation si
 	@mkdocs build --strict
 
 .PHONY: tutorial-book
-tutorial-book: ## Type-check every tutorial chapter and run the completed book example
+tutorial-book: ## Type-check every tutorial chapter and run each complete learning path
 	@echo "\033[1mChecking IncQL tutorial-book chapters...\033[0m"
 	@cd $(TUTORIAL_BOOK_DIR) && $(INCAN) lock >/dev/null
 	@for script in $(TUTORIAL_BOOK_CHAPTERS); do \
@@ -106,7 +113,11 @@ tutorial-book: ## Type-check every tutorial chapter and run the completed book e
 		cd $(TUTORIAL_BOOK_DIR) && $(INCAN) --check "$$script" || exit $$?; \
 		cd ../..; \
 	done
-	@cd $(TUTORIAL_BOOK_DIR) && $(INCAN) run src/main.incn --locked
+	@for script in $(TUTORIAL_BOOK_RUNNABLES); do \
+		echo "\033[1m  -> run $$script\033[0m"; \
+		cd $(TUTORIAL_BOOK_DIR) && $(INCAN) run "$$script" --locked || exit $$?; \
+		cd ../..; \
+	done
 
 # =============================================================================
 # Formatting (Incan source)

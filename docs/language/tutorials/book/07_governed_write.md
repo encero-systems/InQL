@@ -208,9 +208,9 @@ Pass the coverage records into a new caller-owned gate so an `Unknown` state als
 
 <section class="pp-book-complete" markdown="1">
 
-## Book complete
+## Core path complete
 
-You can build, inspect, execute, evaluate, and write one IncQL plan while explaining which layer owns each decision. Continue with [Guides](../../how-to/README.md) for task-specific transformations, [Reference](../../reference/README.md) for exact contracts, or [Architecture](../../../architecture.md) for the full system story.
+You can build, inspect, execute, evaluate, and write one IncQL plan while explaining which layer owns each decision. Continue with [Part IV](index.md#part-query-blocks) to author checked SQL-familiar query blocks without method chains, [Guides](../../how-to/README.md) for task-specific transformations, [Reference](../../reference/README.md) for exact contracts, or [Architecture](../../../architecture.md) for the full system story.
 
 </section>
 

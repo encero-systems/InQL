@@ -1,8 +1,12 @@
 # Query blocks (Reference)
 
-Query blocks are dependency-activated IncQL expressions. Import `pub::incql` to make the vocabulary and helper surface available in a downstream Incan package.
+Query blocks are dependency-activated IncQL expressions. Use `import pub::incql` to activate the `query` vocabulary in a downstream Incan package, then import the carrier and helper names used by the block.
+
+If you are learning the surface rather than looking up its exact contract, start with [Part IV of the IncQL Book](../tutorials/book/08_first_query_block.md).
 
 ```incan
+import pub::incql
+
 from pub::incql import DataFrame, count, desc, sum
 from models import Order, OrderSummary
 

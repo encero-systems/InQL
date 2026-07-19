@@ -9,7 +9,7 @@ Follow one small order dataset from typed intent to an observed, deliberately go
 <section class="pp-book-map pp-book-overview" data-book-parts aria-labelledby="book-map-title">
   <header class="pp-book-map__header">
     <div>
-      <p class="pp-book-eyebrow">One project · three engineering outcomes</p>
+      <p class="pp-book-eyebrow">One project · expandable learning paths</p>
       <h2 id="book-map-title">Choose the part of the system you want to understand</h2>
     </div>
     <p>Open one Part at a time. Every chapter names its owner, outcome, and primary artifact.</p>
@@ -120,6 +120,38 @@ Follow one small order dataset from typed intent to an observed, deliberately go
         </ol>
       </div>
     </details>
+
+    <details class="pp-book-part pp-book-part--query" id="part-query-blocks" name="incql-book-parts" data-book-part="query-blocks">
+      <summary class="pp-book-part__summary">
+        <span class="pp-book-part__marker">Part IV</span>
+        <span class="pp-book-part__name">Query blocks</span>
+        <span class="pp-book-part__outcome">SQL-familiar clauses → typed results</span>
+        <span class="pp-book-part__count">2 chapters</span>
+      </summary>
+      <div class="pp-book-part__body">
+        <div class="pp-book-part__columns" aria-hidden="true">
+          <span>Chapter</span><span>Outcome</span><span>Owner</span><span>Primary artifact</span>
+        </div>
+        <ol class="pp-book-part__chapters">
+          <li>
+            <a href="08_first_query_block/">
+              <span class="pp-book-part__chapter"><b>08</b><strong>Write your first query</strong></span>
+              <span>Filter, project, order, and collect without relational method chains.</span>
+              <span>Author → IncQL</span>
+              <span class="pp-book-part__artifact"><img src="../../../shared/icons/code-braces-box.svg" alt="">Checked query</span>
+            </a>
+          </li>
+          <li>
+            <a href="09_summarize_query/">
+              <span class="pp-book-part__chapter"><b>09</b><strong>Summarize and order results</strong></span>
+              <span>Group rows, calculate measures, and reuse projected aliases.</span>
+              <span>IncQL → Session</span>
+              <span class="pp-book-part__artifact"><img src="../../../shared/icons/chart-timeline-variant.svg" alt="">Typed summary</span>
+            </a>
+          </li>
+        </ol>
+      </div>
+    </details>
   </div>
 
   <aside class="pp-book-dossier" aria-label="Tutorial project dossier">
@@ -143,9 +175,11 @@ Follow one small order dataset from typed intent to an observed, deliberately go
 
 ## What you will build
 
-The project reads an included CSV through a `Session`, carries an intended `Order` row model, and builds a deferred `LazyFrame`. You will inspect that plan through Prism before asking the current DataFusion adapter to execute it. The later chapters separate adapter coverage from data-quality observations, then make the write decision explicitly in application code.
+The project reads an included CSV through a `Session`, carries an intended `Order` row model, and builds a deferred `LazyFrame`. You will inspect that plan through Prism before asking the current DataFusion adapter to execute it. The later core chapters separate adapter coverage from data-quality observations, then make the write decision explicitly in application code.
 
-The result is deliberately modest: a bounded three-row order review written to CSV. The important part is that you can explain what IncQL knew before execution, what the backend reported afterwards, and which decision still belonged to your code.
+Part IV is a direct-entry route for readers who prefer SQL-familiar clauses. It reuses the same project and typed source, but authors relational work with checked `query { ... }` blocks instead of method chains. You can begin there without completing Parts I–III first.
+
+The core path ends with a deliberately modest result: a bounded three-row order review written to CSV. The query path collects a filtered row set and a grouped summary instead. Across both routes, the important part is that you can explain what IncQL knew before execution, what the backend reported afterwards, and which decisions still belonged to your code.
 
 ## Before you begin
 
@@ -162,11 +196,11 @@ cd examples/tutorial_book
 incan lock
 ```
 
-Each chapter gives one `incan run` command from that directory. The source files are cumulative checkpoints: you can run a chapter directly without reconstructing all earlier edits.
+Each chapter gives one `incan run` command from that directory. Chapters 1–7 are cumulative checkpoints for the core system path. Chapters 8–9 are independent query-block checkpoints that share the same fixture, so you can enter Part IV directly.
 
 ## How this book fits the site
 
-This edition follows one bounded CSV-to-write path. Later Parts can deepen the core language or introduce a separate execution path with its own prerequisites. Use [Guides](../../how-to/README.md) for independent tasks, [Reference](../../reference/README.md) for exact signatures and record fields, and [Architecture](../../../architecture.md) for the complete boundary and ownership story.
+This edition follows one bounded CSV-to-write path and one direct-entry query-language path. Later Parts can deepen the core language or introduce a separate execution path with its own prerequisites. Use [Guides](../../how-to/README.md) for independent tasks, [Reference](../../reference/README.md) for exact signatures and record fields, and [Architecture](../../../architecture.md) for the complete boundary and ownership story.
 
 <nav class="pp-book-pagination" aria-label="Book navigation">
   <span><small>You are here</small><strong>Book overview</strong></span>

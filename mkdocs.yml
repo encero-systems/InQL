@@ -53,7 +53,7 @@ markdown_extensions:
       custom_checkbox: true
 
 extra_css:
-  - stylesheets/prismplane.css?v=20260719-book-annotated-rail-33
+  - stylesheets/prismplane.css?v=20260719-query-block-part-34
 
 extra_javascript:
   - javascripts/prismplane.js?v=20260719-book-parts-24
@@ -74,6 +74,9 @@ nav:
           - Part III · Decide what happens next:
               - 6. Observe data quality: language/tutorials/book/06_quality_observations.md
               - 7. Make the write decision: language/tutorials/book/07_governed_write.md
+          - Part IV · Query blocks:
+              - 8. Write your first query: language/tutorials/book/08_first_query_block.md
+              - 9. Summarize and order results: language/tutorials/book/09_summarize_query.md
       - Concepts:
           - Dataset carriers: language/explanation/dataset_carriers.md
           - Execution context: language/explanation/execution_context.md

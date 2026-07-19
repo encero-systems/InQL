@@ -11,9 +11,11 @@ IncQL makes more sense when you follow one piece of data logic all the way throu
 
 Build a small order-analysis project, keep its plan deferred, inspect what Prism understands, run it through DataFusion, and retain structured evidence about the attempt.
 
-The chapters accumulate into one runnable example. Each ends with a result you can verify before moving on.
+The core chapters accumulate into one runnable example; the query-block Part is an independent direct-entry path. Every chapter ends with a result you can verify before moving on.
 
 <a class="incql-button incql-button--primary" href="tutorials/book/">Start the IncQL Book</a>
+
+<p class="pp-learn-query-entry"><span>Prefer SQL-familiar clauses?</span> <a href="tutorials/book/#part-query-blocks">Start directly with query blocks →</a></p>
 
 </div>
 

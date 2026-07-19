@@ -1,0 +1,33 @@
+"""Chapter 9: group and summarize typed data with IncQL query clauses."""
+
+import pub::incql
+
+from domain import Order, StatusSummary
+from pub::incql import LazyFrame, Session, SessionError, count, desc, report_session_error, sum
+
+
+def summarize_statuses(mut session: Session) -> Result[None, SessionError]:
+    """Group order rows and collect a typed summary without method chains."""
+    orders: LazyFrame[Order] = session.read_csv("tutorial_orders_summary", "orders.csv")?
+    summaries: LazyFrame[StatusSummary] = query {
+        FROM orders
+        GROUP BY .status
+        SELECT
+            .status as status,
+            count() as order_count,
+            sum(.amount) as total_amount,
+        ORDER BY desc(.total_amount)
+    }
+
+    result = session.collect(summaries)?
+    println(f"columns: {result.resolved_columns():?}")
+    println(f"rows: {result.row_count()}")
+    println(result.preview_text())
+    return Ok(None)
+
+
+def main() -> None:
+    mut session = Session.default()
+    match summarize_statuses(session):
+        Ok(_) => println("Chapter 9: grouped query block completed")
+        Err(error) => report_session_error("tutorial.chapter_09", error)

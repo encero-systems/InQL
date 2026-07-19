@@ -9,3 +9,21 @@ pub model Order:
     pub customer_id: str
     pub status: str
     pub amount: float
+
+
+@derive(Clone)
+pub model PaidOrderReview:
+    """Projected row shape for the query-block beginner route."""
+
+    pub order_id: int
+    pub customer_id: str
+    pub amount: float
+
+
+@derive(Clone)
+pub model StatusSummary:
+    """Grouped result shape for the query-block beginner route."""
+
+    pub status: str
+    pub order_count: int
+    pub total_amount: float

@@ -3456,6 +3456,21 @@ body:has(.incql-launch) .md-typeset li {
   margin-top: 0.8rem;
 }
 
+.md-typeset .pp-learn-hero__copy .pp-learn-query-entry {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.45rem;
+  align-items: baseline;
+  margin: 0.72rem 0 0;
+  color: var(--incql-page-muted);
+  font-size: 0.61rem;
+  line-height: 1.4;
+}
+
+.pp-learn-query-entry a {
+  font-weight: 740;
+}
+
 .pp-learn-receipt {
   align-self: stretch;
   min-width: 0;
@@ -3953,6 +3968,11 @@ body:has(.pp-book-header) .md-content__inner >
   --pp-book-part-ink: var(--pp-book-magenta-ink);
 }
 
+.pp-book-part--query {
+  --pp-book-part-accent: var(--incql-page-blue);
+  --pp-book-part-ink: var(--pp-book-blue-ink);
+}
+
 .pp-book-part[open] {
   border-bottom-color: rgba(76, 103, 166, 0.3);
   background: transparent;
@@ -4277,6 +4297,10 @@ body:has(.pp-book-header) .md-content__inner >
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.md-typeset .pp-book-part-context--query ol.pp-book-part-journey__list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .pp-book-part-journey__item {
@@ -4981,6 +5005,7 @@ body:has(.pp-book-header) .md-content__inner >
   }
 
   .pp-book-part-journey__list,
+  .md-typeset .pp-book-part-context--query ol.pp-book-part-journey__list,
   .pp-book-part-context--rail .pp-book-part-journey__list {
     grid-template-columns: 1fr;
     margin-top: 0.5rem;
