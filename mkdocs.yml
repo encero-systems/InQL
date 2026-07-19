@@ -48,10 +48,10 @@ markdown_extensions:
       custom_checkbox: true
 
 extra_css:
-  - stylesheets/prismplane.css?v=20260719-density-workspace-13
+  - stylesheets/prismplane.css?v=20260719-contextual-rfc-controls-20
 
 extra_javascript:
-  - javascripts/prismplane.js?v=20260719-density-workspace-13
+  - javascripts/prismplane.js?v=20260719-contextual-rfc-controls-20
 
 nav:
   - Home: index.md

@@ -7,6 +7,7 @@ const defaults = {
   query: "",
   scope: "all",
   status: "",
+  sort: "",
   tags: [],
   selectedId: "000",
   selectedExplicitly: false,
@@ -61,26 +62,56 @@ test("multiple tag filters use intersection semantics", () => {
   assert.equal(rfcReaderContract.matches(record, { ...state, tags: ["evidence", "types"] }, normalize), false);
 });
 
+test("status sorting is stable and uses RFC number as its tie break", () => {
+  const records = [
+    { id: "030", status: "In Progress" },
+    { id: "003", status: "Implemented" },
+    { id: "007", status: "In Progress" },
+    { id: "000", status: "Planned" },
+  ];
+
+  assert.deepEqual(
+    rfcReaderContract.sortRecords(records, "status-asc").map((record) => record.id),
+    ["003", "007", "030", "000"],
+  );
+  assert.deepEqual(
+    rfcReaderContract.sortRecords(records, "status-desc").map((record) => record.id),
+    ["000", "007", "030", "003"],
+  );
+  assert.deepEqual(
+    rfcReaderContract.sortRecords(records, "").map((record) => record.id),
+    ["000", "003", "007", "030"],
+  );
+});
+
 test("URL state uses sorted repeated tag parameters and removes legacy topic state", () => {
   const params = new URLSearchParams("topic=planning&tag=types&rfc=000");
-  const state = { ...defaults, tags: ["planning", "evidence"], selectedId: "030", selectedExplicitly: true };
+  const state = {
+    ...defaults,
+    sort: "status-asc",
+    tags: ["planning", "evidence"],
+    selectedId: "030",
+    selectedExplicitly: true,
+  };
 
   rfcReaderContract.writeParams(params, state);
 
   assert.equal(params.has("topic"), false);
   assert.deepEqual(params.getAll("tag"), ["evidence", "planning"]);
+  assert.equal(params.get("sort"), "status-asc");
   assert.equal(params.get("rfc"), "030");
 });
 
 test("URL state round-trips and ignores unknown or duplicate filters", () => {
-  const params = new URLSearchParams("q=lineage&scope=active&status=planned&tag=planning&tag=evidence&tag=planning&tag=unknown&rfc=030");
+  const params = new URLSearchParams("q=lineage&scope=active&status=planned&sort=status-desc&tag=planning&tag=evidence&tag=planning&tag=unknown&rfc=030");
 
   const state = rfcReaderContract.readParams(params, defaults, known);
 
   assert.deepEqual(state, {
     query: "lineage",
-    scope: "active",
+    scope: "all",
     status: "planned",
+    sort: "status-desc",
     tags: ["evidence", "planning"],
     selectedId: "030",
     selectedExplicitly: true,
@@ -94,6 +125,13 @@ test("URL state round-trips and ignores unknown or duplicate filters", () => {
   assert.deepEqual(restoredAfterHistoryNavigation.tags, ["types"]);
   assert.equal(restoredAfterHistoryNavigation.selectedId, "000");
   assert.equal(restoredAfterHistoryNavigation.selectedExplicitly, true);
+
+  const unknownSort = rfcReaderContract.readParams(
+    new URLSearchParams("sort=recent"),
+    defaults,
+    known,
+  );
+  assert.equal(unknownSort.sort, "");
 });
 
 test("clearing tags removes every tag parameter while preserving other filters", () => {

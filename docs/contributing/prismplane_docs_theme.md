@@ -54,6 +54,10 @@ The generator resolves those keys into each reader record as `"tags": [{"key": "
 
 The reader treats multiple tags as an intersection: selecting Planning and Evidence shows records that carry both. URL state uses one sorted, repeated parameter per selection (`?tag=evidence&tag=planning`), so filtering can be bookmarked, shared, and restored through browser history. Clicking a tag in the detail pane toggles that same filter; clearing tags removes every `tag` parameter. Keep this data and interaction contract stable when porting the component even if the vocabulary, typography, and colors change.
 
+Reader controls belong to the surface they affect. Free-text search and tag facets share one stable-height search shell; selected tags become compact tokens inside that shell. Status filtering and status sorting live in the Status column header on desktop, with the same disclosure moved into the toolbar when that column is hidden on mobile. Query, status, sort, and repeated tag parameters remain bookmarkable, while open popovers stay transient and never enter history.
+
+The desktop documentation navigation can collapse to a narrow restore rail. That preference persists across ordinary documentation pages, but it does not replace or alter Material's mobile drawer. Custom full-width pages can continue hiding the primary sidebar entirely.
+
 ## User experience target
 
 The docs should answer a new user's first questions quickly:
