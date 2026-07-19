@@ -26,6 +26,15 @@ test("adjacent RFC selection skips hidden records and stops at the boundaries", 
   assert.equal(rfcReaderContract.adjacentRecordId(records, "007", -1), "007");
   assert.equal(rfcReaderContract.adjacentRecordId(records, "045", 1), "045");
   assert.equal(rfcReaderContract.adjacentRecordId([], "007", 1), "");
+  assert.equal(rfcReaderContract.adjacentRecordId(records, "unknown", 1), "007");
+});
+
+test("filtered results preserve a visible selection and otherwise repair to the first result", () => {
+  const records = [{ id: "007" }, { id: "030" }];
+
+  assert.equal(rfcReaderContract.resolvedRecordId(records, "030"), "030");
+  assert.equal(rfcReaderContract.resolvedRecordId(records, "045"), "007");
+  assert.equal(rfcReaderContract.resolvedRecordId([], "045"), "");
 });
 
 test("tag selections are unique, sorted, and toggleable", () => {

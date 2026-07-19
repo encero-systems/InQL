@@ -1,8 +1,12 @@
+<header class="pp-rfc-index-header" markdown="1">
+<div class="pp-rfc-index-intro" markdown="1">
 # IncQL RFCs
 
-<p class="pp-rfc-index-lede">IncQL RFCs are durable design records for language, planning, execution, and governance decisions. This is IncQL's own RFC series, independent of the <a href="https://github.com/encero-systems/incan/tree/main/workspaces/docs-site/docs/RFCs">Incan language RFCs</a>.</p>
+<p class="pp-rfc-index-lede">Search and inspect IncQL's durable design records.</p>
+</div>
 
-<p class="pp-rfc-index-links"><a href="../contributing/writing_rfcs/">Write an RFC</a><a href="#how-the-rfc-lifecycle-works">How the lifecycle works</a></p>
+<nav class="pp-rfc-index-links" aria-label="RFC resources"><a href="../contributing/writing_rfcs/">Write an RFC</a><a href="#how-the-rfc-lifecycle-works">Lifecycle guide</a></nav>
+</header>
 
 <div class="pp-rfc-reader-host" data-rfc-reader hidden></div>
 
@@ -3248,6 +3252,8 @@
 
 </div>
 <!-- END GENERATED RFC CATALOG -->
+
+IncQL RFCs cover language, planning, execution, and governance decisions owned by IncQL. They form a separate series from the [Incan language RFCs](https://github.com/encero-systems/incan/tree/main/workspaces/docs-site/docs/RFCs), which govern the host language itself.
 
 ## How the RFC lifecycle works
 

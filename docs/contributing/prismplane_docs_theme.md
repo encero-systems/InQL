@@ -16,7 +16,7 @@ IncQL is also the reference implementation for a wider Encero documentation syst
 
 ## Implementation model
 
-The production theme is a light MkDocs Material adapter in `docs/stylesheets/prismplane.css`, with dark code surfaces retained for syntax clarity. Keep the implementation in Material-friendly CSS and normal Markdown first:
+The production theme is a light MkDocs Material adapter in `docs/stylesheets/prismplane.css`, with one shared light syntax system across ordinary docs and custom pages. Keep the implementation in Material-friendly CSS and normal Markdown first:
 
 - use Material navigation, search, code blocks, tables, admonitions, and task lists
 - keep custom landing-page classes limited to `docs/index.md`

@@ -13,7 +13,6 @@ theme:
   font: false
   highlightjs: false
   pygments_style: default
-  pygments_style_dark: native
   palette:
     - scheme: default
       primary: black
@@ -49,10 +48,10 @@ markdown_extensions:
       custom_checkbox: true
 
 extra_css:
-  - stylesheets/prismplane.css?v=20260719-rfc-reader-12
+  - stylesheets/prismplane.css?v=20260719-density-workspace-13
 
 extra_javascript:
-  - javascripts/prismplane.js?v=20260719-rfc-reader-12
+  - javascripts/prismplane.js?v=20260719-density-workspace-13
 
 nav:
   - Home: index.md
