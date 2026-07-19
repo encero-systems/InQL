@@ -4,9 +4,18 @@
       if (records.length === 0) {
         return "";
       }
-      const currentIndex = Math.max(0, records.findIndex((record) => record.id === currentId));
+      const currentIndex = records.findIndex((record) => record.id === currentId);
+      if (currentIndex < 0) {
+        return records[0].id;
+      }
       const nextIndex = Math.max(0, Math.min(records.length - 1, currentIndex + offset));
       return records[nextIndex].id;
+    },
+
+    resolvedRecordId(records, selectedId) {
+      return records.some((record) => record.id === selectedId)
+        ? selectedId
+        : records[0]?.id ?? "";
     },
 
     setTag(tags, key, selected) {
@@ -317,7 +326,7 @@
     let state = defaultState();
     let visibleRecords = [...records];
     let urlTimer = null;
-    let lastFocusedRecord = null;
+    let lastFocusedId = state.selectedId;
 
     records.forEach((record) => {
       record.searchText = searchable([
@@ -428,48 +437,45 @@
     resultCount.setAttribute("role", "status");
     resultCount.setAttribute("aria-live", "polite");
     resultCount.setAttribute("aria-atomic", "true");
-    const keyboardHint = createElement("p", "pp-rfc-reader__hint", "/ search · ↓ enter list · ↑↓ select · Enter open · Esc clear");
-    statusbar.append(resultCount, resetButton);
+    const keyboardHint = createElement("p", "pp-rfc-reader__hint", "↑↓ browse · Enter open");
+    keyboardHint.setAttribute("aria-hidden", "true");
+    statusbar.append(resultCount, keyboardHint, resetButton);
 
     const index = createElement("div", "pp-rfc-reader__index");
     const master = createElement("section", "pp-rfc-reader__master");
     master.setAttribute("aria-label", "RFC results");
     const listHeader = createElement("div", "pp-rfc-reader__list-header");
+    listHeader.id = "pp-rfc-list-label";
     ["RFC", "Status", "Title"].forEach((label) => listHeader.append(createElement("span", "", label)));
-    const list = createElement("fieldset", "pp-rfc-reader__records");
+    const list = createElement("div", "pp-rfc-reader__records");
     list.id = "pp-rfc-records";
-    const listLegend = createElement("legend", "pp-sr-only", "Matching RFCs");
-    list.append(listLegend);
+    list.tabIndex = 0;
+    list.setAttribute("role", "listbox");
+    list.setAttribute("aria-label", "Matching RFCs");
+    list.setAttribute("aria-controls", "pp-rfc-detail");
     const emptyMessage = createElement("p", "pp-rfc-reader__empty", "No RFCs match these filters.");
     emptyMessage.hidden = true;
     const detail = createElement("article", "pp-rfc-reader__detail");
     detail.id = "pp-rfc-detail";
+    detail.tabIndex = 0;
     const rowById = new Map();
-    const inputById = new Map();
 
     records.forEach((record) => {
       const row = createElement("div", "pp-rfc-row");
       row.dataset.recordId = record.id;
-      const input = createElement("input", "pp-rfc-row__control");
-      input.type = "radio";
-      input.name = "pp-rfc-record";
-      input.id = `pp-rfc-record-${record.id}`;
-      input.value = record.id;
-      input.setAttribute("aria-controls", detail.id);
-      const label = createElement("label", "pp-rfc-row__label");
-      label.htmlFor = input.id;
-      label.append(
+      row.id = `pp-rfc-record-${record.id}`;
+      row.setAttribute("role", "option");
+      row.setAttribute("aria-selected", "false");
+      row.append(
         createElement("span", "pp-rfc-row__number", record.id),
         createElement("span", "pp-rfc-row__status", record.status),
         createElement("span", "pp-rfc-row__title", record.title),
       );
-      row.append(input, label);
       list.append(row);
       rowById.set(record.id, row);
-      inputById.set(record.id, input);
     });
     master.append(listHeader, list, emptyMessage);
-    index.append(toolbar, statusbar, master, keyboardHint);
+    index.append(toolbar, statusbar, master);
     reader.append(index, detail);
 
     const appendMetadata = (listNode, label, value) => {
@@ -515,14 +521,23 @@
       return group;
     };
 
-    const writeUrl = (mode = "replace") => {
+    const writeUrl = (mode = "replace", { mobileDetail = false } = {}) => {
       const url = new URL(window.location.href);
       rfcReaderContract.writeParams(url.searchParams, state);
-      window.history[mode === "push" ? "pushState" : "replaceState"](null, "", url);
+      const existingHistoryState = window.history.state;
+      const historyState = existingHistoryState && typeof existingHistoryState === "object"
+        ? { ...existingHistoryState, ppRfcDetail: mobileDetail }
+        : { ppRfcDetail: mobileDetail };
+      window.history[mode === "push" ? "pushState" : "replaceState"](historyState, "", url);
     };
 
-    const renderDetail = (record, focusHeading = false) => {
-      detail.replaceChildren();
+    const detailHeader = createElement("header", "pp-rfc-reader__detail-header");
+    const detailBody = createElement("div", "pp-rfc-reader__detail-body");
+    detail.append(detailHeader, detailBody);
+
+    const renderDetail = (record, { focusHeading = false, resetScroll = true } = {}) => {
+      detailHeader.replaceChildren();
+      detailBody.replaceChildren();
       if (!record) {
         detail.hidden = true;
         return;
@@ -531,10 +546,14 @@
       const backButton = createElement("button", "pp-rfc-reader__back", `Back to ${visibleRecords.length} results`);
       backButton.type = "button";
       backButton.addEventListener("click", () => {
+        if (window.history.state?.ppRfcDetail) {
+          window.history.back();
+          return;
+        }
         state.selectedExplicitly = false;
         reader.dataset.mobileView = "results";
         writeUrl("replace");
-        window.requestAnimationFrame(() => (lastFocusedRecord ?? inputById.get(state.selectedId))?.focus());
+        window.requestAnimationFrame(() => focusList(state.selectedId));
       }, { signal });
 
       const eyebrow = createElement("p", "pp-rfc-reader__eyebrow", `RFC ${record.id}`);
@@ -580,7 +599,10 @@
         createElement("h3", "", "Why it matters"),
         createElement("p", "", excerpt(record.motivation, 540)),
       );
-      detail.append(backButton, eyebrow, heading, metadata, openLink, summarySection, motivationSection);
+      const headingGroup = createElement("div", "pp-rfc-reader__detail-heading");
+      headingGroup.append(eyebrow, heading);
+      detailHeader.append(backButton, headingGroup, openLink);
+      detailBody.append(metadata, summarySection, motivationSection);
 
       const related = (record.related_ids ?? []).map((id) => recordById.get(id)).filter(Boolean);
       if (related.length > 0) {
@@ -592,7 +614,11 @@
           relatedLinks.append(link);
         });
         relatedSection.append(createElement("h3", "", "Related records"), relatedLinks);
-        detail.append(relatedSection);
+        detailBody.append(relatedSection);
+      }
+
+      if (resetScroll) {
+        detail.scrollTop = 0;
       }
 
       if (focusHeading) {
@@ -604,32 +630,45 @@
       return rfcReaderContract.matches(record, state, searchable);
     };
 
+    const syncListSelection = () => {
+      const selectedRow = rowById.get(state.selectedId);
+      rowById.forEach((row, id) => {
+        row.setAttribute("aria-selected", String(id === state.selectedId && !row.hidden));
+      });
+      if (selectedRow && !selectedRow.hidden) {
+        list.setAttribute("aria-activedescendant", selectedRow.id);
+      } else {
+        list.removeAttribute("aria-activedescendant");
+      }
+    };
+
     const applyFilters = ({ focusDetail = false } = {}) => {
+      const previousSelectedId = state.selectedId;
       visibleRecords = records.filter(matchesRecord);
       const visibleIds = new Set(visibleRecords.map((record) => record.id));
       records.forEach((record) => {
         const row = rowById.get(record.id);
-        const input = inputById.get(record.id);
         const visible = visibleIds.has(record.id);
         row.hidden = !visible;
-        input.disabled = !visible;
       });
 
       if (!visibleIds.has(state.selectedId)) {
-        state.selectedId = visibleRecords[0]?.id ?? "";
+        state.selectedId = rfcReaderContract.resolvedRecordId(visibleRecords, state.selectedId);
         state.selectedExplicitly = false;
       }
-      inputById.forEach((input, id) => {
-        input.checked = id === state.selectedId && visibleIds.has(id);
-      });
+      syncListSelection();
 
       const count = visibleRecords.length;
       resultCount.textContent = count === 1 ? "1 matching design record" : `${count} matching design records`;
       emptyMessage.hidden = count !== 0;
       list.hidden = count === 0;
+      list.tabIndex = count === 0 ? -1 : 0;
       listHeader.hidden = count === 0;
       resetButton.hidden = !state.query && state.scope === "all" && !state.status && state.tags.length === 0;
-      renderDetail(recordById.get(state.selectedId), focusDetail);
+      renderDetail(recordById.get(state.selectedId), {
+        focusHeading: focusDetail,
+        resetScroll: previousSelectedId !== state.selectedId,
+      });
     };
 
     const prepareFilterChange = () => {
@@ -667,16 +706,27 @@
       activeTags.hidden = state.tags.length === 0;
     };
 
-    const readUrl = () => {
+    const readUrl = ({ preserveSelectedId = "" } = {}) => {
       const params = new URLSearchParams(window.location.search);
       state = rfcReaderContract.readParams(params, defaultState(), {
         statuses: new Set(statusByKey.keys()),
         tags: new Set(tagsByKey.keys()),
         records: new Set(recordById.keys()),
       });
+      if (!state.selectedExplicitly && recordById.has(preserveSelectedId)) {
+        state.selectedId = preserveSelectedId;
+      }
+      const requestedSelectedId = state.selectedId;
+      const requestedExplicitSelection = state.selectedExplicitly;
       applyControls();
       applyFilters();
+      lastFocusedId = state.selectedId;
       reader.dataset.mobileView = media.matches && state.selectedExplicitly ? "detail" : "results";
+      if (requestedExplicitSelection && (
+        !state.selectedExplicitly || state.selectedId !== requestedSelectedId
+      )) {
+        writeUrl("replace");
+      }
     };
 
     scopeInputs.forEach((input, value) => {
@@ -731,7 +781,7 @@
     searchInput.addEventListener("keydown", (event) => {
       if (event.key === "ArrowDown" && visibleRecords.length > 0) {
         event.preventDefault();
-        focusRecord(state.selectedId);
+        focusList(state.selectedId);
       }
     }, { signal });
     searchForm.addEventListener("submit", (event) => event.preventDefault(), { signal });
@@ -745,26 +795,10 @@
       searchInput.focus();
     }, { signal });
 
-    const focusRecord = (targetId) => {
-      const target = inputById.get(targetId);
+    const ensureRowVisible = (targetId) => {
       const row = rowById.get(targetId);
-      if (!target || !row) {
+      if (!row || row.hidden) {
         return;
-      }
-
-      if (media.matches) {
-        target.focus();
-        if (!target.checked) {
-          target.click();
-        }
-        return;
-      }
-
-      const pageX = window.scrollX;
-      const pageY = window.scrollY;
-      target.focus({ preventScroll: true });
-      if (!target.checked) {
-        target.click();
       }
 
       const listRect = list.getBoundingClientRect();
@@ -774,77 +808,108 @@
       } else if (rowRect.bottom > listRect.bottom) {
         list.scrollTop += rowRect.bottom - listRect.bottom;
       }
-
-      window.scrollTo(pageX, pageY);
-      window.requestAnimationFrame(() => window.scrollTo(pageX, pageY));
     };
 
-    inputById.forEach((input, id) => {
-      input.addEventListener("change", () => {
-        if (!input.checked) {
-          return;
-        }
-        lastFocusedRecord = input;
-        state.selectedId = id;
-        state.selectedExplicitly = true;
-        renderDetail(recordById.get(id), media.matches);
-        if (media.matches) {
-          reader.dataset.mobileView = "detail";
-        } else {
-          input.focus({ preventScroll: true });
-        }
-        writeUrl(media.matches ? "push" : "replace");
-      }, { signal });
-      input.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          window.location.assign(recordById.get(id).href);
-        } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-          event.preventDefault();
-          const offset = event.key === "ArrowDown" ? 1 : -1;
-          const targetId = rfcReaderContract.adjacentRecordId(visibleRecords, id, offset);
-          focusRecord(targetId);
-        } else if (event.key === "Home" || event.key === "End") {
-          event.preventDefault();
-          const target = event.key === "Home" ? visibleRecords[0] : visibleRecords.at(-1);
-          focusRecord(target?.id);
-        }
-      }, { signal });
+    const focusList = (targetId = state.selectedId) => {
+      const row = rowById.get(targetId);
+      if (!row || row.hidden) {
+        return;
+      }
+      list.focus({ preventScroll: true });
+      ensureRowVisible(targetId);
+    };
+
+    const selectRecord = (targetId, {
+      focusHeading = media.matches,
+      showDetail = media.matches,
+    } = {}) => {
+      const row = rowById.get(targetId);
+      const record = recordById.get(targetId);
+      if (!row || row.hidden || !record) {
+        return;
+      }
+
+      const previousSelectedId = state.selectedId;
+      state.selectedId = targetId;
+      state.selectedExplicitly = !media.matches || showDetail;
+      lastFocusedId = targetId;
+      syncListSelection();
+      renderDetail(record, {
+        focusHeading,
+        resetScroll: previousSelectedId !== targetId,
+      });
+
+      if (media.matches && showDetail) {
+        reader.dataset.mobileView = "detail";
+      } else {
+        focusList(targetId);
+      }
+      writeUrl(
+        media.matches && showDetail ? "push" : "replace",
+        { mobileDetail: media.matches && showDetail },
+      );
+    };
+
+    rowById.forEach((row, id) => {
+      row.addEventListener("click", () => selectRecord(id), { signal });
     });
+
+    list.addEventListener("focus", () => {
+      reader.dataset.listFocus = "true";
+      ensureRowVisible(state.selectedId);
+    }, { signal });
+    list.addEventListener("blur", () => {
+      reader.dataset.listFocus = "false";
+    }, { signal });
+    list.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        const record = recordById.get(state.selectedId);
+        if (record && media.matches) {
+          selectRecord(record.id, { focusHeading: true, showDetail: true });
+        } else if (record) {
+          window.location.assign(record.href);
+        }
+      } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        const offset = event.key === "ArrowDown" ? 1 : -1;
+        const targetId = rfcReaderContract.adjacentRecordId(visibleRecords, state.selectedId, offset);
+        selectRecord(targetId, { focusHeading: false, showDetail: false });
+      } else if (event.key === "Home" || event.key === "End") {
+        event.preventDefault();
+        const target = event.key === "Home" ? visibleRecords[0] : visibleRecords.at(-1);
+        selectRecord(target?.id, { focusHeading: false, showDetail: false });
+      }
+    }, { signal });
 
     const handleGlobalKeydown = (event) => {
       const target = event.target;
       const isEditable = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement || target?.isContentEditable;
-      const targetInReader = target instanceof Node && reader.contains(target);
       if (event.key === "/" && !isEditable && !event.metaKey && !event.ctrlKey && !event.altKey) {
         event.preventDefault();
         event.stopImmediatePropagation();
         searchInput.focus();
-      } else if (event.key === "Escape" && targetInReader && !event.metaKey && !event.ctrlKey && !event.altKey) {
-        if (tagFilter.open) {
-          event.preventDefault();
-          tagFilter.open = false;
-          tagSummary.focus();
-          return;
-        }
-        const hasActiveState = state.query || state.scope !== "all" || state.status || state.tags.length > 0 || state.selectedExplicitly;
-        if (!hasActiveState) {
-          return;
-        }
+      } else if (event.key === "Escape" && tagFilter.open && target instanceof Node && tagFilter.contains(target)) {
         event.preventDefault();
-        const selectedId = state.selectedId;
-        state = { ...defaultState(), selectedId };
-        reader.dataset.mobileView = "results";
-        applyControls();
-        applyFilters();
-        writeUrl("replace");
-        if (target === searchInput) {
-          searchInput.focus();
-        }
+        tagFilter.open = false;
+        tagSummary.focus();
       }
     };
     window.addEventListener("keydown", handleGlobalKeydown, { signal, capture: true });
-    window.addEventListener("popstate", readUrl, { signal });
+    window.addEventListener("popstate", () => {
+      const selectedBeforeNavigation = state.selectedId;
+      const wasMobileDetail = media.matches && reader.dataset.mobileView === "detail";
+      readUrl({ preserveSelectedId: wasMobileDetail ? selectedBeforeNavigation : "" });
+      if (media.matches) {
+        window.requestAnimationFrame(() => {
+          if (reader.dataset.mobileView === "detail") {
+            detailHeader.querySelector("h2")?.focus();
+          } else {
+            focusList(state.selectedId);
+          }
+        });
+      }
+    }, { signal });
     media.addEventListener("change", () => {
       reader.dataset.mobileView = media.matches && state.selectedExplicitly ? "detail" : "results";
     }, { signal });
