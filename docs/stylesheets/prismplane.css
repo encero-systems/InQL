@@ -3607,7 +3607,7 @@ body:has(.incql-launch) .md-typeset li {
 /* Portable tutorial-book chapters --------------------------------------- */
 
 body:has(.pp-book-header) {
-  --pp-book-canvas: #eaf0f9;
+  --pp-book-canvas: var(--incql-page);
   --pp-book-surface: #ffffff;
   --pp-book-surface-soft: #f3f6fc;
   --pp-book-surface-inset: #e8eef9;
@@ -3617,9 +3617,8 @@ body:has(.pp-book-header) {
   --pp-book-violet-ink: #6345d8;
   --pp-book-magenta-ink: #9c2ec6;
   background:
-    radial-gradient(circle at 78% 7rem, rgba(80, 136, 255, 0.18), transparent 31rem),
-    radial-gradient(circle at 32% 34rem, rgba(10, 174, 232, 0.11), transparent 27rem),
-    linear-gradient(180deg, var(--pp-book-canvas) 0%, #eef3fb 48rem, #f4f7fc 100%);
+    radial-gradient(circle at 76% 8rem, rgba(80, 136, 255, 0.12), transparent 34rem),
+    linear-gradient(180deg, #f8fbff 0%, var(--pp-book-canvas) 62rem, #f7f9ff 100%);
 }
 
 body:has(.pp-book-header) .md-main {
@@ -3634,6 +3633,26 @@ body:has(.pp-book-header) .md-content,
 body:has(.pp-book-header) .md-content__inner {
   min-width: 0;
   max-width: none;
+}
+
+body:has(.pp-book-header) .md-content__inner {
+  box-sizing: border-box;
+  width: min(calc(100% - 1rem), 76rem);
+  margin: 0 auto 3rem;
+  padding: clamp(1.25rem, 2.6vw, 2.55rem);
+  border: 1px solid var(--incql-page-line);
+  border-radius: var(--incql-radius-xl);
+  background:
+    radial-gradient(circle at 82% 14%, rgba(127, 109, 255, 0.045), transparent 28rem),
+    var(--incql-page-panel-strong);
+  box-shadow: var(--incql-page-shadow);
+}
+
+body:has(.pp-book-header) .md-content__inner >
+:where(h2, h3, p, ul, ol, dl, blockquote, .highlight) {
+  width: min(100%, 46rem);
+  margin-right: auto;
+  margin-left: auto;
 }
 
 .pp-book-header {
@@ -3808,7 +3827,8 @@ body:has(.pp-book-header) .md-content__inner {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
-  margin: 1.65rem 0 0;
+  width: min(100%, 46rem);
+  margin: 1.65rem auto 0;
 }
 
 .md-typeset .pp-book-pagination > a,
@@ -3867,13 +3887,12 @@ body:has(.pp-book-header) .md-content__inner {
 .pp-book-map {
   margin: 0 0 1.55rem;
   padding: 1.05rem;
-  border: 1px solid var(--pp-book-line);
-  border-top: 2px solid rgba(10, 174, 232, 0.62);
+  border: 1px solid var(--incql-page-line);
   border-radius: var(--incql-radius-lg);
   background:
-    radial-gradient(circle at 76% 22%, rgba(123, 92, 255, 0.14), transparent 23rem),
-    var(--pp-book-surface);
-  box-shadow: 0 22px 58px rgba(31, 54, 96, 0.14);
+    radial-gradient(circle at 76% 22%, rgba(123, 92, 255, 0.08), transparent 23rem),
+    rgba(255, 255, 255, 0.76);
+  box-shadow: 0 18px 46px rgba(55, 74, 123, 0.1);
 }
 
 .pp-book-map__header {
@@ -4349,13 +4368,12 @@ body:has(.pp-book-header) .md-content__inner {
 .pp-book-trace {
   min-width: 0;
   padding: 0.86rem;
-  border: 1px solid var(--pp-book-line);
-  border-top: 2px solid rgba(123, 92, 255, 0.72);
+  border: 1px solid var(--incql-page-line);
   border-radius: var(--incql-radius-lg);
   background:
-    radial-gradient(circle at 72% 16%, rgba(123, 92, 255, 0.13), transparent 19rem),
-    var(--pp-book-surface);
-  box-shadow: 0 20px 50px rgba(31, 54, 96, 0.14);
+    radial-gradient(circle at 72% 16%, rgba(123, 92, 255, 0.08), transparent 19rem),
+    rgba(255, 255, 255, 0.76);
+  box-shadow: 0 18px 46px rgba(55, 74, 123, 0.1);
 }
 
 .pp-book-trace__header {
@@ -4746,6 +4764,13 @@ body:has(.pp-book-header) .md-content__inner {
 
   .pp-book-header {
     padding: 0.42rem 0 0.68rem;
+  }
+
+  body:has(.pp-book-header) .md-content__inner {
+    width: calc(100% - 0.4rem);
+    margin-bottom: 2rem;
+    padding: 0.85rem;
+    border-radius: var(--incql-radius-lg);
   }
 
   .pp-book-part-context + .pp-book-step {
