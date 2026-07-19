@@ -10,28 +10,28 @@
       
       
       
-        <link rel="canonical" href="https://encero-systems.github.io/IncQL/language/how-to/governed_evidence/">
+        <link rel="canonical" href="https://encero-systems.github.io/IncQL/language/tutorials/book/08_first_query_block/">
       
       
-        <link rel="prev" href="../quality_observations/">
+        <link rel="prev" href="../07_governed_write/">
       
       
-        <link rel="next" href="../inspect_plan_lineage/">
+        <link rel="next" href="../09_summarize_query/">
       
       
-      <link rel="icon" href="../../../assets/images/favicon.png">
+      <link rel="icon" href="../../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
     
     
       
-        <title>Governed evidence - IncQL</title>
+        <title>8. Write your first query - IncQL</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.6f8fc17f.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.6f8fc17f.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -44,9 +44,9 @@
       
     
     
-      <link rel="stylesheet" href="../../../stylesheets/prismplane.css?v=20260719-query-block-part-34">
+      <link rel="stylesheet" href="../../../../stylesheets/prismplane.css?v=20260719-query-block-part-34">
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#inspect-governed-evidence" class="md-skip">
+        <a href="#8-write-your-first-query-block" class="md-skip">
           Skip to content
         </a>
       
@@ -88,9 +88,9 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="IncQL" class="md-header__button md-logo" aria-label="IncQL" data-md-component="logo">
+    <a href="../../../.." title="IncQL" class="md-header__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../../shared/brand/incql-mark.png" alt="logo">
+  <img src="../../../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -107,7 +107,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Governed evidence
+              8. Write your first query
             
           </span>
         </div>
@@ -194,7 +194,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../.." class="md-tabs__link">
+      <a href="../../../.." class="md-tabs__link">
         
   
     
@@ -209,11 +209,13 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../../" class="md-tabs__link">
           
   
     
@@ -229,13 +231,11 @@
         
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../../how-to/" class="md-tabs__link">
           
   
     
@@ -255,7 +255,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../reference/" class="md-tabs__link">
+        <a href="../../../reference/" class="md-tabs__link">
           
   
     
@@ -273,7 +273,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../architecture/" class="md-tabs__link">
+      <a href="../../../../architecture/" class="md-tabs__link">
         
   
     
@@ -292,7 +292,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../design_records/" class="md-tabs__link">
+        <a href="../../../../design_records/" class="md-tabs__link">
           
   
     
@@ -312,7 +312,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../project/" class="md-tabs__link">
+        <a href="../../../../project/" class="md-tabs__link">
           
   
     
@@ -353,9 +353,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="IncQL" class="md-nav__button md-logo" aria-label="IncQL" data-md-component="logo">
+    <a href="../../../.." title="IncQL" class="md-nav__button md-logo" aria-label="IncQL" data-md-component="logo">
       
-  <img src="../../../shared/brand/incql-mark.png" alt="logo">
+  <img src="../../../../shared/brand/incql-mark.png" alt="logo">
 
     </a>
     IncQL
@@ -382,7 +382,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="../../../.." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -399,6 +399,8 @@
       
   
   
+    
+  
   
   
     
@@ -415,21 +417,24 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../" class="md-nav__link ">
+            <a href="../../../" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -440,13 +445,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Learn
@@ -459,6 +464,8 @@
                 
   
   
+    
+  
   
   
     
@@ -481,19 +488,22 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" checked>
         
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../tutorials/book/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -504,13 +514,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_2">
             <span class="md-nav__icon md-icon"></span>
             The IncQL Book
@@ -572,7 +582,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/book/01_typed_relation/" class="md-nav__link">
+      <a href="../01_typed_relation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -593,7 +603,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/book/02_deferred_plan/" class="md-nav__link">
+      <a href="../02_deferred_plan/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -670,7 +680,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/book/03_inspect_plan/" class="md-nav__link">
+      <a href="../03_inspect_plan/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -691,7 +701,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/book/04_collect_observed/" class="md-nav__link">
+      <a href="../04_collect_observed/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -712,7 +722,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/book/05_adapter_coverage/" class="md-nav__link">
+      <a href="../05_adapter_coverage/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -787,7 +797,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/book/06_quality_observations/" class="md-nav__link">
+      <a href="../06_quality_observations/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -808,7 +818,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/book/07_governed_write/" class="md-nav__link">
+      <a href="../07_governed_write/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -834,8 +844,10 @@
                 
   
   
+    
   
   
+  
     
     
       
@@ -851,11 +863,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2_5" checked>
         
           
           <label class="md-nav__link" for="__nav_2_2_5" id="__nav_2_2_5_label" tabindex="0">
@@ -869,7 +881,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_2_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_2_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_2_5">
             <span class="md-nav__icon md-icon"></span>
             Part IV · Query blocks
@@ -880,10 +892,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../tutorials/book/08_first_query_block/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    8. Write your first query
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -892,6 +924,62 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#goal" class="md-nav__link">
+    <span class="md-ellipsis">
+      Goal
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#change-the-authoring-surface-not-the-system-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Change the authoring surface, not the system boundary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#try-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      Try it
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter complete
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -904,7 +992,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/book/09_summarize_query/" class="md-nav__link">
+      <a href="../09_summarize_query/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -952,17 +1040,20 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -987,7 +1078,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../explanation/dataset_carriers/" class="md-nav__link">
+      <a href="../../../explanation/dataset_carriers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1008,7 +1099,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../explanation/execution_context/" class="md-nav__link">
+      <a href="../../../explanation/execution_context/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1041,8 +1132,6 @@
       
   
   
-    
-  
   
   
     
@@ -1079,24 +1168,21 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../../how-to/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -1107,13 +1193,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             Guides
@@ -1129,7 +1215,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../dataset_transformations/" class="md-nav__link">
+      <a href="../../../how-to/dataset_transformations/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1150,7 +1236,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../normalize_semistructured_fields/" class="md-nav__link">
+      <a href="../../../how-to/normalize_semistructured_fields/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1171,7 +1257,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../nested_row_values/" class="md-nav__link">
+      <a href="../../../how-to/nested_row_values/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1192,7 +1278,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../generator_rows/" class="md-nav__link">
+      <a href="../../../how-to/generator_rows/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1213,7 +1299,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../window_columns/" class="md-nav__link">
+      <a href="../../../how-to/window_columns/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1234,7 +1320,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../approximate_metrics/" class="md-nav__link">
+      <a href="../../../how-to/approximate_metrics/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1255,7 +1341,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../typed_hll_sketches/" class="md-nav__link">
+      <a href="../../../how-to/typed_hll_sketches/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1276,7 +1362,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../variant_payloads/" class="md-nav__link">
+      <a href="../../../how-to/variant_payloads/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1297,7 +1383,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../execution_observations/" class="md-nav__link">
+      <a href="../../../how-to/execution_observations/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1318,7 +1404,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../quality_observations/" class="md-nav__link">
+      <a href="../../../how-to/quality_observations/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1336,30 +1422,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Governed evidence
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../../how-to/governed_evidence/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1368,62 +1434,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#inspect-inferred-governed-attributes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Inspect inferred governed attributes
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#declare-a-caller-supplied-attribute" class="md-nav__link">
-    <span class="md-ellipsis">
-      Declare a caller-supplied attribute
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#record-a-policy-checkpoint" class="md-nav__link">
-    <span class="md-ellipsis">
-      Record a policy checkpoint
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#read-policy-observation-from-inspection" class="md-nav__link">
-    <span class="md-ellipsis">
-      Read policy observation from inspection
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1436,7 +1446,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../inspect_plan_lineage/" class="md-nav__link">
+      <a href="../../../how-to/inspect_plan_lineage/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1495,7 +1505,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../reference/" class="md-nav__link ">
+            <a href="../../../reference/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -1584,7 +1594,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/dataset_carriers/" class="md-nav__link">
+      <a href="../../../reference/dataset_carriers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1605,7 +1615,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/dataset_methods/" class="md-nav__link">
+      <a href="../../../reference/dataset_methods/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1626,7 +1636,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/query_blocks/" class="md-nav__link">
+      <a href="../../../reference/query_blocks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1647,7 +1657,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/execution_context/" class="md-nav__link">
+      <a href="../../../reference/execution_context/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1668,7 +1678,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/inspection/" class="md-nav__link">
+      <a href="../../../reference/inspection/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1689,7 +1699,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/quality/" class="md-nav__link">
+      <a href="../../../reference/quality/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1710,7 +1720,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/governance/" class="md-nav__link">
+      <a href="../../../reference/governance/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1787,7 +1797,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/builders/filters/" class="md-nav__link">
+      <a href="../../../reference/builders/filters/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1808,7 +1818,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/builders/projections/" class="md-nav__link">
+      <a href="../../../reference/builders/projections/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1829,7 +1839,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/builders/aggregates/" class="md-nav__link">
+      <a href="../../../reference/builders/aggregates/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1895,7 +1905,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../reference/functions/" class="md-nav__link ">
+            <a href="../../../reference/functions/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -1928,7 +1938,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/functions/approximate/" class="md-nav__link">
+      <a href="../../../reference/functions/approximate/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1949,7 +1959,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/functions/format/" class="md-nav__link">
+      <a href="../../../reference/functions/format/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1970,7 +1980,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/functions/generators/" class="md-nav__link">
+      <a href="../../../reference/functions/generators/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1991,7 +2001,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/functions/nested/" class="md-nav__link">
+      <a href="../../../reference/functions/nested/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2012,7 +2022,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/functions/sketches/" class="md-nav__link">
+      <a href="../../../reference/functions/sketches/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2033,7 +2043,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/functions/variants/" class="md-nav__link">
+      <a href="../../../reference/functions/variants/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2054,7 +2064,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/functions/windows/" class="md-nav__link">
+      <a href="../../../reference/functions/windows/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2133,7 +2143,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/substrait/conformance/" class="md-nav__link">
+      <a href="../../../reference/substrait/conformance/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2154,7 +2164,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/substrait/operator_catalog/" class="md-nav__link">
+      <a href="../../../reference/substrait/operator_catalog/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2175,7 +2185,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/substrait/read_root_binding_contract/" class="md-nav__link">
+      <a href="../../../reference/substrait/read_root_binding_contract/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2196,7 +2206,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/substrait/revision_and_extension_policy/" class="md-nav__link">
+      <a href="../../../reference/substrait/revision_and_extension_policy/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2232,7 +2242,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../architecture/" class="md-nav__link">
+      <a href="../../../../architecture/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2279,7 +2289,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../rfcs/" class="md-nav__link ">
+            <a href="../../../../rfcs/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -2310,7 +2320,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design_records/" class="md-nav__link">
+      <a href="../../../../design_records/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2358,7 +2368,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../whitepapers/" class="md-nav__link ">
+            <a href="../../../../whitepapers/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -2391,7 +2401,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../whitepapers/incql_db/" class="md-nav__link">
+      <a href="../../../../whitepapers/incql_db/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2477,7 +2487,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../project/" class="md-nav__link">
+      <a href="../../../../project/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2498,7 +2508,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../docs_map/" class="md-nav__link">
+      <a href="../../../../docs_map/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2563,7 +2573,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../release_notes/v0_1/" class="md-nav__link">
+      <a href="../../../../release_notes/v0_1/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2642,7 +2652,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contributing/architecture/" class="md-nav__link">
+      <a href="../../../../contributing/architecture/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2663,7 +2673,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contributing/writing_rfcs/" class="md-nav__link">
+      <a href="../../../../contributing/writing_rfcs/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2684,7 +2694,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../rfcs/TEMPLATE/" class="md-nav__link">
+      <a href="../../../../rfcs/TEMPLATE/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2705,7 +2715,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contributing/prismplane_docs_theme/" class="md-nav__link">
+      <a href="../../../../contributing/prismplane_docs_theme/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2761,36 +2771,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#inspect-inferred-governed-attributes" class="md-nav__link">
+  <a href="#goal" class="md-nav__link">
     <span class="md-ellipsis">
-      Inspect inferred governed attributes
+      Goal
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#declare-a-caller-supplied-attribute" class="md-nav__link">
+  <a href="#change-the-authoring-surface-not-the-system-boundary" class="md-nav__link">
     <span class="md-ellipsis">
-      Declare a caller-supplied attribute
+      Change the authoring surface, not the system boundary
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#record-a-policy-checkpoint" class="md-nav__link">
+  <a href="#try-it" class="md-nav__link">
     <span class="md-ellipsis">
-      Record a policy checkpoint
+      Try it
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#read-policy-observation-from-inspection" class="md-nav__link">
+  <a href="#chapter-complete" class="md-nav__link">
     <span class="md-ellipsis">
-      Read policy observation from inspection
+      Chapter complete
     </span>
   </a>
   
@@ -2814,72 +2824,217 @@
   
 
 
-<h1 id="inspect-governed-evidence">Inspect governed evidence</h1>
-<p>Use governed attributes and policy checkpoints when you need local evidence about sensitive, classified, reviewed, or policy-relevant relational targets without making IncQL responsible for your organization’s policy engine.</p>
-<h2 id="inspect-inferred-governed-attributes">Inspect inferred governed attributes</h2>
-<p><code>inspect_plan(...)</code> carries governed evidence next to lineage, metadata attachments, adapter requirements, and unsupported-evidence markers.</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">inspect_plan</span>
+<header class="pp-book-header">
+<p>THE INCQL BOOK</p>
+<h1 id="8-write-your-first-query-block">8. Write your first query block</h1>
+<p>Shape a typed relation with SQL-familiar clauses, then cross the same explicit Session execution boundary.</p>
+</header>
+<section class="pp-book-part-context pp-book-part-context--query" aria-label="Part IV: Query blocks">
+  <header class="pp-book-part-context__summary">
+    <p class="pp-book-part-context__label">Part IV</p>
+    <p class="pp-book-part-context__title"><strong>Query blocks</strong></p>
+    <p class="pp-book-part-context__position">Chapter 1 of 2</p>
+  </header>
+  <nav class="pp-book-part-journey" aria-label="Part IV chapter journey">
+    <ol class="pp-book-part-journey__list">
+      <li class="pp-book-part-journey__item"><a class="pp-book-part-journey__link" href="../08_first_query_block/" aria-current="page"><span class="pp-book-part-journey__number">1</span><span class="pp-book-part-journey__title">Write your first query</span></a></li>
+      <li class="pp-book-part-journey__item"><a class="pp-book-part-journey__link" href="../09_summarize_query/"><span class="pp-book-part-journey__number">2</span><span class="pp-book-part-journey__title">Summarize and order results</span></a></li>
+    </ol>
+  </nav>
+</section>
 
-<span class="n">inspection</span> <span class="o">=</span> <span class="n">inspect_plan</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+<section class="pp-book-step">
+<h2 id="goal">Goal</h2>
+<p>Activate IncQL's query vocabulary, begin with a typed CSV-backed <code>LazyFrame[Order]</code>, express filtering, projection, ordering, and a limit in one <code>query { ... }</code> expression, then collect the resulting plan.</p>
+</section>
+<h2 id="change-the-authoring-surface-not-the-system-boundary">Change the authoring surface, not the system boundary</h2>
+<p>A query block is an IncQL expression embedded in ordinary Incan code. It is not a SQL string and it does not open a file, choose an engine, or execute itself. <code>import pub::incql</code> activates the dependency-owned vocabulary, while the <code>Session</code> still owns source registration and execution. This means the source setup from the core Book remains valid: <code>read_csv(...)</code> registers a logical name and returns deferred work whose intended row shape is described by <code>Order</code>.</p>
+<p>The block then reads top to bottom. <code>FROM orders</code> establishes the current relation. <code>WHERE .status == "paid"</code> adds a predicate against that relation. <code>SELECT</code> publishes a new three-column query schema through explicit aliases. <code>ORDER BY desc(.amount)</code> reads the projected <code>amount</code> column and requests descending order; IncQL uses the <code>desc(...)</code> helper rather than postfix SQL such as <code>.amount DESC</code>. Finally, <code>LIMIT 10</code> caps the ordered result.</p>
+<p>With this example, you are asking for paid orders only, retaining <code>order_id</code>, <code>customer_id</code>, and <code>amount</code>, ordering the projected rows from highest to lowest amount, and returning no more than ten. Because the <code>FROM</code> value is a <code>LazyFrame</code>, the query expression also returns a <code>LazyFrame</code>. Its clauses become deferred carrier operations—<code>ReadNamedTable → Filter → SelectProject → OrderBy → Limit</code>—before <code>session.collect(...)</code> crosses the runtime boundary.</p>
+<section class="pp-book-trace" aria-labelledby="first-query-trace-title">
+  <header class="pp-book-trace__header">
+    <div>
+      <p class="pp-book-eyebrow">One typed source · one checked clause flow</p>
+      <h2 id="first-query-trace-title">Follow the query from activation to rows</h2>
+    </div>
+    <p>The authoring syntax changes, but the ownership story does not: IncQL builds deferred intent and Session performs the concrete DataFusion collection.</p>
+  </header>
 
-<span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">inspection</span><span class="o">.</span><span class="n">governed_attributes</span><span class="p">:</span>
-    <span class="nb">println</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attribute</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">attribute</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">attribute</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">println</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  source=</span><span class="si">{</span><span class="n">attribute</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">value</span><span class="p">()</span><span class="si">}</span><span class="s2"> status=</span><span class="si">{</span><span class="n">attribute</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">value</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+  <ol class="pp-book-trace__stages">
+    <li class="pp-book-trace__stage pp-book-trace__stage--source">
+      <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/code-braces-box.svg" alt="">
+        <span class="pp-book-trace__number">01</span>
+        <div><strong>Activate and register</strong><small>Make the vocabulary available, then establish a typed logical source</small></div>
+      </header>
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
+
+<div class="language-incan highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="c1"># (1)!</span>
+
+<span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="s2">&quot;tutorial_orders_query&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;orders.csv&quot;</span><span class="p">,</span>
+<span class="p">)</span><span class="o">?</span>
 </code></pre></div>
-<p>Inspection infers field schema attributes when local plan evidence includes a field’s primitive kind. These records use the same target, provenance, confidence, status, and evidence-reference shape as caller-supplied attributes, so catalog, contract, and policy-ingress steps can attach compatible evidence without a separate record model.</p>
-<h2 id="declare-a-caller-supplied-attribute">Declare a caller-supplied attribute</h2>
-<p>Use <code>governed_attribute(...)</code> when another local step already knows a governed fact and wants to attach it to a semantic target.</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="p">(</span>
-    <span class="nc">GovernedAttributeConfidence</span><span class="p">,</span>
-    <span class="nc">GovernedAttributeScope</span><span class="p">,</span>
-    <span class="nc">GovernedAttributeSource</span><span class="p">,</span>
-    <span class="nc">GovernedAttributeStatus</span><span class="p">,</span>
-    <span class="n">governed_attribute</span><span class="p">,</span>
-    <span class="n">inspect_plan</span><span class="p">,</span>
-<span class="p">)</span>
 
-<span class="n">inspection</span> <span class="o">=</span> <span class="n">inspect_plan</span><span class="p">(</span><span class="n">customer_report</span><span class="p">)</span>
-<span class="n">email_target</span> <span class="o">=</span> <span class="n">inspection</span><span class="o">.</span><span class="n">output_fields</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<ol>
+  <li><p><strong>Activate the dependency-owned vocabulary.</strong> The plain <code>import pub::incql</code> makes <code>query</code> and its scoped helpers available to this compilation unit. The separate <code>from pub::incql import ...</code> statement in the complete source imports the ordinary types and functions that the surrounding Incan code names directly.</p></li>
+</ol>
 
-<span class="n">classification</span> <span class="o">=</span> <span class="n">governed_attribute</span><span class="p">(</span>
-    <span class="n">email_target</span><span class="p">,</span>
-    <span class="s2">&quot;classification&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;personal_data&quot;</span><span class="p">,</span>
-    <span class="n">scope</span><span class="o">=</span><span class="nc">GovernedAttributeScope</span><span class="o">.</span><span class="nc">Field</span><span class="p">,</span>
-    <span class="n">source</span><span class="o">=</span><span class="nc">GovernedAttributeSource</span><span class="o">.</span><span class="nc">User</span><span class="p">,</span>
-    <span class="n">confidence</span><span class="o">=</span><span class="nc">GovernedAttributeConfidence</span><span class="o">.</span><span class="nc">High</span><span class="p">,</span>
-    <span class="n">status</span><span class="o">=</span><span class="nc">GovernedAttributeStatus</span><span class="o">.</span><span class="nc">Asserted</span><span class="p">,</span>
-    <span class="n">authority</span><span class="o">=</span><span class="nb">Some</span><span class="p">(</span><span class="s2">&quot;privacy-review&quot;</span><span class="p">),</span>
-    <span class="n">evidence_refs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;catalog:customer_report.email&quot;</span><span class="p">],</span>
-<span class="p">)</span>
-</code></pre></div>
-<p>This only creates evidence. It does not mask the field, filter rows, block execution, or certify the output.</p>
-<h2 id="record-a-policy-checkpoint">Record a policy checkpoint</h2>
-<p>Use <code>policy_checkpoint(...)</code> to record a policy result or observation at a known boundary.</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="p">(</span>
-    <span class="nc">MetadataVisibility</span><span class="p">,</span>
-    <span class="nc">PolicyCheckpointAction</span><span class="p">,</span>
-    <span class="nc">PolicyCheckpointKind</span><span class="p">,</span>
-    <span class="n">policy_checkpoint</span><span class="p">,</span>
-<span class="p">)</span>
+      </div>
+      <dl class="pp-book-trace__facts">
+        <div><dt>Owner</dt><dd><code>Session</code> source registration</dd></div>
+        <div><dt>Artifact</dt><dd><code>LazyFrame[Order]</code> rooted at <code>ReadNamedTable</code></dd></div>
+        <div><dt>Knowable now</dt><dd>The logical source identity and intended row model; no rows have been collected</dd></div>
+      </dl>
+    </li>
 
-<span class="n">checkpoint</span> <span class="o">=</span> <span class="n">policy_checkpoint</span><span class="p">(</span>
-    <span class="n">email_target</span><span class="p">,</span>
-    <span class="nc">PolicyCheckpointKind</span><span class="o">.</span><span class="nc">Planning</span><span class="p">,</span>
-    <span class="nc">PolicyCheckpointAction</span><span class="o">.</span><span class="nc">Warn</span><span class="p">,</span>
-    <span class="s2">&quot;policy:pii-export&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;masking_recommended&quot;</span><span class="p">,</span>
-    <span class="n">visibility</span><span class="o">=</span><span class="nc">MetadataVisibility</span><span class="o">.</span><span class="nc">Internal</span><span class="p">,</span>
-    <span class="n">evidence_refs</span><span class="o">=</span><span class="p">[</span><span class="n">classification</span><span class="o">.</span><span class="n">attribute_id</span><span class="p">],</span>
-<span class="p">)</span>
+    <li class="pp-book-trace__stage pp-book-trace__stage--session">
+      <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/source-branch.svg" alt="">
+        <span class="pp-book-trace__number">02</span>
+        <div><strong>Author the query</strong><small>Publish a projected schema while keeping the result deferred</small></div>
+      </header>
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
+
+<div class="language-incan highlight"><pre><span></span><code><span class="n">paid_orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">PaidOrderReview</span><span class="p">]</span> <span class="o">=</span> <span class="k">query</span> <span class="p">{</span> <span class="c1"># (1)!</span>
+    <span class="k">FROM</span> <span class="n">orders</span>
+    <span class="k">WHERE</span> <span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;paid&quot;</span>
+    <span class="k">SELECT</span>
+        <span class="o">.</span><span class="n">order_id</span> <span class="k">as</span> <span class="n">order_id</span><span class="p">,</span>
+        <span class="o">.</span><span class="n">customer_id</span> <span class="k">as</span> <span class="n">customer_id</span><span class="p">,</span>
+        <span class="o">.</span><span class="n">amount</span> <span class="k">as</span> <span class="n">amount</span><span class="p">,</span>
+    <span class="k">ORDER</span> <span class="k">BY</span> <span class="nb">desc</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="c1"># (2)!</span>
+    <span class="k">LIMIT</span> <span class="mi">10</span>
+<span class="p">}</span>
 </code></pre></div>
-<p>The checkpoint says that a warning decision was recorded. A CI job, notebook, orchestration layer, or governance tool can decide what to do with that warning. IncQL keeps the decision evidence explicit and local.</p>
-<h2 id="read-policy-observation-from-inspection">Read policy observation from inspection</h2>
-<p>Local inspection emits a planning checkpoint when it observes governed evidence. That checkpoint uses <code>PolicyCheckpointAction.Observe</code>, not <code>Allow</code> or <code>Deny</code>, because inspection is not a policy engine.</p>
-<div class="language-incan highlight"><pre><span></span><code><span class="k">for</span> <span class="n">checkpoint</span> <span class="ow">in</span> <span class="n">inspection</span><span class="o">.</span><span class="n">policy_checkpoints</span><span class="p">:</span>
-    <span class="nb">println</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">value</span><span class="p">()</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">value</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">reason_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<ol>
+  <li><p><strong>Describe the intended output without pretending validation is stronger than it is.</strong> A current query block requires <code>FROM</code> and <code>SELECT</code>. Because <code>orders</code> is lazy, the expression returns deferred work. <code>LazyFrame[PaidOrderReview]</code> documents the intended projected row model; the current implementation checks query-schema evolution and selected aliases, while complete field-for-field and type compatibility validation against that annotation remains follow-up work.</p></li>
+  <li><p><strong>Resolve fields against the clause's current schema.</strong> Leading-dot references name fields visible at that point in the query. The <code>SELECT</code> aliases publish <code>order_id</code>, <code>customer_id</code>, and <code>amount</code> for later clauses, so <code>.amount</code> in <code>ORDER BY</code> refers to the projected column. Use <code>asc(...)</code> for the opposite direction; postfix <code>ASC</code>/<code>DESC</code> tokens are not query-block syntax.</p></li>
+</ol>
+
+      </div>
+      <dl class="pp-book-trace__facts">
+        <div><dt>Owner</dt><dd>IncQL query vocabulary and carrier planning</dd></div>
+        <div><dt>Artifact</dt><dd><code>LazyFrame[PaidOrderReview]</code></dd></div>
+        <div><dt>Knowable now</dt><dd>The filter, projected schema, ordering, and upper row bound; execution is still absent</dd></div>
+      </dl>
+    </li>
+
+    <li class="pp-book-trace__stage pp-book-trace__stage--runtime">
+      <header>
+        <img class="pp-book-trace__stage-icon" src="../../../../shared/icons/database-cog-outline.svg" alt="">
+        <span class="pp-book-trace__number">03</span>
+        <div><strong>Collect the result</strong><small>Bind and execute the deferred query through Session</small></div>
+      </header>
+      <div class="pp-book-trace__body pp-book-code-explainer" markdown="1">
+
+<div class="language-incan highlight"><pre><span></span><code><span class="kt">result</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="nb">collect</span><span class="p">(</span><span class="n">paid_orders</span><span class="p">)</span><span class="o">?</span> <span class="c1"># (1)!</span>
+<span class="nb">println</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;columns: </span><span class="si">{</span><span class="kt">result</span><span class="o">.</span><span class="n">resolved_columns</span><span class="p">()</span><span class="si">:</span><span class="s2">?</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">println</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;rows: </span><span class="si">{</span><span class="kt">result</span><span class="o">.</span><span class="n">row_count</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">println</span><span class="p">(</span><span class="kt">result</span><span class="o">.</span><span class="n">preview_text</span><span class="p">())</span>
 </code></pre></div>
-<p>For the complete record and enum reference, see <a href="../../reference/governance/">Governed attributes and policy checkpoints (Reference)</a>.</p>
+
+<ol>
+  <li><p><strong>Cross the execution boundary deliberately.</strong> <code>collect(...)</code> submits the deferred query through the selected backend and returns a materialized <code>DataFrame[PaidOrderReview]</code> on success. Use <code>collect_observed(...)</code> instead when the caller also needs the structured success-or-failure observation introduced earlier in the Book.</p></li>
+</ol>
+
+      </div>
+      <div class="pp-book-trace__result">
+        <dl>
+          <div><dt>Backend</dt><dd><code>datafusion</code></dd></div>
+          <div><dt>Columns</dt><dd><code>order_id</code>, <code>customer_id</code>, <code>amount</code></dd></div>
+          <div><dt>Rows</dt><dd>2 paid orders, highest amount first</dd></div>
+        </dl>
+        <div class="pp-book-trace__artifacts">
+          <span><img src="../../../../shared/icons/source-branch.svg" alt="">Query plan</span>
+          <span><img src="../../../../shared/icons/table-check.svg" alt="">Materialized result</span>
+        </div>
+      </div>
+    </li>
+  </ol>
+
+  <aside class="pp-book-receipt" aria-label="First query-block receipt">
+    <header><span>Query receipt</span><strong>SQL-familiar authoring, the same typed execution path</strong></header>
+    <dl>
+      <div><dt>Activation</dt><dd><code>import pub::incql</code></dd></div>
+      <div><dt>Input</dt><dd><code>LazyFrame[Order]</code></dd></div>
+      <div><dt>Deferred plan</dt><dd><code>Filter → SelectProject → OrderBy → Limit</code></dd></div>
+      <div><dt>Output intent</dt><dd><code>LazyFrame[PaidOrderReview]</code></dd></div>
+      <div><dt>Execution call</dt><dd><code>session.collect(...)</code></dd></div>
+      <div><dt>Materialized result</dt><dd>2 rows across 3 resolved columns</dd></div>
+    </dl>
+  </aside>
+</section>
+
+<div class="pp-book-chapter-clear" aria-hidden="true"></div>
+
+<p>The query block and an equivalent method chain converge on the same relational carrier semantics. Here, however, every relation-shaping step appears in one clause-oriented expression. That makes the current query schema especially visible: the source model supplies the fields before <code>SELECT</code>, and the aliases published by <code>SELECT</code> supply the fields seen by <code>ORDER BY</code>.</p>
+<p>The intended output type still deserves precise language. <code>PaidOrderReview</code> is valuable documentation and gives the surrounding Incan program a typed carrier contract, but this release does not yet prove complete compatibility between every selected field/type and that annotated model. The runnable checkpoint verifies the actual resolved column names and materialized rows instead of presenting the annotation alone as physical-schema evidence.</p>
+<details class="pp-book-source">
+  <summary>Open the complete Chapter 8 checkpoint</summary>
+  <div markdown="1">
+
+<div class="language-incan highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Chapter 8: filter and shape typed data with IncQL query clauses.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">domain</span><span class="w"> </span><span class="kn">import</span> <span class="nc">Order</span><span class="p">,</span> <span class="nc">PaidOrderReview</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pub</span><span class="p">::</span><span class="n">incql</span> <span class="kn">import</span><span class="w"> </span><span class="nn">LazyFrame</span><span class="o">,</span><span class="w"> </span><span class="nn">Session</span><span class="o">,</span><span class="w"> </span><span class="nn">SessionError</span><span class="o">,</span><span class="w"> </span><span class="nn">desc</span><span class="o">,</span><span class="w"> </span><span class="nn">report_session_error</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">query_paid_orders</span><span class="p">(</span><span class="k">mut</span> <span class="n">session</span><span class="p">:</span> <span class="kt">Session</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Result</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nc">SessionError</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a SQL-familiar query block without using relational method chains.&quot;&quot;&quot;</span>
+    <span class="n">orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">Order</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;tutorial_orders_query&quot;</span><span class="p">,</span> <span class="s2">&quot;orders.csv&quot;</span><span class="p">)</span><span class="o">?</span>
+    <span class="n">paid_orders</span><span class="p">:</span> <span class="kt">LazyFrame</span><span class="p">[</span><span class="nc">PaidOrderReview</span><span class="p">]</span> <span class="o">=</span> <span class="k">query</span> <span class="p">{</span>
+        <span class="k">FROM</span> <span class="n">orders</span>
+        <span class="k">WHERE</span> <span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;paid&quot;</span>
+        <span class="k">SELECT</span>
+            <span class="o">.</span><span class="n">order_id</span> <span class="k">as</span> <span class="n">order_id</span><span class="p">,</span>
+            <span class="o">.</span><span class="n">customer_id</span> <span class="k">as</span> <span class="n">customer_id</span><span class="p">,</span>
+            <span class="o">.</span><span class="n">amount</span> <span class="k">as</span> <span class="n">amount</span><span class="p">,</span>
+        <span class="k">ORDER</span> <span class="k">BY</span> <span class="nb">desc</span><span class="p">(</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span>
+        <span class="k">LIMIT</span> <span class="mi">10</span>
+    <span class="p">}</span>
+
+    <span class="kt">result</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="nb">collect</span><span class="p">(</span><span class="n">paid_orders</span><span class="p">)</span><span class="o">?</span>
+    <span class="nb">println</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;columns: </span><span class="si">{</span><span class="kt">result</span><span class="o">.</span><span class="n">resolved_columns</span><span class="p">()</span><span class="si">:</span><span class="s2">?</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">println</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;rows: </span><span class="si">{</span><span class="kt">result</span><span class="o">.</span><span class="n">row_count</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">println</span><span class="p">(</span><span class="kt">result</span><span class="o">.</span><span class="n">preview_text</span><span class="p">())</span>
+    <span class="k">return</span> <span class="nb">Ok</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">mut</span> <span class="n">session</span> <span class="o">=</span> <span class="kt">Session</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+    <span class="k">match</span> <span class="n">query_paid_orders</span><span class="p">(</span><span class="n">session</span><span class="p">):</span>
+        <span class="nb">Ok</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nb">println</span><span class="p">(</span><span class="s2">&quot;Chapter 8: query block completed&quot;</span><span class="p">)</span>
+        <span class="nb">Err</span><span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">report_session_error</span><span class="p">(</span><span class="s2">&quot;tutorial.chapter_08&quot;</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+</code></pre></div>
+
+  </div>
+</details>
+
+<p>Run it from the included tutorial project:</p>
+<div class="language-bash highlight"><pre><span></span><code>incan<span class="w"> </span>run<span class="w"> </span>src/chapter_08.incn
+</code></pre></div>
+<div class="pp-book-output">
+<p><strong>Expected evidence</strong></p>
+<p>The checkpoint reports the resolved columns <code>order_id</code>, <code>customer_id</code>, and <code>amount</code>, then reports two rows. Its preview places order <code>1001</code> before order <code>1003</code>, demonstrating that the paid-row filter and descending order both reached execution. The final line confirms that Chapter 8 completed.</p>
+</div>
+<p>For the complete clause inventory, expression operators, alias rules, and current limitations, use <a href="../../../reference/query_blocks/">Query blocks</a>.</p>
+<section class="pp-book-exercise">
+<h2 id="try-it">Try it</h2>
+<p>Change <code>desc(.amount)</code> to <code>asc(.amount)</code> and reduce the limit to <code>1</code>. Run the checkpoint and explain why order <code>1003</code> is now the only preview row. Restore the original ordering and limit before continuing.</p>
+</section>
+<section class="pp-book-complete">
+<h2 id="chapter-complete">Chapter complete</h2>
+<p>You can activate IncQL's query vocabulary, explain how leading-dot fields and aliases follow the current query schema, distinguish deferred query authoring from Session collection, and state the present output-model validation limit honestly.</p>
+</section>
+<nav class="pp-book-pagination" aria-label="Book chapter navigation">
+  <a href="../"><small>Previous route</small><strong>← Book overview</strong></a>
+  <a href="../09_summarize_query/"><small>Next chapter</small><strong>9. Summarize and order results →</strong></a>
+</nav>
 
 
 
@@ -2926,12 +3081,12 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "content.code.annotate", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "content.code.annotate", "content.code.copy"], "search": "../../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.88dd0f4e.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.88dd0f4e.min.js"></script>
       
-        <script src="../../../javascripts/prismplane.js?v=20260719-book-parts-24"></script>
+        <script src="../../../../javascripts/prismplane.js?v=20260719-book-parts-24"></script>
       
     
   </body>
