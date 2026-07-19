@@ -1,0 +1,11 @@
+"""Typed row contracts shared by every tutorial-book checkpoint."""
+
+
+@derive(Clone)
+pub model Order:
+    """The intended row shape of the tutorial CSV source."""
+
+    pub order_id: int
+    pub customer_id: str
+    pub status: str
+    pub amount: float

@@ -1,0 +1,9 @@
+[project]
+name = "incql_tutorial_book"
+version = "0.1.0"
+
+[dependencies]
+incql = { path = "../.." }
+
+[project.scripts]
+main = "src/main.incn"

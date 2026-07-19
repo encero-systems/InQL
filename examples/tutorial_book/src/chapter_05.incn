@@ -1,0 +1,39 @@
+"""Chapter 5: compare the inspected plan with adapter coverage evidence."""
+
+from domain import Order
+from pub::incql import LazyFrame, Session, SessionError, inspect_lineage, inspect_plan, report_session_error
+
+
+def check_orders(mut session: Session) -> Result[None, SessionError]:
+    """Collect the plan, then inspect DataFusion coverage for its requirements."""
+    orders: LazyFrame[Order] = session.read_csv("tutorial_orders", "orders.csv")?
+    plan = orders.limit(3)
+    inspection = inspect_plan(plan.clone())
+    lineage = inspect_lineage(plan.clone())
+    observed = session.collect_observed(plan.clone())
+
+    println(f"plan id: {inspection.plan_id}")
+    println(f"lineage edges: {len(lineage.edges)}")
+    println(f"backend: {observed.observation.backend_name}")
+    match observed.data:
+        Some(frame) =>
+            println(f"columns: {frame.resolved_columns():?}")
+            println(f"rows: {frame.row_count()}")
+            println(frame.preview_text())
+        None =>
+            match observed.error:
+                Some(error) => return Err(error)
+                None => println("collect_observed returned no data and no typed error")
+
+    coverage = session.check_plan_coverage(plan)
+    println(f"coverage records: {len(coverage)}")
+    for record in coverage:
+        println(f"- {record.requirement.capability.value()}: {record.state.value()}")
+    return Ok(None)
+
+
+def main() -> None:
+    mut session = Session.default()
+    match check_orders(session):
+        Ok(_) => println("Chapter 5: adapter coverage remained explicit")
+        Err(error) => report_session_error("tutorial.chapter_05", error)

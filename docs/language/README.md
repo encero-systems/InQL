@@ -1,79 +1,77 @@
-# IncQL language docs
+# Learn IncQL
 
-This section documents the current IncQL package surface.
+<p class="pp-learn-kicker">One project. The complete system path.</p>
 
-- Use [reference/][reference] for API shape, signatures, and current behavior contracts.
-- Use [how-to/][how-to] for concrete task workflows.
-- Use [explanation/][explanation] for mental models, usage framing, and tradeoffs.
+IncQL makes more sense when you follow one piece of data logic all the way through the system. Start with the book for that guided path, or choose a focused route when you already know what you need.
 
-## Current entry points
+<section class="pp-learn-hero" aria-labelledby="learn-book-title" markdown="1">
+<div class="pp-learn-hero__copy" markdown="1">
 
-### Core carriers
+## From typed input to evidence you can use {#learn-book-title}
 
-- [Build deferred dataset transformations (How-to)][dataset-transformations-how-to]
-- [Expand rows with generators (How-to)][generator-rows-how-to]
-- [Normalize semi-structured fields (How-to)][normalize-semistructured-fields-how-to]
-- [Work with nested row values (How-to)][nested-row-values-how-to]
-- [Dataset carriers (Reference)][dataset-reference]
-- [Dataset carriers (Explanation)][dataset-explanation]
-- [Dataset methods (Reference)][dataset-methods-reference]
-- [Query blocks (Reference)][query-blocks-reference]
+Build a small order-analysis project, keep its plan deferred, inspect what Prism understands, run it through DataFusion, and retain structured evidence about the attempt.
 
-### Execution and materialization
+The chapters accumulate into one runnable example. Each ends with a result you can verify before moving on.
 
-- [Capture execution observations and adapter coverage (How-to)][execution-observations-how-to]
-- [Inspect governed evidence (How-to)][governed-evidence-how-to]
-- [Observe data quality checks (How-to)][quality-observations-how-to]
-- [Execution context (Reference)][execution-reference]
-- [Execution context (Explanation)][execution-explanation]
+<a class="incql-button incql-button--primary" href="tutorials/book/">Start the IncQL Book</a>
 
-### Analytical functions
+</div>
 
-- [Add window columns (How-to)][window-columns-how-to]
-- [Estimate approximate metrics (How-to)][approximate-metrics-how-to]
-- [Build typed HyperLogLog sketches (How-to)][typed-hll-sketches-how-to]
-- [Inspect typed variant payloads (How-to)][variant-payloads-how-to]
+<div class="pp-learn-receipt" aria-label="What the tutorial follows">
+<p class="pp-learn-receipt__label">The path you will trace</p>
+<ol>
+<li><span>Input</span><strong>CSV + intended row model</strong></li>
+<li><span>Plan</span><strong>Prism-backed LazyFrame</strong></li>
+<li><span>Run</span><strong>Session + DataFusion</strong></li>
+<li><span>Evidence</span><strong>Inspection, coverage, quality</strong></li>
+<li><span>Decision</span><strong>Caller-owned write</strong></li>
+</ol>
+</div>
+</section>
 
-### Substrait boundary
+## Choose the route that matches your task
 
-- [Substrait read-root and binding contract][substrait-read-root]
-- [Substrait conformance][substrait-conformance]
-- [Substrait operator catalog][substrait-operator-catalog]
-- [Substrait revision and extension policy][substrait-revision-policy]
+<div class="pp-learn-route-grid" markdown="1">
+<a class="pp-learn-route-card pp-learn-route-card--guides" href="how-to/">
+<span>Do a task</span>
+<strong>Guides</strong>
+<p>Start with an outcome such as inspecting lineage, observing quality, or writing a result.</p>
+</a>
 
-### Local evidence
+<a class="pp-learn-route-card pp-learn-route-card--reference" href="reference/">
+<span>Look something up</span>
+<strong>Reference</strong>
+<p>Find current types, signatures, operators, records, and behavior contracts.</p>
+</a>
 
-- [Inspect a plan and lineage graph (How-to)][inspect-plan-lineage-how-to]
-- [Local inspection][inspection-reference]
-- [Governed attributes and policy checkpoints][governance-reference]
-- [Quality assertions and observations][quality-reference]
+<a class="pp-learn-route-card pp-learn-route-card--architecture" href="../architecture/">
+<span>Understand the system</span>
+<strong>Architecture</strong>
+<p>Follow typed intent through Prism, Substrait, Session, execution, and evidence.</p>
+</a>
+</div>
 
-<!-- References -->
-[reference]: reference/dataset_carriers.md
-[how-to]: how-to/README.md
-[explanation]: explanation/dataset_carriers.md
-[approximate-metrics-how-to]: how-to/approximate_metrics.md
-[dataset-reference]: reference/dataset_carriers.md
-[dataset-explanation]: explanation/dataset_carriers.md
-[dataset-methods-reference]: reference/dataset_methods.md
-[dataset-transformations-how-to]: how-to/dataset_transformations.md
-[generator-rows-how-to]: how-to/generator_rows.md
-[nested-row-values-how-to]: how-to/nested_row_values.md
-[normalize-semistructured-fields-how-to]: how-to/normalize_semistructured_fields.md
-[query-blocks-reference]: reference/query_blocks.md
-[typed-hll-sketches-how-to]: how-to/typed_hll_sketches.md
-[variant-payloads-how-to]: how-to/variant_payloads.md
-[window-columns-how-to]: how-to/window_columns.md
-[inspection-reference]: reference/inspection.md
-[execution-reference]: reference/execution_context.md
-[execution-explanation]: explanation/execution_context.md
-[execution-observations-how-to]: how-to/execution_observations.md
-[governed-evidence-how-to]: how-to/governed_evidence.md
-[governance-reference]: reference/governance.md
-[quality-observations-how-to]: how-to/quality_observations.md
-[inspect-plan-lineage-how-to]: how-to/inspect_plan_lineage.md
-[quality-reference]: reference/quality.md
-[substrait-read-root]: reference/substrait/read_root_binding_contract.md
-[substrait-conformance]: reference/substrait/conformance.md
-[substrait-operator-catalog]: reference/substrait/operator_catalog.md
-[substrait-revision-policy]: reference/substrait/revision_and_extension_policy.md
+## Build the right mental model
+
+These explanations answer the two questions that recur throughout the book.
+
+<div class="pp-learn-concepts" markdown="1">
+<article markdown="1">
+
+### [Dataset carriers](explanation/dataset_carriers.md)
+
+Understand the difference between deferred, materialized, bounded, and unbounded data—and why only `LazyFrame[T]` owns Prism state today.
+
+</article>
+<article markdown="1">
+
+### [Execution context](explanation/execution_context.md)
+
+Understand what a `Session` owns, when a plan reaches a backend, and where observations enter the flow.
+
+</article>
+</div>
+
+!!! note "What the book deliberately does not hide"
+
+    The included project uses IncQL as a local path dependency and DataFusion as the implemented backend. Its model parameter records the intended row shape, while the Session discovers the CSV schema; full CSV-to-model compatibility validation is not implemented yet. The tutorial calls out boundaries like these where they matter.

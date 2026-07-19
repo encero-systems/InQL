@@ -1,0 +1,76 @@
+"""Chapter 7: write an accepted plan and preserve write evidence."""
+
+from domain import Order
+from pub::incql import (
+    LazyFrame,
+    QualityObservation,
+    QualityObservationStatus,
+    Session,
+    SessionError,
+    csv_sink,
+    inspect_lineage,
+    inspect_plan,
+    report_session_error,
+    row_count,
+)
+
+
+def caller_accepts(observations: list[QualityObservation]) -> bool:
+    """Return true only when every observation satisfies the caller's policy."""
+    for observation in observations:
+        if observation.status != QualityObservationStatus.Passed:
+            return false
+    return true
+
+
+pub def run_chapter(mut session: Session) -> Result[None, SessionError]:
+    """Run the complete typed plan, evidence, decision, and write flow."""
+    orders: LazyFrame[Order] = session.read_csv("tutorial_orders", "orders.csv")?
+    plan = orders.limit(3)
+    inspection = inspect_plan(plan.clone())
+    lineage = inspect_lineage(plan.clone())
+    observed = session.collect_observed(plan.clone())
+
+    println(f"plan id: {inspection.plan_id}")
+    println(f"lineage edges: {len(lineage.edges)}")
+    println(f"backend: {observed.observation.backend_name}")
+    match observed.data:
+        Some(frame) =>
+            println(f"columns: {frame.resolved_columns():?}")
+            println(f"rows: {frame.row_count()}")
+            println(frame.preview_text())
+        None =>
+            match observed.error:
+                Some(error) => return Err(error)
+                None => println("collect_observed returned no data and no typed error")
+
+    coverage = session.check_plan_coverage(plan.clone())
+    println(f"coverage records: {len(coverage)}")
+    for record in coverage:
+        println(f"- {record.requirement.capability.value()}: {record.state.value()}")
+
+    required_quality = session.observe_quality(plan.clone(), [row_count(min_count=Some(1), max_count=Some(3))])
+    deliberate_probe = session.observe_quality(plan.clone(), [row_count(min_count=Some(4))])
+    println(f"required quality: {required_quality[0].status.value()}")
+    println(f"deliberate strict probe: {deliberate_probe[0].status.value()}")
+    println(f"caller would accept strict probe: {caller_accepts(deliberate_probe)}")
+
+    if not caller_accepts(required_quality):
+        println("Caller decision: do not write")
+        return Ok(None)
+
+    output_uri = "target/tutorial-orders.csv"
+    written = session.write_observed(plan, csv_sink(output_uri))
+    match written.error:
+        Some(error) => return Err(error)
+        None =>
+            println("Caller decision: write the plan accepted by the required policy")
+            println(f"wrote: {output_uri}")
+    return Ok(None)
+
+
+def main() -> None:
+    mut session = Session.default()
+    match run_chapter(session):
+        Ok(_) => println("Chapter 7: observed write completed")
+        Err(error) => report_session_error("tutorial.chapter_07", error)

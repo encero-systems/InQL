@@ -18,6 +18,8 @@ The examples are split between compile-safe API shape examples and executable Se
 - `advanced_retail_analytics.incn` — Larger 100-row retail method-chain spike covering scalar functions, JSON, URL parsing, hashing, aggregates, windows, and generators
 - `advanced_retail_query_blocks/` — Dependency-consumer query-block version of the retail spike, covering the
   query-block vocabulary over the same 100-row fixture
+- `tutorial_book/` — Runnable downstream project behind the seven-chapter IncQL Book, following one CSV-backed
+  `LazyFrame` through Prism inspection, DataFusion execution, evidence, a caller-owned decision, and an observed write
 - `models.incn` — Shared `@derive(Clone)` row models for examples
 
 ## Running examples
@@ -32,6 +34,7 @@ incan run examples/session_grouped_aggregate_csv.incn
 incan run examples/session_with_column_csv.incn
 incan run examples/advanced_retail_analytics.incn
 (cd examples/advanced_retail_query_blocks && incan lock && incan run src/main.incn)
+(cd examples/tutorial_book && incan lock && incan run src/main.incn --locked)
 ```
 
 > Note: Session examples expect repo fixtures in `tests/fixtures/` and write output files to `tests/target/`.

@@ -1,0 +1,11 @@
+"""Default entry point for the complete IncQL tutorial-book example."""
+
+from chapter_07 import run_chapter
+from pub::incql import Session, report_session_error
+
+
+def main() -> None:
+    mut session = Session.default()
+    match run_chapter(session):
+        Ok(_) => println("IncQL tutorial book complete")
+        Err(error) => report_session_error("tutorial.main", error)

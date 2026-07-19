@@ -8,7 +8,7 @@
 <p class="incql-hero__intro">IncQL unifies query blocks, DataFrame-style chains, LazyFrames, and pipelines into one typed relational model. Prism lets you see exactly what the compiler sees before execution.</p>
 
 <div class="incql-actions">
-<a class="incql-button incql-button--primary" href="language/how-to/dataset_transformations/">Start with transformations</a>
+<a class="incql-button incql-button--primary" href="language/">Start learning IncQL</a>
 <a class="incql-button" href="language/how-to/inspect_plan_lineage/">See Prism in action</a>
 </div>
 
@@ -423,7 +423,7 @@ Start with a quickstart, explore examples, or jump straight into the reference.
 </div>
 
 <div class="incql-actions">
-<a class="incql-button incql-button--primary" href="language/how-to/dataset_transformations/">Get started</a>
+<a class="incql-button incql-button--primary" href="language/">Get started</a>
 <a class="incql-button" href="docs_map/">Explore examples</a>
 </div>
 </section>
